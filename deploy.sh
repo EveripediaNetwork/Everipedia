@@ -1,3 +1,5 @@
+# copy this into build/programs/eosc
+
 cd ~/eos
 if ! ./build.sh ubuntu build; then
     exit 1
