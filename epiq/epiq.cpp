@@ -52,5 +52,8 @@ extern "C" {
           if( action == N(transfer) ) 
              TOKEN_NAME::apply_currency_transfer( current_message< TOKEN_NAME::transfer >() );
        }
+       if ( code == N(article) && action == N(edit) ) {
+            eosio::print("from article contract");
+       }
     }
 }
