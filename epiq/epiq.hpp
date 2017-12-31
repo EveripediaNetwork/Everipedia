@@ -18,11 +18,8 @@
 /**
  * Make it easy to change the account name the currency is deployed to.
  */
-#ifndef TOKEN_NAME
-#define TOKEN_NAME epiq
-#endif
 
-namespace TOKEN_NAME {
+namespace epiq {
 
   /**
    *  @defgroup currencyapi Currency Contract
@@ -31,6 +28,14 @@ namespace TOKEN_NAME {
    *
    *  @{
    */
+
+   /** 
+   * Constants
+   */
+   const account_name BURN_ACCOUNT = N(epburn);
+   const uint64_t TX_FEE_PARTS = 1000;
+   const uint64_t MAX_TX_FEE = 10;
+
 
    /**
    * Defines a currency token
@@ -52,7 +57,6 @@ namespace TOKEN_NAME {
       */
       account_name       to;
       /**
-      *  quantity to transfer
       */
       iq_tokens    quantity;
    };
@@ -97,7 +101,7 @@ namespace TOKEN_NAME {
    /**
     *  accounts information for owner is stored:
     *
-    *  owner/TOKEN_NAME/account/account -> account
+    *  owner/epiq/account/account -> account
     *
     *  This API is made available for 3rd parties wanting read access to
     *  the users balance. If the account doesn't exist a default constructed

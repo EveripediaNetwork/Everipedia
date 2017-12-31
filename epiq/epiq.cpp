@@ -5,7 +5,7 @@
 
 #include <epiq/epiq.hpp> /// defines transfer struct (abi)
 
-namespace TOKEN_NAME {
+namespace epiq {
    using namespace eosio;
 
    ///  When storing accounts, check for empty balance and remove account
@@ -19,23 +19,38 @@ namespace TOKEN_NAME {
       }
    }
 
-   void apply_currency_transfer( const TOKEN_NAME::transfer& transfer_msg ) {
+   void apply_currency_transfer( const epiq::transfer& transfer_msg, bool pays_tx_fee ) {
       require_notice( transfer_msg.to, transfer_msg.from );
       require_auth( transfer_msg.from );
 
       auto from = get_account( transfer_msg.from );
       auto to   = get_account( transfer_msg.to );
+      auto burn = get_account( BURN_ACCOUNT );
 
-      from.balance -= transfer_msg.quantity; /// token subtraction has underflow assertion
-      to.balance   += transfer_msg.quantity; /// token addition has overflow assertion
+      // Transaction fee calculation
+      uint64_t tx_fee = 0;
+      if (pays_tx_fee) {
+         //tx_fee = transfer_msg.quantity.quantity * TX_FEE_PERCENT;
+         tx_fee = transfer_msg.quantity.quantity / TX_FEE_PARTS;
+         if (tx_fee > MAX_TX_FEE)
+            tx_fee = MAX_TX_FEE;
+      }
+      iq_tokens tx_fee_tokens = iq_tokens(tx_fee);
+        
+      // underflow/overflow assertion is handled by 
+      from.balance -= transfer_msg.quantity; 
+      to.balance   += (transfer_msg.quantity - tx_fee_tokens);
+      burn.balance += tx_fee_tokens;
+
 
       store_account( transfer_msg.from, from );
       store_account( transfer_msg.to, to );
+      store_account( BURN_ACCOUNT, burn );
    }
 
-}  // namespace TOKEN_NAME
+}  
 
-using namespace TOKEN_NAME;
+using namespace epiq;
 
 extern "C" {
     void init()  {
@@ -50,10 +65,10 @@ extern "C" {
     void apply( uint64_t code, uint64_t action ) {
        if( code == N(epiq) ) {
           if( action == N(transfer) ) 
-             TOKEN_NAME::apply_currency_transfer( current_message< TOKEN_NAME::transfer >() );
+             epiq::apply_currency_transfer( current_message< epiq::transfer >(), true );
        }
        if ( code == N(article) && action == N(edit) ) {
-            eosio::print("from article contract");
+             epiq::apply_currency_transfer( current_message< epiq::transfer >(), false );
        }
     }
 }
