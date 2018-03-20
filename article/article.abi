@@ -1,1 +1,65 @@
-{}
+{
+    "types": [],
+    "structs": [{
+        "name": "wiki",
+        "base": "",
+        "fields": [
+                {"name":"hash", "type":"ipfshash_t"},
+                {"name":"parent_hash", "type":"ipfshash_t"}
+        ]
+    },{
+        "name": "editproposal",
+        "base": "",
+        "fields": [
+                {"name":"proposed_article_hash", "type":"ipfshash_t"},
+                {"name":"edit_diff_hash", "type":"ipfshash_t"},
+                {"name":"old_article_hash", "type":"ipfshash_t"},
+                {"name":"proposer", "type":"account_name"},
+                {"name":"timestamp", "type":"uint64"},
+                {"name":"status", "type":"uint8"}
+        ]
+    },{
+        "name": "vote",
+        "base": "",
+        "fields": [
+                {"name":"proposed_article_hash", "type":"ipfshash_t"},
+                {"name":"votevalue", "type":"uint64"},
+                {"name":"voter", "type":"account_name"},
+                {"name":"timestamp", "type":"uint64"}
+        ]
+    },
+],
+    "actions": [{
+         "name": "finalize_proposal",
+         "type": "editproposal"
+    },{
+         "name": "submit_proposal",
+         "type": "editproposal"
+    },{
+         "name": "place_vote",
+         "type": "vote"
+    },
+  ],
+  "tables": [{
+        "name": "votes",
+        "type": "vote",
+        "index_type": "str",
+        "key_names" : ["proposed_article_hash"],
+        "key_types" : ["ipfshash_t"]
+      },
+      {
+            "name": "editproposals",
+            "type": "editproposal",
+            "index_type": "str",
+            "key_names" : ["proposed_article_hash"],
+            "key_types" : ["ipfshash_t"]
+      },
+      {
+          "name": "wikis",
+          "type": "wiki",
+          "index_type": "str",
+          "key_names" : ["hash"],
+          "key_types" : ["ipfshash_t"]
+        }
+  ]
+  }
