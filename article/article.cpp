@@ -1,5 +1,5 @@
 #include "article.hpp"
-#include <epiq/epiq.hpp>
+#include <iq/iq.hpp>
 
 namespace article {
     using namespace eosio;

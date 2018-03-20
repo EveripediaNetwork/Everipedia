@@ -3,9 +3,9 @@
  *  @copyright defined in eos/LICENSE.txt
  */
 
-#include <epiq/epiq.hpp> /// defines transfer struct (abi)
+#include <iq/iq.hpp> /// defines transfer struct (abi)
 
-namespace epiq {
+namespace iq {
    using namespace eosio;
 
    ///  When storing accounts, check for empty balance and remove account
@@ -19,7 +19,7 @@ namespace epiq {
       }
    }
 
-   void apply_currency_transfer( const epiq::transfer& transfer_msg, bool pays_tx_fee ) {
+   void apply_currency_transfer( const iq::transfer& transfer_msg, bool pays_tx_fee ) {
       require_notice( transfer_msg.to, transfer_msg.from );
       require_auth( transfer_msg.from );
 
@@ -50,25 +50,25 @@ namespace epiq {
 
 }  
 
-using namespace epiq;
+using namespace iq;
 
 extern "C" {
     void init()  {
        account owned_account;
        //Initialize iq account only if it does not exist
-       if ( !accounts::get( owned_account, N(epiq) )) {
-          store_account( N(epiq), account( iq_tokens(1000ll*1000ll*1000ll) ) );
+       if ( !accounts::get( owned_account, N(iq) )) {
+          store_account( N(iq), account( iq_tokens(1000ll*1000ll*1000ll) ) );
        }
     }
 
     /// The apply method implements the dispatch of events to this contract
     void apply( uint64_t code, uint64_t action ) {
-       if( code == N(epiq) ) {
+       if( code == N(iq) ) {
           if( action == N(transfer) ) 
-             epiq::apply_currency_transfer( current_message< epiq::transfer >(), true );
+             iq::apply_currency_transfer( current_message< iq::transfer >(), true );
        }
        if ( code == N(article) && action == N(edit) ) {
-             epiq::apply_currency_transfer( current_message< epiq::transfer >(), false );
+             iq::apply_currency_transfer( current_message< iq::transfer >(), false );
        }
     }
 }

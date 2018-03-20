@@ -19,7 +19,7 @@
  * Make it easy to change the account name the currency is deployed to.
  */
 
-namespace epiq {
+namespace iq {
 
   /**
    *  @defgroup currencyapi Currency Contract
@@ -40,7 +40,7 @@ namespace epiq {
    /**
    * Defines a currency token
    */
-   typedef eosio::token<uint64_t,N(epiq)> iq_tokens;
+   typedef eosio::token<uint64_t,N(iq)> iq_tokens;
 
    /**
     *  transfer requires that the sender and receiver be the first two
@@ -96,12 +96,12 @@ namespace epiq {
    /**
    Defines the database table for account information
    **/
-   using accounts = eosio::table<N(defaultscope),N(epiq),N(account),account,uint64_t>;
+   using accounts = eosio::table<N(defaultscope),N(iq),N(account),account,uint64_t>;
 
    /**
     *  accounts information for owner is stored:
     *
-    *  owner/epiq/account/account -> account
+    *  owner/iq/account/account -> account
     *
     *  This API is made available for 3rd parties wanting read access to
     *  the users balance. If the account doesn't exist a default constructed
