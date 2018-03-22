@@ -25,7 +25,7 @@ namespace article {
             bool stillVoting =  now.time_since_epoch() < (_editprop.timestamp + article::DEFAULT_VOTING_TIME); // 8 hr voting window. Replace as required.
             eosio_assert(stillVoting, "Voting period is over!");
 
-
+            // check for enough IQ to edit
             bool hasEnoughIQ =  this.iq_wallet.balance > 0; // 8 hr voting window. Replace as required.
             eosio_assert(hasEnoughIQ, "Not enough IQ to place a vote!");
 
