@@ -1,5 +1,6 @@
 #include <eoslib/eos.hpp>
 #include <eoslib/db.hpp>
+#include <eosio/account_history_plugin/account_history_plugin.cpp>
 #include <iq/iq.hpp>
 
 namespace article {
@@ -9,9 +10,33 @@ namespace article {
       using ipfshash_t = unsigned char[34];
 
       bool is_new_user (const account_name& _thisaccount){
+            // See: https://github.com/EOSIO/eos/blob/master/plugins/account_history_plugin/account_history_plugin.cpp
+            vector<ordered_transaction_results> theTransactions = eosio::account_history_plugin_impl::get_transactions(_thisaccount).transactions;
+
+            for(unsigned int i = 0; i < theTransactions.size(); i++){
+                  //  THIS IS WHAT IS RETURNED
+                  // fc::variant is generated from abi_serializer::to_variant
+                  // assuming it is a transaction per transaction.hpp and transaction.cpp below
+                  // you need to loop through and look for token transfers from ARTICLE_CONTRACT to _thisaccount
+                  // if there is, return false immediately
+                  // else, return true
+
+
+                  // struct ordered_transaction_results {
+                  //    uint32_t                    seq_num;
+                  //    chain::transaction_id_type  transaction_id;
+                  //    fc::variant                 transaction;
+                  // };
+
+                  // transaction object (assumed)
+                  // https://github.com/EOSIO/eos/blob/master/libraries/chain/include/eosio/chain/transaction.hpp
+                  // https://github.com/EOSIO/eos/blob/master/libraries/chain/transaction.cpp
+
+
+            }
+
             // TODO: scan all ARTICLE_CONTRACT transactions to account_name
-            // if there are not any, return true
-            // else, return false
+
       }
 
       // DB Table Schemas
