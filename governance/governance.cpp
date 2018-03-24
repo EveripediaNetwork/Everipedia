@@ -1,40 +1,41 @@
-#include "governance.hpp"
-#include <iq/iq.hpp>
-#include <article/article.hpp>
+#include <eosiolib/eosio.hpp>
 
-namespace governance {
-    using namespace eosio;
+class governance : public contract {
+private:
+    using byte = unsigned char;
+    enum Module { token, article, _governance };
+    enum Opinion { Yes, No };
 
-    void apply_governance_propose( const Propose& propose_msg ) {
-        Proposal proposal;
-        for (int i=0; i < 34; i++)
-            proposal.ipfs_hash[i] = propose_msg.ipfs_hash[i];
-        proposal.module = propose_msg.module;
+    // DB Table Schemas
+    struct Proposal {
+        Module module;
+        uint64_t file;
+        uint64_t primary_key()const { return file; }
+    };
 
-        // Storing to DB isn't working
-        //proposals::store(proposal);
+    struct Stake {
+        uint64_t id;
+        uint64_t proposal_id;
+        account_name staker;
+        uint64_t amount;
+        Opinion opinion;
+        bool active;
+
+        uint64_t primary_key()const { return id; }
+    };
+
+    eosio::multi_index< N(epgovernance), Proposal > _proposals;
+    eosio::multi_index< N(epgovernance), Stake > _stakes;
+
+public:
+
+    void propose( Module module, uint64_t file ) {
+	
     }
 
-    void apply_governance_stake( const Stake& stake_msg ) {
+    void stake( uint64_t proposal_id ) {
         
     }
 
-}
+};
 
-using namespace governance;
-
-extern "C" {
-    void init()  {}
-
-    /// The apply method implements the dispatch of events to this contract
-    void apply( uint64_t code, uint64_t action ) {
-        if( code == N(epgovernance) ) {
-            if( action == N(propose) ) {
-                apply_governance_propose(current_message<Propose>());
-            }
-            else if( action == N(stake) ) {
-                apply_governance_propose(current_message<Propose>());
-            }
-        }
-    }
-}
