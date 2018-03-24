@@ -9,8 +9,8 @@ private:
     // DB Table Schemas
     struct Proposal {
         Module module;
-        uint64_t file;
-        uint64_t primary_key()const { return file; }
+        std::string file;
+        std::string primary_key()const { return file; }
     };
 
     struct Stake {
@@ -29,7 +29,7 @@ private:
 
 public:
 
-    void propose( Module module, uint64_t file ) {
+    void propose( Module module, std::string file ) {
 	
     }
 
