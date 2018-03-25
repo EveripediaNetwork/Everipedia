@@ -1,5 +1,34 @@
-#include <eoslib/eos.hpp>
-#include <eoslib/db.hpp>
+// CURRENTLY DOES NOT COMPILE
+// WORK IN PROGRESS
+// # 2018 Travis Moore, Kedar Iyer, Sam Kazemian
+// # MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// # MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// # MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// # MMMMMMMMMMMMMMMMMmdhhydNMMMMMMMMMMMMMMMMMMMMMMMMMM
+// # MMMMMMMMMMMMMNdy    hMMMMMMNdhhmMMMddMMMMMMMMMMMMM
+// # MMMMMMMMMMMmh      hMMMMMMh     yMMM  hNMMMMMMMMMM
+// # MMMMMMMMMNy       yMMMMMMh       MMMh   hNMMMMMMMM
+// # MMMMMMMMd         dMMMMMM       hMMMh     NMMMMMMM
+// # MMMMMMMd          dMMMMMN      hMMMm       mMMMMMM
+// # MMMMMMm           yMMMMMM      hmmh         NMMMMM
+// # MMMMMMy            hMMMMMm                  hMMMMM
+// # MMMMMN             hNMMMMMmy                 MMMMM
+// # MMMMMm          ymMMMMMMMMmd                 MMMMM
+// # MMMMMm         dMMMMMMMMd                    MMMMM
+// # MMMMMMy       mMMMMMMMm                     hMMMMM
+// # MMMMMMm      dMMMMMMMm                      NMMMMM
+// # MMMMMMMd     NMMMMMMM                      mMMMMMM
+// # MMMMMMMMd    NMMMMMMN                     mMMMMMMM
+// # MMMMMMMMMNy  mMMMMMMM                   hNMMMMMMMM
+// # MMMMMMMMMMMmyyNMMMMMMm         hmh    hNMMMMMMMMMM
+// # MMMMMMMMMMMMMNmNMMMMMMMNmdddmNNd   ydNMMMMMMMMMMMM
+// # MMMMMMMMMMMMMMMMMMMMMMMMMMMNdhyhdmMMMMMMMMMMMMMMMM
+// # MMMMMMMMMMMMMMMMMMMMMMMMMMNNMMMMMMMMMMMMMMMMMMMMMM
+// # MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// # MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+
+#include <eosiolib/eosio.hpp>
+#include <eosiolib/db.h>
 #include <eosio/account_history_plugin/account_history_plugin.cpp>
 #include <iq/iq.hpp>
 
@@ -11,32 +40,27 @@ namespace article {
 
       bool is_new_user (const account_name& _thisaccount){
             // See: https://github.com/EOSIO/eos/blob/master/plugins/account_history_plugin/account_history_plugin.cpp
-            vector<ordered_transaction_results> theTransactions = eosio::account_history_plugin_impl::get_transactions(_thisaccount).transactions;
+            vector<ordered_transaction_results> theTransactions = eosio::account_history_plugin_impl::get_transactions(account_name).transactions;
 
             for(unsigned int i = 0; i < theTransactions.size(); i++){
+                  auto pretty_trx = abi_serializer::from_variant(theTransactions[i].transaction, PARAM1, PARAM2);
                   //  THIS IS WHAT IS RETURNED
-                  // fc::variant is generated from abi_serializer::to_variant
-                  // assuming it is a transaction per transaction.hpp and transaction.cpp below
-                  // you need to loop through and look for token transfers from ARTICLE_CONTRACT to _thisaccount
-                  // if there is, return false immediately
-                  // else, return true
-
-
                   // struct ordered_transaction_results {
                   //    uint32_t                    seq_num;
                   //    chain::transaction_id_type  transaction_id;
                   //    fc::variant                 transaction;
                   // };
 
+                  // fc::variant is generated from abi_serializer::to_variant
+                  // assuming it is a transaction per transaction.hpp and transaction.cpp below
+                  // you need to loop through and look for token transfers from ARTICLE_CONTRACT to _thisaccount
+                  // if there is, return false immediately
+                  // else, return true
+
                   // transaction object (assumed)
                   // https://github.com/EOSIO/eos/blob/master/libraries/chain/include/eosio/chain/transaction.hpp
                   // https://github.com/EOSIO/eos/blob/master/libraries/chain/transaction.cpp
-
-
             }
-
-            // TODO: scan all ARTICLE_CONTRACT transactions to account_name
-
       }
 
       // DB Table Schemas
@@ -46,9 +70,10 @@ namespace article {
             wiki() {}
 
             static wiki get_by_hash(const ipfshash_t& _ipfs_hash){
-                  wiki ReturnedWiki =  wiki(); // need variable to store &reference return value
-                  Wikis::get(_ipfs_hash, ReturnedWiki); // eosio::table lookup by new_article_hash
-                  return ReturnedWiki;
+                  auto toitr = Wikis.find( _ipfs_hash );
+                  if( toitr != Wikis.end() ) {
+                        return *toitr;
+                  }
             }
       };
 
@@ -63,11 +88,11 @@ namespace article {
 
             editproposal() {}
 
-            //THESE TABLE LOOKUPS ARE LIKELY SYNTAX MALFORMED
             static editproposal get_by_hash(const ipfshash_t& _ipfs_hash){
-                  editproposal ReturnedProposal =  editproposal(); // need variable to store &reference return value
-                  EditProposals::get(_ipfs_hash, ReturnedProposal); // eosio::table lookup by new_article_hash
-                  return ReturnedProposal;
+                  auto toitr = EditProposals.find( _ipfs_hash );
+                  if( toitr != EditProposals.end() ) {
+                        return *toitr;
+                  }
             }
 
       };
@@ -82,29 +107,9 @@ namespace article {
             vote() {}
       };
 
-      // EOS table for the articles
-      using Wikis = eosio::table<
-            N(article), // scope
-            N(article), // code (contract w/ write permission)
-            N(wikis),      // table name
-            wiki,         // data type (schema)
-            ipfshash_t>;    // primary key data type
-
-      // EOS table for the edit proposals
-      using EditProposals = eosio::table<
-            N(article), // scope
-            N(article), // code (contract w/ write permission)
-            N(editproposals),      // table name
-            editproposal,         // data type (schema)
-            ipfshash_t>;     // primary key data type
-
-      // EOS table for the votes
-      using Votes = eosio::table<
-            N(article), // scope
-            N(article), // code (contract w/ write permission)
-            N(votes),      // table name
-            vote,         // data type (schema)
-            ipfshash_t>;    // primary key data type
+      eosio::multi_index<N(wikis), wiki> Wikis; // EOS table for the articles
+      eosio::multi_index<N(editproposals), editproposal> EditProposals; // EOS table for the edit proposals
+      eosio::multi_index<N(votes), vote> Votes; // EOS table for the votes
 
       //  ====================================================================================================
       //  ====================================================================================================
