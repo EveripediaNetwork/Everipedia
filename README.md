@@ -1,2 +1,4 @@
 # Everipedia-EOS
 EOS Wiki Software for the Everipedia Network
+
+NOTE: WORK IN PROGRESS. THIS NOTICE WILL BE REMOVED WHEN A FINAL VERSION IS RELEASED.
