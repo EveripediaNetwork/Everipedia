@@ -1,74 +1,49 @@
-/**
- *  @file
- *  @copyright defined in eos/LICENSE.txt
- */
+#include <eosiolib/eosio.hpp>
 
-#include <iq/iq.hpp> /// defines transfer struct (abi)
+class iq : public contract {
+   public:
+      iq( account_name self )
+      :contract(self),_accounts( _self, _self){}
 
-namespace iq {
-   using namespace eosio;
+      void transfer( account_name from, account_name to, uint64_t quantity ) {
+         require_auth( from );
 
-   ///  When storing accounts, check for empty balance and remove account
-   void store_account( account_name account_to_store, const account& a ) {
-      if( a.is_empty() ) {
-         ///               value, scope
-         accounts::remove( a, account_to_store );
-      } else {
-         ///              value, scope
-         accounts::store( a, account_to_store );
+         const auto& fromacnt = _accounts.get( from );
+         eosio_assert( fromacnt.balance >= quantity, "overdrawn balance" );
+         _accounts.modify( fromacnt, from, [&]( auto& a ){ a.balance -= quantity; } );
+
+         add_balance( from, to, quantity );
       }
-   }
 
-   void apply_currency_transfer( const iq::transfer& transfer_msg, bool pays_tx_fee ) {
-      require_notice( transfer_msg.to, transfer_msg.from );
-      require_auth( transfer_msg.from );
-
-      auto from = get_account( transfer_msg.from );
-      auto to   = get_account( transfer_msg.to );
-      auto burn = get_account( BURN_ACCOUNT );
-
-      // Transaction fee calculation
-      uint64_t tx_fee = 0;
-      if (pays_tx_fee) {
-         //tx_fee = transfer_msg.quantity.quantity * TX_FEE_PERCENT;
-         tx_fee = transfer_msg.quantity.quantity / TX_FEE_PARTS;
-         if (tx_fee > MAX_TX_FEE)
-            tx_fee = MAX_TX_FEE;
+      void issue( account_name to, uint64_t quantity ) {
+         require_auth( _self );
+         add_balance( _self, to, quantity );
       }
-      iq_tokens tx_fee_tokens = iq_tokens(tx_fee);
-        
-      // underflow/overflow assertion is handled by 
-      from.balance -= transfer_msg.quantity; 
-      to.balance   += (transfer_msg.quantity - tx_fee_tokens);
-      burn.balance += tx_fee_tokens;
 
+   private:
+      struct account {
+         account_name owner;
+         uint64_t     balance;
 
-      store_account( transfer_msg.from, from );
-      store_account( transfer_msg.to, to );
-      store_account( BURN_ACCOUNT, burn );
-   }
+         uint64_t primary_key()const { return owner; }
+      };
 
-}  
+      eosio::multi_index<N(accounts), account> _accounts;
 
-using namespace iq;
+      void add_balance( account_name payer, account_name to, uint64_t q ) {
+         auto toitr = _accounts.find( to );
+         if( toitr == _accounts.end() ) {
+           _accounts.emplace( payer, [&]( auto& a ) {
+              a.owner = to;
+              a.balance = q;
+           });
+         } else {
+           _accounts.modify( toitr, 0, [&]( auto& a ) {
+              a.balance += q;
+              eosio_assert( a.balance >= q, "overflow detected" );
+           });
+         }
+      }
+};
 
-extern "C" {
-    void init()  {
-       account owned_account;
-       //Initialize iq account only if it does not exist
-       if ( !accounts::get( owned_account, N(iq) )) {
-          store_account( N(iq), account( iq_tokens(1000ll*1000ll*1000ll) ) );
-       }
-    }
-
-    /// The apply method implements the dispatch of events to this contract
-    void apply( uint64_t code, uint64_t action ) {
-       if( code == N(iq) ) {
-          if( action == N(transfer) ) 
-             iq::apply_currency_transfer( current_message< iq::transfer >(), true );
-       }
-       if ( code == N(article) && action == N(edit) ) {
-             iq::apply_currency_transfer( current_message< iq::transfer >(), false );
-       }
-    }
-}
+EOSIO_ABI( iq, (transfer)(issue) )
