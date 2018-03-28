@@ -1,19 +1,22 @@
 #include <eosiolib/eosio.hpp>
 #include <eosiolib/db.h>
 
+using namespace eosio;
+
 class governance : public contract {
 private:
-    using byte = unsigned char;
+    using ipfshash_t = unsigned char[34];
     enum Module { token, article, _governance };
 
     // DB Table Schemas
     struct Proposal {
         Proposal () {}
 
+        uint64_t id;
         Module module;
-        std::string file;
+        ipfshash_t file;
 
-        std::string primary_key()const { return file; }
+        uint64_t primary_key()const { return id; }
     };
 
     struct Stake {
@@ -35,13 +38,15 @@ public:
   governance( account_name self )
   :contract(self),_proposals( _self, _self),_stakes(_self, _self){}
 
-    void propose( Module module, std::string file ) {
-	    Proposal proposal;
-        proposal.file = file;
-        proposal.module = module;
-        _proposals.emplace( _self  , [&]( auto& p ) {
-            p.file = file;
+    void propose( Module module, ipfshash_t file ) {
+        _proposals.emplace( _self , [&]( auto& p ) {
+            // TODO: Incrementing IDs
+            p.id = 1;
             p.module = module;
+
+            // copy ipfs hash
+            for (int i=0; i < 34; i++)
+                p.file[i] = file[i];
         });
     }
 
@@ -50,19 +55,14 @@ public:
 
         // TODO: Transfer IQ to this contract
 
-        Stake stake;
-        stake.proposal_id = proposal_id;
-        stake.approve = approve;
-        _stakes.emplace( _self , [&]( auto& s ) {
+        _stakes.emplace( staker , [&]( auto& s ) {
             // TODO: Incrementing IDs
             s.id = 1; 
+            s.proposal_id = proposal_id;
             s.staker = staker;
             s.amount = amount;
             s.approve = approve;
         });
-    }
-
-    void tally_votes( uint64_t proposal_id ) {
     }
 
 };
