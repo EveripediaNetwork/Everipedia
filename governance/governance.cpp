@@ -1,4 +1,5 @@
 #include <eosiolib/eosio.hpp>
+#include <eosiolib/db.h>
 
 class governance : public contract {
 private:
@@ -23,7 +24,6 @@ private:
         account_name staker;
         uint64_t amount;
         bool approve;
-        bool active;
 
         uint64_t primary_key()const { return id; }
     };
@@ -32,19 +32,37 @@ private:
     eosio::multi_index< N(epgovernance), Stake > _stakes;
 
 public:
+  governance( account_name self )
+  :contract(self),_proposals( _self, _self),_stakes(_self, _self){}
 
     void propose( Module module, std::string file ) {
 	    Proposal proposal;
         proposal.file = file;
         proposal.module = module;
-        //_proposals.insert( proposal );
+        _proposals.emplace( _self  , [&]( auto& p ) {
+            p.file = file;
+            p.module = module;
+        });
     }
 
-    void stake( uint64_t proposal_id, bool approve ) {
+    void stake( account_name staker, uint64_t proposal_id, uint64_t amount, bool approve ) {
+        require_auth(staker);
+
+        // TODO: Transfer IQ to this contract
+
         Stake stake;
         stake.proposal_id = proposal_id;
         stake.approve = approve;
-        //_stakes.insert( stake );
+        _stakes.emplace( _self , [&]( auto& s ) {
+            // TODO: Incrementing IDs
+            s.id = 1; 
+            s.staker = staker;
+            s.amount = amount;
+            s.approve = approve;
+        });
+    }
+
+    void tally_votes( uint64_t proposal_id ) {
     }
 
 };
