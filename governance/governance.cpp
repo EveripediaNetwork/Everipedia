@@ -7,14 +7,16 @@ class governance : public contract {
 private:
     using ipfshash_t = unsigned char[34];
     enum Module { token, article, _governance };
+    enum Status { Pending, Approved, Rejected };
 
     // DB Table Schemas
     struct Proposal {
-        Proposal () {}
+        Proposal () { status = Status::Pending; }
 
         uint64_t id;
         Module module;
         ipfshash_t file;
+        Status status;
 
         uint64_t primary_key()const { return id; }
     };
@@ -29,10 +31,14 @@ private:
         bool approve;
 
         uint64_t primary_key()const { return id; }
+        uint64_t get_proposal_id()const { return proposal_id; }
     };
 
     eosio::multi_index< N(epgovernance), Proposal > _proposals;
-    eosio::multi_index< N(epgovernance), Stake > _stakes;
+    eosio::multi_index< N(epgovernance), Stake ,
+        indexed_by< N(byproposal), const_mem_fun<
+            Stake, uint64_t, &Stake::get_proposal_id> >
+    > _stakes;
 
 public:
   governance( account_name self )
@@ -63,6 +69,28 @@ public:
             s.amount = amount;
             s.approve = approve;
         });
+    }
+
+    void tally_votes (uint64_t proposal_id) {
+        auto proposals_idx = _stakes.get_index<N(byproposal)>();
+        auto stake_itr = proposals_idx.find( std::forward<uint64_t>(proposal_id) );
+        int yes_votes = 0;
+        int no_votes = 0;
+        while (stake_itr->proposal_id == proposal_id) {
+            if (stake_itr->approve)
+                yes_votes += stake_itr->amount;
+            else
+                no_votes += stake_itr->amount;
+            stake_itr++;
+        }
+        
+        auto proposal = _proposals.find( proposal_id );
+
+        // TODO: This doesn't work. Modify DB
+        //if (yes_votes > no_votes)
+        //    proposal->status = Status::Approved;
+        //else
+        //    proposal->status = Status::Rejected;
     }
 
 };
