@@ -84,13 +84,17 @@ public:
             stake_itr++;
         }
         
-        auto proposal = _proposals.find( proposal_id );
-
-        // TODO: This doesn't work. Modify DB
-        //if (yes_votes > no_votes)
-        //    proposal->status = Status::Approved;
-        //else
-        //    proposal->status = Status::Rejected;
+        const auto& proposal = _proposals.get( proposal_id );
+        if (yes_votes > no_votes) {
+            _proposals.modify( proposal, proposal_id, [&]( auto& a ) { 
+                a.status = Status::Approved; 
+            });
+        }
+        else {
+            _proposals.modify( proposal, proposal_id, [&]( auto& a ) { 
+                a.status = Status::Rejected; 
+            });
+        }
     }
 
 };
