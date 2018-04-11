@@ -18,11 +18,11 @@ We propose a three module system consisting of a token module, a governance modu
 
 ## Introduction: The Everipedia Network
 
-The Everipedia Network is a decentralized encyclopedia database fully governed by token holders. Token holders can approve edits, create network-wide rules that govern the encyclopedia, as well as buy and sell services for tokens on the network. This also means that tokens play a central role in the consensus protocol of finalizing data entry into the network.
+The Everipedia Network (EPN) is a decentralized encyclopedia database fully governed by token holders. Token holders can approve edits, create network-wide rules that govern the encyclopedia, as well as buy and sell services for tokens on the network. This also means that tokens play a central role in the consensus protocol of finalizing data entry into the network.
 
   
 
-The Everipedia Network turns the non-profit knowledge industry into a knowledge economy where economic incentives can guide the creation of knowledge content. With the Everipedia Network one can connect directly to the world’s largest wiki database from any site. We imagine a future in which even non-programmers can create sites that utilize the Everipedia Network through something as simple as a Wordpress template.
+The Everipedia Network turns the non-profit knowledge industry into a knowledge economy where economic incentives can guide the creation of knowledge content. With the EPN one can connect directly to the world’s largest wiki database from any site. We imagine a future in which even non-programmers can create sites that utilize the Everipedia Network through something as simple as a Wordpress template.
 
   
 
@@ -41,7 +41,7 @@ Achieving such a goal would create a peer to peer distributed content system tha
 
 ![](https://lh5.googleusercontent.com/A4Pk1I1WWCjGLdEeRvmpSUsObgBwXSzJKG1nPQOKXgq19iV22w-kC8c-Q9afCIJYD43J_fJ3mYtfXcYVZWZGseat_HKlwq3SoaneWM2XJGS8TF7mxf-QPEHTVDhFf7bG-W9Y-CKg)
 
-<sub><sup>The three modules of the Everipedia Network and their interactions. The token module is responsible for holding token balances, minting schedule, and sending/receiving/fee functions. It can change the state of the article module. The article module is responsible for edit proposals and changing the state of the database of articles which are then sent to IPFS nodes. The governance module is responsible for proposals on changing network-wide rules. It can change the state of any module (including itself) by deploying new code that is voted through by token holders.</sub></sup>
+<sub><sup>The three modules of the EPN and their interactions. The token module is responsible for holding token balances, minting schedule, and sending/receiving/fee functions. It can change the state of the article module. The article module is responsible for edit proposals and changing the state of the database of articles which are then sent to IPFS nodes. The governance module is responsible for proposals on changing network-wide rules. It can change the state of any module (including itself) by deploying new code that is voted through by token holders.</sub></sup>
 
 ## Governance Module
 
@@ -53,7 +53,7 @@ The governance module allows for submitting changes to the community of token ho
 
   
 
-The Everipedia Network will be a system of smart contracts on the EOS platform, so users will not be running full nodes of the Everipedia Network. This means users cannot vote on software updates by updating their client software as they do in Bitcoin or Ethereum. Instead, a trustless on-chain consensus process must be designed for deployment of new updates.
+The EPN will be a system of smart contracts on the EOS platform, so users will not be running full nodes of the Everipedia Network. This means users cannot vote on software updates by updating their client software as they do in Bitcoin or Ethereum. Instead, a trustless on-chain consensus process must be designed for deployment of new updates.
 
   
 
@@ -62,6 +62,10 @@ Without an internal consensus process, the only viable alternative for updating 
   
 
 Research and development, solutions to scaling, and improvements to the codebase are just as critical (if not more critical) as any service and feature built on top of the network. For this reason, we have laid the foundation for proposing edits and additions to the source code of the network through the governance module. This mechanism will be used for meta-governance of the network protocol itself in a fully trustless, on-chain process.
+
+### Funding the Network and Self-Sustainability
+
+The Everipedia Network is a series of modules (smart contracts) which runs on the EOS Virtual Machine (EVM). The virtual machine’s storage, random access memory, and bandwidth/compute resources are allocated to accounts proportional to their EOS token balances. The Everipedia Network will require EVM resources to run and function. As the network increases in size, it would require a higher percentage of the EOS network’s compute power and as a result need more EOS tokens. There are many ways for the EPN to fund itself ranging from older generation methods such as simple donations (such as Wikipedia.org), UX layer revenue as well as new generation methods based on token inflation and auctioning. One such funding method would be a governance action which would propose minting new IQ tokens to be auctioned for EOS tokens. If the action is approved by voters, the newly acquired EOS tokens would then be used to fund the EPN's new bandwidth, storage, and compute needs. This method is similar to the EOS network's own inflation based funding model where block producers are paid EOS tokens for their services.
 
 ## Token Module
 
