@@ -127,113 +127,20 @@ private:
     // ==================================================
     // HELPER FUNCTIONS
 
-    bool is_new_user (const account_name& _thisaccount){
-        return true;
-    }
+    bool is_new_user (const account_name& _thisaccount);
 
 
 public:
     article(account_name self) : contract(self) {}
+
     //  ==================================================
     //  ==================================================
     //  ==================================================
     // ABI Functions
 
-    void submit_proposal( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ) { 
-        
-        // TODO:if there is a brand new user, give them free IQ to make their first edit
-        
-        // TODO: Stake IQ
-
-        // store the proposal
-        edit_proposals_table proptable( _self, proposer );
-        proptable.emplace( _self, [&]( auto& a ) {
-            a.id = 1;
-            a.proposed_article_hash = proposed_article_hash;
-            a.old_article_hash = old_article_hash;
-            using chrono = std::chrono::system_clock;
-            a.timestamp = chrono::to_time_t(chrono::now());
-            a.status = ProposalStatus::pending;
-        });
-
-    }
-
-    // vote on a proposal
-    void place_vote ( account_name voter, uint64_t proposal_id, bool approve, uint64_t amount ) {
-        
-        // Check if article exists
-        edit_proposals_table proptable( _self, voter );
-        auto prop_it = proptable.find( proposal_id );
-        eosio_assert( prop_it != proptable.end(), "proposal not found" );
-
-        // Verify voting is still in progress
-        using chrono = std::chrono::system_clock;
-        std::time_t now = chrono::to_time_t(chrono::now());
-        eosio_assert( now < prop_it->timestamp + DEFAULT_VOTING_TIME, "voting period is over");
-
-        // TODO: Send IQ to contract
-
-        // Store vote in DB
-        votes_table votetbl( _self, voter );
-        votetbl.emplace( voter, [&]( auto& a ) {
-             // TODO: incrementing IDs
-             a.proposal_id = proposal_id;
-             a.approve = approve;
-             a.amount = amount;
-             a.voter = voter;
-             a.timestamp = now;
-        });
-
-    }
-
-    void finalize_proposal( account_name from, uint64_t proposal_id ) {
-        
-        // Verify proposal exists
-        edit_proposals_table proptable( _self, _self );
-        auto prop_it = proptable.find( proposal_id );
-        eosio_assert( prop_it != proptable.end(), "proposal not found" );
-
-        // Verify voting period is complete
-        using chrono = std::chrono::system_clock;
-        std::time_t now = chrono::to_time_t(chrono::now());
-        eosio_assert( now > prop_it->timestamp + DEFAULT_VOTING_TIME, "voting period is over");
-
-        // Retrieve votes from DB
-        votes_table votetable(_self, _self);
-        auto propidx = votetable.get_index<N(byproposal)>();
-        auto vote_it = propidx.find(proposal_id);
-        eosio_assert( prop_it != propidx.end(), "no votes found for proposal");
-
-
-        // Tally votes
-        uint64_t for_votes = 0;
-        uint64_t against_votes = 0;
-        while(prop_it->proposal_id == proposal_id && prop_it != propidx.end()) {
-            if (prop_it->approve)
-                for_votes += prop_it->amount;
-            else
-                against_votes += prop_it->amount;
-            prop_it++;  
-        }
-
-        // Mark proposal as accepted or rejected. Ties are rejected
-        proptable.modify( prop_it, 0, [&]( auto& a ) {
-            if (for_votes > against_votes)
-                a.status =  ProposalStatus::accepted;
-            else
-                a.status =  ProposalStatus::rejected;
-        });
-
-        // TODO: Reward the voters
-
-        // Add article to database
-        wikis_table wikitbl( _self, _self );
-        wikitbl.emplace( _self,  [&]( auto& a ) {
-            // TODO: incrementing ID
-            a.hash = prop_it->proposed_article_hash;
-            a.parent_hash = prop_it->old_article_hash;
-        });
-    }
+    void submit_proposal( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ); 
+    void place_vote ( account_name voter, uint64_t proposal_id, bool approve, uint64_t amount );
+    void finalize_proposal( account_name from, uint64_t proposal_id );
 
 
 
