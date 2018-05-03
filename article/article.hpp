@@ -35,9 +35,8 @@ using namespace eosio;
 class article : public eosio::contract {
 
 private:
-    const int DEFAULT_VOTING_TIME = 86400;
-    const int MINIMUM_EDIT_IQ = 1;
-    const account_name ARTICLE_CONTRACT = N("iqarticlecnt");
+    const std::time_t DEFAULT_VOTING_TIME = std::time_t(86400); // 1 day
+    const std::time_t STAKING_DURATION = std::time_t(21 * 86400); // 21 days
 
     // returning array types from a DB type struct throws
     // using vectors for now, will try to use arrays later 
@@ -87,7 +86,7 @@ private:
           uint64_t id;
           uint64_t proposal_id;
           bool approve;
-          uint64_t amount; // positive or negative value indicating the vote / staked amount
+          int64_t amount; // positive or negative value indicating the vote / staked amount
           account_name voter; // account name of the voter
           std::time_t timestamp; // epoch time of the vote
 
@@ -95,6 +94,39 @@ private:
           uint64_t get_proposal_id()const { return id; }
           vote() {}
     };
+
+    // internal struct for stakes within brainpower
+    struct stake {
+        stake() {}
+
+        uint64_t amount;
+        std::time_t timestamp;
+        std::time_t duration;
+    };
+
+    // Brainpower balances
+    struct brainpower {
+        account_name user;
+        uint64_t power;
+        std::vector<stake> stakes;
+
+        account_name primary_key()const { return user; }
+
+        // subtraction with underflow check
+        // TODO: replace assert with EOS-flavored assert
+        uint64_t sub (uint64_t value) {
+            assert(value >= power);
+            power -= value;
+        }
+
+        // addition with overflow check
+        // TODO: replace assert with EOS-flavored assert
+        uint64_t add (uint64_t value) {
+            assert(value + power > value && value + power > power);
+            power += value;
+        }
+    };
+
 
 
     //  ==================================================
@@ -121,6 +153,9 @@ private:
         indexed_by< N(byproposal), const_mem_fun< vote, uint64_t, &vote::get_proposal_id >>
     > votes_table; // EOS table for the votes
 
+    // brainpower table
+    typedef eosio::multi_index<N(brainpower), brainpower> brainpower_table;
+
 
     // ==================================================
     // =================================================
@@ -141,7 +176,7 @@ public:
     void submit_proposal( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ); 
     void place_vote ( account_name voter, uint64_t proposal_id, bool approve, uint64_t amount );
     void finalize_proposal( account_name from, uint64_t proposal_id );
-
-
+    void brain_me( account_name from, uint64_t amount );
+    void withdraw( account_name from );
 
 };

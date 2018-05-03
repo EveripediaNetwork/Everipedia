@@ -136,3 +136,22 @@ void article::finalize_proposal( account_name from, uint64_t proposal_id ) {
         a.parent_hash = prop_it->old_article_hash;
     });
 }
+
+void article::brain_me( account_name from, uint64_t amount ) {
+    brainpower_table braintable(_self, _self);
+    auto brain_it = braintable.find(from);
+
+    // TODO: transfer IQ to contract
+    
+    // boost brainpower
+    braintable.modify( brain_it, 0, [&]( auto& b ) {
+        b.add(amount);
+
+        stake s;
+        s.amount = amount;
+        using chrono = std::chrono::system_clock;
+        s.timestamp = chrono::to_time_t(chrono::now());
+        s.duration = STAKING_DURATION;
+        b.stakes.push_back(s);
+    });
+}
