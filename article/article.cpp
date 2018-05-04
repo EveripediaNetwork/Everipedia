@@ -37,9 +37,10 @@ bool article::is_new_user (const account_name& _thisaccount){
 
 void article::submit_proposal( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ) { 
     
-    // TODO:if there is a brand new user, give them free IQ to make their first edit
-    
-    // TODO: Stake IQ
+    // Verify minimum brainpower is met
+    brainpower_table braintable(_self, _self);
+    auto brain_it = braintable.find(proposer);
+    eosio_assert(brain_it->power > EDIT_PROPOSE_BRAINPOWER, "Not enough brainpower to edit");
 
     // store the proposal
     edit_proposals_table proptable( _self, proposer );
@@ -51,7 +52,9 @@ void article::submit_proposal( account_name proposer, ipfshash_t& proposed_artic
         a.timestamp = chrono::to_time_t(chrono::now());
         a.status = ProposalStatus::pending;
     });
-
+    
+    // TODO: Replace with proper ID instead of 1
+    article::place_vote( proposer, 1, true, EDIT_PROPOSE_BRAINPOWER );
 }
 
 
@@ -70,12 +73,19 @@ void article::place_vote ( account_name voter, uint64_t proposal_id, bool approv
     std::time_t now = chrono::to_time_t(chrono::now());
     eosio_assert( now < prop_it->timestamp + DEFAULT_VOTING_TIME, "voting period is over");
 
-    // TODO: Send IQ to contract
+    // Consume brainpower 
+    brainpower_table braintable(_self, _self);
+    auto brain_it = braintable.find(voter);
+    eosio_assert(brain_it->power >= amount, "Not enough brainpower");
+    braintable.modify( brain_it, 0, [&]( auto& b ) {
+        b.sub(amount);
+    });
 
     // Store vote in DB
     votes_table votetbl( _self, voter );
     votetbl.emplace( voter, [&]( auto& a ) {
          // TODO: incrementing IDs
+         a.id = 1;
          a.proposal_id = proposal_id;
          a.approve = approve;
          a.amount = amount;
@@ -125,6 +135,33 @@ void article::finalize_proposal( account_name from, uint64_t proposal_id ) {
         else
             a.status =  ProposalStatus::rejected;
     });
+
+    // Determine slashing conditions
+    // floating point is inexact, so I'm using integer arithmetic for slashing percentages
+    vote_it = propidx.find( std::forward<uint64_t>(proposal_id) );
+    bool approved = (for_votes > against_votes);
+    uint64_t slash_percent; 
+    if (approved)
+        slash_percent = for_votes - against_votes;
+    else
+        slash_percent = against_votes - for_votes;
+
+    // Slash losers
+    while(vote_it->proposal_id == proposal_id) {
+        if (vote_it->approve != approved) {
+            uint64_t slash_amount = vote_it->amount;
+            brainpower_table braintable(_self, _self);
+            auto brain_it = braintable.find(vote_it->voter);
+            braintable.modify( brain_it, 0, [&]( auto& b ) {
+                for (auto stake_it = b.stakes.begin(); slash_amount > 0; stake_it++) {
+                    // STAKING_DURATION is a known constant and slash_percent has a max value of 100, so this will not overflow
+                    stake_it->duration += STAKING_DURATION * slash_percent / 100;
+                    slash_amount -= stake_it->amount;
+                }
+            });
+        }
+        vote_it++;  
+    }
 
     // TODO: Reward the voters
 

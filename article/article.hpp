@@ -37,6 +37,7 @@ class article : public eosio::contract {
 private:
     const std::time_t DEFAULT_VOTING_TIME = std::time_t(86400); // 1 day
     const std::time_t STAKING_DURATION = std::time_t(21 * 86400); // 21 days
+    const uint64_t EDIT_PROPOSE_BRAINPOWER = 1000;
 
     // returning array types from a DB type struct throws
     // using vectors for now, will try to use arrays later 
@@ -86,7 +87,7 @@ private:
           uint64_t id;
           uint64_t proposal_id;
           bool approve;
-          int64_t amount; // positive or negative value indicating the vote / staked amount
+          uint64_t amount; 
           account_name voter; // account name of the voter
           std::time_t timestamp; // epoch time of the vote
 
@@ -113,17 +114,17 @@ private:
         account_name primary_key()const { return user; }
 
         // subtraction with underflow check
-        // TODO: replace assert with EOS-flavored assert
         uint64_t sub (uint64_t value) {
-            assert(value >= power);
+            eosio_assert(value >= power, "Underflow during subtraction");
             power -= value;
+            return power;
         }
 
         // addition with overflow check
-        // TODO: replace assert with EOS-flavored assert
         uint64_t add (uint64_t value) {
-            assert(value + power > value && value + power > power);
+            eosio_assert(value + power > value && value + power > power, "Overflow during addition");
             power += value;
+            return power;
         }
     };
 
