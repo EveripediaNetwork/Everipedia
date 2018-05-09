@@ -35,10 +35,11 @@ bool article::is_new_user (const account_name& _thisaccount){
 }
 
 
-void article::submit_proposal( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ) { 
+void article::propose( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ) { 
     
     // Verify minimum brainpower is met
     brainpower_table braintable(_self, _self);
+    
     auto brain_it = braintable.find(proposer);
     eosio_assert(brain_it->power > EDIT_PROPOSE_BRAINPOWER, "Not enough brainpower to edit");
 
@@ -48,20 +49,19 @@ void article::submit_proposal( account_name proposer, ipfshash_t& proposed_artic
         a.id = 1;
         a.proposed_article_hash = proposed_article_hash;
         a.old_article_hash = old_article_hash;
-        using chrono = std::chrono::system_clock;
-        a.timestamp = chrono::to_time_t(chrono::now());
+        a.timestamp = now();
         a.status = ProposalStatus::pending;
     });
     
     // TODO: Replace with proper ID instead of 1
-    article::place_vote( proposer, 1, true, EDIT_PROPOSE_BRAINPOWER );
+    article::placevote( proposer, 1, true, EDIT_PROPOSE_BRAINPOWER );
 }
 
 
 
 
 
-void article::place_vote ( account_name voter, uint64_t proposal_id, bool approve, uint64_t amount ) {
+void article::placevote ( account_name voter, uint64_t proposal_id, bool approve, uint64_t amount ) {
     
     // Check if article exists
     edit_proposals_table proptable( _self, voter );
@@ -69,9 +69,7 @@ void article::place_vote ( account_name voter, uint64_t proposal_id, bool approv
     eosio_assert( prop_it != proptable.end(), "proposal not found" );
 
     // Verify voting is still in progress
-    using chrono = std::chrono::system_clock;
-    std::time_t now = chrono::to_time_t(chrono::now());
-    eosio_assert( now < prop_it->timestamp + DEFAULT_VOTING_TIME, "voting period is over");
+    eosio_assert( now() < prop_it->timestamp + DEFAULT_VOTING_TIME, "voting period is over");
 
     // Consume brainpower 
     brainpower_table braintable(_self, _self);
@@ -90,7 +88,7 @@ void article::place_vote ( account_name voter, uint64_t proposal_id, bool approv
          a.approve = approve;
          a.amount = amount;
          a.voter = voter;
-         a.timestamp = now;
+         a.timestamp = now();
     });
 
 }
@@ -98,7 +96,7 @@ void article::place_vote ( account_name voter, uint64_t proposal_id, bool approv
 
 
 
-void article::finalize_proposal( account_name from, uint64_t proposal_id ) {
+void article::finalize( account_name from, uint64_t proposal_id ) {
     
     // Verify proposal exists
     edit_proposals_table proptable( _self, _self );
@@ -106,9 +104,7 @@ void article::finalize_proposal( account_name from, uint64_t proposal_id ) {
     eosio_assert( prop_it != proptable.end(), "proposal not found" );
 
     // Verify voting period is complete
-    using chrono = std::chrono::system_clock;
-    std::time_t now = chrono::to_time_t(chrono::now());
-    eosio_assert( now > prop_it->timestamp + DEFAULT_VOTING_TIME, "voting period is over");
+    eosio_assert( now() > prop_it->timestamp + DEFAULT_VOTING_TIME, "voting period is over");
 
     // Retrieve votes from DB
     votes_table votetable(_self, _self);
@@ -174,7 +170,7 @@ void article::finalize_proposal( account_name from, uint64_t proposal_id ) {
     });
 }
 
-void article::brain_me( account_name from, uint64_t amount ) {
+void article::brainme( account_name from, uint64_t amount ) {
     brainpower_table braintable(_self, _self);
     auto brain_it = braintable.find(from);
 
@@ -186,9 +182,10 @@ void article::brain_me( account_name from, uint64_t amount ) {
 
         stake s;
         s.amount = amount;
-        using chrono = std::chrono::system_clock;
-        s.timestamp = chrono::to_time_t(chrono::now());
+        s.timestamp = now();
         s.duration = STAKING_DURATION;
         b.stakes.push_back(s);
     });
 }
+
+EOSIO_ABI( article, (brainme)(finalize)(propose)(placevote) )

@@ -1,65 +1,126 @@
 {
-    "types": [],
-    "structs": [{
-        "name": "wiki",
-        "base": "",
-        "fields": [
-                {"name":"hash", "type":"ipfshash_t"},
-                {"name":"parent_hash", "type":"ipfshash_t"}
-        ]
+  "types": [{
+      "new_type_name": "ipfshash_t",
+      "type": "uint64" 
+  }],
+  "structs": [{
+      "name": "propose",
+      "base": "",
+      "fields": [
+        {"name":"proposer", "type":"account_name"},
+        {"name":"proposed_article_hash", "type":"ipfshash_t"},
+        {"name":"old_article_hash", "type":"ipfshash_t"}
+      ]
     },{
-        "name": "editproposal",
-        "base": "",
-        "fields": [
-                {"name":"proposed_article_hash", "type":"ipfshash_t"},
-                {"name":"edit_diff_hash", "type":"ipfshash_t"},
-                {"name":"old_article_hash", "type":"ipfshash_t"},
-                {"name":"proposer", "type":"account_name"},
-                {"name":"timestamp", "type":"uint64"},
-                {"name":"status", "type":"uint8"}
-        ]
+     "name": "placevote",
+     "base": "",
+     "fields": [
+        {"name":"voter", "type":"account_name"},
+        {"name":"proposal_id", "type":"uint64"},
+        {"name":"approve", "type":"bool"},
+        {"name":"amount", "type":"uint64"}
+     ]
+  },{
+     "name": "finalize",
+     "base": "",
+     "fields": [
+        {"name":"from", "type":"account_name"},
+        {"name":"proposal_id", "type":"uint64"}
+     ]
+  },{
+      "name": "brainme",
+      "base": "",
+      "fields": [
+        {"name":"from", "type":"account_name"},
+        {"name":"amount", "type":"uint64"}
+      ]
     },{
-        "name": "vote",
-        "base": "",
-        "fields": [
-                {"name":"proposed_article_hash", "type":"ipfshash_t"},
-                {"name":"votevalue", "type":"uint64"},
-                {"name":"voter", "type":"account_name"},
-                {"name":"timestamp", "type":"uint64"}
-        ]
-    },
-],
-    "actions": [{
-         "name": "finalize_proposal",
-         "type": "editproposal"
+      "name": "withdraw",
+      "base": "",
+      "fields": [
+        {"name":"from", "type":"account_name"},
+      ]
     },{
-         "name": "submit_proposal",
-         "type": "editproposal"
+      "name": "wiki",
+      "base": "",
+      "fields": [
+        {"name":"id", "type":"uint64"},
+        {"name":"hash", "type":"ipfshash_t"},
+        {"name":"parent_hash", "type":"ipfshash_t"}
+      ]
     },{
-         "name": "place_vote",
-         "type": "vote"
-    },
+      "name": "editproposal",
+      "base": "",
+      "fields": [
+        {"name":"id", "type":"uint64"},
+        {"name":"proposed_article_hash", "type":"ipfshash_t"},
+        {"name":"old_article_hash", "type":"ipfshash_t"}
+      ]
+    },{
+      "name": "vote",
+      "base": "",
+      "fields": [
+        {"name":"id", "type":"uint64"},
+        {"name":"proposal_id", "type":"uint64"},
+        {"name":"approve", "type":"bool"},
+        {"name":"amount", "type":"uint64"},
+        {"name":"voter", "type":"account_name"},
+        {"name":"timestamp", "type":"uint64"}
+      ]
+    },{
+      "name": "stake",
+      "base": "",
+      "fields": [
+        {"name":"amount", "type":"uint64"},
+        {"name":"timestamp", "type":"uint64"},
+        {"name":"duration", "type":"uint64"}
+      ]
+    },{
+      "name": "brainpower",
+      "base": "",
+      "fields": [
+        {"name":"user", "type":"account_name"},
+        {"name":"power", "type":"uint64"},
+        {"name":"stakes", "type":"uint64"}
+      ]
+    }
+  ],
+  "actions": [{
+      "name": "propose",
+      "type": "propose",
+      "ricardian_contract": ""
+    },{
+      "name": "placevote",
+      "type": "placevote",
+      "ricardian_contract": ""
+    }, {
+      "name": "finalize",
+      "type": "finalize",
+      "ricardian_contract": ""
+    },{
+      "name": "brainme",
+      "type": "brainme",
+      "ricardian_contract": ""
+    },{
+      "name": "withdraw",
+      "type": "withdraw",
+      "ricardian_contract": ""
+    }
+
   ],
   "tables": [{
-        "name": "votes",
-        "type": "vote",
-        "index_type": "str",
-        "key_names" : ["proposed_article_hash"],
-        "key_types" : ["ipfshash_t"]
-      },
-      {
-            "name": "editproposals",
-            "type": "editproposal",
-            "index_type": "str",
-            "key_names" : ["proposed_article_hash"],
-            "key_types" : ["ipfshash_t"]
-      },
-      {
-          "name": "wikis",
-          "type": "wiki",
-          "index_type": "str",
-          "key_names" : ["hash"],
-          "key_types" : ["ipfshash_t"]
-        }
-  ]
-  }
+      "name": "wikis.table",
+      "type": "wiki",
+      "index_type": "i64",
+      "key_names" : ["id"],
+      "key_types" : ["uint64"]
+    },{
+      "name": "votes.table",
+      "type": "vote",
+      "index_type": "i64",
+      "key_names" : ["id"],
+      "key_types" : ["uint64"]
+    }
+  ],
+  "clauses": []
+}

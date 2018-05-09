@@ -1,5 +1,3 @@
-// CURRENTLY DOES NOT COMPILE
-// WORK IN PROGRESS
 // # 2018 Travis Moore, Kedar Iyer, Sam Kazemian
 // # MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 // # MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
@@ -89,7 +87,7 @@ private:
           bool approve;
           uint64_t amount; 
           account_name voter; // account name of the voter
-          std::time_t timestamp; // epoch time of the vote
+          uint64_t timestamp; // epoch time of the vote
 
           uint64_t primary_key()const { return id; }
           uint64_t get_proposal_id()const { return id; }
@@ -138,6 +136,7 @@ private:
     // wikis table
     // indexed by wiki hash - currently not supported
     // indexed by parent hash - currently not supported
+    // @abi table
     typedef eosio::multi_index<N(wikis), wiki
       //,indexed_by< N(byhash), const_mem_fun< wiki, ipfshash_t, &wiki::get_hash >>
       //,indexed_by< N(byparent), const_mem_fun< wiki, ipfshash_t, &wiki::get_parent_hash >>
@@ -146,15 +145,18 @@ private:
     // edit proposals table
     // 12-char limit on table names, so proposals used instead of editproposals
     // indexed by hash
+    // @abi table
     typedef eosio::multi_index<N(proposals), editproposal> edit_proposals_table; // EOS table for the edit proposals
 
     // votes table
     // indexed by proposal
+    // @abi table
     typedef eosio::multi_index<N(votes), vote,
         indexed_by< N(byproposal), const_mem_fun< vote, uint64_t, &vote::get_proposal_id >>
     > votes_table; // EOS table for the votes
 
     // brainpower table
+    // @abi table
     typedef eosio::multi_index<N(brainpower), brainpower> brainpower_table;
 
 
@@ -174,10 +176,21 @@ public:
     //  ==================================================
     // ABI Functions
 
-    void submit_proposal( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ); 
-    void place_vote ( account_name voter, uint64_t proposal_id, bool approve, uint64_t amount );
-    void finalize_proposal( account_name from, uint64_t proposal_id );
-    void brain_me( account_name from, uint64_t amount );
+    void propose( account_name proposer, 
+                  ipfshash_t& proposed_article_hash, 
+                  ipfshash_t& old_article_hash ); 
+
+    void placevote ( account_name voter, 
+                      uint64_t proposal_id, 
+                      bool approve, 
+                      uint64_t amount );
+
+    void finalize( account_name from, 
+                   uint64_t proposal_id );
+
+    void brainme( account_name from, 
+                   uint64_t amount );
+
     void withdraw( account_name from );
 
 };
