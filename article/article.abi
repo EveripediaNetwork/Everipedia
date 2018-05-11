@@ -2,6 +2,9 @@
   "types": [{
       "new_type_name": "ipfshash_t",
       "type": "uint64" 
+  }, {
+      "new_type_name": "bool",
+      "type": "uint8"
   }],
   "structs": [{
       "name": "propose",
