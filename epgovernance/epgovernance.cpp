@@ -3,10 +3,10 @@
 
 using namespace eosio;
 
-class governance : public contract {
+class epgovernance : public contract {
 private:
     using ipfshash_t = unsigned char[34];
-    enum Module { token, article, _governance };
+    enum Module { token, article, _epgovernance };
     enum Status { Pending, Approved, Rejected };
 
     // DB Table Schemas
@@ -41,7 +41,7 @@ private:
     > _stakes;
 
 public:
-  governance( account_name self )
+  epgovernance( account_name self )
   :contract(self),_proposals( _self, _self),_stakes(_self, _self){}
 
     void propose( Module module, ipfshash_t file ) {
@@ -63,7 +63,7 @@ public:
 
         _stakes.emplace( staker , [&]( auto& s ) {
             // TODO: Incrementing IDs
-            s.id = 1; 
+            s.id = 1;
             s.proposal_id = proposal_id;
             s.staker = staker;
             s.amount = amount;
@@ -83,19 +83,18 @@ public:
                 no_votes += stake_itr->amount;
             stake_itr++;
         }
-        
+
         const auto& proposal = _proposals.get( proposal_id );
         if (yes_votes > no_votes) {
-            _proposals.modify( proposal, proposal_id, [&]( auto& a ) { 
-                a.status = Status::Approved; 
+            _proposals.modify( proposal, proposal_id, [&]( auto& a ) {
+                a.status = Status::Approved;
             });
         }
         else {
-            _proposals.modify( proposal, proposal_id, [&]( auto& a ) { 
-                a.status = Status::Rejected; 
+            _proposals.modify( proposal, proposal_id, [&]( auto& a ) {
+                a.status = Status::Rejected;
             });
         }
     }
 
 };
-

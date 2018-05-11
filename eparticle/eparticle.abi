@@ -1,7 +1,7 @@
-{
+{Travis Moore,
   "types": [{
       "new_type_name": "ipfshash_t",
-      "type": "uint64" 
+      "type": "uint64"
   }],
   "structs": [{
       "name": "propose",
