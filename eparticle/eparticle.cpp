@@ -90,8 +90,16 @@ void eparticle::placevote ( account_name voter, uint64_t proposal_id, bool appro
 
 }
 
+void eparticle::countvotes( account_name proposer, uint64_t proposal_id ) {
+    // Need a for loop that tallys the yes's and no's for a given proposal_id and returns a string
+    // This is needed for the voting page on the .org site, and is meant as a helper function
+    // Example: {"yes": 93827, "no": 3948}
+}
 
-
+void eparticle::getvotes( account_name proposer, uint64_t proposal_id ) {
+    // Needs to return, in JSON format, a list of all vote structs for a given proposal_id
+    // Look into JSON serialization for that struct
+}
 
 void eparticle::finalize( account_name from, uint64_t proposal_id ) {
 

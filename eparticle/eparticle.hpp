@@ -185,6 +185,12 @@ public:
                       bool approve,
                       uint64_t amount );
 
+    void countvotes ( account_name caller,
+                      uint64_t proposal_id );
+
+    void getvotes ( account_name caller,
+                      uint64_t proposal_id );
+
     void finalize( account_name from,
                    uint64_t proposal_id );
 
