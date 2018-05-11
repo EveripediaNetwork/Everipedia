@@ -191,6 +191,9 @@ public:
     void getvotes ( account_name caller,
                       uint64_t proposal_id );
 
+    void getvotingperiod ( account_name caller,
+                      uint64_t proposal_id );
+
     void finalize( account_name from,
                    uint64_t proposal_id );
 

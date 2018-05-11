@@ -101,6 +101,11 @@ void eparticle::getvotes( account_name proposer, uint64_t proposal_id ) {
     // Look into JSON serialization for that struct
 }
 
+void eparticle::getvotingperiod( account_name proposer, uint64_t proposal_id ) {
+    // Needs to return, in JSON format, the start and the end time of voting for a given proposal in epoch milliseconds
+    // Example: {"start": 1526069822776, "end": 1526069922776}
+}
+
 void eparticle::finalize( account_name from, uint64_t proposal_id ) {
 
     // Verify proposal exists
