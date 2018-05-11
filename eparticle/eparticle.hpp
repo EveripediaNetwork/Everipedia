@@ -30,7 +30,7 @@
 
 using namespace eosio;
 
-class article : public eosio::contract {
+class eparticle : public eosio::contract {
 
 private:
     const std::time_t DEFAULT_VOTING_TIME = std::time_t(86400); // 1 day
@@ -38,7 +38,7 @@ private:
     const uint64_t EDIT_PROPOSE_BRAINPOWER = 1000;
 
     // returning array types from a DB type struct throws
-    // using vectors for now, will try to use arrays later 
+    // using vectors for now, will try to use arrays later
     //using ipfshash_t = unsigned char[34];
     using byte = unsigned char;
     using ipfshash_t = std::vector<byte>;
@@ -85,7 +85,7 @@ private:
           uint64_t id;
           uint64_t proposal_id;
           bool approve;
-          uint64_t amount; 
+          uint64_t amount;
           account_name voter; // account name of the voter
           uint64_t timestamp; // epoch time of the vote
 
@@ -169,26 +169,35 @@ private:
 
 
 public:
-    article(account_name self) : contract(self) {}
+    eparticle(account_name self) : contract(self) {}
 
     //  ==================================================
     //  ==================================================
     //  ==================================================
     // ABI Functions
 
-    void propose( account_name proposer, 
-                  ipfshash_t& proposed_article_hash, 
-                  ipfshash_t& old_article_hash ); 
+    void propose( account_name proposer,
+                  ipfshash_t& proposed_article_hash,
+                  ipfshash_t& old_article_hash );
 
-    void placevote ( account_name voter, 
-                      uint64_t proposal_id, 
-                      bool approve, 
+    void placevote ( account_name voter,
+                      uint64_t proposal_id,
+                      bool approve,
                       uint64_t amount );
 
-    void finalize( account_name from, 
+    void countvotes ( account_name caller,
+                      uint64_t proposal_id );
+
+    void getvotes ( account_name caller,
+                      uint64_t proposal_id );
+
+    void getvotingperiod ( account_name caller,
+                      uint64_t proposal_id );
+
+    void finalize( account_name from,
                    uint64_t proposal_id );
 
-    void brainme( account_name from, 
+    void brainme( account_name from,
                    uint64_t amount );
 
     void withdraw( account_name from );

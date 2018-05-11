@@ -28,18 +28,18 @@
 // # MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 
 
-#include "article.hpp"
+#include "eparticle.hpp"
 
-bool article::is_new_user (const account_name& _thisaccount){
+bool eparticle::is_new_user (const account_name& _thisaccount){
     return true;
 }
 
 
-void article::propose( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ) { 
-    
+void eparticle::propose( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ) {
+
     // Verify minimum brainpower is met
     brainpower_table braintable(_self, _self);
-    
+
     auto brain_it = braintable.find(proposer);
     eosio_assert(brain_it->power > EDIT_PROPOSE_BRAINPOWER, "Not enough brainpower to edit");
 
@@ -52,17 +52,14 @@ void article::propose( account_name proposer, ipfshash_t& proposed_article_hash,
         a.timestamp = now();
         a.status = ProposalStatus::pending;
     });
-    
+
     // TODO: Replace with proper ID instead of 1
-    article::placevote( proposer, 1, true, EDIT_PROPOSE_BRAINPOWER );
+    eparticle::placevote( proposer, 1, true, EDIT_PROPOSE_BRAINPOWER );
 }
 
 
+void eparticle::placevote ( account_name voter, uint64_t proposal_id, bool approve, uint64_t amount ) {
 
-
-
-void article::placevote ( account_name voter, uint64_t proposal_id, bool approve, uint64_t amount ) {
-    
     // Check if article exists
     edit_proposals_table proptable( _self, voter );
     auto prop_it = proptable.find( proposal_id );
@@ -71,7 +68,7 @@ void article::placevote ( account_name voter, uint64_t proposal_id, bool approve
     // Verify voting is still in progress
     eosio_assert( now() < prop_it->timestamp + DEFAULT_VOTING_TIME, "voting period is over");
 
-    // Consume brainpower 
+    // Consume brainpower
     brainpower_table braintable(_self, _self);
     auto brain_it = braintable.find(voter);
     eosio_assert(brain_it->power >= amount, "Not enough brainpower");
@@ -93,11 +90,24 @@ void article::placevote ( account_name voter, uint64_t proposal_id, bool approve
 
 }
 
+void eparticle::countvotes( account_name proposer, uint64_t proposal_id ) {
+    // Need a for loop that tallys the yes's and no's for a given proposal_id and returns a string
+    // This is needed for the voting page on the .org site, and is meant as a helper function
+    // Example: {"yes": 93827, "no": 3948}
+}
 
+void eparticle::getvotes( account_name proposer, uint64_t proposal_id ) {
+    // Needs to return, in JSON format, a list of all vote structs for a given proposal_id
+    // Look into JSON serialization for that struct
+}
 
+void eparticle::getvotingperiod( account_name proposer, uint64_t proposal_id ) {
+    // Needs to return, in JSON format, the start and the end time of voting for a given proposal in epoch milliseconds
+    // Example: {"start": 1526069822776, "end": 1526069922776}
+}
 
-void article::finalize( account_name from, uint64_t proposal_id ) {
-    
+void eparticle::finalize( account_name from, uint64_t proposal_id ) {
+
     // Verify proposal exists
     edit_proposals_table proptable( _self, _self );
     auto prop_it = proptable.find( proposal_id );
@@ -121,7 +131,7 @@ void article::finalize( account_name from, uint64_t proposal_id ) {
             for_votes += vote_it->amount;
         else
             against_votes += vote_it->amount;
-        vote_it++;  
+        vote_it++;
     }
 
     // Mark proposal as accepted or rejected. Ties are rejected
@@ -136,7 +146,7 @@ void article::finalize( account_name from, uint64_t proposal_id ) {
     // floating point is inexact, so I'm using integer arithmetic for slashing percentages
     vote_it = propidx.find( std::forward<uint64_t>(proposal_id) );
     bool approved = (for_votes > against_votes);
-    uint64_t slash_percent; 
+    uint64_t slash_percent;
     if (approved)
         slash_percent = for_votes - against_votes;
     else
@@ -156,7 +166,7 @@ void article::finalize( account_name from, uint64_t proposal_id ) {
                 }
             });
         }
-        vote_it++;  
+        vote_it++;
     }
 
     // TODO: Reward the voters
@@ -170,12 +180,12 @@ void article::finalize( account_name from, uint64_t proposal_id ) {
     });
 }
 
-void article::brainme( account_name from, uint64_t amount ) {
+void eparticle::brainme( account_name from, uint64_t amount ) {
     brainpower_table braintable(_self, _self);
     auto brain_it = braintable.find(from);
 
     // TODO: transfer IQ to contract
-    
+
     // boost brainpower
     braintable.modify( brain_it, 0, [&]( auto& b ) {
         b.add(amount);
@@ -188,4 +198,4 @@ void article::brainme( account_name from, uint64_t amount ) {
     });
 }
 
-EOSIO_ABI( article, (brainme)(finalize)(propose)(placevote) )
+EOSIO_ABI( eparticle, (brainme)(finalize)(propose)(placevote) )
