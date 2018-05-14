@@ -33,15 +33,15 @@ using namespace eosio;
 class eparticle : public eosio::contract {
 
 private:
-    const std::time_t DEFAULT_VOTING_TIME = std::time_t(86400); // 1 day
-    const std::time_t STAKING_DURATION = std::time_t(21 * 86400); // 21 days
-    const uint64_t EDIT_PROPOSE_BRAINPOWER = 1000;
+    const uint32_t DEFAULT_VOTING_TIME = 86400; // 1 day
+    const uint32_t STAKING_DURATION = 21 * 86400; // 21 days
+    const uint32_t EDIT_PROPOSE_BRAINPOWER = 1000;
 
     // returning array types from a DB type struct throws
     // using vectors for now, will try to use arrays later
     //using ipfshash_t = unsigned char[34];
     using byte = unsigned char;
-    using ipfshash_t = std::vector<byte>;
+    using ipfshash_t = std::string;
     enum ProposalStatus { pending, accepted, rejected };
 
     // ==================================================
@@ -71,7 +71,7 @@ private:
           ipfshash_t proposed_article_hash; // IPFS hash of the proposed new version
           ipfshash_t old_article_hash; // IPFS hash of the old version
           account_name proposer; // account name of the proposer
-          std::time_t timestamp; // epoch time of the proposal
+          uint32_t timestamp; // epoch time of the proposal
           ProposalStatus status;
           uint64_t primary_key () const { return id; }
 
@@ -87,7 +87,7 @@ private:
           bool approve;
           uint64_t amount;
           account_name voter; // account name of the voter
-          uint64_t timestamp; // epoch time of the vote
+          uint32_t timestamp; // epoch time of the vote
 
           uint64_t primary_key()const { return id; }
           uint64_t get_proposal_id()const { return id; }
@@ -99,8 +99,8 @@ private:
         stake() {}
 
         uint64_t amount;
-        std::time_t timestamp;
-        std::time_t duration;
+        uint32_t timestamp;
+        uint64_t duration;
     };
 
     // Brainpower balances
@@ -140,24 +140,24 @@ private:
     typedef eosio::multi_index<N(wikis), wiki
       //,indexed_by< N(byhash), const_mem_fun< wiki, ipfshash_t, &wiki::get_hash >>
       //,indexed_by< N(byparent), const_mem_fun< wiki, ipfshash_t, &wiki::get_parent_hash >>
-    > wikis_table; // EOS table for the articles
+    > wikistbl; // EOS table for the articles
 
     // edit proposals table
     // 12-char limit on table names, so proposals used instead of editproposals
     // indexed by hash
     // @abi table
-    typedef eosio::multi_index<N(proposals), editproposal> edit_proposals_table; // EOS table for the edit proposals
+    typedef eosio::multi_index<N(proposals), editproposal> propstbl; // EOS table for the edit proposals
 
     // votes table
     // indexed by proposal
     // @abi table
     typedef eosio::multi_index<N(votes), vote,
         indexed_by< N(byproposal), const_mem_fun< vote, uint64_t, &vote::get_proposal_id >>
-    > votes_table; // EOS table for the votes
+    > votestbl; // EOS table for the votes
 
     // brainpower table
     // @abi table
-    typedef eosio::multi_index<N(brainpower), brainpower> brainpower_table;
+    typedef eosio::multi_index<N(brainpowers), brainpower> brainpwrtbl;
 
 
     // ==================================================
@@ -165,7 +165,7 @@ private:
     // ==================================================
     // HELPER FUNCTIONS
 
-    bool is_new_user (const account_name& _thisaccount);
+    bool isnewuser (const account_name& _thisaccount);
 
 
 public:
@@ -184,15 +184,6 @@ public:
                       uint64_t proposal_id,
                       bool approve,
                       uint64_t amount );
-
-    void countvotes ( account_name caller,
-                      uint64_t proposal_id );
-
-    void getvotes ( account_name caller,
-                      uint64_t proposal_id );
-
-    void getvotingperiod ( account_name caller,
-                      uint64_t proposal_id );
 
     void finalize( account_name from,
                    uint64_t proposal_id );

@@ -30,7 +30,7 @@
 
 #include "eparticle.hpp"
 
-bool eparticle::is_new_user (const account_name& _thisaccount){
+bool eparticle::isnewuser (const account_name& _thisaccount){
     return true;
 }
 
@@ -38,13 +38,13 @@ bool eparticle::is_new_user (const account_name& _thisaccount){
 void eparticle::propose( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ) {
 
     // Verify minimum brainpower is met
-    brainpower_table braintable(_self, _self);
+    brainpwrtbl braintable(_self, _self);
 
     auto brain_it = braintable.find(proposer);
     eosio_assert(brain_it->power > EDIT_PROPOSE_BRAINPOWER, "Not enough brainpower to edit");
 
     // store the proposal
-    edit_proposals_table proptable( _self, proposer );
+    propstbl proptable( _self, proposer );
     proptable.emplace( _self, [&]( auto& a ) {
         a.id = 1;
         a.proposed_article_hash = proposed_article_hash;
@@ -61,7 +61,7 @@ void eparticle::propose( account_name proposer, ipfshash_t& proposed_article_has
 void eparticle::placevote ( account_name voter, uint64_t proposal_id, bool approve, uint64_t amount ) {
 
     // Check if article exists
-    edit_proposals_table proptable( _self, voter );
+    propstbl proptable( _self, voter );
     auto prop_it = proptable.find( proposal_id );
     eosio_assert( prop_it != proptable.end(), "proposal not found" );
 
@@ -69,7 +69,7 @@ void eparticle::placevote ( account_name voter, uint64_t proposal_id, bool appro
     eosio_assert( now() < prop_it->timestamp + DEFAULT_VOTING_TIME, "voting period is over");
 
     // Consume brainpower
-    brainpower_table braintable(_self, _self);
+    brainpwrtbl braintable(_self, _self);
     auto brain_it = braintable.find(voter);
     eosio_assert(brain_it->power >= amount, "Not enough brainpower");
     braintable.modify( brain_it, 0, [&]( auto& b ) {
@@ -77,7 +77,7 @@ void eparticle::placevote ( account_name voter, uint64_t proposal_id, bool appro
     });
 
     // Store vote in DB
-    votes_table votetbl( _self, voter );
+    votestbl votetbl( _self, voter );
     votetbl.emplace( voter, [&]( auto& a ) {
          // TODO: incrementing IDs
          a.id = 1;
@@ -90,26 +90,10 @@ void eparticle::placevote ( account_name voter, uint64_t proposal_id, bool appro
 
 }
 
-void eparticle::countvotes( account_name proposer, uint64_t proposal_id ) {
-    // Need a for loop that tallys the yes's and no's for a given proposal_id and returns a string
-    // This is needed for the voting page on the .org site, and is meant as a helper function
-    // Example: {"yes": 93827, "no": 3948}
-}
-
-void eparticle::getvotes( account_name proposer, uint64_t proposal_id ) {
-    // Needs to return, in JSON format, a list of all vote structs for a given proposal_id
-    // Look into JSON serialization for that struct
-}
-
-void eparticle::getvotingperiod( account_name proposer, uint64_t proposal_id ) {
-    // Needs to return, in JSON format, the start and the end time of voting for a given proposal in epoch seconds
-    // Example: {"start": 1526069969, "end": 1526156621}
-}
-
 void eparticle::finalize( account_name from, uint64_t proposal_id ) {
 
     // Verify proposal exists
-    edit_proposals_table proptable( _self, _self );
+    propstbl proptable( _self, _self );
     auto prop_it = proptable.find( proposal_id );
     eosio_assert( prop_it != proptable.end(), "proposal not found" );
 
@@ -117,7 +101,7 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
     eosio_assert( now() > prop_it->timestamp + DEFAULT_VOTING_TIME, "voting period is over");
 
     // Retrieve votes from DB
-    votes_table votetable(_self, _self);
+    votestbl votetable(_self, _self);
     auto propidx = votetable.get_index<N(byproposal)>();
     auto vote_it = propidx.find( std::forward<uint64_t>(proposal_id) );
     eosio_assert( vote_it != propidx.end(), "no votes found for proposal");
@@ -156,7 +140,7 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
     while(vote_it->proposal_id == proposal_id) {
         if (vote_it->approve != approved) {
             uint64_t slash_amount = vote_it->amount;
-            brainpower_table braintable(_self, _self);
+            brainpwrtbl braintable(_self, _self);
             auto brain_it = braintable.find(vote_it->voter);
             braintable.modify( brain_it, 0, [&]( auto& b ) {
                 for (auto stake_it = b.stakes.begin(); slash_amount > 0; stake_it++) {
@@ -172,7 +156,7 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
     // TODO: Reward the voters
 
     // Add article to database
-    wikis_table wikitbl( _self, _self );
+    wikistbl wikitbl( _self, _self );
     wikitbl.emplace( _self,  [&]( auto& a ) {
         // TODO: incrementing ID
         a.hash = prop_it->proposed_article_hash;
@@ -181,7 +165,7 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
 }
 
 void eparticle::brainme( account_name from, uint64_t amount ) {
-    brainpower_table braintable(_self, _self);
+    brainpwrtbl braintable(_self, _self);
     auto brain_it = braintable.find(from);
 
     // TODO: transfer IQ to contract

@@ -1,6 +1,6 @@
 #include <eosiolib/eosio.hpp>
 
-class iq : public contract {
+class iq : public eosio::contract {
    public:
       iq( account_name self )
       :contract(self),_accounts( _self, _self){}

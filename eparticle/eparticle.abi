@@ -1,7 +1,7 @@
 {
   "types": [{
       "new_type_name": "ipfshash_t",
-      "type": "uint64" 
+      "type": "string"
   }, {
       "new_type_name": "bool",
       "type": "uint8"
@@ -68,14 +68,14 @@
         {"name":"approve", "type":"bool"},
         {"name":"amount", "type":"uint64"},
         {"name":"voter", "type":"account_name"},
-        {"name":"timestamp", "type":"uint64"}
+        {"name":"timestamp", "type":"time"}
       ]
     },{
       "name": "stake",
       "base": "",
       "fields": [
         {"name":"amount", "type":"uint64"},
-        {"name":"timestamp", "type":"uint64"},
+        {"name":"timestamp", "type":"time"},
         {"name":"duration", "type":"uint64"}
       ]
     },{
@@ -112,14 +112,26 @@
 
   ],
   "tables": [{
-      "name": "wikis.table",
+      "name": "wikistbl",
       "type": "wiki",
       "index_type": "i64",
       "key_names" : ["id"],
       "key_types" : ["uint64"]
     },{
-      "name": "votes.table",
+      "name": "votestbl",
       "type": "vote",
+      "index_type": "i64",
+      "key_names" : ["id"],
+      "key_types" : ["uint64"]
+    },{
+      "name": "propstbl",
+      "type": "editproposal",
+      "index_type": "i64",
+      "key_names" : ["id"],
+      "key_types" : ["uint64"]
+    },{
+      "name": "brainpwrtbl",
+      "type": "brainpower",
       "index_type": "i64",
       "key_names" : ["id"],
       "key_types" : ["uint64"]
