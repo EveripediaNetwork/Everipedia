@@ -103,11 +103,20 @@ private:
         uint64_t duration;
     };
 
+    // test struct
+    struct teststruct {
+        account_name user;
+        uint64_t b;
+        uint64_t c;
+
+        account_name primary_key()const { return user; }
+    };
+
     // Brainpower balances
     struct brainpower {
         account_name user;
-        uint64_t power;
-        std::vector<stake> stakes;
+        uint64_t power = 1000; // TODO: need to fix this later
+        eosio::vector<stake> stakes;
 
         account_name primary_key()const { return user; }
 
@@ -122,6 +131,7 @@ private:
         uint64_t add (uint64_t value) {
             eosio_assert(value + power > value && value + power > power, "Overflow during addition");
             power += value;
+            print( "Added brainpower, ", name{power} );
             return power;
         }
     };
@@ -137,7 +147,7 @@ private:
     // indexed by wiki hash - currently not supported
     // indexed by parent hash - currently not supported
     // @abi table
-    typedef eosio::multi_index<N(wikis), wiki
+    typedef eosio::multi_index<N(wikistbl), wiki
       //,indexed_by< N(byhash), const_mem_fun< wiki, ipfshash_t, &wiki::get_hash >>
       //,indexed_by< N(byparent), const_mem_fun< wiki, ipfshash_t, &wiki::get_parent_hash >>
     > wikistbl; // EOS table for the articles
@@ -146,18 +156,22 @@ private:
     // 12-char limit on table names, so proposals used instead of editproposals
     // indexed by hash
     // @abi table
-    typedef eosio::multi_index<N(proposals), editproposal> propstbl; // EOS table for the edit proposals
+    typedef eosio::multi_index<N(propstbl), editproposal> propstbl; // EOS table for the edit proposals
 
     // votes table
     // indexed by proposal
     // @abi table
-    typedef eosio::multi_index<N(votes), vote,
+    typedef eosio::multi_index<N(votestbl), vote,
         indexed_by< N(byproposal), const_mem_fun< vote, uint64_t, &vote::get_proposal_id >>
     > votestbl; // EOS table for the votes
 
     // brainpower table
     // @abi table
-    typedef eosio::multi_index<N(brainpowers), brainpower> brainpwrtbl;
+    typedef eosio::multi_index<N(brainpwrtbl), brainpower> brainpwrtbl;
+
+    // test table
+    // @abi table
+    typedef eosio::multi_index<N(testtbl), teststruct> testtbl;
 
 
     // ==================================================
@@ -187,6 +201,8 @@ public:
 
     void finalize( account_name from,
                    uint64_t proposal_id );
+
+    void testinsert( account_name from);
 
     void brainme( account_name from,
                    uint64_t amount );

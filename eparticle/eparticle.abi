@@ -5,6 +5,9 @@
   }, {
       "new_type_name": "bool",
       "type": "uint8"
+  }, {
+      "new_type_name": "account_name",
+      "type": "name"
   }],
   "structs": [{
       "name": "propose",
@@ -39,6 +42,12 @@
       ]
     },{
       "name": "withdraw",
+      "base": "",
+      "fields": [
+        {"name":"from", "type":"account_name"},
+      ]
+    },{
+      "name": "testinsert",
       "base": "",
       "fields": [
         {"name":"from", "type":"account_name"},
@@ -79,6 +88,14 @@
         {"name":"duration", "type":"uint64"}
       ]
     },{
+      "name": "teststruct",
+      "base": "",
+      "fields": [
+        {"name":"user", "type":"account_name"},
+        {"name":"b", "type":"uint64"},
+        {"name":"c", "type":"uint64"}
+      ]
+    },{
       "name": "brainpower",
       "base": "",
       "fields": [
@@ -108,6 +125,10 @@
       "name": "withdraw",
       "type": "withdraw",
       "ricardian_contract": ""
+    },{
+      "name": "testinsert",
+      "type": "testinsert",
+      "ricardian_contract": ""
     }
 
   ],
@@ -130,11 +151,17 @@
       "key_names" : ["id"],
       "key_types" : ["uint64"]
     },{
+      "name": "testtbl",
+      "type": "teststruct",
+      "index_type": "i64",
+      "key_names" : ["user"],
+      "key_types" : ["account_name"]
+    },{
       "name": "brainpwrtbl",
       "type": "brainpower",
       "index_type": "i64",
-      "key_names" : ["id"],
-      "key_types" : ["uint64"]
+      "key_names" : ["user"],
+      "key_types" : ["account_name"]
     }
   ],
   "clauses": []

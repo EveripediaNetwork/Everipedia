@@ -29,6 +29,7 @@
 
 
 #include "eparticle.hpp"
+#include <typeinfo>
 
 bool eparticle::isnewuser (const account_name& _thisaccount){
     return true;
@@ -164,22 +165,57 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
     });
 }
 
-void eparticle::brainme( account_name from, uint64_t amount ) {
+void eparticle::brainme( account_name from, uint64_t amount) {
     brainpwrtbl braintable(_self, _self);
-    auto brain_it = braintable.find(from);
+    auto brain_it = braintable.find(name{from});
 
-    // TODO: transfer IQ to contract
+    stake s;
+    s.amount = amount;
+    s.timestamp = now();
+    s.duration = STAKING_DURATION;
 
-    // boost brainpower
-    braintable.modify( brain_it, 0, [&]( auto& b ) {
-        b.add(amount);
+    if(brain_it == braintable.end()){
+      print( "Making new braintable entry, ", name{from} );
+      braintable.emplace( from, [&]( auto& b ) {
+          // print(b.user);
+          b.add(amount);
+          // b.stakes.push_back(s);
+      });
+      print( "emplacement complete, " );
+    }
+    else {
+      print( "modifying existing, " );
+      // TODO: transfer IQ to contract
 
-        stake s;
-        s.amount = amount;
-        s.timestamp = now();
-        s.duration = STAKING_DURATION;
-        b.stakes.push_back(s);
-    });
+      // boost brainpower
+      braintable.modify( brain_it, 0, [&]( auto& b ) {
+          // print(b.user);
+          b.add(amount);
+          // b.stakes.push_back(s);
+      });
+    }
 }
 
-EOSIO_ABI( eparticle, (brainme)(finalize)(propose)(placevote) )
+void eparticle::testinsert( account_name from) {
+    testtbl testtableobj(_self, _self);
+    auto testtbl_iter = testtableobj.find(name{from});
+    if(testtbl_iter == testtableobj.end()){
+      testtableobj.emplace( from, [&]( auto& t ) {
+          t.user = name{from};
+          t.b = 111;
+          t.c = 222;
+      });
+    }
+    else {
+      // TODO: transfer IQ to contract
+
+      // boost brainpower
+      testtableobj.modify( testtbl_iter, 0, [&]( auto& t) {
+          t.user = name{from};
+          t.b = 888;
+          t.c = 999;
+      });
+    }
+}
+
+EOSIO_ABI( eparticle, (brainme)(finalize)(propose)(placevote)(testinsert) )
