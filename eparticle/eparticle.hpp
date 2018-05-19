@@ -34,7 +34,7 @@ class eparticle : public eosio::contract {
 
 private:
     const uint32_t DEFAULT_VOTING_TIME = 86400; // 1 day
-    const uint32_t STAKING_DURATION = 21 * 86400; // 21 days
+    const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
     const uint32_t EDIT_PROPOSE_BRAINPOWER = 1000;
 
     // returning array types from a DB type struct throws
@@ -96,11 +96,14 @@ private:
 
     // internal struct for stakes within brainpower
     struct stake {
-        stake() {}
-
+        uint64_t id;
+        account_name user;
         uint64_t amount;
         uint32_t timestamp;
         uint64_t duration;
+
+        auto primary_key()const { return id; }
+        account_name get_user()const { return user; }
     };
 
     // test struct
@@ -142,6 +145,7 @@ private:
     //  ==================================================
     //  ==================================================
     // DATABASE TABLES
+    // GUIDE: https://github.com/EOSIO/eos/wiki/Persistence-API
 
     // wikis table
     // indexed by wiki hash - currently not supported
@@ -173,6 +177,9 @@ private:
     // @abi table
     typedef eosio::multi_index<N(testtbl), teststruct> testtbl;
 
+    // stake table
+    // @abi table
+    typedef eosio::multi_index<N(staketbl), stake, indexed_by< N(byuser), const_mem_fun<stake, account_name, &stake::get_user>>> staketbl;
 
     // ==================================================
     // =================================================

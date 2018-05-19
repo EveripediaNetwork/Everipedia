@@ -196,26 +196,68 @@ void eparticle::brainme( account_name from, uint64_t amount) {
     }
 }
 
-void eparticle::testinsert( account_name from) {
-    testtbl testtableobj(_self, _self);
-    auto testtbl_iter = testtableobj.find(name{from});
-    if(testtbl_iter == testtableobj.end()){
-      testtableobj.emplace( from, [&]( auto& t ) {
-          t.user = name{from};
-          t.b = 111;
-          t.c = 222;
-      });
-    }
-    else {
-      // TODO: transfer IQ to contract
+void eparticle::testinsert( account_name from ) {
+    // testtbl testtableobj(_self, _self);
+    //
+    //
+    //
+    // auto testtbl_iter = testtableobj.find(name{from});
+    //
+    // if(testtbl_iter == testtableobj.end()){
+    //   testtableobj.emplace( from, [&]( auto& t ) {
+    //       t.user = name{from};
+    //       t.b = 111;
+    //       t.c = 222;
+    //   });
+    // }
+    // else {
+    //   testtableobj.modify( testtbl_iter, 0, [&]( auto& t) {
+    //       t.user = name{from};
+    //       t.b = 666;
+    //       t.c = 777;
+    //   });
+    // }
 
-      // boost brainpower
-      testtableobj.modify( testtbl_iter, 0, [&]( auto& t) {
-          t.user = name{from};
-          t.b = 888;
-          t.c = 999;
-      });
+
+    // staketbl staketblobj(_self, _self);
+    // // This find() is only good for the id as a parameter. You need to do get_index stuff for the account_name
+    // auto staketbl_iter = staketblobj.find(N(0));
+    //
+    // if(staketbl_iter == staketblobj.end()){
+    //   print("PART1\n");
+    //   staketblobj.emplace( from, [&]( auto& s ) {
+    //     s.id = staketblobj.available_primary_key();
+    //     s.user = name{from};
+    //     s.amount = 5555;
+    //     s.timestamp = now();
+    //     s.duration = STAKING_DURATION;
+    //   });
+    // }
+    // else {
+    //   print("PART2\n");
+    //   staketblobj.modify( staketbl_iter, 0, [&]( auto& s ) {
+    //     s.amount = 6666;
+    //     s.timestamp = now();
+    //     s.duration = STAKING_DURATION;
+    //   });
+    // }
+
+    staketbl staketblobj(_self, from);
+    auto stake_index = staketblobj.template get_index<N(byuser)>();
+    auto staketbl_iter = stake_index.find(from);
+
+    //prints all the stakes for a given user
+    while (staketbl_iter != stake_index.end() && staketbl_iter->user == from) {
+        print(staketbl_iter->timestamp, "\n");
+        staketbl_iter++;
     }
+
+
+
+
+
+
+
 }
 
 EOSIO_ABI( eparticle, (brainme)(finalize)(propose)(placevote)(testinsert) )
