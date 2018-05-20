@@ -35,7 +35,9 @@ class eparticle : public eosio::contract {
 private:
     const uint32_t DEFAULT_VOTING_TIME = 86400; // 1 day
     const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
-    const uint32_t EDIT_PROPOSE_BRAINPOWER = 1000;
+    const uint32_t EDIT_PROPOSE_BRAINPOWER = 10;
+    const uint32_t IQ_TO_BRAINPOWER_RATIO = 10;
+    symbol_type IQSYMBOL = symbol_type(eosio::string_to_symbol(4, "IQ"));
 
     // returning array types from a DB type struct throws
     // using vectors for now, will try to use arrays later
@@ -118,8 +120,7 @@ private:
     // Brainpower balances
     struct brainpower {
         account_name user;
-        uint64_t power = 1000; // TODO: need to fix this later
-        eosio::vector<stake> stakes;
+        uint64_t power = 25000; // TODO: need to fix this later
 
         account_name primary_key()const { return user; }
 
@@ -215,5 +216,7 @@ public:
                    uint64_t amount );
 
     void withdraw( account_name from );
+
+    uint64_t getiqbalance( account_name from );
 
 };

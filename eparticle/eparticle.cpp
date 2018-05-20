@@ -27,21 +27,46 @@
 // # MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 // # MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 
-
+#include <eosiolib/asset.hpp>
 #include "eparticle.hpp"
+ #include "../eosio.token/eosio.token.hpp"
 #include <typeinfo>
 
 bool eparticle::isnewuser (const account_name& _thisaccount){
     return true;
 }
 
+uint64_t eparticle::getiqbalance( account_name from ) {
+    // create the account object
+    eosio::token::accounts accountstable( N(eosio.token), from );
+
+    // get the iterator to the account
+    auto iqAccount_iter = accountstable.find(IQSYMBOL.name());
+
+    // check for a positive balance
+    eosio_assert( iqAccount_iter != accountstable.end(), "token with symbol does not exist, create token before issue" );
+
+    return iqAccount_iter->balance.amount;
+}
 
 void eparticle::propose( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ) {
 
     // Verify minimum brainpower is met
     brainpwrtbl braintable(_self, _self);
 
+    // Find the proposer's brainpower
     auto brain_it = braintable.find(proposer);
+
+    // If the proposer does not exist yet, create their brainpower entry.
+    // TODO: This will need to be fixed later as brainpower requires IQ so the IQ balance will need to be read
+    uint64_t availableIQ = 25000; // TODO: this will need to be dynamic later to read the current iq balance
+    eosio_assert((availableIQ * IQ_TO_BRAINPOWER_RATIO) > EDIT_PROPOSE_BRAINPOWER, "Not enough IQ available to convert to brainpower");
+    if(brain_it == braintable.end()){
+        eparticle::brainme(proposer, availableIQ);
+    }
+
+    // Need checks to see if the person exists, and if not, call brainme(proposer)
+
     eosio_assert(brain_it->power > EDIT_PROPOSE_BRAINPOWER, "Not enough brainpower to edit");
 
     // store the proposal
@@ -144,11 +169,12 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
             brainpwrtbl braintable(_self, _self);
             auto brain_it = braintable.find(vote_it->voter);
             braintable.modify( brain_it, 0, [&]( auto& b ) {
-                for (auto stake_it = b.stakes.begin(); slash_amount > 0; stake_it++) {
-                    // STAKING_DURATION is a known constant and slash_percent has a max value of 100, so this will not overflow
-                    stake_it->duration += STAKING_DURATION * slash_percent / 100;
-                    slash_amount -= stake_it->amount;
-                }
+              // brainpower table no longer has stakes, which are now in a separate table
+                // for (auto stake_it = b.stakes.begin(); slash_amount > 0; stake_it++) {
+                //     // STAKING_DURATION is a known constant and slash_percent has a max value of 100, so this will not overflow
+                //     stake_it->duration += STAKING_DURATION * slash_percent / 100;
+                //     slash_amount -= stake_it->amount;
+                // }
             });
         }
         vote_it++;
@@ -167,36 +193,35 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
 
 void eparticle::brainme( account_name from, uint64_t amount) {
     brainpwrtbl braintable(_self, _self);
-    auto brain_it = braintable.find(name{from});
+    auto brain_it = braintable.find(from);
 
-    stake s;
-    s.amount = amount;
-    s.timestamp = now();
-    s.duration = STAKING_DURATION;
+    // TODO: Need to check that there is enough IQ available to stake to brainpower
+    // uint64_t availableIQ = 25000
+    // eosio_assert(availableIQ > EDIT_PROPOSE_BRAINPOWER, "Not enough brainpower to edit");
 
     if(brain_it == braintable.end()){
-      print( "Making new braintable entry, ", name{from} );
       braintable.emplace( from, [&]( auto& b ) {
-          // print(b.user);
-          b.add(amount);
-          // b.stakes.push_back(s);
+          b.user = from;
+          b.power = amount;
       });
-      print( "emplacement complete, " );
     }
     else {
-      print( "modifying existing, " );
-      // TODO: transfer IQ to contract
-
-      // boost brainpower
       braintable.modify( brain_it, 0, [&]( auto& b ) {
-          // print(b.user);
           b.add(amount);
-          // b.stakes.push_back(s);
       });
     }
+
+
 }
 
 void eparticle::testinsert( account_name from ) {
+    print(getiqbalance(from));
+
+    // brainpwrtbl braintable(_self, _self);
+    //
+    // // Find the proposer's brainpower
+    // auto brain_it = braintable.find(proposer);
+
     // testtbl testtableobj(_self, _self);
     //
     //
@@ -242,21 +267,15 @@ void eparticle::testinsert( account_name from ) {
     //   });
     // }
 
-    staketbl staketblobj(_self, from);
-    auto stake_index = staketblobj.template get_index<N(byuser)>();
-    auto staketbl_iter = stake_index.find(from);
-
-    //prints all the stakes for a given user
-    while (staketbl_iter != stake_index.end() && staketbl_iter->user == from) {
-        print(staketbl_iter->timestamp, "\n");
-        staketbl_iter++;
-    }
-
-
-
-
-
-
+    // staketbl staketblobj(_self, from);
+    // auto stake_index = staketblobj.template get_index<N(byuser)>();
+    // auto staketbl_iter = stake_index.find(from);
+    //
+    // //prints all the stakes for a given user
+    // while (staketbl_iter != stake_index.end() && staketbl_iter->user == from) {
+    //     print(staketbl_iter->timestamp, "\n");
+    //     staketbl_iter++;
+    // }
 
 }
 

@@ -103,7 +103,6 @@
       "fields": [
         {"name":"user", "type":"account_name"},
         {"name":"power", "type":"uint64"},
-        {"name":"stakes", "type":"stake[]"}
       ]
     }
   ],
