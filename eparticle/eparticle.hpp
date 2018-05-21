@@ -35,8 +35,9 @@ class eparticle : public eosio::contract {
 private:
     const uint32_t DEFAULT_VOTING_TIME = 86400; // 1 day
     const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
-    const uint32_t EDIT_PROPOSE_BRAINPOWER = 10;
-    const uint32_t IQ_TO_BRAINPOWER_RATIO = 10;
+    const uint64_t EDIT_PROPOSE_BRAINPOWER = 10;
+    const uint64_t IQ_TO_BRAINPOWER_RATIO = 10;
+    const uint64_t IQ_PRECISION_MULTIPLIER = 10000;
     symbol_type IQSYMBOL = symbol_type(eosio::string_to_symbol(4, "IQ"));
 
     // returning array types from a DB type struct throws
@@ -62,7 +63,6 @@ private:
           //ipfshash_t primary_key()const { return hash; }
           uint64_t primary_key () const { return id; }
 
-          wiki() {}
           ipfshash_t get_hash () const { return hash; }
           ipfshash_t get_parent_hash () const { return parent_hash; }
     };
@@ -77,7 +77,6 @@ private:
           ProposalStatus status;
           uint64_t primary_key () const { return id; }
 
-          editproposal() {}
           ipfshash_t get_hash () const { return proposed_article_hash; }
 
     };
@@ -93,7 +92,6 @@ private:
 
           uint64_t primary_key()const { return id; }
           uint64_t get_proposal_id()const { return id; }
-          vote() {}
     };
 
     // internal struct for stakes within brainpower
@@ -120,19 +118,21 @@ private:
     // Brainpower balances
     struct brainpower {
         account_name user;
-        uint64_t power = 25000; // TODO: need to fix this later
+        uint64_t power = 0; // TODO: need to fix this later
 
         account_name primary_key()const { return user; }
 
         // subtraction with underflow check
         uint64_t sub (uint64_t value) {
-            eosio_assert(value >= power, "Underflow during subtraction");
+            eosio_assert(value != 0, "Please supply a nonzero value of brainpower to subtract");
+            eosio_assert(value <= power, "Underflow during subtraction");
             power -= value;
             return power;
         }
 
         // addition with overflow check
         uint64_t add (uint64_t value) {
+            eosio_assert(value != 0, "Please supply a nonzero value of brainpower to add");
             eosio_assert(value + power > value && value + power > power, "Overflow during addition");
             power += value;
             print( "Added brainpower, ", name{power} );
@@ -197,6 +197,10 @@ public:
     //  ==================================================
     //  ==================================================
     // ABI Functions
+
+    void propose_precheck( account_name proposer,
+                  ipfshash_t& proposed_article_hash,
+                  ipfshash_t& old_article_hash );
 
     void propose( account_name proposer,
                   ipfshash_t& proposed_article_hash,

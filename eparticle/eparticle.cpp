@@ -37,55 +37,50 @@ bool eparticle::isnewuser (const account_name& _thisaccount){
 }
 
 uint64_t eparticle::getiqbalance( account_name from ) {
-    // create the account object
+    // Create the account object
     eosio::token::accounts accountstable( N(eosio.token), from );
 
-    // get the iterator to the account
+    // Get the iterator to the account
     auto iqAccount_iter = accountstable.find(IQSYMBOL.name());
 
-    // check for a positive balance
-    eosio_assert( iqAccount_iter != accountstable.end(), "token with symbol does not exist, create token before issue" );
+    // Check for an account
+    if(iqAccount_iter != accountstable.end()){
+        return iqAccount_iter->balance.amount;
+    }
+    else{
+        return 0;
+    }
+}
 
-    return iqAccount_iter->balance.amount;
+void eparticle::propose_precheck( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ) {
+    // Fetch the brainpower
+    brainpwrtbl braintable(_self, _self);
+    auto brain_it = braintable.find(proposer);
+
+    // Re-check that enough brainpower is available
+    eosio_assert(brain_it->power > EDIT_PROPOSE_BRAINPOWER, "Not enough brainpower to edit, you need to stake some more IQ using brainme first!");
 }
 
 void eparticle::propose( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ) {
+    // Check to make sure enough brainpower is present
+    eparticle::propose_precheck(proposer, proposed_article_hash, old_article_hash);
 
-    // Verify minimum brainpower is met
-    brainpwrtbl braintable(_self, _self);
-
-    // Find the proposer's brainpower
-    auto brain_it = braintable.find(proposer);
-
-    // If the proposer does not exist yet, create their brainpower entry.
-    // TODO: This will need to be fixed later as brainpower requires IQ so the IQ balance will need to be read
-    uint64_t availableIQ = 25000; // TODO: this will need to be dynamic later to read the current iq balance
-    eosio_assert((availableIQ * IQ_TO_BRAINPOWER_RATIO) > EDIT_PROPOSE_BRAINPOWER, "Not enough IQ available to convert to brainpower");
-    if(brain_it == braintable.end()){
-        eparticle::brainme(proposer, availableIQ);
-    }
-
-    // Need checks to see if the person exists, and if not, call brainme(proposer)
-
-    eosio_assert(brain_it->power > EDIT_PROPOSE_BRAINPOWER, "Not enough brainpower to edit");
-
-    // store the proposal
+    // Store the proposal
     propstbl proptable( _self, proposer );
+    uint64_t propPrimaryKey = proptable.available_primary_key();
     proptable.emplace( _self, [&]( auto& a ) {
-        a.id = 1;
+        a.id = propPrimaryKey; // TODO: need to remove this later, or account for uniqueness
         a.proposed_article_hash = proposed_article_hash;
         a.old_article_hash = old_article_hash;
         a.timestamp = now();
         a.status = ProposalStatus::pending;
     });
 
-    // TODO: Replace with proper ID instead of 1
-    eparticle::placevote( proposer, 1, true, EDIT_PROPOSE_BRAINPOWER );
+    // Place the vote
+    eparticle::placevote( proposer, propPrimaryKey, true, EDIT_PROPOSE_BRAINPOWER );
 }
 
-
 void eparticle::placevote ( account_name voter, uint64_t proposal_id, bool approve, uint64_t amount ) {
-
     // Check if article exists
     propstbl proptable( _self, voter );
     auto prop_it = proptable.find( proposal_id );
@@ -104,9 +99,9 @@ void eparticle::placevote ( account_name voter, uint64_t proposal_id, bool appro
 
     // Store vote in DB
     votestbl votetbl( _self, voter );
+    uint64_t votePrimaryKey = votetbl.available_primary_key();
     votetbl.emplace( voter, [&]( auto& a ) {
-         // TODO: incrementing IDs
-         a.id = 1;
+         a.id = votePrimaryKey;
          a.proposal_id = proposal_id;
          a.approve = approve;
          a.amount = amount;
@@ -117,7 +112,6 @@ void eparticle::placevote ( account_name voter, uint64_t proposal_id, bool appro
 }
 
 void eparticle::finalize( account_name from, uint64_t proposal_id ) {
-
     // Verify proposal exists
     propstbl proptable( _self, _self );
     auto prop_it = proptable.find( proposal_id );
@@ -192,12 +186,20 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
 }
 
 void eparticle::brainme( account_name from, uint64_t amount) {
+    require_auth(from);
+
+    // Check that there is enough IQ available to stake to brainpower
+    uint64_t oldIQBalance = getiqbalance(from);
+    eosio_assert(oldIQBalance > 0, "Not enough IQ available to convert to brainpower");
+
+    // Transfer IQ to the eparticle contract
+    asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
+    action(permission_level{ from, N(active) }, N(eosio.token), N(transfer), std::make_tuple(from,
+            N(eparticle), iqAssetPack, std::string(""))).send();
+
+    // Get the brainpower
     brainpwrtbl braintable(_self, _self);
     auto brain_it = braintable.find(from);
-
-    // TODO: Need to check that there is enough IQ available to stake to brainpower
-    // uint64_t availableIQ = 25000
-    // eosio_assert(availableIQ > EDIT_PROPOSE_BRAINPOWER, "Not enough brainpower to edit");
 
     if(brain_it == braintable.end()){
       braintable.emplace( from, [&]( auto& b ) {
@@ -211,11 +213,27 @@ void eparticle::brainme( account_name from, uint64_t amount) {
       });
     }
 
+    staketbl staketblobj(_self, _self);
+    staketblobj.emplace( from, [&]( auto& s ) {
+        s.id = staketblobj.available_primary_key();
+        s.user = from;
+        s.amount = amount;
+        s.timestamp = now();
+        s.duration = STAKING_DURATION;
+    });
 
+    // You will need a brainyou function to transfer brainpower (for editing pools)
+    // You will need a brainclaim function to take your IQ back from the eparticle contract
 }
 
 void eparticle::testinsert( account_name from ) {
-    print(getiqbalance(from));
+
+
+    //
+    // asset assetPack = asset(10, TOKEN_SYMBOL);
+    // eosio::token tokenObj = eosio::token(N(eosio.token));
+    // tokenObj.transfer(from, to, assetPack, "" );
+
 
     // brainpwrtbl braintable(_self, _self);
     //
