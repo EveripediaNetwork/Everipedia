@@ -34,9 +34,10 @@ class eparticle : public eosio::contract {
 
 private:
     const uint32_t DEFAULT_VOTING_TIME = 86400; // 1 day
-    const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
+    // const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
+    const uint64_t STAKING_DURATION = 30; // 30 sec, for testing
     const uint64_t EDIT_PROPOSE_BRAINPOWER = 10;
-    const uint64_t IQ_TO_BRAINPOWER_RATIO = 10;
+    const uint64_t IQ_TO_BRAINPOWER_RATIO = 1;
     const uint64_t IQ_PRECISION_MULTIPLIER = 10000;
     symbol_type IQSYMBOL = symbol_type(eosio::string_to_symbol(4, "IQ"));
 
@@ -46,6 +47,11 @@ private:
     using byte = unsigned char;
     using ipfshash_t = std::string;
     enum ProposalStatus { pending, accepted, rejected };
+
+public:
+    static eosio::key256 ipfs_to_key256(const ipfshash_t& input); // used for the secondary index since std::string indexes are not available
+
+private:
 
     // ==================================================
     // ==================================================
@@ -62,7 +68,6 @@ private:
           // will update to ipfshash_t primary key later if possible
           //ipfshash_t primary_key()const { return hash; }
           uint64_t primary_key () const { return id; }
-
           ipfshash_t get_hash () const { return hash; }
           ipfshash_t get_parent_hash () const { return parent_hash; }
     };
@@ -76,8 +81,8 @@ private:
           uint32_t timestamp; // epoch time of the proposal
           ProposalStatus status;
           uint64_t primary_key () const { return id; }
-
-          ipfshash_t get_hash () const { return proposed_article_hash; }
+          key256 get_hash_key256 () const { return eparticle::ipfs_to_key256(proposed_article_hash); }
+          account_name get_proposer () const { return proposer; }
 
     };
 
@@ -85,6 +90,7 @@ private:
     struct vote {
           uint64_t id;
           uint64_t proposal_id;
+          ipfshash_t proposed_article_hash; // IPFS hash of the proposed new version
           bool approve;
           uint64_t amount;
           account_name voter; // account name of the voter
@@ -140,8 +146,6 @@ private:
         }
     };
 
-
-
     //  ==================================================
     //  ==================================================
     //  ==================================================
@@ -161,7 +165,9 @@ private:
     // 12-char limit on table names, so proposals used instead of editproposals
     // indexed by hash
     // @abi table
-    typedef eosio::multi_index<N(propstbl), editproposal> propstbl; // EOS table for the edit proposals
+    typedef eosio::multi_index<N(propstbl), editproposal,
+        indexed_by< N(bynewhash), const_mem_fun< editproposal, eosio::key256, &editproposal::get_hash_key256 >>
+    > propstbl; // EOS table for the edit proposals
 
     // votes table
     // indexed by proposal
@@ -191,7 +197,9 @@ private:
 
 
 public:
-    eparticle(account_name self) : contract(self) {}
+    eparticle(account_name self) : contract(self) {};
+
+    uint64_t getiqbalance( account_name from );
 
     //  ==================================================
     //  ==================================================
@@ -206,7 +214,12 @@ public:
                   ipfshash_t& proposed_article_hash,
                   ipfshash_t& old_article_hash );
 
-    void placevote ( account_name voter,
+    void votebyhash ( account_name voter,
+                      ipfshash_t& proposed_article_hash,
+                      bool approve,
+                      uint64_t amount );
+
+    void votebyid ( account_name voter,
                       uint64_t proposal_id,
                       bool approve,
                       uint64_t amount );
@@ -219,8 +232,18 @@ public:
     void brainme( account_name from,
                    uint64_t amount );
 
+    void brainclaim( account_name claimant,
+                  uint64_t amount );
+
     void withdraw( account_name from );
-
-    uint64_t getiqbalance( account_name from );
-
 };
+
+eosio::key256 eparticle::ipfs_to_key256(const ipfshash_t& input) {
+  // This is needed for indexing since indexes cannot be done by strings, only max key256's, for now...
+  uint64_t p1 = eosio::string_to_name(input.substr(0, 12).c_str());
+  uint64_t p2 = eosio::string_to_name(input.substr(13, 24).c_str());
+  uint64_t p3 = eosio::string_to_name(input.substr(25, 36).c_str());
+  uint64_t p4 = eosio::string_to_name(input.substr(37, 45).c_str());
+  key256 returnKey = key256::make_from_word_sequence<uint64_t>(p1, p2, p3, p4);
+  return returnKey;
+}

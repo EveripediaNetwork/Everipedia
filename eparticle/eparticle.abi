@@ -18,11 +18,20 @@
         {"name":"old_article_hash", "type":"ipfshash_t"}
       ]
     },{
-     "name": "placevote",
+     "name": "votebyid",
      "base": "",
      "fields": [
         {"name":"voter", "type":"account_name"},
         {"name":"proposal_id", "type":"uint64"},
+        {"name":"approve", "type":"bool"},
+        {"name":"amount", "type":"uint64"}
+     ]
+  },{
+     "name": "votebyhash",
+     "base": "",
+     "fields": [
+        {"name":"voter", "type":"account_name"},
+        {"name":"proposal_hash", "type":"ipfshash_t"},
         {"name":"approve", "type":"bool"},
         {"name":"amount", "type":"uint64"}
      ]
@@ -37,22 +46,29 @@
       "name": "brainme",
       "base": "",
       "fields": [
-        {"name":"from", "type":"account_name"},
+        {"name":"claimant", "type":"account_name"},
         {"name":"amount", "type":"uint64"}
       ]
-    },{
+  },{
+      "name": "brainclaim",
+      "base": "",
+      "fields": [
+        {"name":"claimant", "type":"account_name"},
+        {"name":"amount", "type":"uint64"}
+      ]
+  },{
       "name": "withdraw",
       "base": "",
       "fields": [
         {"name":"from", "type":"account_name"},
       ]
-    },{
+  },{
       "name": "testinsert",
       "base": "",
       "fields": [
         {"name":"from", "type":"account_name"},
       ]
-    },{
+  },{
       "name": "wiki",
       "base": "",
       "fields": [
@@ -74,6 +90,7 @@
       "fields": [
         {"name":"id", "type":"uint64"},
         {"name":"proposal_id", "type":"uint64"},
+        {"name":"proposed_article_hash", "type":"ipfshash_t"},
         {"name":"approve", "type":"bool"},
         {"name":"amount", "type":"uint64"},
         {"name":"voter", "type":"account_name"},
@@ -111,8 +128,12 @@
       "type": "propose",
       "ricardian_contract": ""
     },{
-      "name": "placevote",
-      "type": "placevote",
+      "name": "votebyid",
+      "type": "votebyid",
+      "ricardian_contract": ""
+    },{
+      "name": "votebyhash",
+      "type": "votebyhash",
       "ricardian_contract": ""
     }, {
       "name": "finalize",
@@ -121,6 +142,10 @@
     },{
       "name": "brainme",
       "type": "brainme",
+      "ricardian_contract": ""
+    },{
+      "name": "brainclaim",
+      "type": "brainclaim",
       "ricardian_contract": ""
     },{
       "name": "withdraw",

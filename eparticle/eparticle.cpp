@@ -77,14 +77,16 @@ void eparticle::propose( account_name proposer, ipfshash_t& proposed_article_has
     });
 
     // Place the vote
-    eparticle::placevote( proposer, propPrimaryKey, true, EDIT_PROPOSE_BRAINPOWER );
+    eparticle::votebyhash( proposer, proposed_article_hash, true, EDIT_PROPOSE_BRAINPOWER );
 }
 
-void eparticle::placevote ( account_name voter, uint64_t proposal_id, bool approve, uint64_t amount ) {
+void eparticle::votebyhash ( account_name voter, ipfshash_t& proposed_article_hash, bool approve, uint64_t amount ) {
     // Check if article exists
     propstbl proptable( _self, voter );
-    auto prop_it = proptable.find( proposal_id );
-    eosio_assert( prop_it != proptable.end(), "proposal not found" );
+    auto prop_idx = proptable.get_index<N(bynewhash)>();
+    auto prop_it = prop_idx.find(eparticle::ipfs_to_key256(proposed_article_hash));
+    eosio_assert( prop_it != prop_idx.end(), "proposal not found" );
+    uint64_t proposal_id = prop_it->id;
 
     // Verify voting is still in progress
     eosio_assert( now() < prop_it->timestamp + DEFAULT_VOTING_TIME, "voting period is over");
@@ -103,12 +105,22 @@ void eparticle::placevote ( account_name voter, uint64_t proposal_id, bool appro
     votetbl.emplace( voter, [&]( auto& a ) {
          a.id = votePrimaryKey;
          a.proposal_id = proposal_id;
+         a.proposed_article_hash = proposed_article_hash;
          a.approve = approve;
          a.amount = amount;
          a.voter = voter;
          a.timestamp = now();
     });
 
+}
+void eparticle::votebyid ( account_name voter, uint64_t proposal_id, bool approve, uint64_t amount ) {
+    // Check if article exists
+    propstbl proptable( _self, voter );
+    auto prop_it = proptable.find( proposal_id );
+    eosio_assert( prop_it != proptable.end(), "proposal not found" );
+    ipfshash_t thePropHash = prop_it->proposed_article_hash;
+
+    eparticle::votebyhash(voter, thePropHash, approve, amount);
 }
 
 void eparticle::finalize( account_name from, uint64_t proposal_id ) {
@@ -125,7 +137,6 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
     auto propidx = votetable.get_index<N(byproposal)>();
     auto vote_it = propidx.find( std::forward<uint64_t>(proposal_id) );
     eosio_assert( vote_it != propidx.end(), "no votes found for proposal");
-
 
     // Tally votes
     uint64_t for_votes = 0;
@@ -187,6 +198,7 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
 
 void eparticle::brainme( account_name from, uint64_t amount) {
     require_auth(from);
+    uint64_t newBrainpower = amount * IQ_TO_BRAINPOWER_RATIO;
 
     // Check that there is enough IQ available to stake to brainpower
     uint64_t oldIQBalance = getiqbalance(from);
@@ -204,12 +216,12 @@ void eparticle::brainme( account_name from, uint64_t amount) {
     if(brain_it == braintable.end()){
       braintable.emplace( from, [&]( auto& b ) {
           b.user = from;
-          b.power = amount;
+          b.power = newBrainpower;
       });
     }
     else {
       braintable.modify( brain_it, 0, [&]( auto& b ) {
-          b.add(amount);
+          b.add(newBrainpower);
       });
     }
 
@@ -221,13 +233,47 @@ void eparticle::brainme( account_name from, uint64_t amount) {
         s.timestamp = now();
         s.duration = STAKING_DURATION;
     });
+}
 
-    // You will need a brainyou function to transfer brainpower (for editing pools)
-    // You will need a brainclaim function to take your IQ back from the eparticle contract
+void eparticle::brainclaim( account_name claimant, uint64_t amount) {
+    // Get the brainpower
+    brainpwrtbl braintable(_self, _self);
+    auto brain_it = braintable.find(claimant);
+
+    // Get the stakes
+    staketbl staketable(_self, _self);
+    auto stakeidx = staketable.get_index<N(byuser)>();
+    auto stake_it = stakeidx.find(claimant);
+    eosio_assert( stake_it != stakeidx.end(), "No stakes found for proposal");
+
+    // Dummy initialization
+    asset iqAssetPack;
+
+    // Loop through the stakes
+    while(stake_it != stakeidx.end() && stake_it->user == claimant) {
+        // Get the age of the stake
+        time timeDiff = now() - stake_it->timestamp;
+
+        // See if the stake is over 21 days old
+        if (timeDiff > STAKING_DURATION){
+            // Transfer back the IQ
+            iqAssetPack = asset(stake_it->amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
+            action(permission_level{ N(eparticle), N(active) }, N(eosio.token), N(transfer), std::make_tuple(N(eparticle),
+                    claimant, iqAssetPack, std::string(""))).send();
+
+            // Delete the stake.
+            // Note that the erase() function increments the iterator, then gives it back after the erase is done
+            stake_it = stakeidx.erase(stake_it);
+        }
+        else{
+            stake_it++;
+        }
+    }
 }
 
 void eparticle::testinsert( account_name from ) {
-
+    key256 result = eparticle::ipfs_to_key256("Qme5aRkNsaQSXU23pmM3MvRMqYa8ufqYojxgFAP143SjYJ");
+    print("KEY256: ", result);
 
     //
     // asset assetPack = asset(10, TOKEN_SYMBOL);
@@ -297,4 +343,4 @@ void eparticle::testinsert( account_name from ) {
 
 }
 
-EOSIO_ABI( eparticle, (brainme)(finalize)(propose)(placevote)(testinsert) )
+EOSIO_ABI( eparticle, (brainme)(brainclaim)(finalize)(propose)(votebyhash)(testinsert) )
