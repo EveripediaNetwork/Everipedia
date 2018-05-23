@@ -2,6 +2,9 @@
   "types": [{
       "new_type_name": "ipfshash_t",
       "type": "string"
+  },{
+      "new_type_name": "time",
+      "type": "uint32"
   }, {
       "new_type_name": "bool",
       "type": "uint8"
@@ -82,7 +85,10 @@
       "fields": [
         {"name":"id", "type":"uint64"},
         {"name":"proposed_article_hash", "type":"ipfshash_t"},
-        {"name":"old_article_hash", "type":"ipfshash_t"}
+        {"name":"old_article_hash", "type":"ipfshash_t"},
+        {"name":"proposer", "type":"account_name"},
+        {"name":"timestamp", "type":"time"},
+        {"name":"status", "type":"uint32"}
       ]
     },{
       "name": "vote",

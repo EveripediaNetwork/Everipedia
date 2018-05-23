@@ -29,7 +29,7 @@
 
 #include <eosiolib/asset.hpp>
 #include "eparticle.hpp"
-#include <eosio.token/eosio.token.hpp>
+#include "../eosio.token/eosio.token.hpp"
 #include <typeinfo>
 
 bool eparticle::isnewuser (const account_name& _thisaccount){
@@ -65,13 +65,19 @@ void eparticle::propose( account_name proposer, ipfshash_t& proposed_article_has
     // Check to make sure enough brainpower is present
     eparticle::propose_precheck(proposer, proposed_article_hash, old_article_hash);
 
-    // Store the proposal
+    // Check for a duplicate proposal
     propstbl proptable( _self, _self );
+    auto propidx = proptable.get_index<N(byhash)>();
+    auto prop_it = propidx.find(eparticle::ipfs_to_key256(proposed_article_hash));
+    eosio_assert(prop_it == propidx.end(), "Proposal already exists");
+
+    // Store the proposal
     uint64_t propPrimaryKey = proptable.available_primary_key();
     proptable.emplace( _self, [&]( auto& a ) {
         a.id = propPrimaryKey; // TODO: need to remove this later, or account for uniqueness
         a.proposed_article_hash = proposed_article_hash;
         a.old_article_hash = old_article_hash;
+        a.proposer = proposer;
         a.timestamp = now();
         a.status = ProposalStatus::pending;
     });
