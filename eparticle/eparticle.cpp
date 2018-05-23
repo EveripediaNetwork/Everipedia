@@ -29,7 +29,7 @@
 
 #include <eosiolib/asset.hpp>
 #include "eparticle.hpp"
-#include <../eosio.token/eosio.token.hpp>
+#include <eosio.token/eosio.token.hpp>
 #include <typeinfo>
 
 bool eparticle::isnewuser (const account_name& _thisaccount){
@@ -66,7 +66,7 @@ void eparticle::propose( account_name proposer, ipfshash_t& proposed_article_has
     eparticle::propose_precheck(proposer, proposed_article_hash, old_article_hash);
 
     // Store the proposal
-    propstbl proptable( _self, proposer );
+    propstbl proptable( _self, _self );
     uint64_t propPrimaryKey = proptable.available_primary_key();
     proptable.emplace( _self, [&]( auto& a ) {
         a.id = propPrimaryKey; // TODO: need to remove this later, or account for uniqueness
@@ -82,8 +82,8 @@ void eparticle::propose( account_name proposer, ipfshash_t& proposed_article_has
 
 void eparticle::votebyhash ( account_name voter, ipfshash_t& proposed_article_hash, bool approve, uint64_t amount ) {
     // Check if article exists
-    propstbl proptable( _self, voter );
-    auto prop_idx = proptable.get_index<N(bynewhash)>();
+    propstbl proptable( _self, _self );
+    auto prop_idx = proptable.get_index<N(byhash)>();
     auto prop_it = prop_idx.find(eparticle::ipfs_to_key256(proposed_article_hash));
     eosio_assert( prop_it != prop_idx.end(), "proposal not found" );
     uint64_t proposal_id = prop_it->id;
@@ -100,7 +100,7 @@ void eparticle::votebyhash ( account_name voter, ipfshash_t& proposed_article_ha
     });
 
     // Store vote in DB
-    votestbl votetbl( _self, voter );
+    votestbl votetbl( _self, _self );
     auto voteidx = votetbl.get_index<N(byproposal)>();
     auto vote_it = voteidx.find( std::forward<uint64_t>(proposal_id) );
     uint64_t votePrimaryKey = votetbl.available_primary_key();
@@ -148,12 +148,21 @@ void eparticle::votebyhash ( account_name voter, ipfshash_t& proposed_article_ha
 
 void eparticle::votebyid ( account_name voter, uint64_t proposal_id, bool approve, uint64_t amount ) {
     // Check if article exists
-    propstbl proptable( _self, voter );
+    propstbl proptable( _self, _self );
     auto prop_it = proptable.find( proposal_id );
     eosio_assert( prop_it != proptable.end(), "proposal not found" );
     ipfshash_t thePropHash = prop_it->proposed_article_hash;
 
     eparticle::votebyhash(voter, thePropHash, approve, amount);
+}
+
+void eparticle::finalizebyhash( account_name from, ipfshash_t& proposal_hash ) {
+    // Add article to database, or update
+    propstbl proptable( _self, _self );
+    auto propidx = proptable.get_index<N(byhash)>();
+    auto prop_it = propidx.find(eparticle::ipfs_to_key256(proposal_hash));
+    eosio_assert( prop_it != propidx.end(), "proposal not found" );
+    eparticle::finalize(from, prop_it->id);
 }
 
 void eparticle::finalize( account_name from, uint64_t proposal_id ) {
@@ -350,73 +359,6 @@ void eparticle::brainclaim( account_name claimant, uint64_t amount) {
 void eparticle::testinsert( account_name from ) {
     key256 result = eparticle::ipfs_to_key256("Qme5aRkNsaQSXU23pmM3MvRMqYa8ufqYojxgFAP143SjYJ");
     print("KEY256: ", result);
-
-    //
-    // asset assetPack = asset(10, TOKEN_SYMBOL);
-    // eosio::token tokenObj = eosio::token(N(eosio.token));
-    // tokenObj.transfer(from, to, assetPack, "" );
-
-
-    // brainpwrtbl braintable(_self, _self);
-    //
-    // // Find the proposer's brainpower
-    // auto brain_it = braintable.find(proposer);
-
-    // testtbl testtableobj(_self, _self);
-    //
-    //
-    //
-    // auto testtbl_iter = testtableobj.find(name{from});
-    //
-    // if(testtbl_iter == testtableobj.end()){
-    //   testtableobj.emplace( from, [&]( auto& t ) {
-    //       t.user = name{from};
-    //       t.b = 111;
-    //       t.c = 222;
-    //   });
-    // }
-    // else {
-    //   testtableobj.modify( testtbl_iter, 0, [&]( auto& t) {
-    //       t.user = name{from};
-    //       t.b = 666;
-    //       t.c = 777;
-    //   });
-    // }
-
-
-    // staketbl staketblobj(_self, _self);
-    // // This find() is only good for the id as a parameter. You need to do get_index stuff for the account_name
-    // auto staketbl_iter = staketblobj.find(N(0));
-    //
-    // if(staketbl_iter == staketblobj.end()){
-    //   print("PART1\n");
-    //   staketblobj.emplace( from, [&]( auto& s ) {
-    //     s.id = staketblobj.available_primary_key();
-    //     s.user = name{from};
-    //     s.amount = 5555;
-    //     s.timestamp = now();
-    //     s.duration = STAKING_DURATION;
-    //   });
-    // }
-    // else {
-    //   print("PART2\n");
-    //   staketblobj.modify( staketbl_iter, 0, [&]( auto& s ) {
-    //     s.amount = 6666;
-    //     s.timestamp = now();
-    //     s.duration = STAKING_DURATION;
-    //   });
-    // }
-
-    // staketbl staketblobj(_self, from);
-    // auto stake_index = staketblobj.template get_index<N(byuser)>();
-    // auto staketbl_iter = stake_index.find(from);
-    //
-    // //prints all the stakes for a given user
-    // while (staketbl_iter != stake_index.end() && staketbl_iter->user == from) {
-    //     print(staketbl_iter->timestamp, "\n");
-    //     staketbl_iter++;
-    // }
-
 }
 
 EOSIO_ABI( eparticle, (brainme)(brainclaim)(finalize)(propose)(votebyhash)(testinsert) )

@@ -68,12 +68,8 @@ private:
     struct wiki {
           uint64_t id;
           ipfshash_t hash; // IPFS hash of the current consensus article version
-          ipfshash_t parent_hash; // IPFS hash of the parent article version
+          ipfshash_t parent_hash; // IPFS hash of the parent article versiond
 
-          // only uint64_t primary keys are allowed for some reason
-          // not sure if that's temporary or a design decision
-          // will update to ipfshash_t primary key later if possible
-          //ipfshash_t primary_key()const { return hash; }
           uint64_t primary_key () const { return id; }
           key256 get_hash_key256 () const { return eparticle::ipfs_to_key256(hash); }
           key256 get_parent_hash_key256 () const { return eparticle::ipfs_to_key256(parent_hash); }
@@ -87,6 +83,7 @@ private:
           account_name proposer; // account name of the proposer
           uint32_t timestamp; // epoch time of the proposal
           ProposalStatus status;
+
           uint64_t primary_key () const { return id; }
           key256 get_hash_key256 () const { return eparticle::ipfs_to_key256(proposed_article_hash); }
           account_name get_proposer () const { return proposer; }
@@ -107,7 +104,7 @@ private:
           uint64_t get_proposal_id()const { return id; }
     };
 
-    // internal struct for stakes within brainpower
+    // Internal struct for stakes within brainpower
     struct stake {
         uint64_t id;
         account_name user;
@@ -160,8 +157,8 @@ private:
     // GUIDE: https://github.com/EOSIO/eos/wiki/Persistence-API
 
     // wikis table
-    // indexed by wiki hash - currently not supported
-    // indexed by parent hash - currently not supported
+    // indexed by wiki hash
+    // indexed by parent hash
     // @abi table
     typedef eosio::multi_index<N(wikistbl), wiki,
         indexed_by< N(byhash), const_mem_fun< wiki, eosio::key256, &wiki::get_hash_key256 >>,
@@ -174,7 +171,7 @@ private:
     // indexed by hash
     // @abi table
     typedef eosio::multi_index<N(propstbl), editproposal,
-        indexed_by< N(bynewhash), const_mem_fun< editproposal, eosio::key256, &editproposal::get_hash_key256 >>
+        indexed_by< N(byhash), const_mem_fun< editproposal, eosio::key256, &editproposal::get_hash_key256 >>
     > propstbl; // EOS table for the edit proposals
 
     // votes table
@@ -236,6 +233,9 @@ public:
 
     void finalize( account_name from,
                    uint64_t proposal_id );
+
+   void finalizebyhash( account_name from,
+                  ipfshash_t& proposal_hash );
 
     void testinsert( account_name from);
 
