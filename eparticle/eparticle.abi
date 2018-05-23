@@ -46,7 +46,7 @@
       "name": "brainme",
       "base": "",
       "fields": [
-        {"name":"claimant", "type":"account_name"},
+        {"name":"staker", "type":"account_name"},
         {"name":"amount", "type":"uint64"}
       ]
   },{

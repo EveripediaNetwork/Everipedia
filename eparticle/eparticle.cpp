@@ -29,7 +29,7 @@
 
 #include <eosiolib/asset.hpp>
 #include "eparticle.hpp"
- #include "../eosio.token/eosio.token.hpp"
+#include <../eosio.token/eosio.token.hpp>
 #include <typeinfo>
 
 bool eparticle::isnewuser (const account_name& _thisaccount){
@@ -38,7 +38,7 @@ bool eparticle::isnewuser (const account_name& _thisaccount){
 
 uint64_t eparticle::getiqbalance( account_name from ) {
     // Create the account object
-    eosio::token::accounts accountstable( N(eosio.token), from );
+    eparticle::accounts accountstable( N(eosio.token), from );
 
     // Get the iterator to the account
     auto iqAccount_iter = accountstable.find(IQSYMBOL.name());
@@ -101,18 +101,51 @@ void eparticle::votebyhash ( account_name voter, ipfshash_t& proposed_article_ha
 
     // Store vote in DB
     votestbl votetbl( _self, voter );
+    auto voteidx = votetbl.get_index<N(byproposal)>();
+    auto vote_it = voteidx.find( std::forward<uint64_t>(proposal_id) );
     uint64_t votePrimaryKey = votetbl.available_primary_key();
-    votetbl.emplace( voter, [&]( auto& a ) {
-         a.id = votePrimaryKey;
-         a.proposal_id = proposal_id;
-         a.proposed_article_hash = proposed_article_hash;
-         a.approve = approve;
-         a.amount = amount;
-         a.voter = voter;
-         a.timestamp = now();
-    });
 
+    if(vote_it == voteidx.end()){
+        // Brand new vote
+        votetbl.emplace( voter, [&]( auto& a ) {
+             a.id = votePrimaryKey;
+             a.proposal_id = proposal_id;
+             a.proposed_article_hash = proposed_article_hash;
+             a.approve = approve;
+             a.amount = amount;
+             a.voter = voter;
+             a.timestamp = now();
+        });
+    }
+    else{
+
+      if(vote_it->approve == approve){
+          // Strengthen existing vote
+          voteidx.modify( vote_it, 0, [&]( auto& a ) {
+              a.amount += amount;
+              a.timestamp = now();
+          });
+      }
+      else{
+          if(vote_it->amount >= amount){
+              // Weakening existing vote
+              voteidx.modify( vote_it, 0, [&]( auto& a ) {
+                  a.amount = vote_it->amount - amount;
+                  a.timestamp = now();
+              });
+          }
+          else{
+              // Switch votes
+              voteidx.modify( vote_it, 0, [&]( auto& a ) {
+                  a.amount = amount - vote_it->amount;
+                  a.approve = approve;
+                  a.timestamp = now();
+              });
+          }
+      }
+    }
 }
+
 void eparticle::votebyid ( account_name voter, uint64_t proposal_id, bool approve, uint64_t amount ) {
     // Check if article exists
     propstbl proptable( _self, voter );
@@ -134,9 +167,9 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
 
     // Retrieve votes from DB
     votestbl votetable(_self, _self);
-    auto propidx = votetable.get_index<N(byproposal)>();
-    auto vote_it = propidx.find( std::forward<uint64_t>(proposal_id) );
-    eosio_assert( vote_it != propidx.end(), "no votes found for proposal");
+    auto voteidx = votetable.get_index<N(byproposal)>();
+    auto vote_it = voteidx.find( std::forward<uint64_t>(proposal_id) );
+    eosio_assert( vote_it != voteidx.end(), "no votes found for proposal");
 
     // Tally votes
     uint64_t for_votes = 0;
@@ -159,7 +192,7 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
 
     // Determine slashing conditions
     // floating point is inexact, so I'm using integer arithmetic for slashing percentages
-    vote_it = propidx.find( std::forward<uint64_t>(proposal_id) );
+    vote_it = voteidx.find( std::forward<uint64_t>(proposal_id) );
     bool approved = (for_votes > against_votes);
     uint64_t slash_percent;
     if (approved)
@@ -167,55 +200,98 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
     else
         slash_percent = against_votes - for_votes;
 
-    // Slash losers
+
     while(vote_it->proposal_id == proposal_id) {
         if (vote_it->approve != approved) {
+            // Slash losers
             uint64_t slash_amount = vote_it->amount;
-            brainpwrtbl braintable(_self, _self);
-            auto brain_it = braintable.find(vote_it->voter);
-            braintable.modify( brain_it, 0, [&]( auto& b ) {
-              // brainpower table no longer has stakes, which are now in a separate table
-                // for (auto stake_it = b.stakes.begin(); slash_amount > 0; stake_it++) {
-                //     // STAKING_DURATION is a known constant and slash_percent has a max value of 100, so this will not overflow
-                //     stake_it->duration += STAKING_DURATION * slash_percent / 100;
-                //     slash_amount -= stake_it->amount;
-                // }
-            });
+            uint64_t runningTally = vote_it->amount;
+
+            // Get the stakes
+            staketbl staketable(_self, _self);
+            auto stakeidx = staketable.get_index<N(byuser)>();
+            auto stake_it = stakeidx.find(vote_it->voter);
+
+            while(stake_it->user == vote_it->voter) {
+                if(stake_it->amount >= runningTally){
+                    stakeidx.modify( stake_it, 0, [&]( auto& a ) {
+                        a.duration += STAKING_DURATION * slash_percent / 100;
+                        a.timestamp = now();
+                        runningTally -= stake_it->amount;
+                    });
+                }
+                else{
+                    // The slash amount does not fill a full stake, so the stake needs to be split
+                    uint64_t newAmount = stake_it->amount - runningTally;
+                    uint32_t oldTimestamp = stake_it->timestamp;
+                    uint64_t oldDuration = stake_it->duration;
+
+                    stakeidx.modify( stake_it, 0, [&]( auto& a ) {
+                        a.duration += STAKING_DURATION * slash_percent / 100;
+                        a.amount = runningTally;
+                    });
+                    staketable.emplace( vote_it->voter,  [&]( auto& a ) {
+                        a.id = staketable.available_primary_key();
+                        a.user = vote_it->voter;
+                        a.amount = newAmount;
+                        a.timestamp = oldTimestamp;
+                        a.duration = oldDuration;
+                    });
+                    break;
+                }
+
+                stake_it++;
+            }
+
+        }
+        else{
+            // TODO: Reward the winners
         }
         vote_it++;
     }
 
-    // TODO: Reward the voters
-
-    // Add article to database
+    // Add article to database, or update
     wikistbl wikitbl( _self, _self );
-    wikitbl.emplace( _self,  [&]( auto& a ) {
-        // TODO: incrementing ID
-        a.hash = prop_it->proposed_article_hash;
-        a.parent_hash = prop_it->old_article_hash;
-    });
+    auto wikiidx = wikitbl.get_index<N(byhash)>();
+    auto wiki_it = wikiidx.find(eparticle::ipfs_to_key256(prop_it->old_article_hash));
+
+    if (wiki_it == wikiidx.end()){
+        wikitbl.emplace( _self,  [&]( auto& a ) {
+            a.id = wikitbl.available_primary_key();
+            a.hash = prop_it->proposed_article_hash;
+            a.parent_hash = prop_it->old_article_hash;
+        });
+    }
+    else{
+        wikiidx.modify( wiki_it, 0, [&]( auto& a ) {
+            a.hash = prop_it->proposed_article_hash;
+            a.parent_hash = prop_it->old_article_hash;
+        });
+    }
+
+
 }
 
-void eparticle::brainme( account_name from, uint64_t amount) {
-    require_auth(from);
+void eparticle::brainme( account_name staker, uint64_t amount) {
+    require_auth(staker);
     uint64_t newBrainpower = amount * IQ_TO_BRAINPOWER_RATIO;
 
     // Check that there is enough IQ available to stake to brainpower
-    uint64_t oldIQBalance = getiqbalance(from);
+    uint64_t oldIQBalance = getiqbalance(staker);
     eosio_assert(oldIQBalance > 0, "Not enough IQ available to convert to brainpower");
 
     // Transfer IQ to the eparticle contract
     asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
-    action(permission_level{ from, N(active) }, N(eosio.token), N(transfer), std::make_tuple(from,
+    action(permission_level{ staker, N(active) }, N(eosio.token), N(transfer), std::make_tuple(staker,
             N(eparticle), iqAssetPack, std::string(""))).send();
 
     // Get the brainpower
     brainpwrtbl braintable(_self, _self);
-    auto brain_it = braintable.find(from);
+    auto brain_it = braintable.find(staker);
 
     if(brain_it == braintable.end()){
-      braintable.emplace( from, [&]( auto& b ) {
-          b.user = from;
+      braintable.emplace( staker, [&]( auto& b ) {
+          b.user = staker;
           b.power = newBrainpower;
       });
     }
@@ -226,9 +302,9 @@ void eparticle::brainme( account_name from, uint64_t amount) {
     }
 
     staketbl staketblobj(_self, _self);
-    staketblobj.emplace( from, [&]( auto& s ) {
+    staketblobj.emplace( staker, [&]( auto& s ) {
         s.id = staketblobj.available_primary_key();
-        s.user = from;
+        s.user = staker;
         s.amount = amount;
         s.timestamp = now();
         s.duration = STAKING_DURATION;

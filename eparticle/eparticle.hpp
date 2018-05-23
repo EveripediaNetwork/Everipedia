@@ -51,6 +51,13 @@ private:
 public:
     static eosio::key256 ipfs_to_key256(const ipfshash_t& input); // used for the secondary index since std::string indexes are not available
 
+    struct account {
+       asset    balance;
+       uint64_t primary_key()const { return balance.symbol.name(); }
+    };
+
+    typedef eosio::multi_index<N(accounts), account> accounts;
+
 private:
 
     // ==================================================
@@ -68,8 +75,8 @@ private:
           // will update to ipfshash_t primary key later if possible
           //ipfshash_t primary_key()const { return hash; }
           uint64_t primary_key () const { return id; }
-          ipfshash_t get_hash () const { return hash; }
-          ipfshash_t get_parent_hash () const { return parent_hash; }
+          key256 get_hash_key256 () const { return eparticle::ipfs_to_key256(hash); }
+          key256 get_parent_hash_key256 () const { return eparticle::ipfs_to_key256(parent_hash); }
     };
 
     // Edit Proposals
@@ -156,10 +163,11 @@ private:
     // indexed by wiki hash - currently not supported
     // indexed by parent hash - currently not supported
     // @abi table
-    typedef eosio::multi_index<N(wikistbl), wiki
-      //,indexed_by< N(byhash), const_mem_fun< wiki, ipfshash_t, &wiki::get_hash >>
-      //,indexed_by< N(byparent), const_mem_fun< wiki, ipfshash_t, &wiki::get_parent_hash >>
+    typedef eosio::multi_index<N(wikistbl), wiki,
+        indexed_by< N(byhash), const_mem_fun< wiki, eosio::key256, &wiki::get_hash_key256 >>,
+        indexed_by< N(byoldhash), const_mem_fun< wiki, eosio::key256, &wiki::get_parent_hash_key256 >>
     > wikistbl; // EOS table for the articles
+
 
     // edit proposals table
     // 12-char limit on table names, so proposals used instead of editproposals
@@ -186,7 +194,9 @@ private:
 
     // stake table
     // @abi table
-    typedef eosio::multi_index<N(staketbl), stake, indexed_by< N(byuser), const_mem_fun<stake, account_name, &stake::get_user>>> staketbl;
+    typedef eosio::multi_index<N(staketbl), stake,
+        indexed_by< N(byuser), const_mem_fun<stake, account_name, &stake::get_user>>
+    > staketbl;
 
     // ==================================================
     // =================================================
@@ -229,7 +239,7 @@ public:
 
     void testinsert( account_name from);
 
-    void brainme( account_name from,
+    void brainme( account_name staker,
                    uint64_t amount );
 
     void brainclaim( account_name claimant,
