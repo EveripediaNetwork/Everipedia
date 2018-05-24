@@ -78,6 +78,7 @@ void eparticle::propose( account_name proposer, ipfshash_t& proposed_article_has
         a.proposed_article_hash = proposed_article_hash;
         a.old_article_hash = old_article_hash;
         a.proposer = proposer;
+        a.proposer_64t = proposer;
         a.timestamp = now();
         a.status = ProposalStatus::pending;
     });
@@ -111,45 +112,52 @@ void eparticle::votebyhash ( account_name voter, ipfshash_t& proposed_article_ha
     auto vote_it = voteidx.find( std::forward<uint64_t>(proposal_id) );
     uint64_t votePrimaryKey = votetbl.available_primary_key();
 
-    if(vote_it == voteidx.end()){
-        // Brand new vote
-        votetbl.emplace( voter, [&]( auto& a ) {
-             a.id = votePrimaryKey;
-             a.proposal_id = proposal_id;
-             a.proposed_article_hash = proposed_article_hash;
-             a.approve = approve;
-             a.amount = amount;
-             a.voter = voter;
-             a.timestamp = now();
-        });
+    while(vote_it->proposal_id == proposal_id) {
+        if(vote_it->voter == voter){
+            if(vote_it->approve == approve){
+                // Strengthen existing vote
+                voteidx.modify( vote_it, 0, [&]( auto& a ) {
+                    a.amount += amount;
+                    a.timestamp = now();
+                });
+            }
+            else{
+                if(vote_it->amount >= amount){
+                    // Weakening existing vote
+                    voteidx.modify( vote_it, 0, [&]( auto& a ) {
+                        a.amount = vote_it->amount - amount;
+                        a.timestamp = now();
+                    });
+                }
+                else{
+                    // Switch votes
+                    voteidx.modify( vote_it, 0, [&]( auto& a ) {
+                        a.amount = amount - vote_it->amount;
+                        a.approve = approve;
+                        a.timestamp = now();
+                    });
+                }
+            }
+            break;
+        }
+        else if(vote_it == voteidx.end()){
+            // Brand new vote
+            votetbl.emplace( voter, [&]( auto& a ) {
+                 a.id = votePrimaryKey;
+                 a.proposal_id = proposal_id;
+                 a.proposed_article_hash = proposed_article_hash;
+                 a.approve = approve;
+                 a.amount = amount;
+                 a.voter = voter;
+                 a.voter_64t = voter;
+                 a.timestamp = now();
+            });
+            break;
+        }
+        vote_it++;
     }
-    else{
 
-      if(vote_it->approve == approve){
-          // Strengthen existing vote
-          voteidx.modify( vote_it, 0, [&]( auto& a ) {
-              a.amount += amount;
-              a.timestamp = now();
-          });
-      }
-      else{
-          if(vote_it->amount >= amount){
-              // Weakening existing vote
-              voteidx.modify( vote_it, 0, [&]( auto& a ) {
-                  a.amount = vote_it->amount - amount;
-                  a.timestamp = now();
-              });
-          }
-          else{
-              // Switch votes
-              voteidx.modify( vote_it, 0, [&]( auto& a ) {
-                  a.amount = amount - vote_it->amount;
-                  a.approve = approve;
-                  a.timestamp = now();
-              });
-          }
-      }
-    }
+
 }
 
 void eparticle::votebyid ( account_name voter, uint64_t proposal_id, bool approve, uint64_t amount ) {
@@ -248,6 +256,7 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
                     staketable.emplace( vote_it->voter,  [&]( auto& a ) {
                         a.id = staketable.available_primary_key();
                         a.user = vote_it->voter;
+                        a.user_64t = vote_it->voter;
                         a.amount = newAmount;
                         a.timestamp = oldTimestamp;
                         a.duration = oldDuration;
@@ -303,10 +312,12 @@ void eparticle::brainme( account_name staker, uint64_t amount) {
     // Get the brainpower
     brainpwrtbl braintable(_self, _self);
     auto brain_it = braintable.find(staker);
+    uint64_t name64t = staker;
 
     if(brain_it == braintable.end()){
       braintable.emplace( staker, [&]( auto& b ) {
           b.user = staker;
+          b.user_64t = staker;
           b.power = newBrainpower;
       });
     }
@@ -320,6 +331,7 @@ void eparticle::brainme( account_name staker, uint64_t amount) {
     staketblobj.emplace( staker, [&]( auto& s ) {
         s.id = staketblobj.available_primary_key();
         s.user = staker;
+        s.user_64t = staker;
         s.amount = amount;
         s.timestamp = now();
         s.duration = STAKING_DURATION;

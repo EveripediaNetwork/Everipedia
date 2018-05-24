@@ -81,12 +81,14 @@ private:
           ipfshash_t proposed_article_hash; // IPFS hash of the proposed new version
           ipfshash_t old_article_hash; // IPFS hash of the old version
           account_name proposer; // account name of the proposer
+          account_name proposer_64t; // account name of the proposer in integer form
           uint32_t timestamp; // epoch time of the proposal
           ProposalStatus status;
 
           uint64_t primary_key () const { return id; }
           key256 get_hash_key256 () const { return eparticle::ipfs_to_key256(proposed_article_hash); }
           account_name get_proposer () const { return proposer; }
+          uint64_t get_proposer64t () const { return proposer_64t; }
 
     };
 
@@ -98,22 +100,26 @@ private:
           bool approve;
           uint64_t amount;
           account_name voter; // account name of the voter
+          account_name voter_64t; // account name of the voter in integer form
           uint32_t timestamp; // epoch time of the vote
 
           uint64_t primary_key()const { return id; }
           uint64_t get_proposal_id()const { return id; }
+          uint64_t get_voter64t()const { return voter_64t; }
     };
 
     // Internal struct for stakes within brainpower
     struct stake {
         uint64_t id;
         account_name user;
+        account_name user_64t; // account name of the user in integer form
         uint64_t amount;
         uint32_t timestamp;
         uint64_t duration;
 
         auto primary_key()const { return id; }
         account_name get_user()const { return user; }
+        uint64_t get_user64t()const { return user_64t; }
     };
 
     // test struct
@@ -128,9 +134,11 @@ private:
     // Brainpower balances
     struct brainpower {
         account_name user;
+        account_name user_64t;
         uint64_t power = 0; // TODO: need to fix this later
 
         account_name primary_key()const { return user; }
+        uint64_t get_user64t()const { return user_64t; }
 
         // subtraction with underflow check
         uint64_t sub (uint64_t value) {
@@ -171,19 +179,23 @@ private:
     // indexed by hash
     // @abi table
     typedef eosio::multi_index<N(propstbl), editproposal,
-        indexed_by< N(byhash), const_mem_fun< editproposal, eosio::key256, &editproposal::get_hash_key256 >>
+        indexed_by< N(byhash), const_mem_fun< editproposal, eosio::key256, &editproposal::get_hash_key256 >>,
+        indexed_by< N(byproposer64t), const_mem_fun< editproposal, uint64_t, &editproposal::get_proposer64t >>
     > propstbl; // EOS table for the edit proposals
 
     // votes table
     // indexed by proposal
     // @abi table
     typedef eosio::multi_index<N(votestbl), vote,
-        indexed_by< N(byproposal), const_mem_fun< vote, uint64_t, &vote::get_proposal_id >>
+        indexed_by< N(byproposal), const_mem_fun< vote, uint64_t, &vote::get_proposal_id >>,
+        indexed_by< N(byvoter64t), const_mem_fun< vote, uint64_t, &vote::get_voter64t >>
     > votestbl; // EOS table for the votes
 
     // brainpower table
     // @abi table
-    typedef eosio::multi_index<N(brainpwrtbl), brainpower> brainpwrtbl;
+    typedef eosio::multi_index<N(brainpwrtbl), brainpower,
+        indexed_by< N(byuser64t), const_mem_fun< brainpower, uint64_t, &brainpower::get_user64t >>
+    > brainpwrtbl;
 
     // test table
     // @abi table
@@ -192,7 +204,8 @@ private:
     // stake table
     // @abi table
     typedef eosio::multi_index<N(staketbl), stake,
-        indexed_by< N(byuser), const_mem_fun<stake, account_name, &stake::get_user>>
+        indexed_by< N(byuser), const_mem_fun<stake, account_name, &stake::get_user>>,
+        indexed_by< N(byuser64t), const_mem_fun< stake, uint64_t, &stake::get_user64t >>
     > staketbl;
 
     // ==================================================

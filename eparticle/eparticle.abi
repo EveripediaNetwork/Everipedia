@@ -87,6 +87,7 @@
         {"name":"proposed_article_hash", "type":"ipfshash_t"},
         {"name":"old_article_hash", "type":"ipfshash_t"},
         {"name":"proposer", "type":"account_name"},
+        {"name":"proposer_64t", "type":"uint64"},
         {"name":"timestamp", "type":"time"},
         {"name":"status", "type":"uint32"}
       ]
@@ -100,6 +101,7 @@
         {"name":"approve", "type":"bool"},
         {"name":"amount", "type":"uint64"},
         {"name":"voter", "type":"account_name"},
+        {"name":"voter_64t", "type":"uint64"},
         {"name":"timestamp", "type":"time"}
       ]
     },{
@@ -108,6 +110,7 @@
       "fields": [
         {"name":"id", "type":"uint64"},
         {"name":"user", "type":"account_name"},
+        {"name":"user_64t", "type":"uint64"},
         {"name":"amount", "type":"uint64"},
         {"name":"timestamp", "type":"time"},
         {"name":"duration", "type":"uint64"}
@@ -125,6 +128,7 @@
       "base": "",
       "fields": [
         {"name":"user", "type":"account_name"},
+        {"name":"user_64t", "type":"uint64"},
         {"name":"power", "type":"uint64"},
       ]
     }
