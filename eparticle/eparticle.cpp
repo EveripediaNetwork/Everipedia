@@ -52,6 +52,14 @@ uint64_t eparticle::getiqbalance( account_name from ) {
     }
 }
 
+uint64_t eparticle::swapEndian64(uint64_t X) {
+    uint64_t x = (uint64_t) X;
+    x = (x & 0x00000000FFFFFFFF) << 32 | (x & 0xFFFFFFFF00000000) >> 32;
+    x = (x & 0x0000FFFF0000FFFF) << 16 | (x & 0xFFFF0000FFFF0000) >> 16;
+    x = (x & 0x00FF00FF00FF00FF) << 8  | (x & 0xFF00FF00FF00FF00) >> 8;
+    return x;
+}
+
 void eparticle::propose_precheck( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ) {
     // Fetch the brainpower
     brainpwrtbl braintable(_self, _self);
@@ -72,14 +80,15 @@ void eparticle::propose( account_name proposer, ipfshash_t& proposed_article_has
     eosio_assert(prop_it == propidx.end(), "Proposal already exists");
 
     // Store the proposal
-    uint64_t propPrimaryKey = proptable.available_primary_key();
+    uint64_t propPrimaryKey = ipfs_to_uint64_trunc(proposed_article_hash);
     proptable.emplace( _self, [&]( auto& a ) {
         a.id = propPrimaryKey; // TODO: need to remove this later, or account for uniqueness
         a.proposed_article_hash = proposed_article_hash;
         a.old_article_hash = old_article_hash;
         a.proposer = proposer;
-        a.proposer_64t = proposer;
+        a.proposer_64t = eparticle::swapEndian64(proposer);
         a.timestamp = now();
+        a.votingduration = DEFAULT_VOTING_TIME;
         a.status = ProposalStatus::pending;
     });
 
@@ -149,7 +158,7 @@ void eparticle::votebyhash ( account_name voter, ipfshash_t& proposed_article_ha
                  a.approve = approve;
                  a.amount = amount;
                  a.voter = voter;
-                 a.voter_64t = voter;
+                 a.voter_64t = eparticle::swapEndian64(voter);
                  a.timestamp = now();
             });
             break;
@@ -256,7 +265,7 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
                     staketable.emplace( vote_it->voter,  [&]( auto& a ) {
                         a.id = staketable.available_primary_key();
                         a.user = vote_it->voter;
-                        a.user_64t = vote_it->voter;
+                        a.user_64t = eparticle::swapEndian64(vote_it->voter);
                         a.amount = newAmount;
                         a.timestamp = oldTimestamp;
                         a.duration = oldDuration;
@@ -317,7 +326,7 @@ void eparticle::brainme( account_name staker, uint64_t amount) {
     if(brain_it == braintable.end()){
       braintable.emplace( staker, [&]( auto& b ) {
           b.user = staker;
-          b.user_64t = staker;
+          b.user_64t = eparticle::swapEndian64(staker);
           b.power = newBrainpower;
       });
     }
@@ -331,7 +340,7 @@ void eparticle::brainme( account_name staker, uint64_t amount) {
     staketblobj.emplace( staker, [&]( auto& s ) {
         s.id = staketblobj.available_primary_key();
         s.user = staker;
-        s.user_64t = staker;
+        s.user_64t = eparticle::swapEndian64(staker);
         s.amount = amount;
         s.timestamp = now();
         s.duration = STAKING_DURATION;
@@ -374,9 +383,13 @@ void eparticle::brainclaim( account_name claimant, uint64_t amount) {
     }
 }
 
-void eparticle::testinsert( account_name from ) {
-    key256 result = eparticle::ipfs_to_key256("Qme5aRkNsaQSXU23pmM3MvRMqYa8ufqYojxgFAP143SjYJ");
-    print("KEY256: ", result);
+void eparticle::testinsert( ipfshash_t inputhash ) {
+    uint64_t hashNumber = ipfs_to_uint64_trunc(inputhash);
+
+    testtbl testtable(_self, _self);
+    testtable.emplace( _self, [&]( auto& b ) {
+        b.id = hashNumber;
+    });
 }
 
 EOSIO_ABI( eparticle, (brainme)(brainclaim)(finalize)(propose)(votebyhash)(testinsert) )

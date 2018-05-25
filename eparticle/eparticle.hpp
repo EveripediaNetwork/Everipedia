@@ -50,6 +50,7 @@ private:
 
 public:
     static eosio::key256 ipfs_to_key256(const ipfshash_t& input); // used for the secondary index since std::string indexes are not available
+    static uint64_t ipfs_to_uint64_trunc(const ipfshash_t& input); // used for the secondary index since std::string indexes are not available
 
     struct account {
        asset    balance;
@@ -65,6 +66,8 @@ private:
     // ==================================================
     // DATABASE SCHEMAS
 
+    // Wiki articles
+    // @abi table
     struct wiki {
           uint64_t id;
           ipfshash_t hash; // IPFS hash of the current consensus article version
@@ -76,6 +79,7 @@ private:
     };
 
     // Edit Proposals
+    // @abi table
     struct editproposal {
           uint64_t id;
           ipfshash_t proposed_article_hash; // IPFS hash of the proposed new version
@@ -83,7 +87,8 @@ private:
           account_name proposer; // account name of the proposer
           account_name proposer_64t; // account name of the proposer in integer form
           uint32_t timestamp; // epoch time of the proposal
-          ProposalStatus status;
+          uint32_t votingduration;
+          uint32_t status;
 
           uint64_t primary_key () const { return id; }
           key256 get_hash_key256 () const { return eparticle::ipfs_to_key256(proposed_article_hash); }
@@ -93,6 +98,7 @@ private:
     };
 
     // Voting tally
+    // @abi table
     struct vote {
           uint64_t id;
           uint64_t proposal_id;
@@ -109,6 +115,7 @@ private:
     };
 
     // Internal struct for stakes within brainpower
+    // @abi table
     struct stake {
         uint64_t id;
         account_name user;
@@ -123,15 +130,15 @@ private:
     };
 
     // test struct
+    // @abi table
     struct teststruct {
-        account_name user;
-        uint64_t b;
-        uint64_t c;
+        uint64_t id;
 
-        account_name primary_key()const { return user; }
+        uint64_t primary_key()const { return id; }
     };
 
     // Brainpower balances
+    // @abi table
     struct brainpower {
         account_name user;
         account_name user_64t;
@@ -139,6 +146,7 @@ private:
 
         account_name primary_key()const { return user; }
         uint64_t get_user64t()const { return user_64t; }
+        uint64_t get_power()const { return power; }
 
         // subtraction with underflow check
         uint64_t sub (uint64_t value) {
@@ -194,7 +202,8 @@ private:
     // brainpower table
     // @abi table
     typedef eosio::multi_index<N(brainpwrtbl), brainpower,
-        indexed_by< N(byuser64t), const_mem_fun< brainpower, uint64_t, &brainpower::get_user64t >>
+        indexed_by< N(byuser64t), const_mem_fun< brainpower, uint64_t, &brainpower::get_user64t >>,
+        indexed_by< N(power), const_mem_fun< brainpower, uint64_t, &brainpower::get_power >>
     > brainpwrtbl;
 
     // test table
@@ -220,6 +229,7 @@ public:
     eparticle(account_name self) : contract(self) {};
 
     uint64_t getiqbalance( account_name from );
+    uint64_t swapEndian64( uint64_t input );
 
     //  ==================================================
     //  ==================================================
@@ -250,7 +260,7 @@ public:
    void finalizebyhash( account_name from,
                   ipfshash_t& proposal_hash );
 
-    void testinsert( account_name from);
+    void testinsert( ipfshash_t inputhash );
 
     void brainme( account_name staker,
                    uint64_t amount );
@@ -262,11 +272,30 @@ public:
 };
 
 eosio::key256 eparticle::ipfs_to_key256(const ipfshash_t& input) {
-  // This is needed for indexing since indexes cannot be done by strings, only max key256's, for now...
-  uint64_t p1 = eosio::string_to_name(input.substr(0, 12).c_str());
-  uint64_t p2 = eosio::string_to_name(input.substr(13, 24).c_str());
-  uint64_t p3 = eosio::string_to_name(input.substr(25, 36).c_str());
-  uint64_t p4 = eosio::string_to_name(input.substr(37, 45).c_str());
-  key256 returnKey = key256::make_from_word_sequence<uint64_t>(p1, p2, p3, p4);
-  return returnKey;
+    // This is needed for indexing since indexes cannot be done by strings, only max key256's, for now...
+    uint64_t p1 = eosio::string_to_name(input.substr(0, 12).c_str());
+    uint64_t p2 = eosio::string_to_name(input.substr(13, 24).c_str());
+    uint64_t p3 = eosio::string_to_name(input.substr(25, 36).c_str());
+    uint64_t p4 = eosio::string_to_name(input.substr(37, 45).c_str());
+    key256 returnKey = key256::make_from_word_sequence<uint64_t>(p1, p2, p3, p4);
+    return returnKey;
+}
+
+// This is until secondary keys get fixed with cleos get table :)
+uint64_t eparticle::ipfs_to_uint64_trunc(const ipfshash_t& input) {
+    ipfshash_t newHash = input;
+    char chars[] = "6789";
+    for (unsigned int i = 0; i < strlen(chars); ++i)
+    {
+       newHash.erase(std::remove(newHash.begin(), newHash.end(), chars[i]), newHash.end());
+    }
+    ipfshash_t truncatedHash = newHash.substr(2,12);
+    transform(truncatedHash.begin(), truncatedHash.end(), truncatedHash.begin(), ::tolower);
+    const char* cstringedMiniHash = truncatedHash.c_str();
+    print(cstringedMiniHash);
+    uint64_t hashNumber = eosio::string_to_name(cstringedMiniHash);
+    print("Before: ", hashNumber);
+    hashNumber = hashNumber % 9007199254740990; // Max safe javascript integer
+    print("After: ", hashNumber);
+    return(hashNumber);
 }

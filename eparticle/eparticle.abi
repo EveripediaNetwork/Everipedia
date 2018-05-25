@@ -69,7 +69,7 @@
       "name": "testinsert",
       "base": "",
       "fields": [
-        {"name":"from", "type":"account_name"},
+        {"name":"inputhash", "type":"ipfshash_t"},
       ]
   },{
       "name": "wiki",
@@ -89,6 +89,7 @@
         {"name":"proposer", "type":"account_name"},
         {"name":"proposer_64t", "type":"uint64"},
         {"name":"timestamp", "type":"time"},
+        {"name":"votingduration", "type":"time"},
         {"name":"status", "type":"uint32"}
       ]
     },{
@@ -119,9 +120,7 @@
       "name": "teststruct",
       "base": "",
       "fields": [
-        {"name":"user", "type":"account_name"},
-        {"name":"b", "type":"uint64"},
-        {"name":"c", "type":"uint64"}
+        {"name":"id", "type":"uint64"}
       ]
     },{
       "name": "brainpower",
@@ -190,14 +189,14 @@
       "name": "testtbl",
       "type": "teststruct",
       "index_type": "i64",
-      "key_names" : ["user"],
-      "key_types" : ["account_name"]
+      "key_names" : ["id"],
+      "key_types" : ["uint64"]
     },{
       "name": "brainpwrtbl",
       "type": "brainpower",
       "index_type": "i64",
-      "key_names" : ["user"],
-      "key_types" : ["account_name"]
+      "key_names" : ["user", "user_64t", "power"],
+      "key_types" : ["account_name", "uint64", "uint64"]
     },{
       "name": "staketbl",
       "type": "stake",
