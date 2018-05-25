@@ -121,52 +121,64 @@ void eparticle::votebyhash ( account_name voter, ipfshash_t& proposed_article_ha
     auto vote_it = voteidx.find( std::forward<uint64_t>(proposal_id) );
     uint64_t votePrimaryKey = votetbl.available_primary_key();
 
-    while(vote_it->proposal_id == proposal_id) {
-        if(vote_it->voter == voter){
-            if(vote_it->approve == approve){
-                // Strengthen existing vote
-                voteidx.modify( vote_it, 0, [&]( auto& a ) {
-                    a.amount += amount;
-                    a.timestamp = now();
-                });
-            }
-            else{
-                if(vote_it->amount >= amount){
-                    // Weakening existing vote
-                    voteidx.modify( vote_it, 0, [&]( auto& a ) {
-                        a.amount = vote_it->amount - amount;
-                        a.timestamp = now();
-                    });
-                }
-                else{
-                    // Switch votes
-                    voteidx.modify( vote_it, 0, [&]( auto& a ) {
-                        a.amount = amount - vote_it->amount;
-                        a.approve = approve;
-                        a.timestamp = now();
-                    });
-                }
-            }
-            break;
-        }
-        else if(vote_it == voteidx.end()){
-            // Brand new vote
-            votetbl.emplace( voter, [&]( auto& a ) {
-                 a.id = votePrimaryKey;
-                 a.proposal_id = proposal_id;
-                 a.proposed_article_hash = proposed_article_hash;
-                 a.approve = approve;
-                 a.amount = amount;
-                 a.voter = voter;
-                 a.voter_64t = eparticle::swapEndian64(voter);
-                 a.timestamp = now();
-            });
-            break;
-        }
-        vote_it++;
+    if(vote_it == voteidx.end()){
+        // First vote for proposal
+        votetbl.emplace( voter, [&]( auto& a ) {
+             a.id = votePrimaryKey;
+             a.proposal_id = proposal_id;
+             a.proposed_article_hash = proposed_article_hash;
+             a.approve = approve;
+             a.amount = amount;
+             a.voter = voter;
+             a.voter_64t = eparticle::swapEndian64(voter);
+             a.timestamp = now();
+        });
     }
-
-
+    else{
+        while(vote_it->proposal_id == proposal_id) {
+            if(vote_it->voter == voter){
+                if(vote_it->approve == approve){
+                    // Strengthen existing vote
+                    voteidx.modify( vote_it, 0, [&]( auto& a ) {
+                        a.amount += amount;
+                        a.timestamp = now();
+                    });
+                }
+                else {
+                    if(vote_it->amount >= amount){
+                        // Weakening existing vote
+                        voteidx.modify( vote_it, 0, [&]( auto& a ) {
+                            a.amount = vote_it->amount - amount;
+                            a.timestamp = now();
+                        });
+                    }
+                    else{
+                        // Switch votes
+                        voteidx.modify( vote_it, 0, [&]( auto& a ) {
+                            a.amount = amount - vote_it->amount;
+                            a.approve = approve;
+                            a.timestamp = now();
+                        });
+                    }
+                }
+            }
+            else if(vote_it == voteidx.end()){
+                // Brand new vote
+                votetbl.emplace( voter, [&]( auto& a ) {
+                     a.id = votePrimaryKey;
+                     a.proposal_id = proposal_id;
+                     a.proposed_article_hash = proposed_article_hash;
+                     a.approve = approve;
+                     a.amount = amount;
+                     a.voter = voter;
+                     a.voter_64t = eparticle::swapEndian64(voter);
+                     a.timestamp = now();
+                });
+                break;
+            }
+            vote_it++;
+        }
+    }
 }
 
 void eparticle::votebyid ( account_name voter, uint64_t proposal_id, bool approve, uint64_t amount ) {

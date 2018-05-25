@@ -195,8 +195,8 @@
       "name": "brainpwrtbl",
       "type": "brainpower",
       "index_type": "i64",
-      "key_names" : ["user", "user_64t", "power"],
-      "key_types" : ["account_name", "uint64", "uint64"]
+      "key_names" : ["user"],
+      "key_types" : ["account_name"]
     },{
       "name": "staketbl",
       "type": "stake",
