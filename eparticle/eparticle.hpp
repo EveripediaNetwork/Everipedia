@@ -51,6 +51,7 @@ private:
 public:
     static eosio::key256 ipfs_to_key256(const ipfshash_t& input); // used for the secondary index since std::string indexes are not available
     static uint64_t ipfs_to_uint64_trunc(const ipfshash_t& input); // used for the secondary index since std::string indexes are not available
+    static uint64_t string_to_nameMODIFIED( const char* str );
 
     struct account {
        asset    balance;
@@ -292,10 +293,10 @@ uint64_t eparticle::ipfs_to_uint64_trunc(const ipfshash_t& input) {
     ipfshash_t truncatedHash = newHash.substr(2,12);
     transform(truncatedHash.begin(), truncatedHash.end(), truncatedHash.begin(), ::tolower);
     const char* cstringedMiniHash = truncatedHash.c_str();
-    print(cstringedMiniHash);
+    print(cstringedMiniHash, "\n");
     uint64_t hashNumber = eosio::string_to_name(cstringedMiniHash);
-    print("Before: ", hashNumber);
+    print("Before: ", hashNumber, "\n");
     hashNumber = hashNumber % 9007199254740990; // Max safe javascript integer
-    print("After: ", hashNumber);
+    print("After: ", hashNumber, "\n");
     return(hashNumber);
 }

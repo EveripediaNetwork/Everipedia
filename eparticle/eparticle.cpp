@@ -398,10 +398,10 @@ void eparticle::brainclaim( account_name claimant, uint64_t amount) {
 void eparticle::testinsert( ipfshash_t inputhash ) {
     uint64_t hashNumber = ipfs_to_uint64_trunc(inputhash);
 
-    testtbl testtable(_self, _self);
-    testtable.emplace( _self, [&]( auto& b ) {
-        b.id = hashNumber;
-    });
+    // testtbl testtable(_self, _self);
+    // testtable.emplace( _self, [&]( auto& b ) {
+    //     b.id = hashNumber;
+    // });
 }
 
 EOSIO_ABI( eparticle, (brainme)(brainclaim)(finalize)(propose)(votebyhash)(testinsert) )
