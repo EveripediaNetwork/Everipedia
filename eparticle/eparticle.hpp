@@ -111,6 +111,7 @@ private:
           uint32_t timestamp; // epoch time of the vote
 
           uint64_t primary_key()const { return id; }
+          key256 get_hash_key256 () const { return eparticle::ipfs_to_key256(proposed_article_hash); }
           uint64_t get_proposal_id()const { return id; }
           uint64_t get_voter64t()const { return voter_64t; }
     };
@@ -196,6 +197,7 @@ private:
     // indexed by proposal
     // @abi table
     typedef eosio::multi_index<N(votestbl), vote,
+        indexed_by< N(byhash), const_mem_fun< vote, eosio::key256, &vote::get_hash_key256 >>,
         indexed_by< N(byproposal), const_mem_fun< vote, uint64_t, &vote::get_proposal_id >>,
         indexed_by< N(byvoter64t), const_mem_fun< vote, uint64_t, &vote::get_voter64t >>
     > votestbl; // EOS table for the votes

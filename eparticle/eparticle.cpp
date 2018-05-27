@@ -117,12 +117,13 @@ void eparticle::votebyhash ( account_name voter, ipfshash_t& proposed_article_ha
 
     // Store vote in DB
     votestbl votetbl( _self, _self );
-    auto voteidx = votetbl.get_index<N(byproposal)>();
-    auto vote_it = voteidx.find( std::forward<uint64_t>(proposal_id) );
+    auto voteidx = votetbl.get_index<N(byhash)>();
+    auto vote_it = voteidx.find(eparticle::ipfs_to_key256(proposed_article_hash));
     uint64_t votePrimaryKey = votetbl.available_primary_key();
 
     if(vote_it == voteidx.end()){
         // First vote for proposal
+        print("FIRST VOTE FOR PROPOSAL", "\n");
         votetbl.emplace( voter, [&]( auto& a ) {
              a.id = votePrimaryKey;
              a.proposal_id = proposal_id;
@@ -135,48 +136,56 @@ void eparticle::votebyhash ( account_name voter, ipfshash_t& proposed_article_ha
         });
     }
     else{
-        while(vote_it->proposal_id == proposal_id) {
-            if(vote_it->voter == voter){
+        while(vote_it != voteidx.end()) {
+            if(vote_it->proposal_id == proposal_id && vote_it->voter == voter){
+                print("PROPOSAL AND VOTER MATCH FOUND", "\n");
                 if(vote_it->approve == approve){
                     // Strengthen existing vote
+                    print("STRENGTHEN EXISTING VOTE", "\n");
                     voteidx.modify( vote_it, 0, [&]( auto& a ) {
                         a.amount += amount;
                         a.timestamp = now();
                     });
+                    break;
                 }
                 else {
                     if(vote_it->amount >= amount){
                         // Weakening existing vote
+                        print("WEAKEN EXISTING VOTE", "\n");
                         voteidx.modify( vote_it, 0, [&]( auto& a ) {
                             a.amount = vote_it->amount - amount;
                             a.timestamp = now();
                         });
+                        break;
                     }
                     else{
                         // Switch votes
+                        print("SWITCH VOTE", "\n");
                         voteidx.modify( vote_it, 0, [&]( auto& a ) {
                             a.amount = amount - vote_it->amount;
                             a.approve = approve;
                             a.timestamp = now();
                         });
+                        break;
                     }
                 }
-            }
-            else if(vote_it == voteidx.end()){
-                // Brand new vote
-                votetbl.emplace( voter, [&]( auto& a ) {
-                     a.id = votePrimaryKey;
-                     a.proposal_id = proposal_id;
-                     a.proposed_article_hash = proposed_article_hash;
-                     a.approve = approve;
-                     a.amount = amount;
-                     a.voter = voter;
-                     a.voter_64t = eparticle::swapEndian64(voter);
-                     a.timestamp = now();
-                });
-                break;
+
             }
             vote_it++;
+        }
+        if(vote_it == voteidx.end()){
+            // Brand new vote
+            print("BRAND NEW VOTE", "\n");
+            votetbl.emplace( voter, [&]( auto& a ) {
+                 a.id = votePrimaryKey;
+                 a.proposal_id = proposal_id;
+                 a.proposed_article_hash = proposed_article_hash;
+                 a.approve = approve;
+                 a.amount = amount;
+                 a.voter = voter;
+                 a.voter_64t = eparticle::swapEndian64(voter);
+                 a.timestamp = now();
+            });
         }
     }
 }
