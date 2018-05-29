@@ -60,6 +60,127 @@ uint64_t eparticle::swapEndian64(uint64_t X) {
     return x;
 }
 
+
+void eparticle::brainme( account_name staker, uint64_t amount) {
+    require_auth(staker);
+    uint64_t newBrainpower = amount * IQ_TO_BRAINPOWER_RATIO;
+
+    // Check that there is enough IQ available to stake to brainpower
+    uint64_t oldIQBalance = getiqbalance(staker);
+    eosio_assert(oldIQBalance > 0, "Not enough IQ available to convert to brainpower");
+
+    // Transfer IQ to the eparticle contract
+    asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
+    action(permission_level{ staker, N(active) }, N(eosio.token), N(transfer), std::make_tuple(staker,
+            N(eparticle), iqAssetPack, std::string(""))).send();
+
+    // Get the brainpower
+    brainpwrtbl braintable(_self, _self);
+    auto brain_it = braintable.find(staker);
+    uint64_t name64t = staker;
+
+    if(brain_it == braintable.end()){
+      braintable.emplace( staker, [&]( auto& b ) {
+          b.user = staker;
+          b.user_64t = eparticle::swapEndian64(staker);
+          b.power = newBrainpower;
+      });
+    }
+    else {
+      braintable.modify( brain_it, 0, [&]( auto& b ) {
+          b.add(newBrainpower);
+      });
+    }
+
+    staketbl staketblobj(_self, _self);
+    staketblobj.emplace( staker, [&]( auto& s ) {
+        s.id = staketblobj.available_primary_key();
+        s.user = staker;
+        s.user_64t = eparticle::swapEndian64(staker);
+        s.amount = amount;
+        s.timestamp = now();
+        s.completion_time = now() + STAKING_DURATION;
+    });
+}
+
+void eparticle::brainclaim( account_name claimant, uint64_t amount) {
+    // Get the brainpower
+    brainpwrtbl braintable(_self, _self);
+    auto brain_it = braintable.find(claimant);
+
+    // Get the stakes
+    staketbl staketable(_self, _self);
+    auto stakeidx = staketable.get_index<N(byuser)>();
+    auto stake_it = stakeidx.find(claimant);
+    eosio_assert( stake_it != stakeidx.end(), "No stakes found for proposal");
+
+    // Dummy initialization
+    asset iqAssetPack;
+
+    // Loop through the stakes
+    while(stake_it != stakeidx.end() && stake_it->user == claimant) {
+        // Get the age of the stake
+        time timeDiff = now() - stake_it->timestamp;
+
+        // See if the stake is over 21 days old
+        if (timeDiff > STAKING_DURATION){
+            // Transfer back the IQ
+            iqAssetPack = asset(stake_it->amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
+            action(permission_level{ N(eparticle), N(active) }, N(eosio.token), N(transfer), std::make_tuple(N(eparticle),
+                    claimant, iqAssetPack, std::string(""))).send();
+
+            // Delete the stake.
+            // Note that the erase() function increments the iterator, then gives it back after the erase is done
+            stake_it = stakeidx.erase(stake_it);
+        }
+        else{
+            stake_it++;
+        }
+    }
+}
+
+void eparticle::brainclmbyid( account_name claimant, uint64_t stakeid) {
+    print("HERE 0", "\n");
+
+    // Get the brainpower
+    brainpwrtbl braintable(_self, _self);
+    auto brain_it = braintable.find(claimant);
+
+    print("HERE 1", "\n");
+
+    // Get the stakes
+    staketbl staketable(_self, _self);
+    auto stake_it = staketable.find(stakeid);
+    eosio_assert( stake_it != staketable.end(), "No stakes found for proposal");
+
+    print("HERE 2", "\n");
+
+    // Dummy initialization
+    asset iqAssetPack;
+
+    // Get the age of the stake
+    time timeDiff = now() - stake_it->timestamp;
+
+    print("HERE 3", "\n");
+
+    // See if the stake is over 21 days old
+    if (timeDiff > STAKING_DURATION){
+        // Transfer back the IQ
+        iqAssetPack = asset(stake_it->amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
+        action(permission_level{ N(eparticle), N(active) }, N(eosio.token), N(transfer), std::make_tuple(N(eparticle),
+                claimant, iqAssetPack, std::string(""))).send();
+
+        print("HERE 4", "\n");
+
+        // Delete the stake.
+        // Note that the erase() function increments the iterator, then gives it back after the erase is done
+        stake_it = staketable.erase(stake_it);
+    }
+    else{
+        stake_it++;
+    }
+}
+
 void eparticle::propose_precheck( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ) {
     // Fetch the brainpower
     brainpwrtbl braintable(_self, _self);
@@ -268,7 +389,7 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
             while(stake_it->user == vote_it->voter) {
                 if(stake_it->amount >= runningTally){
                     stakeidx.modify( stake_it, 0, [&]( auto& a ) {
-                        a.duration += STAKING_DURATION * slash_percent / 100;
+                        a.completion_time += STAKING_DURATION * slash_percent / 100;
                         a.timestamp = now();
                         runningTally -= stake_it->amount;
                     });
@@ -277,10 +398,10 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
                     // The slash amount does not fill a full stake, so the stake needs to be split
                     uint64_t newAmount = stake_it->amount - runningTally;
                     uint32_t oldTimestamp = stake_it->timestamp;
-                    uint64_t oldDuration = stake_it->duration;
+                    uint32_t oldCompletionTime = stake_it->completion_time;
 
                     stakeidx.modify( stake_it, 0, [&]( auto& a ) {
-                        a.duration += STAKING_DURATION * slash_percent / 100;
+                        a.completion_time += STAKING_DURATION * slash_percent / 100;
                         a.amount = runningTally;
                     });
                     staketable.emplace( vote_it->voter,  [&]( auto& a ) {
@@ -289,7 +410,7 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
                         a.user_64t = eparticle::swapEndian64(vote_it->voter);
                         a.amount = newAmount;
                         a.timestamp = oldTimestamp;
-                        a.duration = oldDuration;
+                        a.completion_time = oldCompletionTime;
                     });
                     break;
                 }
@@ -326,83 +447,6 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
 
 }
 
-void eparticle::brainme( account_name staker, uint64_t amount) {
-    require_auth(staker);
-    uint64_t newBrainpower = amount * IQ_TO_BRAINPOWER_RATIO;
-
-    // Check that there is enough IQ available to stake to brainpower
-    uint64_t oldIQBalance = getiqbalance(staker);
-    eosio_assert(oldIQBalance > 0, "Not enough IQ available to convert to brainpower");
-
-    // Transfer IQ to the eparticle contract
-    asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
-    action(permission_level{ staker, N(active) }, N(eosio.token), N(transfer), std::make_tuple(staker,
-            N(eparticle), iqAssetPack, std::string(""))).send();
-
-    // Get the brainpower
-    brainpwrtbl braintable(_self, _self);
-    auto brain_it = braintable.find(staker);
-    uint64_t name64t = staker;
-
-    if(brain_it == braintable.end()){
-      braintable.emplace( staker, [&]( auto& b ) {
-          b.user = staker;
-          b.user_64t = eparticle::swapEndian64(staker);
-          b.power = newBrainpower;
-      });
-    }
-    else {
-      braintable.modify( brain_it, 0, [&]( auto& b ) {
-          b.add(newBrainpower);
-      });
-    }
-
-    staketbl staketblobj(_self, _self);
-    staketblobj.emplace( staker, [&]( auto& s ) {
-        s.id = staketblobj.available_primary_key();
-        s.user = staker;
-        s.user_64t = eparticle::swapEndian64(staker);
-        s.amount = amount;
-        s.timestamp = now();
-        s.duration = STAKING_DURATION;
-    });
-}
-
-void eparticle::brainclaim( account_name claimant, uint64_t amount) {
-    // Get the brainpower
-    brainpwrtbl braintable(_self, _self);
-    auto brain_it = braintable.find(claimant);
-
-    // Get the stakes
-    staketbl staketable(_self, _self);
-    auto stakeidx = staketable.get_index<N(byuser)>();
-    auto stake_it = stakeidx.find(claimant);
-    eosio_assert( stake_it != stakeidx.end(), "No stakes found for proposal");
-
-    // Dummy initialization
-    asset iqAssetPack;
-
-    // Loop through the stakes
-    while(stake_it != stakeidx.end() && stake_it->user == claimant) {
-        // Get the age of the stake
-        time timeDiff = now() - stake_it->timestamp;
-
-        // See if the stake is over 21 days old
-        if (timeDiff > STAKING_DURATION){
-            // Transfer back the IQ
-            iqAssetPack = asset(stake_it->amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
-            action(permission_level{ N(eparticle), N(active) }, N(eosio.token), N(transfer), std::make_tuple(N(eparticle),
-                    claimant, iqAssetPack, std::string(""))).send();
-
-            // Delete the stake.
-            // Note that the erase() function increments the iterator, then gives it back after the erase is done
-            stake_it = stakeidx.erase(stake_it);
-        }
-        else{
-            stake_it++;
-        }
-    }
-}
 
 void eparticle::testinsert( ipfshash_t inputhash ) {
     uint64_t hashNumber = ipfs_to_uint64_trunc(inputhash);

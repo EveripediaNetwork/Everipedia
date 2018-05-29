@@ -60,6 +60,13 @@
         {"name":"amount", "type":"uint64"}
       ]
   },{
+      "name": "brainclmbyid",
+      "base": "",
+      "fields": [
+        {"name":"claimant", "type":"account_name"},
+        {"name":"stakeid", "type":"uint64"}
+      ]
+  },{
       "name": "withdraw",
       "base": "",
       "fields": [
@@ -114,7 +121,8 @@
         {"name":"user_64t", "type":"uint64"},
         {"name":"amount", "type":"uint64"},
         {"name":"timestamp", "type":"time"},
-        {"name":"duration", "type":"uint64"}
+        {"name":"completion_time", "type":"time"},
+        {"name":"autorenew", "type":"bool"}
       ]
     },{
       "name": "teststruct",
@@ -155,6 +163,10 @@
     },{
       "name": "brainclaim",
       "type": "brainclaim",
+      "ricardian_contract": ""
+    },{
+      "name": "brainclmbyid",
+      "type": "brainclmbyid",
       "ricardian_contract": ""
     },{
       "name": "withdraw",
