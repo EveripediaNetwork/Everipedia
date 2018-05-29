@@ -211,15 +211,15 @@ It is possible to leverage upcoming on-chain identification and reputation syste
 
 ### Delegating Votes
 
-Users who do not wish to personally stake their tokens on a daily basis can delegate their vote to a “staking pool.” Staking pools will be operated by the community and vote on behalf of their users according to transparent principles published in a constitution, wiki, or similar document. Delegated votes can be undelegated at any time.
+Users who do not wish to personally vote using their BP can delegate their BP to another entity or “pool” for consensus voting. Pools will be operated by the community and vote on behalf of their users according to transparent principles published in a constitution, wiki, or similar document. This could form a secondary market for the price of BP if there is sufficient demand similar to how secondary markets are likely to form over EOS.IO bandwidth, RAM, and storage. 
 
-  
+
 
 Building a delegate layer on top of the base voting protocol would allow a market to form over article narratives as “thought leaders” pledge curation ideals they would follow should they be delegated votes. For example, an anti-censorship staking pool could state that they will vote in favor of any edit that adequately cites its sources regardless of the specifics of the content. Users who believe in this vision for the encyclopedia network could delegate their votes to the staking pool.
 
 ### Staking by Article or Topic
 
-IQ tokens are staked before interacting with the article module’s article validation features. When tokens are staked in this way, they provide system-wide authority on any edit made on any topic on the network. It is possible to explore per article or per topic staking such that staking IQ tokens to a specified subsection of the network’s content gives the staker more authority over such article/topic but only allows them to partake in governance actions for that specified article/topic. The validation algorithm which computes staked votes would need to check for the type of stake (general vs. per article/topic) and weight the vote accordingly. This feature would allow users to “own” a certain jurisdictional authority over certain topics proportional to their stake in that area of the network’s content.
+It is possible to explore per article or per topic staking such that staking IQ tokens to a specified subsection of the network’s content gives the staker more BP authority over such article/topic but only allows them to partake in voting for that specified article/topic. The validation algorithm which computes BP votes would need to check for the type of stake (general vs. per article/topic) and weight the vote accordingly. This feature would allow users to “own” a certain jurisdictional authority over certain topics proportional to their stake in that area of the network’s content.
 
 ## EOS.IO Implementation
 
