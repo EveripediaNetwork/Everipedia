@@ -34,8 +34,8 @@ class eparticle : public eosio::contract {
 
 private:
     const uint32_t DEFAULT_VOTING_TIME = 86400; // 1 day
-    const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
-    // const uint32_t STAKING_DURATION = 30; // 30 sec, for testing
+    // const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
+    const uint32_t STAKING_DURATION = 30; // 30 sec, for testing
     const uint64_t EDIT_PROPOSE_BRAINPOWER = 10;
     const uint64_t IQ_TO_BRAINPOWER_RATIO = 1;
     const uint64_t IQ_PRECISION_MULTIPLIER = 10000;
@@ -272,7 +272,7 @@ public:
     void brainclaim( account_name claimant,
                   uint64_t amount );
 
-    void brainclmbyid( account_name claimant,
+    void brainclmid( account_name claimant,
                   uint64_t stakeid );
 
     void withdraw( account_name from );

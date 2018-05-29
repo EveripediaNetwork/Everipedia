@@ -139,46 +139,30 @@ void eparticle::brainclaim( account_name claimant, uint64_t amount) {
     }
 }
 
-void eparticle::brainclmbyid( account_name claimant, uint64_t stakeid) {
-    print("HERE 0", "\n");
-
+void eparticle::brainclmid( account_name claimant, uint64_t stakeid) {
     // Get the brainpower
     brainpwrtbl braintable(_self, _self);
     auto brain_it = braintable.find(claimant);
-
-    print("HERE 1", "\n");
 
     // Get the stakes
     staketbl staketable(_self, _self);
     auto stake_it = staketable.find(stakeid);
     eosio_assert( stake_it != staketable.end(), "No stakes found for proposal");
 
-    print("HERE 2", "\n");
-
     // Dummy initialization
     asset iqAssetPack;
 
-    // Get the age of the stake
-    time timeDiff = now() - stake_it->timestamp;
-
-    print("HERE 3", "\n");
-
     // See if the stake is over 21 days old
-    if (timeDiff > STAKING_DURATION){
-        // Transfer back the IQ
-        iqAssetPack = asset(stake_it->amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
-        action(permission_level{ N(eparticle), N(active) }, N(eosio.token), N(transfer), std::make_tuple(N(eparticle),
-                claimant, iqAssetPack, std::string(""))).send();
+    eosio_assert( now() > stake_it->completion_time, "Staking period not over yet");
 
-        print("HERE 4", "\n");
+    // Transfer back the IQ
+    iqAssetPack = asset(stake_it->amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
+    action(permission_level{ N(eparticle), N(active) }, N(eosio.token), N(transfer), std::make_tuple(N(eparticle),
+            claimant, iqAssetPack, std::string(""))).send();
 
-        // Delete the stake.
-        // Note that the erase() function increments the iterator, then gives it back after the erase is done
-        stake_it = staketable.erase(stake_it);
-    }
-    else{
-        stake_it++;
-    }
+    // Delete the stake.
+    // Note that the erase() function increments the iterator, then gives it back after the erase is done
+    stake_it = staketable.erase(stake_it);
 }
 
 void eparticle::propose_precheck( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ) {
@@ -449,7 +433,9 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
 
 
 void eparticle::testinsert( ipfshash_t inputhash ) {
+    print("CLEOS");
     uint64_t hashNumber = ipfs_to_uint64_trunc(inputhash);
+
 
     // testtbl testtable(_self, _self);
     // testtable.emplace( _self, [&]( auto& b ) {
@@ -457,4 +443,4 @@ void eparticle::testinsert( ipfshash_t inputhash ) {
     // });
 }
 
-EOSIO_ABI( eparticle, (brainme)(brainclaim)(finalize)(propose)(votebyhash)(testinsert) )
+EOSIO_ABI( eparticle, (brainme)(brainclaim)(brainclmid)(finalize)(propose)(votebyhash)(testinsert) )

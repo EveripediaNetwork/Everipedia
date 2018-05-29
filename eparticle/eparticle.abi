@@ -60,7 +60,7 @@
         {"name":"amount", "type":"uint64"}
       ]
   },{
-      "name": "brainclmbyid",
+      "name": "brainclmid",
       "base": "",
       "fields": [
         {"name":"claimant", "type":"account_name"},
@@ -165,8 +165,8 @@
       "type": "brainclaim",
       "ricardian_contract": ""
     },{
-      "name": "brainclmbyid",
-      "type": "brainclmbyid",
+      "name": "brainclmid",
+      "type": "brainclmid",
       "ricardian_contract": ""
     },{
       "name": "withdraw",
