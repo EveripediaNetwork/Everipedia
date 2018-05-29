@@ -43,6 +43,11 @@ Achieving such a goal would create a peer to peer distributed content system tha
 
 <sub><sup>The three modules of the EPN and their interactions. The token module is responsible for holding token balances, minting schedule, and sending/receiving/fee functions. It can change the state of the article module. The article module is responsible for edit proposals and changing the state of the database of articles which are then sent to IPFS nodes. The governance module is responsible for proposals on changing network-wide rules. It can change the state of any module (including itself) by deploying new code that is voted through by token holders.</sub></sup>
 
+## On-chain Knowledge & Facts
+
+Current smart contracts are fairly simplistic and do not have the capability to replicate more nuanced financial arrangements in the real world. Additionally, the “oracle problem” is still unresolved. There is no standard, trustless, and sybil resistant method for agreeing on real-world knowledge so that financial transactions can reference them. One of the direct uses of the Everipedia Network should be to create the world’s first repository of on-chain knowledge so that financial transactions and decentralized applications can reference them without having to re-invent their own oracle systems. In this sense, the IQ token’s intrinsic value is the stake it provides in the largest distributed repository of facts used by a growing industry. 
+
+
 ## Governance Module
 
 The governance module is an object which has scope to make changes to every module, including itself. Governance actions can modify the software for any of the three modules, but not the databases containing token balances and articles.
@@ -62,6 +67,7 @@ Without an internal consensus process, the only viable alternative for updating 
   
 
 Research and development, solutions to scaling, and improvements to the codebase are just as critical (if not more critical) as any service and feature built on top of the network. For this reason, we have laid the foundation for proposing edits and additions to the source code of the network through the governance module. This mechanism will be used for meta-governance of the network protocol itself in a fully trustless, on-chain process.
+
 
 ### Funding the Network and Self-Sustainability
 
@@ -134,13 +140,14 @@ The annual mint rate, A, will be 5% to match the EOS inflation rate, but the num
 
 The article module is used to propose edits to be included in the database. Proposed edits are tuple objects which contain an IPFS hash pointing to the immediate parent version and an IPFS hash pointing to the new version. An example of an edit object could be: [QmXvHQCbvxp3vQm96VmZDBaTX8Aae6vVcoTvVB6QQsMXnM, QmeAv3LJo4Kre6dR7GQBqjJFztY9YWZD131W5tYGStUcbM ]
 
-  
+## Staking IQ Tokens
 
-To propose an edit, users must put forward a small amount of tokens as “collateral” which is returned if the edit is approved. This serves as an anti-spam/anti-troll mechanism which makes attacking the network and proposing dishonest edits very expensive. It also keeps editing effectively free for quality submissions.
+Staking IQ tokens is required to propose edits, vote on edits, and propose/vote on network governance actions. IQ is staked by locking up tokens in a 21-day vesting period. This is similar to other blockchains such as Steem which requires users to “power up” (essentially lock and vest) their tokens in order to vote/stake them on content published on the platform.[9] The process of staking IQ is also called powering up (as a token of appreciation to Steem’s pioneering design). IQ that is locked up for 21 days gives the holder “brain power” (BP) at a 1:1 ratio. Brain power is not a fungible or transferable token and only spent during usage of the EPN by the staking account. Once an account’s BP is entirely spent, they must wait for the IQ staking period of 21 days to end before re-staking their tokens for BP to use the EPN. Otherwise, they can acquire more IQ tokens and stake the newly acquired IQ for BP. 
 
-  
+Example: A user has 150 IQ tokens. They can call the staking function to lock up their 150 IQ tokens for 21 days and get their account allocated 150 Brain Power to use for proposing edits, governance actions, and voting. 
 
-The second feature of the article module is for token holder voting of inclusion or exclusion of proposed edits in queue. To vote for article changes, token holders must stake their tokens in the article module. When tokens are staked, they are locked by the article module for a fixed number of days, initially 21. This is similar to other blockchains such as Steem which requires users to “power up” (essentially lock and vest) their tokens in order to vote/stake them on content published on the platform.[9] Then, the validation of articles goes through a validation algorithm (below) with parameters that can be changed through a governance vote.
+
+The second feature of the article module is usiing BP for token holder voting of inclusion or exclusion of proposed edits in queue. The validation of articles goes through a validation algorithm (below) with parameters that can be changed through a governance vote.
 
   
 
@@ -160,7 +167,7 @@ If edit proposals hit Tier 2 or Tier 3 then the article module will store the co
 
 ### Validation Algorithm (the content consensus method)
 
-One of the most important processes in the network is the validation of state changes to the database - that is, approval of changes to articles or creation of new ones. The validation algorithm is a function which takes in as arguments the proposed edit object of the article and the staked votes of curators for that proposal. It returns the tier of the edit proposal and token rewards for the editor (and curators who staked tokens to vote for the edit proposal).
+One of the most important processes in the network is the validation of state changes to the database - that is, approval of changes to articles or creation of new ones. The validation algorithm is a function which takes in as arguments the proposed edit object of the article and the BP votes for that proposal. It returns the tier of the edit proposal and token rewards and slashing conditions (if applicable). 
 
   
 
@@ -168,7 +175,7 @@ The validation period for each edit lasts a maximum of 72 hours or when a minimu
 
   
 
-At the end of the validation period, an edit is classified into a tier using the following criteria. These criteria can be modified by the governance module. One vote is equivalent to one staked IQ token.
+At the end of the validation period, an edit is classified into a tier using the following criteria. These criteria can be modified by the governance module. One vote is equivalent to one BP.
 
   
 
@@ -182,21 +189,37 @@ Tier 3 - Greater than 75% of yes votes
 
 Every vote received by a Tier 3 edit counts towards an editor’s daily contribution value. IQ rewards for the day are dispersed based on the formulas in Listings 1 and 2 in the Token Module.
 
+## Slashing Conditions
+
+Editing articles can be a fairly contentious activity. However, there must be sybil-resistant economic incentives to have token holders arrive at the common, salient answer of the edit proposal. That is, there must be incentives for each individual agent to arrive at what they believe to be the common response - the correct one. Likewise, there should be disincentives proportional to arriving at the minority response - the incorrect one. Unlike proof of stake based consensus methods which slash/burn the staker’s tokens for voting on incorrect blocks, the EPN slashing condition does not permanently burn tokens for voting incorrectly (voting on the minority side). 
+
+Slashing increases the staking lock-up period inversely proportional to the minority voting ratio. If a user’s account is slashed, their lock-up period for withdrawing their IQ tokens increases by some amount. This solves two issues: 1. Repeatedly voting on the minority side effectively burns IQ tokens since the lock-up period consistently increases so that repeated attacks on the network de facto remove the attacker’s IQ tokens from circulation (since they will not be able to withdraw and re-stake their tokens for a very long duration). 2. Participation in genuine contentious discussions (“edit wars”) is not discouraged since losing sides do not get their tokens burned permanently. Additionally, the more contentious an edit is, the less penalty there is for voting on the minority side (since the minority is almost as large as the majority).  
+
+
+Voters in the majority are given a proportional amount of the IQ inflationary token reward allotted for content. Voters that vote in the minority have their token lock-up period increased for an extended amount of time, inversely-proportional to the minority stake. The slashing ratio can be modeled with the following: 
+
+(Total Majority BP Votes - Total Minority BP Votes) / (Total BP Votes) = Slashing Ratio
+
+Ex: User has 200 Brain Power and votes “No” using all their BP for an edit proposal. Total votes equal 2000 Brain Power with 1500 BP votes “Yes” and 500 total BP votes “No.” Because the user voted on the minority side, the slashing ratio is calculated as: ((1500) - (500)) / (2000) = (.5) then multiplied by (21 days) to get the increased lock-up time. 
+
+The 200 IQ that generated the 200 BP is locked up for an additional 10.5 days. Note: The more contentious the voting, the less the penalty is for voting in the minority. 
+
+
 ### Identity, Reputation, and Account Histories
 
 It is possible to leverage upcoming on-chain identification and reputation systems to incorporate into the validation algorithm and edit approval process such that previous edit histories and identities of editors can be measured in the consensus process. Such identity systems could include uPort or native EOS.IO user ID/reputation systems. Since edit proposals (and their approval/disapproval) are already stored on-chain, this user history can be incorporated into new updates to the validation algorithm coupled with the identification/credentials of the user.
 
 ### Delegating Votes
 
-Users who do not wish to personally stake their tokens on a daily basis can delegate their vote to a “staking pool.” Staking pools will be operated by the community and vote on behalf of their users according to transparent principles published in a constitution, wiki, or similar document. Delegated votes can be undelegated at any time.
+Users who do not wish to personally vote using their BP can delegate their BP to another entity or “pool” for consensus voting. Pools will be operated by the community and vote on behalf of their users according to transparent principles published in a constitution, wiki, or similar document. This could form a secondary market for the price of BP if there is sufficient demand similar to how secondary markets are likely to form over EOS.IO bandwidth, RAM, and storage. 
 
-  
+
 
 Building a delegate layer on top of the base voting protocol would allow a market to form over article narratives as “thought leaders” pledge curation ideals they would follow should they be delegated votes. For example, an anti-censorship staking pool could state that they will vote in favor of any edit that adequately cites its sources regardless of the specifics of the content. Users who believe in this vision for the encyclopedia network could delegate their votes to the staking pool.
 
 ### Staking by Article or Topic
 
-IQ tokens are staked before interacting with the article module’s article validation features. When tokens are staked in this way, they provide system-wide authority on any edit made on any topic on the network. It is possible to explore per article or per topic staking such that staking IQ tokens to a specified subsection of the network’s content gives the staker more authority over such article/topic but only allows them to partake in governance actions for that specified article/topic. The validation algorithm which computes staked votes would need to check for the type of stake (general vs. per article/topic) and weight the vote accordingly. This feature would allow users to “own” a certain jurisdictional authority over certain topics proportional to their stake in that area of the network’s content.
+It is possible to explore per article or per topic staking such that staking IQ tokens to a specified subsection of the network’s content gives the staker more BP authority over such article/topic but only allows them to partake in voting for that specified article/topic. The validation algorithm which computes BP votes would need to check for the type of stake (general vs. per article/topic) and weight the vote accordingly. This feature would allow users to “own” a certain jurisdictional authority over certain topics proportional to their stake in that area of the network’s content.
 
 ## EOS.IO Implementation
 
