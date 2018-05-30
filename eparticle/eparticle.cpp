@@ -76,7 +76,7 @@ void eparticle::brainme( account_name staker, uint64_t amount) {
 
     // Get the brainpower
     brainpwrtbl braintable(_self, _self);
-    auto brain_it = braintable.find(staker);
+    auto brain_it = braintable.find(eparticle::swapEndian64(staker));
     uint64_t name64t = staker;
 
     if(brain_it == braintable.end()){
@@ -106,7 +106,7 @@ void eparticle::brainme( account_name staker, uint64_t amount) {
 void eparticle::brainclaim( account_name claimant, uint64_t amount) {
     // Get the brainpower
     brainpwrtbl braintable(_self, _self);
-    auto brain_it = braintable.find(claimant);
+    auto brain_it = braintable.find(eparticle::swapEndian64(claimant));
 
     // Get the stakes
     staketbl staketable(_self, _self);
@@ -142,7 +142,7 @@ void eparticle::brainclaim( account_name claimant, uint64_t amount) {
 void eparticle::brainclmid( account_name claimant, uint64_t stakeid) {
     // Get the brainpower
     brainpwrtbl braintable(_self, _self);
-    auto brain_it = braintable.find(claimant);
+    auto brain_it = braintable.find(eparticle::swapEndian64(claimant));
 
     // Get the stakes
     staketbl staketable(_self, _self);
@@ -168,7 +168,7 @@ void eparticle::brainclmid( account_name claimant, uint64_t stakeid) {
 void eparticle::propose_precheck( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ) {
     // Fetch the brainpower
     brainpwrtbl braintable(_self, _self);
-    auto brain_it = braintable.find(proposer);
+    auto brain_it = braintable.find(eparticle::swapEndian64(proposer));
 
     // Re-check that enough brainpower is available
     eosio_assert(brain_it->power > EDIT_PROPOSE_BRAINPOWER, "Not enough brainpower to edit, you need to stake some more IQ using brainme first!");
@@ -214,7 +214,7 @@ void eparticle::votebyhash ( account_name voter, ipfshash_t& proposed_article_ha
 
     // Consume brainpower
     brainpwrtbl braintable(_self, _self);
-    auto brain_it = braintable.find(voter);
+    auto brain_it = braintable.find(eparticle::swapEndian64(voter));
     eosio_assert(brain_it->power >= amount, "Not enough brainpower");
     braintable.modify( brain_it, 0, [&]( auto& b ) {
         b.sub(amount);

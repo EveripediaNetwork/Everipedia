@@ -144,11 +144,11 @@ private:
     // @abi table
     struct brainpower {
         account_name user;
-        account_name user_64t;
+        uint64_t user_64t;
         uint64_t power = 0; // TODO: need to fix this later
 
-        account_name primary_key()const { return user; }
-        uint64_t get_user64t()const { return user_64t; }
+        uint64_t primary_key()const { return user_64t; }
+        account_name get_user()const { return user; }
         uint64_t get_power()const { return power; }
 
         // subtraction with underflow check
@@ -206,7 +206,7 @@ private:
     // brainpower table
     // @abi table
     typedef eosio::multi_index<N(brainpwrtbl), brainpower,
-        indexed_by< N(byuser64t), const_mem_fun< brainpower, uint64_t, &brainpower::get_user64t >>,
+        indexed_by< N(byuser), const_mem_fun< brainpower, account_name, &brainpower::get_user >>,
         indexed_by< N(power), const_mem_fun< brainpower, uint64_t, &brainpower::get_power >>
     > brainpwrtbl;
 
