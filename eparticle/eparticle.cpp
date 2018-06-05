@@ -192,8 +192,8 @@ void eparticle::propose( account_name proposer, ipfshash_t& proposed_article_has
         a.old_article_hash = old_article_hash;
         a.proposer = proposer;
         a.proposer_64t = eparticle::swapEndian64(proposer);
-        a.timestamp = now();
-        a.votingduration = DEFAULT_VOTING_TIME;
+        a.starttime = now();
+        a.endtime = now() + DEFAULT_VOTING_TIME;
         a.status = ProposalStatus::pending;
     });
 
@@ -210,7 +210,7 @@ void eparticle::votebyhash ( account_name voter, ipfshash_t& proposed_article_ha
     uint64_t proposal_id = prop_it->id;
 
     // Verify voting is still in progress
-    eosio_assert( now() < prop_it->timestamp + DEFAULT_VOTING_TIME, "voting period is over");
+    eosio_assert( now() < prop_it->endtime, "voting period is over");
 
     // Consume brainpower
     brainpwrtbl braintable(_self, _self);
@@ -305,12 +305,13 @@ void eparticle::votebyid ( account_name voter, uint64_t proposal_id, bool approv
     eparticle::votebyhash(voter, thePropHash, approve, amount);
 }
 
-void eparticle::finalizebyhash( account_name from, ipfshash_t& proposal_hash ) {
+void eparticle::fnlbyhash( account_name from, ipfshash_t& proposal_hash ) {
     // Add article to database, or update
     propstbl proptable( _self, _self );
     auto propidx = proptable.get_index<N(byhash)>();
     auto prop_it = propidx.find(eparticle::ipfs_to_key256(proposal_hash));
     eosio_assert( prop_it != propidx.end(), "proposal not found" );
+    print(prop_it->id);
     eparticle::finalize(from, prop_it->id);
 }
 
@@ -321,13 +322,15 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
     eosio_assert( prop_it != proptable.end(), "proposal not found" );
 
     // Verify voting period is complete
-    eosio_assert( now() > prop_it->timestamp + DEFAULT_VOTING_TIME, "voting period is over");
+    eosio_assert( now() > prop_it->endtime, "voting period is not over yet");
 
     // Retrieve votes from DB
-    votestbl votetable(_self, _self);
-    auto voteidx = votetable.get_index<N(byproposal)>();
-    auto vote_it = voteidx.find( std::forward<uint64_t>(proposal_id) );
+    votestbl votetbl( _self, _self );
+    auto voteidx = votetbl.get_index<N(byhash)>();
+    auto vote_it = voteidx.find(eparticle::ipfs_to_key256(prop_it->proposed_article_hash));
     eosio_assert( vote_it != voteidx.end(), "no votes found for proposal");
+
+    print("TALLYING VOTES\n");
 
     // Tally votes
     uint64_t for_votes = 0;
@@ -340,6 +343,8 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
         vote_it++;
     }
 
+    print("MARKING PROPOSALS\n");
+
     // Mark proposal as accepted or rejected. Ties are rejected
     proptable.modify( prop_it, 0, [&]( auto& a ) {
         if (for_votes > against_votes)
@@ -348,9 +353,11 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
             a.status =  ProposalStatus::rejected;
     });
 
+    print("CHECKING SLASHING\n");
+
     // Determine slashing conditions
     // floating point is inexact, so I'm using integer arithmetic for slashing percentages
-    vote_it = voteidx.find( std::forward<uint64_t>(proposal_id) );
+    vote_it = voteidx.find(eparticle::ipfs_to_key256(prop_it->proposed_article_hash));
     bool approved = (for_votes > against_votes);
     uint64_t slash_percent;
     if (approved)
@@ -358,14 +365,17 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
     else
         slash_percent = against_votes - for_votes;
 
+    print("SEEING VOTES\n");
 
     while(vote_it->proposal_id == proposal_id) {
         if (vote_it->approve != approved) {
             // Slash losers
+            print("SLASHING THE LOSERS\n");
             uint64_t slash_amount = vote_it->amount;
             uint64_t runningTally = vote_it->amount;
 
             // Get the stakes
+            print("GETTING THE STAKES\n");
             staketbl staketable(_self, _self);
             auto stakeidx = staketable.get_index<N(byuser)>();
             auto stake_it = stakeidx.find(vote_it->voter);
@@ -405,11 +415,13 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
         }
         else{
             // TODO: Reward the winners
+            print("REWARDING THE WINNERS\n");
         }
         vote_it++;
     }
 
     // Add article to database, or update
+    print("ADDING ARTICLE TO DATABASE\n");
     wikistbl wikitbl( _self, _self );
     auto wikiidx = wikitbl.get_index<N(byhash)>();
     auto wiki_it = wikiidx.find(eparticle::ipfs_to_key256(prop_it->old_article_hash));
@@ -443,4 +455,4 @@ void eparticle::testinsert( ipfshash_t inputhash ) {
     // });
 }
 
-EOSIO_ABI( eparticle, (brainme)(brainclaim)(brainclmid)(finalize)(propose)(votebyhash)(testinsert) )
+EOSIO_ABI( eparticle, (brainme)(brainclaim)(brainclmid)(finalize)(fnlbyhash)(propose)(votebyhash)(testinsert) )

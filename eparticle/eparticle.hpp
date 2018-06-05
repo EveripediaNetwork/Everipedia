@@ -33,7 +33,8 @@ using namespace eosio;
 class eparticle : public eosio::contract {
 
 private:
-    const uint32_t DEFAULT_VOTING_TIME = 86400; // 1 day
+    // const uint32_t DEFAULT_VOTING_TIME = 86400; // 1 day
+    const uint32_t DEFAULT_VOTING_TIME = 60; // 1 minute
     // const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
     const uint32_t STAKING_DURATION = 30; // 30 sec, for testing
     const uint64_t EDIT_PROPOSE_BRAINPOWER = 10;
@@ -87,8 +88,8 @@ private:
           ipfshash_t old_article_hash; // IPFS hash of the old version
           account_name proposer; // account name of the proposer
           account_name proposer_64t; // account name of the proposer in integer form
-          uint32_t timestamp; // epoch time of the proposal
-          uint32_t votingduration;
+          uint32_t starttime; // epoch time of the proposal
+          uint32_t endtime;
           uint32_t status;
 
           uint64_t primary_key () const { return id; }
@@ -261,7 +262,7 @@ public:
     void finalize( account_name from,
                    uint64_t proposal_id );
 
-    void finalizebyhash( account_name from,
+    void fnlbyhash( account_name from,
                   ipfshash_t& proposal_hash );
 
     void testinsert( ipfshash_t inputhash );
