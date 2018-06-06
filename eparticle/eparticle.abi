@@ -15,7 +15,8 @@
       "fields": [
         {"name":"proposer", "type":"account_name"},
         {"name":"proposed_article_hash", "type":"ipfshash_t"},
-        {"name":"old_article_hash", "type":"ipfshash_t"}
+        {"name":"old_article_hash", "type":"ipfshash_t"},
+        {"name":"grandparent_hash", "type":"ipfshash_t"}
       ]
     },{
      "name": "votebyid",
@@ -97,6 +98,7 @@
         {"name":"id", "type":"uint64"},
         {"name":"proposed_article_hash", "type":"ipfshash_t"},
         {"name":"old_article_hash", "type":"ipfshash_t"},
+        {"name":"grandparent_hash", "type":"ipfshash_t"},
         {"name":"proposer", "type":"account_name"},
         {"name":"proposer_64t", "type":"uint64"},
         {"name":"starttime", "type":"time"},

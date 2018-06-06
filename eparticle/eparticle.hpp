@@ -86,6 +86,7 @@ private:
           uint64_t id;
           ipfshash_t proposed_article_hash; // IPFS hash of the proposed new version
           ipfshash_t old_article_hash; // IPFS hash of the old version
+          ipfshash_t grandparent_hash; // IPFS hash of the grandparent hash
           account_name proposer; // account name of the proposer
           account_name proposer_64t; // account name of the proposer in integer form
           uint32_t starttime; // epoch time of the proposal
@@ -247,7 +248,8 @@ public:
 
     void propose( account_name proposer,
                   ipfshash_t& proposed_article_hash,
-                  ipfshash_t& old_article_hash );
+                  ipfshash_t& old_article_hash,
+                  ipfshash_t& grandparent_hash );
 
     void votebyhash ( account_name voter,
                       ipfshash_t& proposed_article_hash,

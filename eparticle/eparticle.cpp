@@ -174,7 +174,7 @@ void eparticle::propose_precheck( account_name proposer, ipfshash_t& proposed_ar
     eosio_assert(brain_it->power > EDIT_PROPOSE_BRAINPOWER, "Not enough brainpower to edit, you need to stake some more IQ using brainme first!");
 }
 
-void eparticle::propose( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ) {
+void eparticle::propose( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash, ipfshash_t& grandparent_hash ) {
     // Check to make sure enough brainpower is present
     eparticle::propose_precheck(proposer, proposed_article_hash, old_article_hash);
 
@@ -190,6 +190,7 @@ void eparticle::propose( account_name proposer, ipfshash_t& proposed_article_has
         a.id = propPrimaryKey; // TODO: need to remove this later, or account for uniqueness
         a.proposed_article_hash = proposed_article_hash;
         a.old_article_hash = old_article_hash;
+        a.grandparent_hash = grandparent_hash;
         a.proposer = proposer;
         a.proposer_64t = eparticle::swapEndian64(proposer);
         a.starttime = now();
@@ -420,26 +421,30 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
         vote_it++;
     }
 
-    // Add article to database, or update
-    print("ADDING ARTICLE TO DATABASE\n");
-    wikistbl wikitbl( _self, _self );
-    auto wikiidx = wikitbl.get_index<N(byhash)>();
-    auto wiki_it = wikiidx.find(eparticle::ipfs_to_key256(prop_it->old_article_hash));
+    if (approved){
+        // Add article to database, or update
+        print("ADDING ARTICLE TO DATABASE\n");
+        wikistbl wikitbl( _self, _self );
+        auto wikiidx = wikitbl.get_index<N(byhash)>();
+        auto wiki_it = wikiidx.find(eparticle::ipfs_to_key256(prop_it->old_article_hash));
 
-    if (wiki_it == wikiidx.end()){
-        wikitbl.emplace( _self,  [&]( auto& a ) {
-            a.id = wikitbl.available_primary_key();
-            a.hash = prop_it->proposed_article_hash;
-            a.parent_hash = prop_it->old_article_hash;
-        });
+        if (wiki_it == wikiidx.end()){
+            wikitbl.emplace( _self,  [&]( auto& a ) {
+                a.id = wikitbl.available_primary_key();
+                a.hash = prop_it->proposed_article_hash;
+                a.parent_hash = prop_it->old_article_hash;
+            });
+        }
+        else{
+            wikiidx.modify( wiki_it, 0, [&]( auto& a ) {
+                a.hash = prop_it->proposed_article_hash;
+                a.parent_hash = prop_it->old_article_hash;
+            });
+        }
     }
     else{
-        wikiidx.modify( wiki_it, 0, [&]( auto& a ) {
-            a.hash = prop_it->proposed_article_hash;
-            a.parent_hash = prop_it->old_article_hash;
-        });
+        // Reverts back to parent as current_hash and grandparent as parent_hash
     }
-
 
 }
 
