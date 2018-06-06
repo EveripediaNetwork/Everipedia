@@ -366,13 +366,15 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
     else
         slash_percent = against_votes - for_votes;
 
-    print("SEEING VOTES\n");
+    print("INITIALIZE REWARDS TABLE");
+    rewardstbl rewardstable( _self, _self );
 
+    print("SEEING VOTES\n");
     while(vote_it->proposal_id == proposal_id) {
+        uint64_t change_amount = vote_it->amount;
         if (vote_it->approve != approved) {
             // Slash losers
             print("SLASHING THE LOSERS\n");
-            uint64_t slash_amount = vote_it->amount;
             uint64_t runningTally = vote_it->amount;
 
             // Get the stakes
@@ -410,13 +412,36 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
                     break;
                 }
 
+                rewardstable.emplace( _self,  [&]( auto& a ) {
+                    a.id = rewardstable.available_primary_key();
+                    a.user = vote_it->voter;
+                    a.user_64t = eparticle::swapEndian64(vote_it->voter);
+                    a.amount = change_amount;
+                    a.proposal_id = proposal_id;
+                    a.proposal_finalize_time = now();
+                    a.proposalresult = approved;
+                    a.rewardtype = 0;
+                    a.disbursed = 1;
+                });
+
                 stake_it++;
             }
-
         }
         else{
             // TODO: Reward the winners
             print("REWARDING THE WINNERS\n");
+
+            rewardstable.emplace( _self,  [&]( auto& a ) {
+                a.id = rewardstable.available_primary_key();
+                a.user = vote_it->voter;
+                a.user_64t = eparticle::swapEndian64(vote_it->voter);
+                a.amount = change_amount;
+                a.proposal_id = proposal_id;
+                a.proposal_finalize_time = now();
+                a.proposalresult = approved;
+                a.rewardtype = 1;
+                a.disbursed = 0;
+            });
         }
         vote_it++;
     }
@@ -448,6 +473,9 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
 
 }
 
+void eparticle::procrewards(uint64_t proposal_id ) {
+    print("REWARDS PROCESSED");
+}
 
 void eparticle::testinsert( ipfshash_t inputhash ) {
     print("CLEOS");
@@ -460,4 +488,4 @@ void eparticle::testinsert( ipfshash_t inputhash ) {
     // });
 }
 
-EOSIO_ABI( eparticle, (brainme)(brainclaim)(brainclmid)(finalize)(fnlbyhash)(propose)(votebyhash)(testinsert) )
+EOSIO_ABI( eparticle, (brainme)(brainclaim)(brainclmid)(finalize)(fnlbyhash)(procrewards)(propose)(votebyhash)(testinsert) )

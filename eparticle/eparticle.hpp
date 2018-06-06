@@ -134,6 +134,25 @@ private:
         uint64_t get_user64t()const { return user_64t; }
     };
 
+    // Internal struct for history of success rewards and reject slashes
+    // @abi table
+    struct rewardhistory {
+        uint64_t id;
+        account_name user;
+        account_name user_64t; // account name of the user in integer form
+        uint64_t amount; // slash or reward amount
+        uint64_t proposal_id; // id of the proposal that this person voted on
+        uint32_t proposal_finalize_time; // when finalize() was called
+        bool proposalresult = 0;
+        bool rewardtype = 0; // 0 for reject/slash, 1 for reward/success
+        bool disbursed = 0; // slashes will be done immediately at finalize(). Rewards will be done at 24hr periods
+
+        auto primary_key()const { return id; }
+        account_name get_user()const { return user; }
+        uint64_t get_proposal()const { return proposal_id; }
+        uint64_t get_user64t()const { return user_64t; }
+    };
+
     // test struct
     // @abi table
     struct teststruct {
@@ -219,9 +238,18 @@ private:
     // stake table
     // @abi table
     typedef eosio::multi_index<N(staketbl), stake,
-        indexed_by< N(byuser), const_mem_fun<stake, account_name, &stake::get_user>>,
+        indexed_by< N(byuser), const_mem_fun<stake, account_name, &stake::get_user >>,
         indexed_by< N(byuser64t), const_mem_fun< stake, uint64_t, &stake::get_user64t >>
     > staketbl;
+
+    // rewards history table
+    // @abi table
+    typedef eosio::multi_index<N(rewardstbl), rewardhistory,
+        indexed_by< N(get_user), const_mem_fun<rewardhistory, account_name, &rewardhistory::get_user>>,
+        indexed_by< N(get_proposal), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_proposal >>,
+        indexed_by< N(get_user64t), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_user64t >>
+    > rewardstbl;
+
 
     // ==================================================
     // =================================================
@@ -250,6 +278,8 @@ public:
                   ipfshash_t& proposed_article_hash,
                   ipfshash_t& old_article_hash,
                   ipfshash_t& grandparent_hash );
+
+    void procrewards( uint64_t proposal_id );
 
     void votebyhash ( account_name voter,
                       ipfshash_t& proposed_article_hash,

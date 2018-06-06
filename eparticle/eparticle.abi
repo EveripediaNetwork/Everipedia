@@ -91,7 +91,7 @@
         {"name":"hash", "type":"ipfshash_t"},
         {"name":"parent_hash", "type":"ipfshash_t"}
       ]
-    },{
+  },{
       "name": "editproposal",
       "base": "",
       "fields": [
@@ -105,7 +105,7 @@
         {"name":"endtime", "type":"time"},
         {"name":"status", "type":"uint32"}
       ]
-    },{
+  },{
       "name": "vote",
       "base": "",
       "fields": [
@@ -118,7 +118,7 @@
         {"name":"voter_64t", "type":"uint64"},
         {"name":"timestamp", "type":"time"}
       ]
-    },{
+  },{
       "name": "stake",
       "base": "",
       "fields": [
@@ -130,13 +130,33 @@
         {"name":"completion_time", "type":"time"},
         {"name":"autorenew", "type":"bool"}
       ]
-    },{
+  },{
+      "name": "rewardhistory",
+      "base": "",
+      "fields": [
+        {"name":"id", "type":"uint64"},
+        {"name":"user", "type":"account_name"},
+        {"name":"user_64t", "type":"uint64"},
+        {"name":"amount", "type":"uint64"},
+        {"name":"proposal_id", "type":"uint64"},
+        {"name":"proposal_finalize_time", "type":"time"},
+        {"name":"proposalresult", "type":"bool"},
+        {"name":"rewardtype", "type":"bool"},
+        {"name":"disbursed", "type":"bool"}
+      ]
+  },{
       "name": "teststruct",
       "base": "",
       "fields": [
         {"name":"id", "type":"uint64"}
       ]
-    },{
+  },{
+      "name": "procrewards",
+      "base": "",
+      "fields": [
+        {"name":"proposal_id", "type":"uint64"}
+      ]
+  },{
       "name": "brainpower",
       "base": "",
       "fields": [
@@ -158,13 +178,17 @@
       "name": "votebyhash",
       "type": "votebyhash",
       "ricardian_contract": ""
-    }, {
+    },{
       "name": "finalize",
       "type": "finalize",
       "ricardian_contract": ""
     },{
       "name": "fnlbyhash",
       "type": "fnlbyhash",
+      "ricardian_contract": ""
+    },{
+      "name": "procrewards",
+      "type": "procrewards",
       "ricardian_contract": ""
     },{
       "name": "brainme",
@@ -204,6 +228,12 @@
     },{
       "name": "propstbl",
       "type": "editproposal",
+      "index_type": "i64",
+      "key_names" : ["id"],
+      "key_types" : ["uint64"]
+    },{
+      "name": "rewardstbl",
+      "type": "rewardhistory",
       "index_type": "i64",
       "key_names" : ["id"],
       "key_types" : ["uint64"]
