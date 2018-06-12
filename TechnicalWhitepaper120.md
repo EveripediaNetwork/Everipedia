@@ -155,7 +155,7 @@ Edit proposals are approved in tiers which is an output of the validator functio
 
   
 
-Tier 1: Proposal not approved, collateral burned
+Tier 1: Proposal not approved
 
 Tier 2: Proposal approved, no token reward given, collateral returned
 
