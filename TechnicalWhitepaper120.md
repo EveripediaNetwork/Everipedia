@@ -189,6 +189,20 @@ Tier 3 - Greater than 75% of yes votes
 
 Every vote received by a Tier 3 edit counts towards an editor’s daily contribution value. IQ rewards for the day are dispersed based on the formulas in Listings 1 and 2 in the Token Module.
 
+### Curation Rewards
+CMR = Curation mint rate; number of IQ tokens minted for curation rewards per period P (initial network P = 30 minutes)
+SBP = Summaton of one user's Brain Power which voted on the majority side during period P
+OBP = Summation of all user's Brain Power which voted on the majority side during period P
+
+CMR * (SBP/OBP) = user's curation reward per period P
+
+### Edit Rewards (Content Rewards) 
+EMR = Edit mint rate; number of IQ tokens minted for editor rewards per period P (initial network P = 30 minutes)
+TBP = Summaton of one editor's Brain Power votes surpassing Tier 2 threshold during period P
+OTBP = Summation of all editor's Brain Power votes surpassing Tier 2 threshold during period P
+
+EMR * (TBP/OTBP) = user's curation reward per period P
+
 ## Slashing Conditions
 
 Editing articles can be a fairly contentious activity. However, there must be sybil-resistant economic incentives to have token holders arrive at the common, salient answer of the edit proposal. That is, there must be incentives for each individual agent to arrive at what they believe to be the common response - the correct one. Likewise, there should be disincentives proportional to arriving at the minority response - the incorrect one. Unlike proof of stake based consensus methods which slash/burn the staker’s tokens for voting on incorrect blocks, the EPN slashing condition does not permanently burn tokens for voting incorrectly (voting on the minority side). 
