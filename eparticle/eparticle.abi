@@ -101,8 +101,11 @@
         {"name":"grandparent_hash", "type":"ipfshash_t"},
         {"name":"proposer", "type":"account_name"},
         {"name":"proposer_64t", "type":"uint64"},
+        {"name":"threshold", "type":"uint64"},
+        {"name":"tier", "type":"uint32"},
         {"name":"starttime", "type":"time"},
         {"name":"endtime", "type":"time"},
+        {"name":"finalized_time", "type":"time"},
         {"name":"status", "type":"uint32"}
       ]
   },{
@@ -113,6 +116,7 @@
         {"name":"proposal_id", "type":"uint64"},
         {"name":"proposed_article_hash", "type":"ipfshash_t"},
         {"name":"approve", "type":"bool"},
+        {"name":"is_approver", "type":"bool"},
         {"name":"amount", "type":"uint64"},
         {"name":"voter", "type":"account_name"},
         {"name":"voter_64t", "type":"uint64"},
@@ -141,6 +145,8 @@
         {"name":"proposal_id", "type":"uint64"},
         {"name":"proposal_finalize_time", "type":"time"},
         {"name":"proposalresult", "type":"bool"},
+        {"name":"tier", "type":"uint32"},
+        {"name":"is_editor", "type":"bool"},
         {"name":"rewardtype", "type":"bool"},
         {"name":"disbursed", "type":"bool"}
       ]
@@ -154,7 +160,7 @@
       "name": "procrewards",
       "base": "",
       "fields": [
-        {"name":"proposal_id", "type":"uint64"}
+        {"name":"reward_period", "type":"uint64"}
       ]
   },{
       "name": "brainpower",

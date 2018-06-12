@@ -30,23 +30,36 @@
 
 using namespace eosio;
 
+// const uint32_t DEFAULT_VOTING_TIME = 86400; // 1 day
+const uint32_t DEFAULT_VOTING_TIME = 60; // 1 minute
+// const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
+const uint32_t STAKING_DURATION = 30; // 30 sec, for testing
+const uint32_t REWARD_INTERVAL = 1800; // 30 min
+const uint64_t EDIT_PROPOSE_BRAINPOWER = 10;
+const uint64_t IQ_TO_BRAINPOWER_RATIO = 1;
+const uint64_t IQ_PRECISION_MULTIPLIER = 10000;
+const uint64_t GENESIS_TOKEN_SUPPLY = 10000000000;
+const float ANNUAL_MINT_RATE = .025;
+const float PERIOD_REWARD_AMOUNT = 234.899285; // calculated from formula. Should be slightly less than ANNUAL_MINT_RATE * 10,000,000,000
+const float EDITOR_REWARD_RATIO = 0.8;
+const float CURATION_REWARD_RATIO = 0.2;
+const uint64_t PERIOD_CURATION_REWARD = PERIOD_REWARD_AMOUNT * CURATION_REWARD_RATIO * IQ_PRECISION_MULTIPLIER;
+const uint64_t PERIOD_EDITOR_REWARD = PERIOD_REWARD_AMOUNT * EDITOR_REWARD_RATIO * IQ_PRECISION_MULTIPLIER;
+const float TIER_ONE_THRESHOLD = .5;
+const float TIER_THREE_THRESHOLD = .75;
+symbol_type IQSYMBOL = symbol_type(eosio::string_to_symbol(4, "IQ"));
+
 class eparticle : public eosio::contract {
 
 private:
-    // const uint32_t DEFAULT_VOTING_TIME = 86400; // 1 day
-    const uint32_t DEFAULT_VOTING_TIME = 60; // 1 minute
-    // const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
-    const uint32_t STAKING_DURATION = 30; // 30 sec, for testing
-    const uint64_t EDIT_PROPOSE_BRAINPOWER = 10;
-    const uint64_t IQ_TO_BRAINPOWER_RATIO = 1;
-    const uint64_t IQ_PRECISION_MULTIPLIER = 10000;
-    symbol_type IQSYMBOL = symbol_type(eosio::string_to_symbol(4, "IQ"));
+
 
     // returning array types from a DB type struct throws
     // using vectors for now, will try to use arrays later
     //using ipfshash_t = unsigned char[34];
     using byte = unsigned char;
     using ipfshash_t = std::string;
+    using longdub_t = long double;
     enum ProposalStatus { pending, accepted, rejected };
 
 public:
@@ -89,12 +102,16 @@ private:
           ipfshash_t grandparent_hash; // IPFS hash of the grandparent hash
           account_name proposer; // account name of the proposer
           account_name proposer_64t; // account name of the proposer in integer form
+          uint64_t threshold; // abs((yes votes) - (no votes))
+          uint32_t tier;
           uint32_t starttime; // epoch time of the proposal
           uint32_t endtime;
+          uint32_t finalized_time; // when finalize() was called
           uint32_t status;
 
           uint64_t primary_key () const { return id; }
           key256 get_hash_key256 () const { return eparticle::ipfs_to_key256(proposed_article_hash); }
+          uint64_t get_finalize_period()const { return (finalized_time / REWARD_INTERVAL); } // truncate to the nearest period
           account_name get_proposer () const { return proposer; }
           uint64_t get_proposer64t () const { return proposer_64t; }
 
@@ -107,6 +124,7 @@ private:
           uint64_t proposal_id;
           ipfshash_t proposed_article_hash; // IPFS hash of the proposed new version
           bool approve;
+          bool is_editor;
           uint64_t amount;
           account_name voter; // account name of the voter
           account_name voter_64t; // account name of the voter in integer form
@@ -143,13 +161,16 @@ private:
         uint64_t amount; // slash or reward amount
         uint64_t proposal_id; // id of the proposal that this person voted on
         uint32_t proposal_finalize_time; // when finalize() was called
+        uint32_t tier;
         bool proposalresult = 0;
+        bool is_editor = 0;
         bool rewardtype = 0; // 0 for reject/slash, 1 for reward/success
         bool disbursed = 0; // slashes will be done immediately at finalize(). Rewards will be done at 24hr periods
 
         auto primary_key()const { return id; }
         account_name get_user()const { return user; }
         uint64_t get_proposal()const { return proposal_id; }
+        uint64_t get_finalize_period()const { return (proposal_finalize_time / REWARD_INTERVAL); } // truncate to the nearest period
         uint64_t get_user64t()const { return user_64t; }
     };
 
@@ -212,7 +233,8 @@ private:
     // @abi table
     typedef eosio::multi_index<N(propstbl), editproposal,
         indexed_by< N(byhash), const_mem_fun< editproposal, eosio::key256, &editproposal::get_hash_key256 >>,
-        indexed_by< N(byproposer64t), const_mem_fun< editproposal, uint64_t, &editproposal::get_proposer64t >>
+        indexed_by< N(byproposer64t), const_mem_fun< editproposal, uint64_t, &editproposal::get_proposer64t >>,
+        indexed_by< N(byfinalper), const_mem_fun< editproposal, uint64_t, &editproposal::get_finalize_period >>
     > propstbl; // EOS table for the edit proposals
 
     // votes table
@@ -245,9 +267,10 @@ private:
     // rewards history table
     // @abi table
     typedef eosio::multi_index<N(rewardstbl), rewardhistory,
-        indexed_by< N(get_user), const_mem_fun<rewardhistory, account_name, &rewardhistory::get_user>>,
-        indexed_by< N(get_proposal), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_proposal >>,
-        indexed_by< N(get_user64t), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_user64t >>
+        indexed_by< N(byuser), const_mem_fun<rewardhistory, account_name, &rewardhistory::get_user>>,
+        indexed_by< N(byuser64t), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_user64t >>,
+        indexed_by< N(byfinalper), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_finalize_period >>,
+        indexed_by< N(byproposal), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_proposal >>
     > rewardstbl;
 
 
@@ -279,7 +302,7 @@ public:
                   ipfshash_t& old_article_hash,
                   ipfshash_t& grandparent_hash );
 
-    void procrewards( uint64_t proposal_id );
+    void procrewards( uint64_t reward_period );
 
     void votebyhash ( account_name voter,
                       ipfshash_t& proposed_article_hash,

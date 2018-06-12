@@ -191,6 +191,7 @@ void eparticle::propose( account_name proposer, ipfshash_t& proposed_article_has
         a.proposed_article_hash = proposed_article_hash;
         a.old_article_hash = old_article_hash;
         a.grandparent_hash = grandparent_hash;
+        a.threshold = 0;
         a.proposer = proposer;
         a.proposer_64t = eparticle::swapEndian64(proposer);
         a.starttime = now();
@@ -209,6 +210,8 @@ void eparticle::votebyhash ( account_name voter, ipfshash_t& proposed_article_ha
     auto prop_it = prop_idx.find(eparticle::ipfs_to_key256(proposed_article_hash));
     eosio_assert( prop_it != prop_idx.end(), "proposal not found" );
     uint64_t proposal_id = prop_it->id;
+
+    bool voterIsProposer = (voter == prop_it->proposer);
 
     // Verify voting is still in progress
     eosio_assert( now() < prop_it->endtime, "voting period is over");
@@ -235,6 +238,7 @@ void eparticle::votebyhash ( account_name voter, ipfshash_t& proposed_article_ha
              a.proposal_id = proposal_id;
              a.proposed_article_hash = proposed_article_hash;
              a.approve = approve;
+             a.is_editor = voterIsProposer;
              a.amount = amount;
              a.voter = voter;
              a.voter_64t = eparticle::swapEndian64(voter);
@@ -287,6 +291,7 @@ void eparticle::votebyhash ( account_name voter, ipfshash_t& proposed_article_ha
                  a.proposal_id = proposal_id;
                  a.proposed_article_hash = proposed_article_hash;
                  a.approve = approve;
+                 a.is_editor = voterIsProposer;
                  a.amount = amount;
                  a.voter = voter;
                  a.voter_64t = eparticle::swapEndian64(voter);
@@ -332,7 +337,6 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
     eosio_assert( vote_it != voteidx.end(), "no votes found for proposal");
 
     print("TALLYING VOTES\n");
-
     // Tally votes
     uint64_t for_votes = 0;
     uint64_t against_votes = 0;
@@ -344,27 +348,44 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
         vote_it++;
     }
 
-    print("MARKING PROPOSALS\n");
-
-    // Mark proposal as accepted or rejected. Ties are rejected
-    proptable.modify( prop_it, 0, [&]( auto& a ) {
-        if (for_votes > against_votes)
-            a.status =  ProposalStatus::accepted;
-        else
-            a.status =  ProposalStatus::rejected;
-    });
-
     print("CHECKING SLASHING\n");
-
     // Determine slashing conditions
-    // floating point is inexact, so I'm using integer arithmetic for slashing percentages
     vote_it = voteidx.find(eparticle::ipfs_to_key256(prop_it->proposed_article_hash));
-    bool approved = (for_votes > against_votes);
-    uint64_t slash_percent;
+    bool approved = 0;
+    uint64_t totalVotes = for_votes + against_votes;
+    if ((for_votes / totalVotes) > TIER_ONE_THRESHOLD){
+        approved = 1;
+    }
+    float slash_percent;
+    float tierPercent;
+    uint32_t tier = 1;
+
     if (approved)
-        slash_percent = for_votes - against_votes;
+        slash_percent = (for_votes - against_votes) / totalVotes;
+        tierPercent = for_votes / totalVotes;
+        if (tierPercent >= TIER_THREE_THRESHOLD){ tier = 3;}
+        else if (tierPercent > TIER_ONE_THRESHOLD){ tier = 2;}
     else
-        slash_percent = against_votes - for_votes;
+        slash_percent = (against_votes - for_votes) / totalVotes;
+
+    print("MARKING PROPOSALS\n");
+    // Mark proposal as accepted or rejected. Ties are rejected
+    uint32_t finalTime = now();
+    proptable.modify( prop_it, 0, [&]( auto& a ) {
+        if (for_votes > against_votes){
+            a.status =  ProposalStatus::accepted;
+            a.threshold =  for_votes - against_votes;
+            a.tier = tier;
+            a.finalized_time = finalTime;
+        }
+        else{
+            a.status =  ProposalStatus::rejected;
+            a.threshold =  against_votes - for_votes;
+            a.tier = tier;
+            a.finalized_time = finalTime;
+        }
+
+    });
 
     print("INITIALIZE REWARDS TABLE");
     rewardstbl rewardstable( _self, _self );
@@ -386,8 +407,8 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
             while(stake_it->user == vote_it->voter) {
                 if(stake_it->amount >= runningTally){
                     stakeidx.modify( stake_it, 0, [&]( auto& a ) {
-                        a.completion_time += STAKING_DURATION * slash_percent / 100;
-                        a.timestamp = now();
+                        a.completion_time += STAKING_DURATION * slash_percent;
+                        a.timestamp = finalTime;
                         runningTally -= stake_it->amount;
                     });
                 }
@@ -398,7 +419,7 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
                     uint32_t oldCompletionTime = stake_it->completion_time;
 
                     stakeidx.modify( stake_it, 0, [&]( auto& a ) {
-                        a.completion_time += STAKING_DURATION * slash_percent / 100;
+                        a.completion_time += STAKING_DURATION * slash_percent;
                         a.amount = runningTally;
                     });
                     staketable.emplace( vote_it->voter,  [&]( auto& a ) {
@@ -418,8 +439,10 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
                     a.user_64t = eparticle::swapEndian64(vote_it->voter);
                     a.amount = change_amount;
                     a.proposal_id = proposal_id;
-                    a.proposal_finalize_time = now();
+                    a.proposal_finalize_time = finalTime;
+                    a.is_editor = vote_it->is_editor;
                     a.proposalresult = approved;
+                    a.tier = tier;
                     a.rewardtype = 0;
                     a.disbursed = 1;
                 });
@@ -437,8 +460,10 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
                 a.user_64t = eparticle::swapEndian64(vote_it->voter);
                 a.amount = change_amount;
                 a.proposal_id = proposal_id;
-                a.proposal_finalize_time = now();
+                a.proposal_finalize_time = finalTime;
                 a.proposalresult = approved;
+                a.is_editor = vote_it->is_editor;
+                a.tier = tier;
                 a.rewardtype = 1;
                 a.disbursed = 0;
             });
@@ -473,8 +498,56 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
 
 }
 
-void eparticle::procrewards(uint64_t proposal_id ) {
-    print("REWARDS PROCESSED");
+void eparticle::procrewards(uint64_t reward_period ) {
+    // This function needs to be universally callable. A cron job will be api calling this every REWARD_INTERVAL seconds.
+
+    // get all the rewards in that period
+    rewardstbl rewardstable( _self, _self );
+    auto rewardsidx = rewardstable.get_index<N(byfinalper)>();
+    auto rewards_it = rewardsidx.find(reward_period);
+
+    // Calculate the total rewards amount in a period
+    uint64_t curationRewardSum = 0;
+    uint64_t editorRewardSum = 0;
+    while(rewards_it != rewardsidx.end()) {
+        if (rewards_it->rewardtype == 1){
+            if (rewards_it->is_editor == 1 && rewards_it->tier >= 3){
+                editorRewardSum += (rewards_it->amount * IQ_PRECISION_MULTIPLIER);
+            }
+            else{
+                curationRewardSum += (rewards_it->amount * IQ_PRECISION_MULTIPLIER);
+            }
+        }
+        rewards_it++;
+    }
+
+    // Reset the rewards loop and start rewarding
+    rewards_it = rewardsidx.find(reward_period);
+
+    while(rewards_it != rewardsidx.end()) {
+        if (rewards_it->rewardtype == 1){
+            uint64_t rewardAmount = 0;
+            if (rewards_it->is_editor == 1 && rewards_it->tier >= 3){
+                rewardAmount = ((rewards_it->amount * IQ_PRECISION_MULTIPLIER) / (double)editorRewardSum) * PERIOD_EDITOR_REWARD;
+            }
+            else{
+                rewardAmount = ((rewards_it->amount * IQ_PRECISION_MULTIPLIER) / (double)curationRewardSum) * PERIOD_CURATION_REWARD;
+                curationRewardSum += rewards_it->amount;
+            }
+
+            // Issue IQ
+            asset iqAssetPack = asset(rewardAmount, IQSYMBOL);
+            action(permission_level{ N(eparticle), N(active) }, N(eosio.token), N(issue), std::make_tuple(rewards_it->user,
+                    iqAssetPack, std::string(""))).send();
+
+            // Mark the reward as disbursed
+            rewardsidx.modify( rewards_it, 0, [&]( auto& a ) {
+                a.disbursed = 1;
+            });
+        }
+        rewards_it++;
+    }
+
 }
 
 void eparticle::testinsert( ipfshash_t inputhash ) {
