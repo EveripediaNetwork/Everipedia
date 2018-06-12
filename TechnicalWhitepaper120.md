@@ -80,7 +80,7 @@ The token module is responsible for making changes to the token balances of addr
 ### Initial Supply & Minting Schedule  
   
 
-Tokens will be minted daily through the edit process and edit curation process. There will be a fixed amount of tokens minted each day. The amount will be reset every day at 00:00 UTC.
+Tokens will be minted every 30 minutes through the edit process and edit curation process. There will be a fixed amount of tokens minted each day. The amount will be reset every day at 00:00 UTC.
 
   
 
@@ -88,7 +88,7 @@ Proposed edits pass tiered thresholds and receive IQ rewards based on votes of t
 
   
 
-At the end of the day, editors will receive IQ rewards in proportion to the value of their contributions. An single editor’s contribution is valued based on the number and tiers of edits approved (Listing 1). The IQ reward available per day is determined by the daily minting formula (Listing 2).
+At the end of the 30 minute period, editors will receive IQ rewards in proportion to the value of their contributions. An single editor’s contribution is valued based on the number and tiers of edits approved (Listing 1). The IQ reward available per day is determined by the daily minting formula (Listing 2).
 
   
 
@@ -100,9 +100,9 @@ R = Editor’s IQ reward
 
 E = Editor’s contribution value
 
-T = Total contribution value for the day across all edits
+T = Total contribution value for the 30-min-period across all edits
 
-Q = IQ daily mint rate constant
+Q = IQ reward period mint rate constant
 
   
 
@@ -112,23 +112,23 @@ Q
 
   
 
-The available IQ reward for the day, Q, is determined by Listing 2:
+The available IQ reward for the period, Q, is determined by Listing 2:
 
   
 
-Listing 2: Daily IQ minting formula
+Listing 2: Reward period IQ minting formula
 
   
 
 S0 = Token Supply at Genesis
 
-F = Daily mint rate
+F = Daily period mint rate
 
 A = Annual mint rate
 
   
 
-F = (1 + A)1/365 - 1
+F = (1 + A)1/1051200 - 1
 
 Q = F * S0
 
@@ -155,7 +155,7 @@ Edit proposals are approved in tiers which is an output of the validator functio
 
   
 
-Tier 1: Proposal not approved, collateral burned
+Tier 1: Proposal not approved
 
 Tier 2: Proposal approved, no token reward given, collateral returned
 
@@ -188,6 +188,26 @@ Tier 3 - Greater than 75% of yes votes
   
 
 Every vote received by a Tier 3 edit counts towards an editor’s daily contribution value. IQ rewards for the day are dispersed based on the formulas in Listings 1 and 2 in the Token Module.
+
+### Curation Rewards
+CMR = Curation mint rate; number of IQ tokens minted for curation rewards per period P (initial network P = 30 minutes)
+
+SBP = Summaton of one user's Brain Power which voted on the majority side during period P
+
+OBP = Summation of all user's Brain Power which voted on the majority side during period P
+
+
+CMR * (SBP/OBP) = user's curation reward per period P
+
+### Edit Rewards (Content Rewards) 
+EMR = Edit mint rate; number of IQ tokens minted for editor rewards per period P (initial network P = 30 minutes)
+
+TBP = Summaton of one editor's Brain Power votes surpassing Tier 2 threshold during period P
+
+OTBP = Summation of all editor's Brain Power votes surpassing Tier 2 threshold during period P
+
+
+EMR * (TBP/OTBP) = user's curation reward per period P
 
 ## Slashing Conditions
 
