@@ -191,15 +191,21 @@ Every vote received by a Tier 3 edit counts towards an editor’s daily contribu
 
 ### Curation Rewards
 CMR = Curation mint rate; number of IQ tokens minted for curation rewards per period P (initial network P = 30 minutes)
+
 SBP = Summaton of one user's Brain Power which voted on the majority side during period P
+
 OBP = Summation of all user's Brain Power which voted on the majority side during period P
+
 
 CMR * (SBP/OBP) = user's curation reward per period P
 
 ### Edit Rewards (Content Rewards) 
 EMR = Edit mint rate; number of IQ tokens minted for editor rewards per period P (initial network P = 30 minutes)
+
 TBP = Summaton of one editor's Brain Power votes surpassing Tier 2 threshold during period P
+
 OTBP = Summation of all editor's Brain Power votes surpassing Tier 2 threshold during period P
+
 
 EMR * (TBP/OTBP) = user's curation reward per period P
 
