@@ -48,7 +48,7 @@ const uint64_t PERIOD_EDITOR_REWARD = PERIOD_REWARD_AMOUNT * EDITOR_REWARD_RATIO
 const float TIER_ONE_THRESHOLD = .5;
 const float TIER_THREE_THRESHOLD = .75;
 
-class eparticle : public eosio::contract {
+class eparticlectr : public eosio::contract {
 
 private:
     symbol_type IQSYMBOL = eosio::symbol_type(eosio::string_to_symbol(4, "IQ"));
@@ -88,8 +88,8 @@ private:
           ipfshash_t parent_hash; // IPFS hash of the parent article versiond
 
           uint64_t primary_key () const { return id; }
-          key256 get_hash_key256 () const { return eparticle::ipfs_to_key256(hash); }
-          key256 get_parent_hash_key256 () const { return eparticle::ipfs_to_key256(parent_hash); }
+          key256 get_hash_key256 () const { return eparticlectr::ipfs_to_key256(hash); }
+          key256 get_parent_hash_key256 () const { return eparticlectr::ipfs_to_key256(parent_hash); }
     };
 
     // Edit Proposals
@@ -109,7 +109,7 @@ private:
           uint32_t status;
 
           uint64_t primary_key () const { return id; }
-          key256 get_hash_key256 () const { return eparticle::ipfs_to_key256(proposed_article_hash); }
+          key256 get_hash_key256 () const { return eparticlectr::ipfs_to_key256(proposed_article_hash); }
           uint64_t get_finalize_period()const { return (finalized_time / REWARD_INTERVAL); } // truncate to the nearest period
           account_name get_proposer () const { return proposer; }
           uint64_t get_proposer64t () const { return proposer_64t; }
@@ -130,7 +130,7 @@ private:
           uint32_t timestamp; // epoch time of the vote
 
           uint64_t primary_key()const { return id; }
-          key256 get_hash_key256 () const { return eparticle::ipfs_to_key256(proposed_article_hash); }
+          key256 get_hash_key256 () const { return eparticlectr::ipfs_to_key256(proposed_article_hash); }
           uint64_t get_proposal_id()const { return id; }
           uint64_t get_voter64t()const { return voter_64t; }
     };
@@ -282,7 +282,7 @@ private:
 
 
 public:
-    eparticle(account_name self) : contract(self) {};
+    eparticlectr(account_name self) : contract(self) {};
 
     uint64_t getiqbalance( account_name from );
     uint64_t swapEndian64( uint64_t input );
@@ -334,7 +334,7 @@ public:
     void withdraw( account_name from );
 };
 
-eosio::key256 eparticle::ipfs_to_key256(const ipfshash_t& input) {
+eosio::key256 eparticlectr::ipfs_to_key256(const ipfshash_t& input) {
     // This is needed for indexing since indexes cannot be done by strings, only max key256's, for now...
     uint64_t p1 = eosio::string_to_name(input.substr(0, 12).c_str());
     uint64_t p2 = eosio::string_to_name(input.substr(13, 24).c_str());
@@ -345,7 +345,7 @@ eosio::key256 eparticle::ipfs_to_key256(const ipfshash_t& input) {
 }
 
 // This is until secondary keys get fixed with cleos get table :)
-uint64_t eparticle::ipfs_to_uint64_trunc(const ipfshash_t& input) {
+uint64_t eparticlectr::ipfs_to_uint64_trunc(const ipfshash_t& input) {
     ipfshash_t newHash = input;
     char chars[] = "6789";
     for (unsigned int i = 0; i < strlen(chars); ++i)
