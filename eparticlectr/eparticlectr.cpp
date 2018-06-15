@@ -32,7 +32,7 @@
 
 uint64_t eparticlectr::getiqbalance( account_name from ) {
     // Create the account object
-    eparticlectr::accounts accountstable( N(eosio.token), from );
+    eparticlectr::accounts accountstable( N(epiqtokenctr), from );
     auto iqAccount_iter = accountstable.find(IQSYMBOL.name());
 
     // Check for an account
@@ -65,7 +65,7 @@ void eparticlectr::brainme( account_name staker, uint64_t amount) {
 
     // Transfer IQ to the eparticlectr contract
     asset iqAssetPack = asset(amount, IQSYMBOL);
-    action(permission_level{ staker, N(active) }, N(eosio.token), N(transfer), std::make_tuple(staker,
+    action(permission_level{ staker, N(active) }, N(epiqtokenctr), N(transfer), std::make_tuple(staker,
             N(eparticlectr), iqAssetPack, std::string(""))).send();
 
     // Get the brainpower
@@ -132,7 +132,7 @@ void eparticlectr::brainclaim( account_name claimant, uint64_t amount) {
         if (timeDiff > STAKING_DURATION){
             // Transfer back the IQ
             iqAssetPack = asset(stake_it->amount, IQSYMBOL);
-            action(permission_level{ N(eparticlectr), N(active) }, N(eosio.token), N(transfer), std::make_tuple(N(eparticlectr),
+            action(permission_level{ N(eparticlectr), N(active) }, N(epiqtokenctr), N(transfer), std::make_tuple(N(eparticlectr),
                     claimant, iqAssetPack, std::string(""))).send();
 
             // Delete the stake.
@@ -171,7 +171,7 @@ void eparticlectr::brainclmid( account_name claimant, uint64_t stakeid) {
 
     // Transfer back the IQ
     iqAssetPack = asset(stake_it->amount, IQSYMBOL);
-    action(permission_level{ N(eparticlectr), N(active) }, N(eosio.token), N(transfer), std::make_tuple(N(eparticlectr),
+    action(permission_level{ N(eparticlectr), N(active) }, N(epiqtokenctr), N(transfer), std::make_tuple(N(eparticlectr),
             claimant, iqAssetPack, std::string(""))).send();
 
     // Delete the stake.
@@ -376,7 +376,7 @@ void eparticlectr::finalize( account_name from, uint64_t proposal_id ) {
     vote_it = voteidx.find(eparticlectr::ipfs_to_key256(prop_it->proposed_article_hash));
     bool approved = 0;
     longdub_t totalVotes = for_votes + against_votes;
-    if ((for_votes / totalVotes) > TIER_ONE_THRESHOLD){
+    if ((for_votes / (float)totalVotes) > TIER_ONE_THRESHOLD){
         approved = 1;
     }
     float slash_ratio;
@@ -384,12 +384,12 @@ void eparticlectr::finalize( account_name from, uint64_t proposal_id ) {
     uint32_t tier = 1;
 
     if (approved)
-        slash_ratio = (for_votes - against_votes) / totalVotes;
-        tierRatio = for_votes / totalVotes;
+        slash_ratio = (for_votes - against_votes) / (float)totalVotes;
+        tierRatio = for_votes / (float)totalVotes;
         if (tierRatio >= TIER_THREE_THRESHOLD){ tier = 3; }
         else if (tierRatio > TIER_ONE_THRESHOLD){ tier = 2; }
     else
-        slash_ratio = (against_votes - for_votes) / totalVotes;
+        slash_ratio = (against_votes - for_votes) / (float)totalVotes;
 
     print("MARKING PROPOSALS\n");
     // Mark proposal as accepted or rejected. Ties are rejected
@@ -569,21 +569,21 @@ void eparticlectr::procrewards(uint64_t reward_period ) {
         if (rewards_it->rewardtype == 1){
             uint64_t rewardAmount = 0;
             if (rewards_it->is_editor == 1 && rewards_it->tier >= 3){
-                rewardAmount = ((rewards_it->amount) / (double)editorRewardSum) * PERIOD_EDITOR_REWARD;
+                rewardAmount = ((rewards_it->amount) / (longdub_t)editorRewardSum) * PERIOD_EDITOR_REWARD;
             }
             else{
-                rewardAmount = ((rewards_it->amount) / (double)curationRewardSum) * PERIOD_CURATION_REWARD;
+                rewardAmount = ((rewards_it->amount) / (longdub_t)curationRewardSum) * PERIOD_CURATION_REWARD;
                 curationRewardSum += rewards_it->amount;
             }
 
             // Issue IQ
             asset iqAssetPack = asset(rewardAmount, IQSYMBOL);
             vector<permission_level> perlvs;
-            permission_level tokenContract = permission_level{ N(eosio.token), N(active) };
+            permission_level tokenContract = permission_level{ N(epiqtokenctr), N(active) };
             permission_level articleContract = permission_level{ N(eparticlectr), N(active) };
             perlvs.push_back(tokenContract);
             perlvs.push_back(articleContract);
-            action(perlvs, N(eosio.token), N(issue), std::make_tuple(rewards_it->user, iqAssetPack, std::string(""))).send();
+            action(perlvs, N(epiqtokenctr), N(issue), std::make_tuple(rewards_it->user, iqAssetPack, std::string(""))).send();
 
             // Mark the reward as disbursed
             rewardsidx.modify( rewards_it, 0, [&]( auto& a ) {
@@ -599,7 +599,7 @@ void eparticlectr::testinsert( account_name inputaccount, ipfshash_t inputhash )
 
 
   // Create the account object
-  eparticlectr::accounts accountstable( N(eosio.token), inputaccount );
+  eparticlectr::accounts accountstable( N(epiqtokenctr), N(minieo) );
   auto iqAccount_iter = accountstable.begin();
 
   // Check for an account
@@ -617,7 +617,7 @@ void eparticlectr::testinsert( account_name inputaccount, ipfshash_t inputhash )
     // print("CLEO");
     // // Issue IQ
     // asset iqAssetPack = asset(1000, IQSYMBOL);
-    // action(permission_level{ N(eparticlectr), N(active) }, N(eosio.token), N(issue), std::make_tuple(N(eosio),
+    // action(permission_level{ N(eparticlectr), N(active) }, N(epiqtokenctr), N(issue), std::make_tuple(N(eosio),
     //         iqAssetPack, std::string(""))).send();
 
 

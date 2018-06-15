@@ -9,12 +9,12 @@
 
 #include <string>
 
-
 using namespace eosio;
+using std::string;
 
-class iqtoken : public contract {
+class epiqtokenctr : public contract {
   public:
-     iqtoken( account_name self ):contract(self){}
+     epiqtokenctr( account_name self ):contract(self){}
 
      void create( account_name issuer,
                   asset        maximum_supply);
@@ -61,14 +61,14 @@ class iqtoken : public contract {
      };
 };
 
-asset iqtoken::get_supply( symbol_name sym )const
+asset epiqtokenctr::get_supply( symbol_name sym )const
 {
   stats statstable( _self, sym );
   const auto& st = statstable.get( sym );
   return st.supply;
 }
 
-asset iqtoken::get_balance( account_name owner, symbol_name sym )const
+asset epiqtokenctr::get_balance( account_name owner, symbol_name sym )const
 {
   accounts accountstable( _self, owner );
   const auto& ac = accountstable.get( sym );

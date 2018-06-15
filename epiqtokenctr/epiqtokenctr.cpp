@@ -5,7 +5,7 @@
 
 #include "epiqtokenctr.hpp"
 
-void iqtoken::create( account_name issuer,
+void epiqtokenctr::create( account_name issuer,
                     asset        maximum_supply )
 {
     require_auth( _self );
@@ -27,7 +27,7 @@ void iqtoken::create( account_name issuer,
 }
 
 
-void iqtoken::issue( account_name to, asset quantity, string memo )
+void epiqtokenctr::issue( account_name to, asset quantity, string memo )
 {
     auto sym = quantity.symbol;
     eosio_assert( sym.is_valid(), "invalid symbol name" );
@@ -57,7 +57,7 @@ void iqtoken::issue( account_name to, asset quantity, string memo )
     }
 }
 
-void iqtoken::transfer( account_name from,
+void epiqtokenctr::transfer( account_name from,
                       account_name to,
                       asset        quantity,
                       string       memo )
@@ -82,7 +82,7 @@ void iqtoken::transfer( account_name from,
     add_balance( to, quantity, from );
 }
 
-void iqtoken::sub_balance( account_name owner, asset value ) {
+void epiqtokenctr::sub_balance( account_name owner, asset value ) {
    accounts from_acnts( _self, owner );
 
    const auto& from = from_acnts.get( value.symbol.name(), "no balance object found" );
@@ -98,7 +98,7 @@ void iqtoken::sub_balance( account_name owner, asset value ) {
    }
 }
 
-void iqtoken::add_balance( account_name owner, asset value, account_name ram_payer )
+void epiqtokenctr::add_balance( account_name owner, asset value, account_name ram_payer )
 {
    accounts to_acnts( _self, owner );
    auto to = to_acnts.find( value.symbol.name() );
@@ -113,4 +113,4 @@ void iqtoken::add_balance( account_name owner, asset value, account_name ram_pay
    }
 }
 
-EOSIO_ABI( eosio::token, (create)(issue)(transfer) )
+EOSIO_ABI( epiqtokenctr, (create)(issue)(transfer) )

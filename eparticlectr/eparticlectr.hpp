@@ -39,14 +39,14 @@ const uint64_t EDIT_PROPOSE_BRAINPOWER = 10;
 const uint64_t IQ_TO_BRAINPOWER_RATIO = 1;
 const uint64_t IQ_PRECISION_MULTIPLIER = 10000;
 const uint64_t GENESIS_TOKEN_SUPPLY = 10000000000;
-const float ANNUAL_MINT_RATE = .025;
-const float PERIOD_REWARD_AMOUNT = 234.8993; // calculated from formula. Should be slightly less than ANNUAL_MINT_RATE * 10,000,000,000
-const float EDITOR_REWARD_RATIO = 0.8;
-const float CURATION_REWARD_RATIO = 0.2;
+const float ANNUAL_MINT_RATE = .025f;
+const double PERIOD_REWARD_AMOUNT = 234.8993; // calculated from formula. Should be slightly less than ANNUAL_MINT_RATE * 10,000,000,000
+const float EDITOR_REWARD_RATIO = 0.8f;
+const float CURATION_REWARD_RATIO = 0.2f;
 const uint64_t PERIOD_CURATION_REWARD = PERIOD_REWARD_AMOUNT * CURATION_REWARD_RATIO * IQ_PRECISION_MULTIPLIER;
 const uint64_t PERIOD_EDITOR_REWARD = PERIOD_REWARD_AMOUNT * EDITOR_REWARD_RATIO * IQ_PRECISION_MULTIPLIER;
-const float TIER_ONE_THRESHOLD = .5;
-const float TIER_THREE_THRESHOLD = .75;
+const float TIER_ONE_THRESHOLD = .5f;
+const float TIER_THREE_THRESHOLD = .75f;
 
 class eparticlectr : public eosio::contract {
 
