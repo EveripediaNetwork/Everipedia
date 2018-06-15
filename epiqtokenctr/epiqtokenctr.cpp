@@ -5,6 +5,20 @@
 
 #include "epiqtokenctr.hpp"
 
+uint64_t epiqtokenctr::getiqbalance( account_name from ) {
+    // Create the account object
+    epiqtokenctr::accounts accountstable( N(epiqtokenctr), from );
+    auto iqAccount_iter = accountstable.find(IQSYMBOL.name());
+
+    // Check for an account
+    if(iqAccount_iter != accountstable.end()){
+        return iqAccount_iter->balance.amount;
+    }
+    else{
+        return 0;
+    }
+}
+
 void epiqtokenctr::create( account_name issuer,
                     asset        maximum_supply )
 {
@@ -55,6 +69,12 @@ void epiqtokenctr::issue( account_name to, asset quantity, string memo )
     if( to != st.issuer ) {
        SEND_INLINE_ACTION( *this, transfer, {st.issuer,N(active)}, {st.issuer, to, quantity, memo} );
     }
+}
+
+void epiqtokenctr::transferint( account_name from, account_name to, uint64_t quantity, string memo )
+{
+    asset iqAssetPack = asset(quantity, eosio::symbol_type(eosio::string_to_symbol(4, "IQ")));
+    return epiqtokenctr::transfer(from, to, iqAssetPack, memo);
 }
 
 void epiqtokenctr::transfer( account_name from,
@@ -113,4 +133,25 @@ void epiqtokenctr::add_balance( account_name owner, asset value, account_name ra
    }
 }
 
-EOSIO_ABI( epiqtokenctr, (create)(issue)(transfer) )
+void epiqtokenctr::brainmeiq( account_name staker, uint64_t amount) {
+    require_auth(staker);
+    require_recipient(_self);
+
+    // Check that there is enough IQ available to stake to brainpower
+    uint64_t oldIQBalance = epiqtokenctr::getiqbalance(staker);
+    eosio_assert(oldIQBalance > 0, "Not enough IQ available to convert to brainpower");
+
+    print("Current balance is: ", oldIQBalance, "\n");
+
+    // Transfer the IQ to the eparticlectr contract for staking
+    asset iqAssetPack = asset(amount, IQSYMBOL);
+    epiqtokenctr::transfer(staker, N(eparticlectr), iqAssetPack, "memo");
+
+    // Finish the brainpower issuance by calling the eparticlectr contract
+    eosio::action theAction = action(permission_level{ N(eparticlectr), N(active) }, N(eparticlectr), N(brainmeart),
+                                    std::make_tuple(staker, amount));
+    theAction.send();
+}
+
+
+EOSIO_ABI( epiqtokenctr, (create)(issue)(transfer)(transferint)(brainmeiq) )

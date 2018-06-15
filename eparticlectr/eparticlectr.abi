@@ -51,7 +51,7 @@
         {"name":"proposal_hash", "type":"ipfshash_t"}
      ]
   },{
-      "name": "brainme",
+      "name": "brainmeart",
       "base": "",
       "fields": [
         {"name":"staker", "type":"account_name"},
@@ -191,8 +191,8 @@
       "type": "procrewards",
       "ricardian_contract": ""
     },{
-      "name": "brainme",
-      "type": "brainme",
+      "name": "brainmeart",
+      "type": "brainmeart",
       "ricardian_contract": ""
     },{
       "name": "brainclaim",

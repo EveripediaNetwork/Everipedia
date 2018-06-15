@@ -55,21 +55,14 @@ uint64_t eparticlectr::swapEndian64(uint64_t X) {
 
 // Stake IQ in exchange for brainpower
 // Note that the "amount" parameter is in full precision. Dividing it by IQ_PRECISION_MULTIPLIER would give the "clean" amount with a decimal.
-void eparticlectr::brainme( account_name staker, uint64_t amount) {
-    require_auth(staker);
+void eparticlectr::brainmeart( account_name staker, uint64_t amount) {
+    // Only the token contract can call this to prevent fraudulent transactions
+    require_auth(N(eparticlectr));
+
     uint64_t newBrainpower = amount * IQ_TO_BRAINPOWER_RATIO;
 
-    // Check that there is enough IQ available to stake to brainpower
-    uint64_t oldIQBalance = getiqbalance(staker);
-    eosio_assert(oldIQBalance > 0, "Not enough IQ available to convert to brainpower");
-
-    // Transfer IQ to the eparticlectr contract
-    asset iqAssetPack = asset(amount, IQSYMBOL);
-    action(permission_level{ staker, N(active) }, N(epiqtokenctr), N(transfer), std::make_tuple(staker,
-            N(eparticlectr), iqAssetPack, std::string(""))).send();
-
     // Get the brainpower
-    brainpwrtbl braintable(_self, _self);
+    brainpwrtbl braintable(N(eparticlectr), N(eparticlectr));
     auto brainidx = braintable.get_index<N(byuser)>();
     auto brain_it = brainidx.find(staker);
 
@@ -77,7 +70,7 @@ void eparticlectr::brainme( account_name staker, uint64_t amount) {
 
     // Add the brainpower, creating a new table entry if the staker has never staked before
     if(brain_it == brainidx.end()){
-      braintable.emplace( staker, [&]( auto& b ) {
+      braintable.emplace( N(eparticlectr), [&]( auto& b ) {
           b.user = staker;
           b.user_64t = eparticlectr::swapEndian64(staker);
           b.power = newBrainpower;
@@ -90,8 +83,8 @@ void eparticlectr::brainme( account_name staker, uint64_t amount) {
     }
 
     // Create the stake object
-    staketbl staketblobj(_self, _self);
-    staketblobj.emplace( staker, [&]( auto& s ) {
+    staketbl staketblobj(N(eparticlectr), N(eparticlectr));
+    staketblobj.emplace( N(eparticlectr), [&]( auto& s ) {
         s.id = staketblobj.available_primary_key();
         s.user = staker;
         s.user_64t = eparticlectr::swapEndian64(staker);
@@ -188,7 +181,7 @@ void eparticlectr::propose_precheck( account_name proposer, ipfshash_t& proposed
     eosio_assert( brain_it != brainidx.end(), "No brainpower found");
 
     // Re-check that enough brainpower is available
-    eosio_assert(brain_it->power > EDIT_PROPOSE_BRAINPOWER, "Not enough brainpower to edit, you need to stake some more IQ using brainme first!");
+    eosio_assert(brain_it->power > EDIT_PROPOSE_BRAINPOWER, "Not enough brainpower to edit, you need to stake some more IQ using epiqtokenctr::brainmeiq first!");
 }
 
 // Propose an edit for an article
@@ -596,31 +589,17 @@ void eparticlectr::procrewards(uint64_t reward_period ) {
 }
 
 void eparticlectr::testinsert( account_name inputaccount, ipfshash_t inputhash ) {
+    // Create the account object
+    eparticlectr::accounts accountstable( N(epiqtokenctr), N(minieo) );
+    auto iqAccount_iter = accountstable.begin();
 
-
-  // Create the account object
-  eparticlectr::accounts accountstable( N(epiqtokenctr), N(minieo) );
-  auto iqAccount_iter = accountstable.begin();
-
-  // Check for an account
-  while (iqAccount_iter != accountstable.end()){
-      print(iqAccount_iter->balance.amount, "\n");
-      print(iqAccount_iter->balance.symbol.name(), "\n");
-      print(IQSYMBOL, "\n");
-      iqAccount_iter++;
-  }
-    //
-    //
-    // uint64_t oldIQBalance = getiqbalance(inputaccount);
-    // print(oldIQBalance);
-    // require_auth(N(eparticlectr));
-    // print("CLEO");
-    // // Issue IQ
-    // asset iqAssetPack = asset(1000, IQSYMBOL);
-    // action(permission_level{ N(eparticlectr), N(active) }, N(epiqtokenctr), N(issue), std::make_tuple(N(eosio),
-    //         iqAssetPack, std::string(""))).send();
-
-
+    // Check for an account
+    while (iqAccount_iter != accountstable.end()){
+        print(iqAccount_iter->balance.amount, "\n");
+        print(iqAccount_iter->balance.symbol.name(), "\n");
+        print(IQSYMBOL, "\n");
+        iqAccount_iter++;
+    }
 }
 
-EOSIO_ABI( eparticlectr, (brainme)(brainclaim)(brainclmid)(finalize)(fnlbyhash)(procrewards)(propose)(votebyhash)(testinsert) )
+EOSIO_ABI( eparticlectr, (brainmeart)(brainclaim)(brainclmid)(finalize)(fnlbyhash)(procrewards)(propose)(votebyhash)(testinsert) )

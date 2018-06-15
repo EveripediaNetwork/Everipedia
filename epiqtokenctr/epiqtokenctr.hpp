@@ -26,12 +26,22 @@ class epiqtokenctr : public contract {
                     asset        quantity,
                     string       memo );
 
+     void transferint( account_name from,
+                     account_name to,
+                     uint64_t     quantity,
+                     string       memo );
+
+     void brainmeiq( account_name staker,
+                   uint64_t amount );
+
 
      inline asset get_supply( symbol_name sym )const;
 
      inline asset get_balance( account_name owner, symbol_name sym )const;
 
   private:
+     symbol_type IQSYMBOL = eosio::symbol_type(eosio::string_to_symbol(4, "IQ"));
+     
      struct account {
         asset    balance;
 
@@ -59,6 +69,13 @@ class epiqtokenctr : public contract {
         asset         quantity;
         string        memo;
      };
+     struct transferint_args {
+        account_name  from;
+        account_name  to;
+        uint64_t      quantity;
+        string        memo;
+     };
+     uint64_t getiqbalance( account_name from );
 };
 
 asset epiqtokenctr::get_supply( symbol_name sym )const

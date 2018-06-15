@@ -322,7 +322,7 @@ public:
     void testinsert( account_name inputaccount,
                   ipfshash_t inputhash );
 
-    void brainme( account_name staker,
+    void brainmeart( account_name staker,
                   uint64_t amount );
 
     void brainclaim( account_name claimant,

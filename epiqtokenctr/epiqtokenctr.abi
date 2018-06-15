@@ -14,6 +14,15 @@
         {"name":"memo", "type":"string"}
       ]
     },{
+        "name": "transferint",
+        "base": "",
+        "fields": [
+          {"name":"from", "type":"account_name"},
+          {"name":"to", "type":"account_name"},
+          {"name":"quantity", "type":"uint64"},
+          {"name":"memo", "type":"string"}
+        ]
+      },{
      "name": "create",
      "base": "",
      "fields": [
@@ -28,6 +37,13 @@
         {"name":"quantity", "type":"asset"},
         {"name":"memo", "type":"string"}
      ]
+  },{
+      "name": "brainmeiq",
+      "base": "",
+      "fields": [
+        {"name":"staker", "type":"account_name"},
+        {"name":"amount", "type":"uint64"}
+      ]
   },{
       "name": "account",
       "base": "",
@@ -49,8 +65,16 @@
       "type": "transfer",
       "ricardian_contract": ""
     },{
+        "name": "transferint",
+        "type": "transferint",
+        "ricardian_contract": ""
+    },{
       "name": "issue",
       "type": "issue",
+      "ricardian_contract": ""
+    },{
+      "name": "brainmeiq",
+      "type": "brainmeiq",
       "ricardian_contract": ""
     }, {
       "name": "create",
