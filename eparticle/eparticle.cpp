@@ -1,5 +1,3 @@
-// CURRENTLY DOES NOT COMPILE
-// WORK IN PROGRESS
 // # 2018 Travis Moore, Kedar Iyer, Sam Kazemian
 // # MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 // # MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
@@ -32,15 +30,9 @@
 #include "../eosio.token/eosio.token.hpp"
 #include <typeinfo>
 
-bool eparticle::isnewuser (const account_name& _thisaccount){
-    return true;
-}
-
 uint64_t eparticle::getiqbalance( account_name from ) {
     // Create the account object
     eparticle::accounts accountstable( N(eosio.token), from );
-
-    // Get the iterator to the account
     auto iqAccount_iter = accountstable.find(IQSYMBOL.name());
 
     // Check for an account
@@ -52,6 +44,7 @@ uint64_t eparticle::getiqbalance( account_name from ) {
     }
 }
 
+// This function is used to swap endianess for uint64_t's for key and javascript 58-bit int limit issues.
 uint64_t eparticle::swapEndian64(uint64_t X) {
     uint64_t x = (uint64_t) X;
     x = (x & 0x00000000FFFFFFFF) << 32 | (x & 0xFFFFFFFF00000000) >> 32;
@@ -60,7 +53,8 @@ uint64_t eparticle::swapEndian64(uint64_t X) {
     return x;
 }
 
-
+// Stake IQ in exchange for brainpower
+// Note that the "amount" parameter is in full precision. Dividing it by IQ_PRECISION_MULTIPLIER would give the "clean" amount with a decimal.
 void eparticle::brainme( account_name staker, uint64_t amount) {
     require_auth(staker);
     uint64_t newBrainpower = amount * IQ_TO_BRAINPOWER_RATIO;
@@ -70,16 +64,19 @@ void eparticle::brainme( account_name staker, uint64_t amount) {
     eosio_assert(oldIQBalance > 0, "Not enough IQ available to convert to brainpower");
 
     // Transfer IQ to the eparticle contract
-    asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
+    asset iqAssetPack = asset(amount, IQSYMBOL);
     action(permission_level{ staker, N(active) }, N(eosio.token), N(transfer), std::make_tuple(staker,
             N(eparticle), iqAssetPack, std::string(""))).send();
 
     // Get the brainpower
     brainpwrtbl braintable(_self, _self);
-    auto brain_it = braintable.find(eparticle::swapEndian64(staker));
+    auto brainidx = braintable.get_index<N(byuser)>();
+    auto brain_it = brainidx.find(staker);
+
     uint64_t name64t = staker;
 
-    if(brain_it == braintable.end()){
+    // Add the brainpower, creating a new table entry if the staker has never staked before
+    if(brain_it == brainidx.end()){
       braintable.emplace( staker, [&]( auto& b ) {
           b.user = staker;
           b.user_64t = eparticle::swapEndian64(staker);
@@ -87,11 +84,12 @@ void eparticle::brainme( account_name staker, uint64_t amount) {
       });
     }
     else {
-      braintable.modify( brain_it, 0, [&]( auto& b ) {
+      brainidx.modify( brain_it, 0, [&]( auto& b ) {
           b.add(newBrainpower);
       });
     }
 
+    // Create the stake object
     staketbl staketblobj(_self, _self);
     staketblobj.emplace( staker, [&]( auto& s ) {
         s.id = staketblobj.available_primary_key();
@@ -103,10 +101,18 @@ void eparticle::brainme( account_name staker, uint64_t amount) {
     });
 }
 
+// Redeem IQ using brainpower, with an amount specified
 void eparticle::brainclaim( account_name claimant, uint64_t amount) {
     // Get the brainpower
     brainpwrtbl braintable(_self, _self);
-    auto brain_it = braintable.find(eparticle::swapEndian64(claimant));
+    auto brainidx = braintable.get_index<N(byuser)>();
+    auto brain_it = brainidx.find(claimant);
+    eosio_assert( brain_it != brainidx.end(), "No brainpower found");
+
+    // Subtract the brainpower for the redemption
+    brainidx.modify( brain_it, 0, [&]( auto& b ) {
+        b.sub(amount);
+    });
 
     // Get the stakes
     staketbl staketable(_self, _self);
@@ -125,7 +131,7 @@ void eparticle::brainclaim( account_name claimant, uint64_t amount) {
         // See if the stake is over 21 days old
         if (timeDiff > STAKING_DURATION){
             // Transfer back the IQ
-            iqAssetPack = asset(stake_it->amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
+            iqAssetPack = asset(stake_it->amount, IQSYMBOL);
             action(permission_level{ N(eparticle), N(active) }, N(eosio.token), N(transfer), std::make_tuple(N(eparticle),
                     claimant, iqAssetPack, std::string(""))).send();
 
@@ -139,15 +145,23 @@ void eparticle::brainclaim( account_name claimant, uint64_t amount) {
     }
 }
 
+// Redeem IQ using brainpower, with a specific stake specified
 void eparticle::brainclmid( account_name claimant, uint64_t stakeid) {
     // Get the brainpower
     brainpwrtbl braintable(_self, _self);
-    auto brain_it = braintable.find(eparticle::swapEndian64(claimant));
+    auto brainidx = braintable.get_index<N(byuser)>();
+    auto brain_it = brainidx.find(claimant);
+    eosio_assert( brain_it != brainidx.end(), "No brainpower found");
 
     // Get the stakes
     staketbl staketable(_self, _self);
     auto stake_it = staketable.find(stakeid);
     eosio_assert( stake_it != staketable.end(), "No stakes found for proposal");
+
+    // Subtract the brainpower for the redemption
+    brainidx.modify( brain_it, 0, [&]( auto& b ) {
+        b.sub(stake_it->amount);
+    });
 
     // Dummy initialization
     asset iqAssetPack;
@@ -156,7 +170,7 @@ void eparticle::brainclmid( account_name claimant, uint64_t stakeid) {
     eosio_assert( now() > stake_it->completion_time, "Staking period not over yet");
 
     // Transfer back the IQ
-    iqAssetPack = asset(stake_it->amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
+    iqAssetPack = asset(stake_it->amount, IQSYMBOL);
     action(permission_level{ N(eparticle), N(active) }, N(eosio.token), N(transfer), std::make_tuple(N(eparticle),
             claimant, iqAssetPack, std::string(""))).send();
 
@@ -165,15 +179,19 @@ void eparticle::brainclmid( account_name claimant, uint64_t stakeid) {
     stake_it = staketable.erase(stake_it);
 }
 
+// A few functions to be run right before the proposal is submitted
 void eparticle::propose_precheck( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ) {
     // Fetch the brainpower
     brainpwrtbl braintable(_self, _self);
-    auto brain_it = braintable.find(eparticle::swapEndian64(proposer));
+    auto brainidx = braintable.get_index<N(byuser)>();
+    auto brain_it = brainidx.find(proposer);
+    eosio_assert( brain_it != brainidx.end(), "No brainpower found");
 
     // Re-check that enough brainpower is available
     eosio_assert(brain_it->power > EDIT_PROPOSE_BRAINPOWER, "Not enough brainpower to edit, you need to stake some more IQ using brainme first!");
 }
 
+// Propose an edit for an article
 void eparticle::propose( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash, ipfshash_t& grandparent_hash ) {
     // Check to make sure enough brainpower is present
     eparticle::propose_precheck(proposer, proposed_article_hash, old_article_hash);
@@ -203,6 +221,7 @@ void eparticle::propose( account_name proposer, ipfshash_t& proposed_article_has
     eparticle::votebyhash( proposer, proposed_article_hash, true, EDIT_PROPOSE_BRAINPOWER );
 }
 
+// Place a vote using the IPFS hash
 void eparticle::votebyhash ( account_name voter, ipfshash_t& proposed_article_hash, bool approve, uint64_t amount ) {
     // Check if article exists
     propstbl proptable( _self, _self );
@@ -216,11 +235,14 @@ void eparticle::votebyhash ( account_name voter, ipfshash_t& proposed_article_ha
     // Verify voting is still in progress
     eosio_assert( now() < prop_it->endtime, "voting period is over");
 
-    // Consume brainpower
+    // Get the brainpower
     brainpwrtbl braintable(_self, _self);
-    auto brain_it = braintable.find(eparticle::swapEndian64(voter));
+    auto brainidx = braintable.get_index<N(byuser)>();
+    auto brain_it = brainidx.find(voter);
+
+    // Consume brainpower
     eosio_assert(brain_it->power >= amount, "Not enough brainpower");
-    braintable.modify( brain_it, 0, [&]( auto& b ) {
+    brainidx.modify( brain_it, 0, [&]( auto& b ) {
         b.sub(amount);
     });
 
@@ -301,6 +323,7 @@ void eparticle::votebyhash ( account_name voter, ipfshash_t& proposed_article_ha
     }
 }
 
+// Place a vote using the proposal ID
 void eparticle::votebyid ( account_name voter, uint64_t proposal_id, bool approve, uint64_t amount ) {
     // Check if article exists
     propstbl proptable( _self, _self );
@@ -352,21 +375,21 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
     // Determine slashing conditions
     vote_it = voteidx.find(eparticle::ipfs_to_key256(prop_it->proposed_article_hash));
     bool approved = 0;
-    uint64_t totalVotes = for_votes + against_votes;
+    longdub_t totalVotes = for_votes + against_votes;
     if ((for_votes / totalVotes) > TIER_ONE_THRESHOLD){
         approved = 1;
     }
-    float slash_percent;
-    float tierPercent;
+    float slash_ratio;
+    float tierRatio;
     uint32_t tier = 1;
 
     if (approved)
-        slash_percent = (for_votes - against_votes) / totalVotes;
-        tierPercent = for_votes / totalVotes;
-        if (tierPercent >= TIER_THREE_THRESHOLD){ tier = 3;}
-        else if (tierPercent > TIER_ONE_THRESHOLD){ tier = 2;}
+        slash_ratio = (for_votes - against_votes) / totalVotes;
+        tierRatio = for_votes / totalVotes;
+        if (tierRatio >= TIER_THREE_THRESHOLD){ tier = 3; }
+        else if (tierRatio > TIER_ONE_THRESHOLD){ tier = 2; }
     else
-        slash_percent = (against_votes - for_votes) / totalVotes;
+        slash_ratio = (against_votes - for_votes) / totalVotes;
 
     print("MARKING PROPOSALS\n");
     // Mark proposal as accepted or rejected. Ties are rejected
@@ -407,7 +430,7 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
             while(stake_it->user == vote_it->voter) {
                 if(stake_it->amount >= runningTally){
                     stakeidx.modify( stake_it, 0, [&]( auto& a ) {
-                        a.completion_time += STAKING_DURATION * slash_percent;
+                        a.completion_time += STAKING_DURATION * slash_ratio;
                         a.timestamp = finalTime;
                         runningTally -= stake_it->amount;
                     });
@@ -419,7 +442,7 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
                     uint32_t oldCompletionTime = stake_it->completion_time;
 
                     stakeidx.modify( stake_it, 0, [&]( auto& a ) {
-                        a.completion_time += STAKING_DURATION * slash_percent;
+                        a.completion_time += STAKING_DURATION * slash_ratio;
                         a.amount = runningTally;
                     });
                     staketable.emplace( vote_it->voter,  [&]( auto& a ) {
@@ -453,6 +476,14 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
         else{
             // TODO: Reward the winners
             print("REWARDING THE WINNERS\n");
+
+            // Return brainpower collateral
+            brainpwrtbl braintable(_self, _self);
+            auto brainidx = braintable.get_index<N(byuser)>();
+            auto brain_it = brainidx.find(vote_it->voter);
+            brainidx.modify( brain_it, 0, [&]( auto& b ) {
+                b.add(change_amount);
+            });
 
             rewardstable.emplace( _self,  [&]( auto& a ) {
                 a.id = rewardstable.available_primary_key();
@@ -499,12 +530,20 @@ void eparticle::finalize( account_name from, uint64_t proposal_id ) {
 }
 
 void eparticle::procrewards(uint64_t reward_period ) {
-    // This function needs to be universally callable. A cron job will be api calling this every REWARD_INTERVAL seconds.
+  // This function needs to be universally callable. A cron job will be api calling this every REWARD_INTERVAL seconds.
+    require_auth(N(eparticle));
+
+    uint64_t currentInterval = now() / REWARD_INTERVAL;
+    print("Current interval is: ", currentInterval, "\n");
+
+    // Make sure it is called AFTER the exiting reward period is done, so it isn't premature
+    // eosio_assert( currentInterval > reward_period, "Reward period is not over yet");
 
     // get all the rewards in that period
     rewardstbl rewardstable( _self, _self );
     auto rewardsidx = rewardstable.get_index<N(byfinalper)>();
     auto rewards_it = rewardsidx.find(reward_period);
+    eosio_assert( rewards_it != rewardsidx.end(), "No rewards found in this period!");
 
     // Calculate the total rewards amount in a period
     uint64_t curationRewardSum = 0;
@@ -512,10 +551,10 @@ void eparticle::procrewards(uint64_t reward_period ) {
     while(rewards_it != rewardsidx.end()) {
         if (rewards_it->rewardtype == 1){
             if (rewards_it->is_editor == 1 && rewards_it->tier >= 3){
-                editorRewardSum += (rewards_it->amount * IQ_PRECISION_MULTIPLIER);
+                editorRewardSum += rewards_it->amount;
             }
             else{
-                curationRewardSum += (rewards_it->amount * IQ_PRECISION_MULTIPLIER);
+                curationRewardSum += rewards_it->amount;
             }
         }
         rewards_it++;
@@ -528,17 +567,21 @@ void eparticle::procrewards(uint64_t reward_period ) {
         if (rewards_it->rewardtype == 1){
             uint64_t rewardAmount = 0;
             if (rewards_it->is_editor == 1 && rewards_it->tier >= 3){
-                rewardAmount = ((rewards_it->amount * IQ_PRECISION_MULTIPLIER) / (double)editorRewardSum) * PERIOD_EDITOR_REWARD;
+                rewardAmount = ((rewards_it->amount) / (double)editorRewardSum) * PERIOD_EDITOR_REWARD;
             }
             else{
-                rewardAmount = ((rewards_it->amount * IQ_PRECISION_MULTIPLIER) / (double)curationRewardSum) * PERIOD_CURATION_REWARD;
+                rewardAmount = ((rewards_it->amount) / (double)curationRewardSum) * PERIOD_CURATION_REWARD;
                 curationRewardSum += rewards_it->amount;
             }
 
             // Issue IQ
             asset iqAssetPack = asset(rewardAmount, IQSYMBOL);
-            action(permission_level{ N(eparticle), N(active) }, N(eosio.token), N(issue), std::make_tuple(rewards_it->user,
-                    iqAssetPack, std::string(""))).send();
+            vector<permission_level> perlvs;
+            permission_level tokenContract = permission_level{ N(eosio.token), N(active) };
+            permission_level articleContract = permission_level{ N(eparticle), N(active) };
+            perlvs.push_back(tokenContract);
+            perlvs.push_back(articleContract);
+            action(perlvs, N(eosio.token), N(issue), std::make_tuple(rewards_it->user, iqAssetPack, std::string(""))).send();
 
             // Mark the reward as disbursed
             rewardsidx.modify( rewards_it, 0, [&]( auto& a ) {
@@ -550,15 +593,32 @@ void eparticle::procrewards(uint64_t reward_period ) {
 
 }
 
-void eparticle::testinsert( ipfshash_t inputhash ) {
-    print("CLEOS");
-    uint64_t hashNumber = ipfs_to_uint64_trunc(inputhash);
+void eparticle::testinsert( account_name inputaccount, ipfshash_t inputhash ) {
 
 
-    // testtbl testtable(_self, _self);
-    // testtable.emplace( _self, [&]( auto& b ) {
-    //     b.id = hashNumber;
-    // });
+  // Create the account object
+  eparticle::accounts accountstable( N(eosio.token), inputaccount );
+  auto iqAccount_iter = accountstable.begin();
+
+  // Check for an account
+  while (iqAccount_iter != accountstable.end()){
+      print(iqAccount_iter->balance.amount, "\n");
+      print(iqAccount_iter->balance.symbol.name(), "\n");
+      print(IQSYMBOL, "\n");
+      iqAccount_iter++;
+  }
+    //
+    //
+    // uint64_t oldIQBalance = getiqbalance(inputaccount);
+    // print(oldIQBalance);
+    // require_auth(N(eparticle));
+    // print("CLEO");
+    // // Issue IQ
+    // asset iqAssetPack = asset(1000, IQSYMBOL);
+    // action(permission_level{ N(eparticle), N(active) }, N(eosio.token), N(issue), std::make_tuple(N(eosio),
+    //         iqAssetPack, std::string(""))).send();
+
+
 }
 
 EOSIO_ABI( eparticle, (brainme)(brainclaim)(brainclmid)(finalize)(fnlbyhash)(procrewards)(propose)(votebyhash)(testinsert) )

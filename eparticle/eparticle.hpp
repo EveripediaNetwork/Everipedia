@@ -40,19 +40,18 @@ const uint64_t IQ_TO_BRAINPOWER_RATIO = 1;
 const uint64_t IQ_PRECISION_MULTIPLIER = 10000;
 const uint64_t GENESIS_TOKEN_SUPPLY = 10000000000;
 const float ANNUAL_MINT_RATE = .025;
-const float PERIOD_REWARD_AMOUNT = 234.899285; // calculated from formula. Should be slightly less than ANNUAL_MINT_RATE * 10,000,000,000
+const float PERIOD_REWARD_AMOUNT = 234.8993; // calculated from formula. Should be slightly less than ANNUAL_MINT_RATE * 10,000,000,000
 const float EDITOR_REWARD_RATIO = 0.8;
 const float CURATION_REWARD_RATIO = 0.2;
 const uint64_t PERIOD_CURATION_REWARD = PERIOD_REWARD_AMOUNT * CURATION_REWARD_RATIO * IQ_PRECISION_MULTIPLIER;
 const uint64_t PERIOD_EDITOR_REWARD = PERIOD_REWARD_AMOUNT * EDITOR_REWARD_RATIO * IQ_PRECISION_MULTIPLIER;
 const float TIER_ONE_THRESHOLD = .5;
 const float TIER_THREE_THRESHOLD = .75;
-symbol_type IQSYMBOL = symbol_type(eosio::string_to_symbol(4, "IQ"));
 
 class eparticle : public eosio::contract {
 
 private:
-
+    symbol_type IQSYMBOL = eosio::symbol_type(eosio::string_to_symbol(4, "IQ"));
 
     // returning array types from a DB type struct throws
     // using vectors for now, will try to use arrays later
@@ -320,7 +319,8 @@ public:
     void fnlbyhash( account_name from,
                   ipfshash_t& proposal_hash );
 
-    void testinsert( ipfshash_t inputhash );
+    void testinsert( account_name inputaccount,
+                  ipfshash_t inputhash );
 
     void brainme( account_name staker,
                   uint64_t amount );

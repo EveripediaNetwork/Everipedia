@@ -62,13 +62,6 @@
       "base": "",
       "fields": [
         {"name":"claimant", "type":"account_name"},
-        {"name":"amount", "type":"uint64"}
-      ]
-  },{
-      "name": "brainclmid",
-      "base": "",
-      "fields": [
-        {"name":"claimant", "type":"account_name"},
         {"name":"stakeid", "type":"uint64"}
       ]
   },{
@@ -81,7 +74,8 @@
       "name": "testinsert",
       "base": "",
       "fields": [
-        {"name":"inputhash", "type":"ipfshash_t"},
+        {"name":"inputaccount", "type":"account_name"},
+        {"name":"inputhash", "type":"ipfshash_t"}
       ]
   },{
       "name": "wiki",
@@ -203,10 +197,6 @@
     },{
       "name": "brainclaim",
       "type": "brainclaim",
-      "ricardian_contract": ""
-    },{
-      "name": "brainclmid",
-      "type": "brainclmid",
       "ricardian_contract": ""
     },{
       "name": "withdraw",
