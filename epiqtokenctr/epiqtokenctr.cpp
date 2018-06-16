@@ -144,7 +144,7 @@ void epiqtokenctr::brainmeiq( account_name staker, uint64_t amount) {
     print("Current balance is: ", oldIQBalance, "\n");
 
     // Transfer the IQ to the eparticlectr contract for staking
-    asset iqAssetPack = asset(amount, IQSYMBOL);
+    asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
     epiqtokenctr::transfer(staker, N(eparticlectr), iqAssetPack, "memo");
 
     // Finish the brainpower issuance by calling the eparticlectr contract

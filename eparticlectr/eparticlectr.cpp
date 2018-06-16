@@ -57,12 +57,12 @@ uint64_t eparticlectr::swapEndian64(uint64_t X) {
 // Note that the "amount" parameter is in full precision. Dividing it by IQ_PRECISION_MULTIPLIER would give the "clean" amount with a decimal.
 void eparticlectr::brainmeart( account_name staker, uint64_t amount) {
     // Only the token contract can call this to prevent fraudulent transactions
-    require_auth(N(eparticlectr));
+    require_auth(ARTICLE_CONTRACT_ACCTNAME);
 
     uint64_t newBrainpower = amount * IQ_TO_BRAINPOWER_RATIO;
 
     // Get the brainpower
-    brainpwrtbl braintable(N(eparticlectr), N(eparticlectr));
+    brainpwrtbl braintable(ARTICLE_CONTRACT_ACCTNAME, ARTICLE_CONTRACT_ACCTNAME);
     auto brainidx = braintable.get_index<N(byuser)>();
     auto brain_it = brainidx.find(staker);
 
@@ -70,7 +70,7 @@ void eparticlectr::brainmeart( account_name staker, uint64_t amount) {
 
     // Add the brainpower, creating a new table entry if the staker has never staked before
     if(brain_it == brainidx.end()){
-      braintable.emplace( N(eparticlectr), [&]( auto& b ) {
+      braintable.emplace( ARTICLE_CONTRACT_ACCTNAME, [&]( auto& b ) {
           b.user = staker;
           b.user_64t = eparticlectr::swapEndian64(staker);
           b.power = newBrainpower;
@@ -83,8 +83,8 @@ void eparticlectr::brainmeart( account_name staker, uint64_t amount) {
     }
 
     // Create the stake object
-    staketbl staketblobj(N(eparticlectr), N(eparticlectr));
-    staketblobj.emplace( N(eparticlectr), [&]( auto& s ) {
+    staketbl staketblobj(ARTICLE_CONTRACT_ACCTNAME, ARTICLE_CONTRACT_ACCTNAME);
+    staketblobj.emplace( ARTICLE_CONTRACT_ACCTNAME, [&]( auto& s ) {
         s.id = staketblobj.available_primary_key();
         s.user = staker;
         s.user_64t = eparticlectr::swapEndian64(staker);
@@ -96,6 +96,8 @@ void eparticlectr::brainmeart( account_name staker, uint64_t amount) {
 
 // Redeem IQ using brainpower, with an amount specified
 void eparticlectr::brainclaim( account_name claimant, uint64_t amount) {
+
+    eosio_assert(0, "This function is not ready yet");
     // Get the brainpower
     brainpwrtbl braintable(_self, _self);
     auto brainidx = braintable.get_index<N(byuser)>();
@@ -125,7 +127,7 @@ void eparticlectr::brainclaim( account_name claimant, uint64_t amount) {
         if (timeDiff > STAKING_DURATION){
             // Transfer back the IQ
             iqAssetPack = asset(stake_it->amount, IQSYMBOL);
-            action(permission_level{ N(eparticlectr), N(active) }, N(epiqtokenctr), N(transfer), std::make_tuple(N(eparticlectr),
+            action(permission_level{ ARTICLE_CONTRACT_ACCTNAME, N(active) }, N(epiqtokenctr), N(transfer), std::make_tuple(ARTICLE_CONTRACT_ACCTNAME,
                     claimant, iqAssetPack, std::string(""))).send();
 
             // Delete the stake.
@@ -141,13 +143,13 @@ void eparticlectr::brainclaim( account_name claimant, uint64_t amount) {
 // Redeem IQ using brainpower, with a specific stake specified
 void eparticlectr::brainclmid( account_name claimant, uint64_t stakeid) {
     // Get the brainpower
-    brainpwrtbl braintable(_self, _self);
+    brainpwrtbl braintable(ARTICLE_CONTRACT_ACCTNAME, ARTICLE_CONTRACT_ACCTNAME);
     auto brainidx = braintable.get_index<N(byuser)>();
     auto brain_it = brainidx.find(claimant);
     eosio_assert( brain_it != brainidx.end(), "No brainpower found");
 
     // Get the stakes
-    staketbl staketable(_self, _self);
+    staketbl staketable(ARTICLE_CONTRACT_ACCTNAME, ARTICLE_CONTRACT_ACCTNAME);
     auto stake_it = staketable.find(stakeid);
     eosio_assert( stake_it != staketable.end(), "No stakes found for proposal");
 
@@ -163,9 +165,10 @@ void eparticlectr::brainclmid( account_name claimant, uint64_t stakeid) {
     eosio_assert( now() > stake_it->completion_time, "Staking period not over yet");
 
     // Transfer back the IQ
-    iqAssetPack = asset(stake_it->amount, IQSYMBOL);
-    action(permission_level{ N(eparticlectr), N(active) }, N(epiqtokenctr), N(transfer), std::make_tuple(N(eparticlectr),
-            claimant, iqAssetPack, std::string(""))).send();
+    iqAssetPack = asset(stake_it->amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
+    eosio::action theAction = action(permission_level{ ARTICLE_CONTRACT_ACCTNAME, N(active) }, N(epiqtokenctr), N(transfer),
+                    std::make_tuple(ARTICLE_CONTRACT_ACCTNAME, claimant, iqAssetPack, std::string("")));
+    theAction.send();
 
     // Delete the stake.
     // Note that the erase() function increments the iterator, then gives it back after the erase is done
@@ -524,7 +527,7 @@ void eparticlectr::finalize( account_name from, uint64_t proposal_id ) {
 
 void eparticlectr::procrewards(uint64_t reward_period ) {
     // This function needs to be universally callable. A cron job will be api calling this every REWARD_INTERVAL seconds.
-    // require_auth(N(eparticlectr));
+    // require_auth(ARTICLE_CONTRACT_ACCTNAME);
 
     eosio_assert(0, "This function will be implemented later");
 
@@ -573,7 +576,7 @@ void eparticlectr::procrewards(uint64_t reward_period ) {
             asset iqAssetPack = asset(rewardAmount, IQSYMBOL);
             vector<permission_level> perlvs;
             permission_level tokenContract = permission_level{ N(epiqtokenctr), N(active) };
-            permission_level articleContract = permission_level{ N(eparticlectr), N(active) };
+            permission_level articleContract = permission_level{ ARTICLE_CONTRACT_ACCTNAME, N(active) };
             perlvs.push_back(tokenContract);
             perlvs.push_back(articleContract);
             action(perlvs, N(epiqtokenctr), N(issue), std::make_tuple(rewards_it->user, iqAssetPack, std::string(""))).send();

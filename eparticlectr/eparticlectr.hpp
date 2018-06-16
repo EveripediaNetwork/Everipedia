@@ -47,6 +47,7 @@ const uint64_t PERIOD_CURATION_REWARD = PERIOD_REWARD_AMOUNT * CURATION_REWARD_R
 const uint64_t PERIOD_EDITOR_REWARD = PERIOD_REWARD_AMOUNT * EDITOR_REWARD_RATIO * IQ_PRECISION_MULTIPLIER;
 const float TIER_ONE_THRESHOLD = .5f;
 const float TIER_THREE_THRESHOLD = .75f;
+const account_name ARTICLE_CONTRACT_ACCTNAME = N(eparticlectr);
 
 class eparticlectr : public eosio::contract {
 
@@ -203,7 +204,7 @@ private:
         // addition with overflow check
         uint64_t add (uint64_t value) {
             eosio_assert(value != 0, "Please supply a nonzero value of brainpower to add");
-            eosio_assert(value + power > value && value + power > power, "Overflow during addition");
+            eosio_assert(value + power >= value && value + power > power, "Overflow during addition");
             power += value;
             print( "Added brainpower, ", name{power} );
             return power;

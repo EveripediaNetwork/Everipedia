@@ -1,0 +1,17 @@
+cleos create account eosio minieo EOS6A5hXpTZVn7AAMEqAykJNKdRwxn6sT9VKMVW1VHfsPGZrPfwRg EOS6A5hXpTZVn7AAMEqAykJNKdRwxn6sT9VKMVW1VHfsPGZrPfwRg
+cleos create account eosio coincoin EOS6A5hXpTZVn7AAMEqAykJNKdRwxn6sT9VKMVW1VHfsPGZrPfwRg EOS6A5hXpTZVn7AAMEqAykJNKdRwxn6sT9VKMVW1VHfsPGZrPfwRg
+cleos create account eosio epiqtokenctr EOS6A5hXpTZVn7AAMEqAykJNKdRwxn6sT9VKMVW1VHfsPGZrPfwRg EOS6A5hXpTZVn7AAMEqAykJNKdRwxn6sT9VKMVW1VHfsPGZrPfwRg
+cleos create account eosio eparticlectr EOS6A5hXpTZVn7AAMEqAykJNKdRwxn6sT9VKMVW1VHfsPGZrPfwRg EOS6A5hXpTZVn7AAMEqAykJNKdRwxn6sT9VKMVW1VHfsPGZrPfwRg
+
+cleos set contract epiqtokenctr build/contracts/epiqtokenctr -p epiqtokenctr
+cleos push action epiqtokenctr create '[ "epiqtokenctr", "1000000000.0000 IQ", 0, 0, 0]' -p epiqtokenctr
+cleos push action epiqtokenctr issue '[ "minieo", "10000000.0000 IQ", "coin" ]' -p epiqtokenctr
+cleos push action epiqtokenctr issue '[ "coincoin", "250000.0000 IQ", "coincoin" ]' -p epiqtokenctr
+cleos get table epiqtokenctr minieo accounts
+
+cleos set contract eparticlectr build/contracts/eparticlectr -p eparticlectr
+
+# THE ACCOUNTS NEED TO BE IN REVERSE ALPHABETIC ORDER!!!!
+cleos set account permission eparticlectr active '{"threshold": 1,"keys": [{"key": "EOS6A5hXpTZVn7AAMEqAykJNKdRwxn6sT9VKMVW1VHfsPGZrPfwRg","weight": 1}],"accounts": [{"permission":{"actor":"eparticlectr","permission":"eosio.code"},"weight":1}, {"permission":{"actor":"epiqtokenctr","permission":"eosio.code"},"weight":1}]}' owner -p eparticlectr
+
+cleos set account permission epiqtokenctr active '{"threshold": 1,"keys": [{"key": "EOS6A5hXpTZVn7AAMEqAykJNKdRwxn6sT9VKMVW1VHfsPGZrPfwRg","weight": 1}],"accounts": [{"permission":{"actor":"eparticlectr","permission":"eosio.code"},"weight":1}, {"permission":{"actor":"epiqtokenctr","permission":"eosio.code"},"weight":1}]}' owner -p epiqtokenctr
