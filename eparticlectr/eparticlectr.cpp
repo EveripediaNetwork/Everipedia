@@ -104,10 +104,10 @@ void eparticlectr::brainclaim( account_name claimant, uint64_t amount) {
     auto brain_it = brainidx.find(claimant);
     eosio_assert( brain_it != brainidx.end(), "No brainpower found");
 
-    // Subtract the brainpower for the redemption
-    brainidx.modify( brain_it, 0, [&]( auto& b ) {
-        b.sub(amount);
-    });
+    // // Subtract the brainpower for the redemption
+    // brainidx.modify( brain_it, 0, [&]( auto& b ) {
+    //     b.sub(amount);
+    // });
 
     // Get the stakes
     staketbl staketable(_self, _self);
@@ -153,10 +153,10 @@ void eparticlectr::brainclmid( account_name claimant, uint64_t stakeid) {
     auto stake_it = staketable.find(stakeid);
     eosio_assert( stake_it != staketable.end(), "No stakes found for proposal");
 
-    // Subtract the brainpower for the redemption
-    brainidx.modify( brain_it, 0, [&]( auto& b ) {
-        b.sub(stake_it->amount);
-    });
+    // // Subtract the brainpower for the redemption
+    // brainidx.modify( brain_it, 0, [&]( auto& b ) {
+    //     b.sub(stake_it->amount);
+    // });
 
     // Dummy initialization
     asset iqAssetPack;
