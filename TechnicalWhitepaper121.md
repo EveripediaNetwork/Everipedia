@@ -6,7 +6,7 @@ Sam Kazemian, Kedar Iyer, Travis Moore, Theodor Forselius, Larry Sanger
 
   
 
-DISCLAIMER: This Everipedia Network Technical White Paper version 1.12 is a work in progress and for informational purposes only. It is meant to serve as a proposal of ideas for free, open-source software.
+DISCLAIMER: This Everipedia Network Technical White Paper version 1.21 (June 21 2018) is a work in progress and for informational purposes only. It is meant to serve as a proposal of ideas for free, open-source software.
 
 ## Abstract
 
