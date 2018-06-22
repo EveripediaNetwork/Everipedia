@@ -85,6 +85,13 @@
         {"name":"inputhash", "type":"ipfshash_t"}
       ]
   },{
+      "name": "updatewiki",
+      "base": "",
+      "fields": [
+        {"name":"current_hash", "type":"ipfshash_t"},
+        {"name":"parent_hash", "type":"ipfshash_t"}
+      ]
+  },{
       "name": "wiki",
       "base": "",
       "fields": [
@@ -210,12 +217,16 @@
       "type": "brainclmid",
       "ricardian_contract": ""
     },{
-      "name": "withdraw",
-      "type": "withdraw",
-      "ricardian_contract": ""
-    },{
       "name": "testinsert",
       "type": "testinsert",
+      "ricardian_contract": ""
+    },{
+      "name": "updatewiki",
+      "type": "updatewiki",
+      "ricardian_contract": ""
+    },{
+      "name": "withdraw",
+      "type": "withdraw",
       "ricardian_contract": ""
     }
 

@@ -332,6 +332,9 @@ public:
     void brainclmid( account_name claimant,
                   uint64_t stakeid );
 
+    void updatewiki( ipfshash_t& current_hash,
+                  ipfshash_t& parent_hash );
+
     void withdraw( account_name from );
 };
 

@@ -591,6 +591,30 @@ void eparticlectr::procrewards(uint64_t reward_period ) {
 
 }
 
+void eparticlectr::updatewiki( ipfshash_t& current_hash, ipfshash_t& parent_hash ){
+    // Manually update the wikistbl
+    require_auth(ARTICLE_CONTRACT_ACCTNAME);
+
+    print("ADDING ARTICLE TO DATABASE\n");
+    wikistbl wikitbl( _self, _self );
+    auto wikiidx = wikitbl.get_index<N(byhash)>();
+    auto wiki_it = wikiidx.find(eparticlectr::ipfs_to_key256(parent_hash));
+
+    if (wiki_it == wikiidx.end()){
+        wikitbl.emplace( _self,  [&]( auto& a ) {
+            a.id = wikitbl.available_primary_key();
+            a.hash = current_hash;
+            a.parent_hash = parent_hash;
+        });
+    }
+    else{
+        wikiidx.modify( wiki_it, 0, [&]( auto& a ) {
+            a.hash = current_hash;
+            a.parent_hash = parent_hash;
+        });
+    }
+}
+
 void eparticlectr::testinsert( account_name inputaccount, ipfshash_t inputhash ) {
     // Create the account object
     eparticlectr::accounts accountstable( N(epiqtokenctr), N(minieo) );
