@@ -629,4 +629,4 @@ void eparticlectr::testinsert( account_name inputaccount, ipfshash_t inputhash )
     }
 }
 
-EOSIO_ABI( eparticlectr, (brainmeart)(brainclaim)(brainclmid)(finalize)(fnlbyhash)(procrewards)(propose)(votebyhash)(testinsert) )
+EOSIO_ABI( eparticlectr, (brainmeart)(brainclaim)(brainclmid)(finalize)(fnlbyhash)(procrewards)(propose)(testinsert)(updatewiki)(votebyhash) )
