@@ -6,7 +6,7 @@ Sam Kazemian, Kedar Iyer, Travis Moore, Theodor Forselius, Larry Sanger
 
   
 
-DISCLAIMER: This Everipedia Network Technical White Paper version 1.10 is a work in progress and for informational purposes only. It is meant to serve as a proposal of ideas for free, open-source software.
+DISCLAIMER: This Everipedia Network Technical White Paper version 1.21 (June 21 2018) is a work in progress and for informational purposes only. It is meant to serve as a proposal of ideas for free, open-source software.
 
 ## Abstract
 
@@ -356,8 +356,6 @@ Wikipedia started with 1990s server hardware and architecture but upgraded to ca
 ## Bounties, Services, Bots, Private Edits, Marketplaces, and Network Development
 
 The Everipedia Network is a light-protocol, meaning that it is agnostic to features and services built on its underlying infrastructure. For this reason, the network does not come directly bundled with services hard-coded such as classical advertising or subscriptions. Instead, the network imposes a nominal transaction fee on all token interactions which is burnt (governance based transactions and messages do not accrue a fee). This creates a base layer for an ecosystem of services, bounty/freelance work, and marketplaces for citation verification services and other novel uses. In this way, the Everipedia Network could support established media organizations such as the Wikimedia Foundation (Wikipedia), CNN, and NYTimes taking part in the editing and verification process by creating their own services and organization accounts on the network. This in effect creates an ecosystem where participants are not only encouraged to create the most reliable content but also encouraged to create the best tools and services for the creation of content. This also creates a large volume of transactions which supplies sizable transaction fees which are burnt.
-
-  
 
 Additionally, in future updates, it would be possible to use zero knowledge succinct non-interactive argument of knowledge proofs (zk-SNARKs) to publish state changes to articles with complete privacy. This has a twofold effect: 1.) Individuals can propose content without being publicly identified in the ledger. 2.) Curators can vote for or against the proposal without being publicly identified in the ledger. Implementation of zk-SNARKs (or other zero knowledge proofs) would be done in the same way that private transaction proofs are performed in z.cash and likely to be implemented in Ethereum.[8] To properly use such technology, the base blockchain used for the network would likely need to support zero knowledge proofs in some capacity so that entire SNARK implementations do not have to be “hand-rolled” by the Everipedia Network’s contract code itself.
 
