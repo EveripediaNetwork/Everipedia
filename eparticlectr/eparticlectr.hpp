@@ -48,6 +48,7 @@ const uint64_t PERIOD_EDITOR_REWARD = PERIOD_REWARD_AMOUNT * EDITOR_REWARD_RATIO
 const float TIER_ONE_THRESHOLD = .5f;
 const float TIER_THREE_THRESHOLD = .75f;
 const account_name ARTICLE_CONTRACT_ACCTNAME = N(eparticlectr);
+const account_name TOKEN_CONTRACT_ACCTNAME = N(epiqtokenctr);
 
 class eparticlectr : public eosio::contract {
 

@@ -57,7 +57,7 @@ uint64_t eparticlectr::swapEndian64(uint64_t X) {
 // Note that the "amount" parameter is in full precision. Dividing it by IQ_PRECISION_MULTIPLIER would give the "clean" amount with a decimal.
 void eparticlectr::brainmeart( account_name staker, uint64_t amount) {
     // Only the token contract can call this to prevent fraudulent transactions
-    require_auth(ARTICLE_CONTRACT_ACCTNAME);
+    require_auth(TOKEN_CONTRACT_ACCTNAME);
 
     uint64_t newBrainpower = amount * IQ_TO_BRAINPOWER_RATIO;
 
@@ -142,6 +142,8 @@ void eparticlectr::brainclaim( account_name claimant, uint64_t amount) {
 
 // Redeem IQ using brainpower, with a specific stake specified
 void eparticlectr::brainclmid( account_name claimant, uint64_t stakeid) {
+    require_auth(claimant);
+
     // Get the brainpower
     brainpwrtbl braintable(ARTICLE_CONTRACT_ACCTNAME, ARTICLE_CONTRACT_ACCTNAME);
     auto brainidx = braintable.get_index<N(byuser)>();
@@ -189,6 +191,8 @@ void eparticlectr::propose_precheck( account_name proposer, ipfshash_t& proposed
 
 // Propose an edit for an article
 void eparticlectr::propose( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash, ipfshash_t& grandparent_hash ) {
+    require_auth(proposer);
+
     // Check to make sure enough brainpower is present
     eparticlectr::propose_precheck(proposer, proposed_article_hash, old_article_hash);
 
@@ -219,6 +223,8 @@ void eparticlectr::propose( account_name proposer, ipfshash_t& proposed_article_
 
 // Place a vote using the IPFS hash
 void eparticlectr::votebyhash ( account_name voter, ipfshash_t& proposed_article_hash, bool approve, uint64_t amount ) {
+    require_auth(voter);
+
     // Check if article exists
     propstbl proptable( _self, _self );
     auto prop_idx = proptable.get_index<N(byhash)>();
@@ -321,6 +327,8 @@ void eparticlectr::votebyhash ( account_name voter, ipfshash_t& proposed_article
 
 // Place a vote using the proposal ID
 void eparticlectr::votebyid ( account_name voter, uint64_t proposal_id, bool approve, uint64_t amount ) {
+    require_auth(voter);
+
     // Check if article exists
     propstbl proptable( _self, _self );
     auto prop_it = proptable.find( proposal_id );
@@ -592,7 +600,7 @@ void eparticlectr::procrewards(uint64_t reward_period ) {
 }
 
 void eparticlectr::updatewiki( ipfshash_t& current_hash, ipfshash_t& parent_hash ){
-    // Manually update the wikistbl
+    // Manually update the wikistbl. This will removed later.
     require_auth(ARTICLE_CONTRACT_ACCTNAME);
 
     print("ADDING ARTICLE TO DATABASE\n");
@@ -617,16 +625,16 @@ void eparticlectr::updatewiki( ipfshash_t& current_hash, ipfshash_t& parent_hash
 
 void eparticlectr::testinsert( account_name inputaccount, ipfshash_t inputhash ) {
     // Create the account object
-    eparticlectr::accounts accountstable( N(epiqtokenctr), N(minieo) );
-    auto iqAccount_iter = accountstable.begin();
-
-    // Check for an account
-    while (iqAccount_iter != accountstable.end()){
-        print(iqAccount_iter->balance.amount, "\n");
-        print(iqAccount_iter->balance.symbol.name(), "\n");
-        print(IQSYMBOL, "\n");
-        iqAccount_iter++;
-    }
+    // eparticlectr::accounts accountstable( N(epiqtokenctr), N(minieo) );
+    // auto iqAccount_iter = accountstable.begin();
+    //
+    // // Check for an account
+    // while (iqAccount_iter != accountstable.end()){
+    //     print(iqAccount_iter->balance.amount, "\n");
+    //     print(iqAccount_iter->balance.symbol.name(), "\n");
+    //     print(IQSYMBOL, "\n");
+    //     iqAccount_iter++;
+    // }
 }
 
 EOSIO_ABI( eparticlectr, (brainmeart)(brainclaim)(brainclmid)(finalize)(fnlbyhash)(procrewards)(propose)(testinsert)(updatewiki)(votebyhash) )
