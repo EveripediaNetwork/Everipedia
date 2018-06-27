@@ -55,7 +55,7 @@ uint64_t eparticlectr::swapEndian64(uint64_t X) {
 
 // Stake IQ in exchange for brainpower
 // Note that the "amount" parameter is in full precision. Dividing it by IQ_PRECISION_MULTIPLIER would give the "clean" amount with a decimal.
-void eparticlectr::brainmeart( account_name staker, uint64_t amount) {
+void eparticlectr::brainmeart( account_name staker, uint64_t amount ) {
     // Only the token contract can call this to prevent fraudulent transactions
     require_auth(ARTICLE_CONTRACT_ACCTNAME);
 
@@ -95,7 +95,7 @@ void eparticlectr::brainmeart( account_name staker, uint64_t amount) {
 }
 
 // Redeem IQ using brainpower, with an amount specified
-void eparticlectr::brainclaim( account_name claimant, uint64_t amount) {
+void eparticlectr::brainclaim( account_name claimant, uint64_t amount ) {
 
     eosio_assert(0, "This function is not ready yet");
     // Get the brainpower
@@ -120,6 +120,10 @@ void eparticlectr::brainclaim( account_name claimant, uint64_t amount) {
 
     // Loop through the stakes
     while(stake_it != stakeidx.end() && stake_it->user == claimant) {
+
+        // Make sure the claimant is the same as the staker
+        eosio_assert( claimant == stake_it->user, "Cannot claim another staker's tokens!");
+
         // Get the age of the stake
         time timeDiff = now() - stake_it->timestamp;
 
@@ -141,7 +145,7 @@ void eparticlectr::brainclaim( account_name claimant, uint64_t amount) {
 }
 
 // Redeem IQ using brainpower, with a specific stake specified
-void eparticlectr::brainclmid( account_name claimant, uint64_t stakeid) {
+void eparticlectr::brainclmid( account_name claimant, uint64_t stakeid ) {
     require_auth(claimant);
 
     // Get the brainpower
@@ -162,6 +166,9 @@ void eparticlectr::brainclmid( account_name claimant, uint64_t stakeid) {
 
     // Dummy initialization
     asset iqAssetPack;
+
+    // Make sure the claimant is the same as the staker
+    eosio_assert( claimant == stake_it->user, "Cannot claim another staker's tokens!");
 
     // See if the stake is over 21 days old
     eosio_assert( now() > stake_it->completion_time, "Staking period not over yet");
