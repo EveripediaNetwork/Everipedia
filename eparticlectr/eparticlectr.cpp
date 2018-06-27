@@ -353,7 +353,7 @@ void eparticlectr::fnlbyhash( ipfshash_t& proposal_hash ) {
     auto prop_it = propidx.find(eparticlectr::ipfs_to_key256(proposal_hash));
     eosio_assert( prop_it != propidx.end(), "proposal not found" );
     print(prop_it->id);
-    eparticlectr::finalize(from, prop_it->id);
+    eparticlectr::finalize(prop_it->id);
 }
 
 void eparticlectr::finalize( uint64_t proposal_id ) {
