@@ -40,14 +40,12 @@
      "name": "finalize",
      "base": "",
      "fields": [
-        {"name":"from", "type":"account_name"},
         {"name":"proposal_id", "type":"uint64"}
      ]
   },{
      "name": "fnlbyhash",
      "base": "",
      "fields": [
-        {"name":"from", "type":"account_name"},
         {"name":"proposal_hash", "type":"ipfshash_t"}
      ]
   },{

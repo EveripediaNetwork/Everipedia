@@ -96,6 +96,7 @@ void eparticlectr::brainmeart( account_name staker, uint64_t amount ) {
 
 // Redeem IQ using brainpower, with an amount specified
 void eparticlectr::brainclaim( account_name claimant, uint64_t amount ) {
+    require_auth(claimant);
 
     eosio_assert(0, "This function is not ready yet");
     // Get the brainpower
@@ -345,7 +346,7 @@ void eparticlectr::votebyid ( account_name voter, uint64_t proposal_id, bool app
     eparticlectr::votebyhash(voter, thePropHash, approve, amount);
 }
 
-void eparticlectr::fnlbyhash( account_name from, ipfshash_t& proposal_hash ) {
+void eparticlectr::fnlbyhash( ipfshash_t& proposal_hash ) {
     // Add article to database, or update
     propstbl proptable( _self, _self );
     auto propidx = proptable.get_index<N(byhash)>();
@@ -355,7 +356,7 @@ void eparticlectr::fnlbyhash( account_name from, ipfshash_t& proposal_hash ) {
     eparticlectr::finalize(from, prop_it->id);
 }
 
-void eparticlectr::finalize( account_name from, uint64_t proposal_id ) {
+void eparticlectr::finalize( uint64_t proposal_id ) {
     // Verify proposal exists
     propstbl proptable( _self, _self );
     auto prop_it = proptable.find( proposal_id );

@@ -31,7 +31,8 @@
 using namespace eosio;
 
 // const uint32_t DEFAULT_VOTING_TIME = 86400; // 1 day
-const uint32_t DEFAULT_VOTING_TIME = 60; // 1 minute
+// const uint32_t DEFAULT_VOTING_TIME = 60; // 1 minute
+const uint32_t DEFAULT_VOTING_TIME = 300; // 5 minutes
 // const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
 const uint32_t STAKING_DURATION = 30; // 30 sec, for testing
 const uint32_t REWARD_INTERVAL = 1800; // 30 min
@@ -315,11 +316,9 @@ public:
                       bool approve,
                       uint64_t amount );
 
-    void finalize( account_name from,
-                   uint64_t proposal_id );
+    void finalize( uint64_t proposal_id );
 
-    void fnlbyhash( account_name from,
-                  ipfshash_t& proposal_hash );
+    void fnlbyhash( ipfshash_t& proposal_hash );
 
     void testinsert( account_name inputaccount,
                   ipfshash_t inputhash );
