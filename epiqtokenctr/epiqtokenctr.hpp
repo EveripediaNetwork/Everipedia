@@ -26,11 +26,6 @@ class epiqtokenctr : public contract {
                     asset        quantity,
                     string       memo );
 
-     void transferint( account_name from,
-                     account_name to,
-                     uint64_t     quantity,
-                     string       memo );
-
      void brainmeiq( account_name staker,
                    uint64_t amount );
 
@@ -68,12 +63,6 @@ class epiqtokenctr : public contract {
         account_name  from;
         account_name  to;
         asset         quantity;
-        string        memo;
-     };
-     struct transferint_args {
-        account_name  from;
-        account_name  to;
-        uint64_t      quantity;
         string        memo;
      };
      uint64_t getiqbalance( account_name from );
