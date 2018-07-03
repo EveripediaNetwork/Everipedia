@@ -14,15 +14,6 @@
         {"name":"memo", "type":"string"}
       ]
     },{
-        "name": "transferint",
-        "base": "",
-        "fields": [
-          {"name":"from", "type":"account_name"},
-          {"name":"to", "type":"account_name"},
-          {"name":"quantity", "type":"uint64"},
-          {"name":"memo", "type":"string"}
-        ]
-      },{
      "name": "create",
      "base": "",
      "fields": [
@@ -64,10 +55,6 @@
       "name": "transfer",
       "type": "transfer",
       "ricardian_contract": ""
-    },{
-        "name": "transferint",
-        "type": "transferint",
-        "ricardian_contract": ""
     },{
       "name": "issue",
       "type": "issue",

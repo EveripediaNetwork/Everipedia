@@ -71,12 +71,6 @@ void epiqtokenctr::issue( account_name to, asset quantity, string memo )
     }
 }
 
-void epiqtokenctr::transferint( account_name from, account_name to, uint64_t quantity, string memo )
-{
-    asset iqAssetPack = asset(quantity, eosio::symbol_type(eosio::string_to_symbol(4, "IQ")));
-    return epiqtokenctr::transfer(from, to, iqAssetPack, memo);
-}
-
 void epiqtokenctr::transfer( account_name from,
                       account_name to,
                       asset        quantity,
@@ -154,4 +148,4 @@ void epiqtokenctr::brainmeiq( account_name staker, uint64_t amount) {
 }
 
 
-EOSIO_ABI( epiqtokenctr, (create)(issue)(transfer)(transferint)(brainmeiq) )
+EOSIO_ABI( epiqtokenctr, (create)(issue)(transfer)(brainmeiq) )
