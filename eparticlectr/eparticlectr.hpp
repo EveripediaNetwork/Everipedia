@@ -320,9 +320,6 @@ public:
 
     void fnlbyhash( ipfshash_t& proposal_hash );
 
-    void testinsert( account_name inputaccount,
-                  ipfshash_t inputhash );
-
     void brainmeart( account_name staker,
                   uint64_t amount );
 

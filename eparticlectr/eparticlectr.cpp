@@ -631,18 +631,4 @@ void eparticlectr::updatewiki( ipfshash_t& current_hash, ipfshash_t& parent_hash
     }
 }
 
-void eparticlectr::testinsert( account_name inputaccount, ipfshash_t inputhash ) {
-    // Create the account object
-    // eparticlectr::accounts accountstable( N(epiqtokenctr), N(minieo) );
-    // auto iqAccount_iter = accountstable.begin();
-    //
-    // // Check for an account
-    // while (iqAccount_iter != accountstable.end()){
-    //     print(iqAccount_iter->balance.amount, "\n");
-    //     print(iqAccount_iter->balance.symbol.name(), "\n");
-    //     print(IQSYMBOL, "\n");
-    //     iqAccount_iter++;
-    // }
-}
-
-EOSIO_ABI( eparticlectr, (brainmeart)(brainclaim)(brainclmid)(finalize)(fnlbyhash)(procrewards)(propose)(testinsert)(updatewiki)(votebyhash) )
+EOSIO_ABI( eparticlectr, (brainmeart)(brainclaim)(brainclmid)(finalize)(fnlbyhash)(procrewards)(propose)(updatewiki)(votebyhash) )

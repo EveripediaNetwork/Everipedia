@@ -76,13 +76,6 @@
         {"name":"from", "type":"account_name"},
       ]
   },{
-      "name": "testinsert",
-      "base": "",
-      "fields": [
-        {"name":"inputaccount", "type":"account_name"},
-        {"name":"inputhash", "type":"ipfshash_t"}
-      ]
-  },{
       "name": "updatewiki",
       "base": "",
       "fields": [
@@ -213,10 +206,6 @@
     },{
       "name": "brainclmid",
       "type": "brainclmid",
-      "ricardian_contract": ""
-    },{
-      "name": "testinsert",
-      "type": "testinsert",
       "ricardian_contract": ""
     },{
       "name": "updatewiki",
