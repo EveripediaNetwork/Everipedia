@@ -96,11 +96,6 @@ void eparticlectr::brainclmid( account_name claimant, uint64_t stakeid ) {
     auto stake_it = staketable.find(stakeid);
     eosio_assert( stake_it != staketable.end(), "No stakes found for proposal");
 
-    // // Subtract the brainpower for the redemption
-    // brainidx.modify( brain_it, 0, [&]( auto& b ) {
-    //     b.sub(stake_it->amount);
-    // });
-
     // Dummy initialization
     asset iqAssetPack;
 
@@ -312,11 +307,12 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     float tierRatio;
     uint32_t tier = 1;
 
-    if (approved)
+    if (approved) {
         slash_ratio = (for_votes - against_votes) / (float)totalVotes;
         tierRatio = for_votes / (float)totalVotes;
         if (tierRatio >= TIER_THREE_THRESHOLD){ tier = 3; }
         else if (tierRatio > TIER_ONE_THRESHOLD){ tier = 2; }
+    }
     else
         slash_ratio = (against_votes - for_votes) / (float)totalVotes;
 
@@ -525,7 +521,7 @@ void eparticlectr::procrewards(uint64_t reward_period ) {
 }
 
 void eparticlectr::updatewiki( ipfshash_t& current_hash, ipfshash_t& parent_hash ){
-    // Manually update the wikistbl. This will removed later.
+    // Manually update the wikistbl. This will be removed later.
     require_auth(ARTICLE_CONTRACT_ACCTNAME);
 
     print("ADDING ARTICLE TO DATABASE\n");
