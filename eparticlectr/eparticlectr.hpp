@@ -295,10 +295,6 @@ public:
     //  ==================================================
     // ABI Functions
 
-    void propose_precheck( account_name proposer,
-                  ipfshash_t& proposed_article_hash,
-                  ipfshash_t& old_article_hash );
-
     void propose( account_name proposer,
                   ipfshash_t& proposed_article_hash,
                   ipfshash_t& old_article_hash,
@@ -311,19 +307,11 @@ public:
                       bool approve,
                       uint64_t amount );
 
-    void votebyid ( account_name voter,
-                      uint64_t proposal_id,
-                      bool approve,
-                      uint64_t amount );
-
     void finalize( uint64_t proposal_id );
 
     void fnlbyhash( ipfshash_t& proposal_hash );
 
     void brainmeart( account_name staker,
-                  uint64_t amount );
-
-    void brainclaim( account_name claimant,
                   uint64_t amount );
 
     void brainclmid( account_name claimant,

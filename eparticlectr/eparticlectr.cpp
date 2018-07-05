@@ -30,21 +30,8 @@
 #include "../epiqtokenctr/epiqtokenctr.hpp"
 #include <typeinfo>
 
-uint64_t eparticlectr::getiqbalance( account_name from ) {
-    // Create the account object
-    eparticlectr::accounts accountstable( N(epiqtokenctr), from );
-    auto iqAccount_iter = accountstable.find(IQSYMBOL.name());
-
-    // Check for an account
-    if(iqAccount_iter != accountstable.end()){
-        return iqAccount_iter->balance.amount;
-    }
-    else{
-        return 0;
-    }
-}
-
 // This function is used to swap endianess for uint64_t's for key and javascript 58-bit int limit issues.
+// QUESTION: What's the purpose of this?
 uint64_t eparticlectr::swapEndian64(uint64_t X) {
     uint64_t x = (uint64_t) X;
     x = (x & 0x00000000FFFFFFFF) << 32 | (x & 0xFFFFFFFF00000000) >> 32;
@@ -94,57 +81,6 @@ void eparticlectr::brainmeart( account_name staker, uint64_t amount ) {
     });
 }
 
-// Redeem IQ using brainpower, with an amount specified
-void eparticlectr::brainclaim( account_name claimant, uint64_t amount ) {
-    require_auth(claimant);
-
-    eosio_assert(0, "This function is not ready yet");
-    // Get the brainpower
-    brainpwrtbl braintable(_self, _self);
-    auto brainidx = braintable.get_index<N(byuser)>();
-    auto brain_it = brainidx.find(claimant);
-    eosio_assert( brain_it != brainidx.end(), "No brainpower found");
-
-    // // Subtract the brainpower for the redemption
-    // brainidx.modify( brain_it, 0, [&]( auto& b ) {
-    //     b.sub(amount);
-    // });
-
-    // Get the stakes
-    staketbl staketable(_self, _self);
-    auto stakeidx = staketable.get_index<N(byuser)>();
-    auto stake_it = stakeidx.find(claimant);
-    eosio_assert( stake_it != stakeidx.end(), "No stakes found for proposal");
-
-    // Dummy initialization
-    asset iqAssetPack;
-
-    // Loop through the stakes
-    while(stake_it != stakeidx.end() && stake_it->user == claimant) {
-
-        // Make sure the claimant is the same as the staker
-        eosio_assert( claimant == stake_it->user, "Cannot claim another staker's tokens!");
-
-        // Get the age of the stake
-        time timeDiff = now() - stake_it->timestamp;
-
-        // See if the stake is over 21 days old
-        if (timeDiff > STAKING_DURATION){
-            // Transfer back the IQ
-            iqAssetPack = asset(stake_it->amount, IQSYMBOL);
-            action(permission_level{ ARTICLE_CONTRACT_ACCTNAME, N(active) }, N(epiqtokenctr), N(transfer), std::make_tuple(ARTICLE_CONTRACT_ACCTNAME,
-                    claimant, iqAssetPack, std::string(""))).send();
-
-            // Delete the stake.
-            // Note that the erase() function increments the iterator, then gives it back after the erase is done
-            stake_it = stakeidx.erase(stake_it);
-        }
-        else{
-            stake_it++;
-        }
-    }
-}
-
 // Redeem IQ using brainpower, with a specific stake specified
 void eparticlectr::brainclmid( account_name claimant, uint64_t stakeid ) {
     require_auth(claimant);
@@ -185,8 +121,10 @@ void eparticlectr::brainclmid( account_name claimant, uint64_t stakeid ) {
     stake_it = staketable.erase(stake_it);
 }
 
-// A few functions to be run right before the proposal is submitted
-void eparticlectr::propose_precheck( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ) {
+// Propose an edit for an article
+void eparticlectr::propose( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash, ipfshash_t& grandparent_hash ) {
+    require_auth(proposer);
+
     // Fetch the brainpower
     brainpwrtbl braintable(_self, _self);
     auto brainidx = braintable.get_index<N(byuser)>();
@@ -195,14 +133,6 @@ void eparticlectr::propose_precheck( account_name proposer, ipfshash_t& proposed
 
     // Re-check that enough brainpower is available
     eosio_assert(brain_it->power > EDIT_PROPOSE_BRAINPOWER, "Not enough brainpower to edit, you need to stake some more IQ using epiqtokenctr::brainmeiq first!");
-}
-
-// Propose an edit for an article
-void eparticlectr::propose( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash, ipfshash_t& grandparent_hash ) {
-    require_auth(proposer);
-
-    // Check to make sure enough brainpower is present
-    eparticlectr::propose_precheck(proposer, proposed_article_hash, old_article_hash);
 
     // Check for a duplicate proposal
     propstbl proptable( _self, _self );
@@ -331,19 +261,6 @@ void eparticlectr::votebyhash ( account_name voter, ipfshash_t& proposed_article
             });
         }
     }
-}
-
-// Place a vote using the proposal ID
-void eparticlectr::votebyid ( account_name voter, uint64_t proposal_id, bool approve, uint64_t amount ) {
-    require_auth(voter);
-
-    // Check if article exists
-    propstbl proptable( _self, _self );
-    auto prop_it = proptable.find( proposal_id );
-    eosio_assert( prop_it != proptable.end(), "proposal not found" );
-    ipfshash_t thePropHash = prop_it->proposed_article_hash;
-
-    eparticlectr::votebyhash(voter, thePropHash, approve, amount);
 }
 
 void eparticlectr::fnlbyhash( ipfshash_t& proposal_hash ) {
@@ -631,4 +548,4 @@ void eparticlectr::updatewiki( ipfshash_t& current_hash, ipfshash_t& parent_hash
     }
 }
 
-EOSIO_ABI( eparticlectr, (brainmeart)(brainclaim)(brainclmid)(finalize)(fnlbyhash)(procrewards)(propose)(updatewiki)(votebyhash) )
+EOSIO_ABI( eparticlectr, (brainmeart)(brainclmid)(finalize)(fnlbyhash)(procrewards)(propose)(updatewiki)(votebyhash) )

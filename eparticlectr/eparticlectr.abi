@@ -19,15 +19,6 @@
         {"name":"grandparent_hash", "type":"ipfshash_t"}
       ]
     },{
-     "name": "votebyid",
-     "base": "",
-     "fields": [
-        {"name":"voter", "type":"account_name"},
-        {"name":"proposal_id", "type":"uint64"},
-        {"name":"approve", "type":"bool"},
-        {"name":"amount", "type":"uint64"}
-     ]
-  },{
      "name": "votebyhash",
      "base": "",
      "fields": [
@@ -53,13 +44,6 @@
       "base": "",
       "fields": [
         {"name":"staker", "type":"account_name"},
-        {"name":"amount", "type":"uint64"}
-      ]
-  },{
-      "name": "brainclaim",
-      "base": "",
-      "fields": [
-        {"name":"claimant", "type":"account_name"},
         {"name":"amount", "type":"uint64"}
       ]
   },{
@@ -176,10 +160,6 @@
       "type": "propose",
       "ricardian_contract": ""
     },{
-      "name": "votebyid",
-      "type": "votebyid",
-      "ricardian_contract": ""
-    },{
       "name": "votebyhash",
       "type": "votebyhash",
       "ricardian_contract": ""
@@ -198,10 +178,6 @@
     },{
       "name": "brainmeart",
       "type": "brainmeart",
-      "ricardian_contract": ""
-    },{
-      "name": "brainclaim",
-      "type": "brainclaim",
       "ricardian_contract": ""
     },{
       "name": "brainclmid",
