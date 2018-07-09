@@ -39,12 +39,10 @@ void eparticlectr::updatewiki( ipfshash_t& current_hash ){
     auto wiki_it = wikiidx.find(eparticlectr::ipfs_to_key256(current_hash));
     eosio_assert(wiki_it == wikiidx.end(), "wiki already exists in database");
 
-    ipfshash_t parent_hash = (ipfshash_t) std::string("");
-
     wikitbl.emplace( _self,  [&]( auto& a ) {
         a.id = wikitbl.available_primary_key();
-        //a.hash = current_hash;
-        //a.parent_hash = parent_hash;
+        a.hash = current_hash;
+        a.parent_hash = "";
     });
 }
 
