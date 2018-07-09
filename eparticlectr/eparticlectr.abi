@@ -10,233 +10,31 @@
       "type": "name"
   }],
   "structs": [{
-      "name": "propose",
-      "base": "",
-      "fields": [
-        {"name":"proposer", "type":"account_name"},
-        {"name":"proposed_article_hash", "type":"ipfshash_t"},
-        {"name":"old_article_hash", "type":"ipfshash_t"},
-        {"name":"grandparent_hash", "type":"ipfshash_t"}
-      ]
-    },{
-     "name": "votebyhash",
-     "base": "",
-     "fields": [
-        {"name":"voter", "type":"account_name"},
-        {"name":"proposal_hash", "type":"ipfshash_t"},
-        {"name":"approve", "type":"bool"},
-        {"name":"amount", "type":"uint64"}
-     ]
-  },{
-     "name": "finalize",
-     "base": "",
-     "fields": [
-        {"name":"proposal_id", "type":"uint64"}
-     ]
-  },{
-     "name": "fnlbyhash",
-     "base": "",
-     "fields": [
-        {"name":"proposal_hash", "type":"ipfshash_t"}
-     ]
-  },{
-      "name": "brainmeart",
-      "base": "",
-      "fields": [
-        {"name":"staker", "type":"account_name"},
-        {"name":"amount", "type":"uint64"}
-      ]
-  },{
-      "name": "brainclmid",
-      "base": "",
-      "fields": [
-        {"name":"claimant", "type":"account_name"},
-        {"name":"stakeid", "type":"uint64"}
-      ]
-  },{
-      "name": "withdraw",
-      "base": "",
-      "fields": [
-        {"name":"from", "type":"account_name"},
-      ]
-  },{
       "name": "updatewiki",
       "base": "",
       "fields": [
-        {"name":"current_hash", "type":"ipfshash_t"},
-        {"name":"parent_hash", "type":"ipfshash_t"}
+        {"name":"current_hash", "type":"ipfshash_t"}
       ]
-  },{
-      "name": "wiki",
-      "base": "",
-      "fields": [
-        {"name":"id", "type":"uint64"},
-        {"name":"hash", "type":"ipfshash_t"},
-        {"name":"parent_hash", "type":"ipfshash_t"}
-      ]
-  },{
-      "name": "editproposal",
-      "base": "",
-      "fields": [
-        {"name":"id", "type":"uint64"},
-        {"name":"proposed_article_hash", "type":"ipfshash_t"},
-        {"name":"old_article_hash", "type":"ipfshash_t"},
-        {"name":"grandparent_hash", "type":"ipfshash_t"},
-        {"name":"proposer", "type":"account_name"},
-        {"name":"proposer_64t", "type":"uint64"},
-        {"name":"threshold", "type":"uint64"},
-        {"name":"tier", "type":"uint32"},
-        {"name":"starttime", "type":"time"},
-        {"name":"endtime", "type":"time"},
-        {"name":"finalized_time", "type":"time"},
-        {"name":"status", "type":"uint32"}
-      ]
-  },{
-      "name": "vote",
-      "base": "",
-      "fields": [
-        {"name":"id", "type":"uint64"},
-        {"name":"proposal_id", "type":"uint64"},
-        {"name":"proposed_article_hash", "type":"ipfshash_t"},
-        {"name":"approve", "type":"bool"},
-        {"name":"is_approver", "type":"bool"},
-        {"name":"amount", "type":"uint64"},
-        {"name":"voter", "type":"account_name"},
-        {"name":"voter_64t", "type":"uint64"},
-        {"name":"timestamp", "type":"time"}
-      ]
-  },{
-      "name": "stake",
-      "base": "",
-      "fields": [
-        {"name":"id", "type":"uint64"},
-        {"name":"user", "type":"account_name"},
-        {"name":"user_64t", "type":"uint64"},
-        {"name":"amount", "type":"uint64"},
-        {"name":"timestamp", "type":"time"},
-        {"name":"completion_time", "type":"time"},
-        {"name":"autorenew", "type":"bool"}
-      ]
-  },{
-      "name": "rewardhistory",
-      "base": "",
-      "fields": [
-        {"name":"id", "type":"uint64"},
-        {"name":"user", "type":"account_name"},
-        {"name":"user_64t", "type":"uint64"},
-        {"name":"amount", "type":"uint64"},
-        {"name":"proposal_id", "type":"uint64"},
-        {"name":"proposal_finalize_time", "type":"time"},
-        {"name":"proposalresult", "type":"bool"},
-        {"name":"tier", "type":"uint32"},
-        {"name":"is_editor", "type":"bool"},
-        {"name":"rewardtype", "type":"bool"},
-        {"name":"disbursed", "type":"bool"}
-      ]
-  },{
-      "name": "teststruct",
-      "base": "",
-      "fields": [
-        {"name":"id", "type":"uint64"}
-      ]
-  },{
-      "name": "procrewards",
-      "base": "",
-      "fields": [
-        {"name":"reward_period", "type":"uint64"}
-      ]
-  },{
-      "name": "brainpower",
-      "base": "",
-      "fields": [
-        {"name":"user", "type":"account_name"},
-        {"name":"user_64t", "type":"uint64"},
-        {"name":"power", "type":"uint64"},
-      ]
-    }
-  ],
+   },{
+       "name": "wiki",
+       "base": "",
+       "fields": [
+         {"name":"id", "type":"uint64"},
+         {"name":"hash", "type":"ipfshash_t"},
+         {"name":"parent_hash", "type":"ipfshash_t"}
+       ]
+   }],
   "actions": [{
-      "name": "propose",
-      "type": "propose",
-      "ricardian_contract": ""
-    },{
-      "name": "votebyhash",
-      "type": "votebyhash",
-      "ricardian_contract": ""
-    },{
-      "name": "finalize",
-      "type": "finalize",
-      "ricardian_contract": ""
-    },{
-      "name": "fnlbyhash",
-      "type": "fnlbyhash",
-      "ricardian_contract": ""
-    },{
-      "name": "procrewards",
-      "type": "procrewards",
-      "ricardian_contract": ""
-    },{
-      "name": "brainmeart",
-      "type": "brainmeart",
-      "ricardian_contract": ""
-    },{
-      "name": "brainclmid",
-      "type": "brainclmid",
-      "ricardian_contract": ""
-    },{
       "name": "updatewiki",
       "type": "updatewiki",
       "ricardian_contract": ""
-    },{
-      "name": "withdraw",
-      "type": "withdraw",
-      "ricardian_contract": ""
-    }
-
-  ],
+  }],
   "tables": [{
       "name": "wikistbl",
       "type": "wiki",
       "index_type": "i64",
       "key_names" : ["id"],
       "key_types" : ["uint64"]
-    },{
-      "name": "votestbl",
-      "type": "vote",
-      "index_type": "i64",
-      "key_names" : ["id"],
-      "key_types" : ["uint64"]
-    },{
-      "name": "propstbl",
-      "type": "editproposal",
-      "index_type": "i64",
-      "key_names" : ["id"],
-      "key_types" : ["uint64"]
-    },{
-      "name": "rewardstbl",
-      "type": "rewardhistory",
-      "index_type": "i64",
-      "key_names" : ["id"],
-      "key_types" : ["uint64"]
-    },{
-      "name": "testtbl",
-      "type": "teststruct",
-      "index_type": "i64",
-      "key_names" : ["id"],
-      "key_types" : ["uint64"]
-    },{
-      "name": "brainpwrtbl",
-      "type": "brainpower",
-      "index_type": "i64",
-      "key_names" : ["user"],
-      "key_types" : ["account_name"]
-    },{
-      "name": "staketbl",
-      "type": "stake",
-      "index_type": "i64",
-      "key_names" : ["user"],
-      "key_types" : ["account_name"]
-    }
-  ],
+    }],
   "clauses": []
 }
