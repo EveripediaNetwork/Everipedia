@@ -323,7 +323,7 @@ public:
     void withdraw( account_name from );
 };
 
-eosio::key256 ipfs_to_key256(const ipfshash_t& input) {
+eosio::key256 eparticlectr::ipfs_to_key256(const ipfshash_t& input) {
     key256 returnKey;
     if (input == "") {
         returnKey = key256::make_from_word_sequence<uint64_t>(0ULL, 0ULL, 0ULL, 0ULL);
