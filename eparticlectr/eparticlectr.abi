@@ -16,6 +16,13 @@
         {"name":"current_hash", "type":"ipfshash_t"}
       ]
    },{
+      "name": "brainmeart",
+      "base": "",
+      "fields": [
+        {"name":"staker", "type":"account_name"},
+        {"name":"amount", "type":"uint64"}
+      ]
+   },{
        "name": "wiki",
        "base": "",
        "fields": [
@@ -23,18 +30,55 @@
          {"name":"hash", "type":"ipfshash_t"},
          {"name":"parent_hash", "type":"ipfshash_t"}
        ]
+    },{
+      "name": "stake",
+      "base": "",
+      "fields": [
+        {"name":"id", "type":"uint64"},
+        {"name":"user", "type":"account_name"},
+        {"name":"user_64t", "type":"uint64"},
+        {"name":"amount", "type":"uint64"},
+        {"name":"timestamp", "type":"time"},
+        {"name":"completion_time", "type":"time"},
+        {"name":"autorenew", "type":"bool"}
+       ]
+     },{
+      "name": "brainpower",
+      "base": "",
+      "fields": [
+        {"name":"user", "type":"account_name"},
+        {"name":"user_64t", "type":"uint64"},
+        {"name":"power", "type":"uint64"},
+      ]
+    }]
    }],
   "actions": [{
       "name": "updatewiki",
       "type": "updatewiki",
       "ricardian_contract": ""
-  }],
+   },{
+      "name": "brainmeart",
+      "type": "brainmeart",
+      "ricardian_contract": ""
+   }],
   "tables": [{
       "name": "wikistbl",
       "type": "wiki",
       "index_type": "i64",
       "key_names" : ["id"],
       "key_types" : ["uint64"]
+    },{
+      "name": "staketbl",
+      "type": "stake",
+      "index_type": "i64",
+      "key_names" : ["user"],
+      "key_types" : ["account_name"]
+    },{
+      "name": "brainpwrtbl",
+      "type": "brainpower",
+      "index_type": "i64",
+      "key_names" : ["user"],
+      "key_types" : ["account_name"]
     }],
   "clauses": []
 }

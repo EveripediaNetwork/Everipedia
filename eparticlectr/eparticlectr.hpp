@@ -31,6 +31,9 @@
 using namespace eosio;
 
 const account_name ARTICLE_CONTRACT_ACCTNAME = N(eparticlectr);
+const account_name TOKEN_CONTRACT_ACCTNAME = N(iqairdropper);
+const uint64_t IQ_TO_BRAINPOWER_RATIO = 1;
+const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
 
 
 class eparticlectr : public eosio::contract {
@@ -71,6 +74,52 @@ private:
           key256 get_parent_hash_key256 () const { return eparticlectr::ipfs_to_key256(parent_hash); }
     };
 
+    // Internal struct for stakes within brainpower
+    // @abi table
+    struct stake {
+        uint64_t id;
+        account_name user;
+        account_name user_64t; // account name of the user in integer form
+        uint64_t amount;
+        uint32_t timestamp;
+        uint32_t completion_time;
+        bool autorenew = 0;
+
+        auto primary_key()const { return id; }
+        account_name get_user()const { return user; }
+        uint64_t get_user64t()const { return user_64t; }
+    };
+
+    // Brainpower balances
+    // @abi table
+    struct brainpower {
+        account_name user;
+        uint64_t user_64t;
+        uint64_t power = 0; // TODO: need to fix this later
+
+        uint64_t primary_key()const { return user_64t; }
+        account_name get_user()const { return user; }
+        uint64_t get_power()const { return power; }
+
+        // subtraction with underflow check
+        uint64_t sub (uint64_t value) {
+            eosio_assert(value != 0, "Please supply a nonzero value of brainpower to subtract");
+            eosio_assert(value <= power, "Underflow during subtraction");
+            power -= value;
+            return power;
+        }
+
+        // addition with overflow check
+        uint64_t add (uint64_t value) {
+            eosio_assert(value != 0, "Please supply a nonzero value of brainpower to add");
+            eosio_assert(value + power >= value && value + power > power, "Overflow during addition");
+            power += value;
+            print( "Added brainpower, ", name{power} );
+            return power;
+        }
+    };
+
+
     //  ==================================================
     //  ==================================================
     //  ==================================================
@@ -86,11 +135,34 @@ private:
         indexed_by< N(byoldhash), const_mem_fun< wiki, eosio::key256, &wiki::get_parent_hash_key256 >>
     > wikistbl; // EOS table for the articles
 
+    // stake table
+    // @abi table
+    typedef eosio::multi_index<N(staketbl), stake,
+        indexed_by< N(byuser), const_mem_fun<stake, account_name, &stake::get_user >>,
+        indexed_by< N(byuser64t), const_mem_fun< stake, uint64_t, &stake::get_user64t >>
+    > staketbl;
+
+    // brainpower table
+    // @abi table
+    typedef eosio::multi_index<N(brainpwrtbl), brainpower,
+        indexed_by< N(byuser), const_mem_fun< brainpower, account_name, &brainpower::get_user >>,
+        indexed_by< N(power), const_mem_fun< brainpower, uint64_t, &brainpower::get_power >>
+    > brainpwrtbl;
+
 public:
     eparticlectr(account_name self) : contract(self) {};
 
 
+    uint64_t swapEndian64( uint64_t input );
+
+    //  ==================================================
+    //  ==================================================
+    //  ==================================================
+    // ABI Functions
 
     void updatewiki( ipfshash_t& current_hash );
+
+    void brainmeart( account_name staker,
+                  uint64_t amount );
 
 };

@@ -5,20 +5,6 @@
 
 #include "epiqtokenctr.hpp"
 
-uint64_t epiqtokenctr::getiqbalance( account_name from ) {
-    // Create the account object
-    epiqtokenctr::accounts accountstable( N(epiqtokenctr), from );
-    auto iqAccount_iter = accountstable.find(IQSYMBOL.name());
-
-    // Check for an account
-    if(iqAccount_iter != accountstable.end()){
-        return iqAccount_iter->balance.amount;
-    }
-    else{
-        return 0;
-    }
-}
-
 void epiqtokenctr::create( account_name issuer,
                     asset        maximum_supply )
 {
@@ -127,23 +113,18 @@ void epiqtokenctr::add_balance( account_name owner, asset value, account_name ra
    }
 }
 
-void epiqtokenctr::brainmeiq( account_name staker, uint64_t amount) {
+void epiqtokenctr::brainmeiq( account_name staker, int64_t amount) {
     require_auth(staker);
-    require_recipient(_self);
-
-    // Check that there is enough IQ available to stake to brainpower
-    uint64_t oldIQBalance = epiqtokenctr::getiqbalance(staker);
-    eosio_assert(oldIQBalance > 0, "Not enough IQ available to convert to brainpower");
-
-    print("Current balance is: ", oldIQBalance, "\n");
+    
+    eosio_assert(amount > 0, "must transfer a positive amount");
 
     // Transfer the IQ to the eparticlectr contract for staking
     asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
-    epiqtokenctr::transfer(staker, N(eparticlectr), iqAssetPack, "memo");
-
-    // Finish the brainpower issuance by calling the eparticlectr contract
+    epiqtokenctr::transfer(staker, N(eparticlectr), iqAssetPack, "stake for brainpower");
+    
+     Finish the brainpower issuance by calling the eparticlectr contract
     eosio::action theAction = action(permission_level{ N(eparticlectr), N(active) }, N(eparticlectr), N(brainmeart),
-                                    std::make_tuple(staker, amount));
+                                  std::make_tuple(staker, amount));
     theAction.send();
 }
 
