@@ -323,13 +323,19 @@ public:
     void withdraw( account_name from );
 };
 
-eosio::key256 eparticlectr::ipfs_to_key256(const ipfshash_t& input) {
-    // This is needed for indexing since indexes cannot be done by strings, only max key256's, for now...
-    uint64_t p1 = eosio::string_to_name(input.substr(0, 12).c_str());
-    uint64_t p2 = eosio::string_to_name(input.substr(13, 24).c_str());
-    uint64_t p3 = eosio::string_to_name(input.substr(25, 36).c_str());
-    uint64_t p4 = eosio::string_to_name(input.substr(37, 45).c_str());
-    key256 returnKey = key256::make_from_word_sequence<uint64_t>(p1, p2, p3, p4);
+eosio::key256 ipfs_to_key256(const ipfshash_t& input) {
+    key256 returnKey;
+    if (input == "") {
+        returnKey = key256::make_from_word_sequence<uint64_t>(0ULL, 0ULL, 0ULL, 0ULL);
+    }
+    else {
+        // This is needed for indexing since indexes cannot be done by strings, only max key256's, for now...
+        uint64_t p1 = eosio::string_to_name(input.substr(0, 12).c_str());
+        uint64_t p2 = eosio::string_to_name(input.substr(13, 24).c_str());
+        uint64_t p3 = eosio::string_to_name(input.substr(25, 36).c_str());
+        uint64_t p4 = eosio::string_to_name(input.substr(37, 45).c_str());
+        returnKey = key256::make_from_word_sequence<uint64_t>(p1, p2, p3, p4);
+    }
     return returnKey;
 }
 
