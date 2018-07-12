@@ -44,7 +44,8 @@ uint64_t eparticlectr::swapEndian64(uint64_t X) {
 // Note that the "amount" parameter is in full precision. Dividing it by IQ_PRECISION_MULTIPLIER would give the "clean" amount with a decimal.
 void eparticlectr::brainmeart( account_name staker, uint64_t amount ) {
     // Only the token contract can call this to prevent fraudulent transactions
-    require_auth(TOKEN_CONTRACT_ACCTNAME);
+    // The token contract has eosio.code permission for the article contract
+    require_auth(ARTICLE_CONTRACT_ACCTNAME);
 
     uint64_t newBrainpower = amount * IQ_TO_BRAINPOWER_RATIO;
 
@@ -52,8 +53,6 @@ void eparticlectr::brainmeart( account_name staker, uint64_t amount ) {
     brainpwrtbl braintable(ARTICLE_CONTRACT_ACCTNAME, ARTICLE_CONTRACT_ACCTNAME);
     auto brainidx = braintable.get_index<N(byuser)>();
     auto brain_it = brainidx.find(staker);
-
-    uint64_t name64t = staker;
 
     // Add the brainpower, creating a new table entry if the staker has never staked before
     if(brain_it == brainidx.end()){

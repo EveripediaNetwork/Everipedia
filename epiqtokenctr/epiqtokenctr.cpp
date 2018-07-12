@@ -122,7 +122,7 @@ void epiqtokenctr::brainmeiq( account_name staker, int64_t amount) {
     asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
     epiqtokenctr::transfer(staker, N(eparticlectr), iqAssetPack, "stake for brainpower");
     
-     Finish the brainpower issuance by calling the eparticlectr contract
+    // Finish the brainpower issuance by calling the eparticlectr contract
     eosio::action theAction = action(permission_level{ N(eparticlectr), N(active) }, N(eparticlectr), N(brainmeart),
                                   std::make_tuple(staker, amount));
     theAction.send();

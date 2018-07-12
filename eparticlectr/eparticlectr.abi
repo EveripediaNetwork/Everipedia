@@ -48,9 +48,8 @@
       "fields": [
         {"name":"user", "type":"account_name"},
         {"name":"user_64t", "type":"uint64"},
-        {"name":"power", "type":"uint64"},
+        {"name":"power", "type":"uint64"}
       ]
-    }]
    }],
   "actions": [{
       "name": "updatewiki",
