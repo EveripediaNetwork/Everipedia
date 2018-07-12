@@ -136,6 +136,20 @@ Q = F * S0
 
 The annual mint rate, A, will be 5% to match the EOS inflation rate, but the number can be changed by a governance action. Additionally, the minted tokens can be partially re-allocated by a governance action for a developer fund, bounties, or any other use.
 
+
+### Transaction Fees
+
+The initial network transfer fee will be the lesser of 0.1% or 100 IQ tokens. The fee will be sent to a null address and burnt in a verifiable manner. These numbers can be changed by the governance module. These fees only exist for transfers that are not staking or governance based actions. 
+
+The transfer fees are designed to counteract the inflationary effects of the edit rewards. Since the transaction rate for cryptocurrencies tends to be volatile, using the transfer fees directly for edit rewards would lead to too much daily uncertainty. 
+
+The community should set the transfer fee at a rate where the moving average of the daily burn rate approximately matches the stable inflation rate from edit rewards. The usable token supply will be virtually hard-capped though day-to-day fluctuations will exist. 
+
+A large percentage of token transfers in existing blockchain networks take place for the purpose of speculation. Under most current systems, the economic value of this speculation is captured by the speculators, not the network. 
+
+The transfer fee model we propose will allow the network to benefit from market speculation. Since only non-governance, non-staking transfers incur a fee, the speculators are, in a way, funding the development of the Everipedia Network. The transfer fee can be burned to create a deflationary supply, used to fund network development, or used to further economic activity on the platform. Either way, a portion of the speculative activity’s value will be captured and allocated by the network.
+
+
 ## Article Module
 
 The article module is used to propose edits to be included in the database. Proposed edits are tuple objects which contain an IPFS hash pointing to the immediate parent version and an IPFS hash pointing to the new version. An example of an edit object could be: [QmXvHQCbvxp3vQm96VmZDBaTX8Aae6vVcoTvVB6QQsMXnM, QmeAv3LJo4Kre6dR7GQBqjJFztY9YWZD131W5tYGStUcbM ]
