@@ -44,7 +44,7 @@ uint64_t eparticlectr::swapEndian64(uint64_t X) {
 // Note that the "amount" parameter is in full precision. Dividing it by IQ_PRECISION_MULTIPLIER would give the "clean" amount with a decimal.
 void eparticlectr::brainmeart( account_name staker, uint64_t amount ) {
     // Only the token contract can call this to prevent fraudulent transactions
-    require_auth(TOKEN_CONTRACT_ACCTNAME);
+    require_auth(ARTICLE_CONTRACT_ACCTNAME);
 
     uint64_t newBrainpower = amount * IQ_TO_BRAINPOWER_RATIO;
 

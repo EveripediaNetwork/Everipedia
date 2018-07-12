@@ -35,7 +35,7 @@ class epiqtokenctr : public contract {
      inline asset get_balance( account_name owner, symbol_name sym )const;
 
   private:
-     symbol_type IQSYMBOL = eosio::symbol_type(eosio::string_to_symbol(4, "IQ"));
+     symbol_type IQSYMBOL = eosio::symbol_type(eosio::string_to_symbol(3, "IQ"));
      const uint64_t IQ_PRECISION_MULTIPLIER = 10000;
 
      struct account {

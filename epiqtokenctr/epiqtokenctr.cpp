@@ -5,20 +5,6 @@
 
 #include "epiqtokenctr.hpp"
 
-uint64_t epiqtokenctr::getiqbalance( account_name from ) {
-    // Create the account object
-    epiqtokenctr::accounts accountstable( N(epiqtokenctr), from );
-    auto iqAccount_iter = accountstable.find(IQSYMBOL.name());
-
-    // Check for an account
-    if(iqAccount_iter != accountstable.end()){
-        return iqAccount_iter->balance.amount;
-    }
-    else{
-        return 0;
-    }
-}
-
 void epiqtokenctr::create( account_name issuer,
                     asset        maximum_supply )
 {
@@ -130,12 +116,6 @@ void epiqtokenctr::add_balance( account_name owner, asset value, account_name ra
 void epiqtokenctr::brainmeiq( account_name staker, uint64_t amount) {
     require_auth(staker);
     require_recipient(_self);
-
-    // Check that there is enough IQ available to stake to brainpower
-    uint64_t oldIQBalance = epiqtokenctr::getiqbalance(staker);
-    eosio_assert(oldIQBalance > 0, "Not enough IQ available to convert to brainpower");
-
-    print("Current balance is: ", oldIQBalance, "\n");
 
     // Transfer the IQ to the eparticlectr contract for staking
     asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
