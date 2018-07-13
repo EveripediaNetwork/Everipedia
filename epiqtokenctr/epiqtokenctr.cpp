@@ -4,6 +4,7 @@
  */
 
 #include "epiqtokenctr.hpp"
+#include <math.h>
 
 void epiqtokenctr::create( account_name issuer,
                     asset        maximum_supply )
@@ -77,6 +78,17 @@ void epiqtokenctr::transfer( account_name from,
     eosio_assert( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
     eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
 
+    // everything but staking must pay a transfer fee
+    if (to != EPARTICLE_ACCOUNT && to != IQ_TRANSFER_FEE_ACCOUNT) {
+        asset fee = asset(ceil((double)quantity.amount * IQ_TRANSFER_FEE_PERCENT), IQSYMBOL);
+        if (fee.amount > MAX_IQ_FEE)
+	    fee.amount = MAX_IQ_FEE;
+
+        SEND_INLINE_ACTION( *this, transfer, {from,N(active)}, {from, IQ_TRANSFER_FEE_ACCOUNT, fee, "transfer fee"} );
+
+        quantity -= fee;
+    }
+
 
     sub_balance( from, quantity );
     add_balance( to, quantity, from );
@@ -118,14 +130,16 @@ void epiqtokenctr::brainmeiq( account_name staker, int64_t amount) {
     
     eosio_assert(amount > 0, "must transfer a positive amount");
 
-    // Transfer the IQ to the eparticlectr contract for staking
+    // Transfer the IQ to the article contract for staking
     asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
-    epiqtokenctr::transfer(staker, N(eparticlectr), iqAssetPack, "stake for brainpower");
+    SEND_INLINE_ACTION( *this, transfer, {staker,N(active)}, {staker, EPARTICLE_ACCOUNT, iqAssetPack, "stake for brainpower"} );
     
-    // Finish the brainpower issuance by calling the eparticlectr contract
-    eosio::action theAction = action(permission_level{ N(eparticlectr), N(active) }, N(eparticlectr), N(brainmeart),
-                                  std::make_tuple(staker, amount));
-    theAction.send();
+    // Finish the brainpower issuance by calling the article contract
+    action(
+        permission_level{ EPARTICLE_ACCOUNT, N(active) }, 
+        EPARTICLE_ACCOUNT, N(brainmeart),
+        std::make_tuple(staker, amount)
+    ).send();
 }
 
 

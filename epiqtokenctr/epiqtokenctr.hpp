@@ -37,6 +37,10 @@ class epiqtokenctr : public contract {
   private:
      symbol_type IQSYMBOL = eosio::symbol_type(eosio::string_to_symbol(3, "IQ"));
      const int64_t IQ_PRECISION_MULTIPLIER = 1000;
+     const int64_t MAX_IQ_FEE = 250 * IQ_PRECISION_MULTIPLIER;
+     const double IQ_TRANSFER_FEE_PERCENT = .001;
+     const account_name IQ_TRANSFER_FEE_ACCOUNT = N(iqtransfefee);
+     const account_name EPARTICLE_ACCOUNT = N(eparticlectr);
 
      struct account {
         asset    balance;
