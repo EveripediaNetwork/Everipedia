@@ -31,15 +31,17 @@
 using namespace eosio;
 
 const account_name ARTICLE_CONTRACT_ACCTNAME = N(eparticlectr);
-const account_name TOKEN_CONTRACT_ACCTNAME = N(iqairdropper);
 const uint64_t IQ_TO_BRAINPOWER_RATIO = 1;
 const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
-
+const uint64_t EDIT_PROPOSE_BRAINPOWER = 10;
+const uint32_t REWARD_INTERVAL = 1800; // 30 min
+const uint32_t DEFAULT_VOTING_TIME = 86400; // 1 day
 
 class eparticlectr : public eosio::contract {
 
 private:
     using ipfshash_t = std::string;
+    enum ProposalStatus { pending, accepted, rejected };
 
     static eosio::key256 ipfs_to_key256(const ipfshash_t& input) {
 	key256 returnKey;
@@ -55,6 +57,25 @@ private:
             returnKey = key256::make_from_word_sequence<uint64_t>(p1, p2, p3, p4);
 	}
         return returnKey;
+    }
+
+    // This is until secondary keys get fixed with cleos get table :)
+    static uint64_t ipfs_to_uint64_trunc(const ipfshash_t& input) {
+        ipfshash_t newHash = input;
+        char chars[] = "6789";
+        for (unsigned int i = 0; i < strlen(chars); ++i)
+        {
+           newHash.erase(std::remove(newHash.begin(), newHash.end(), chars[i]), newHash.end());
+        }
+        ipfshash_t truncatedHash = newHash.substr(2,12);
+        transform(truncatedHash.begin(), truncatedHash.end(), truncatedHash.begin(), ::tolower);
+        const char* cstringedMiniHash = truncatedHash.c_str();
+        print(cstringedMiniHash, "\n");
+        uint64_t hashNumber = eosio::string_to_name(cstringedMiniHash);
+        print("Before: ", hashNumber, "\n");
+        hashNumber = hashNumber % 9007199254740990; // Max safe javascript integer
+        print("After: ", hashNumber, "\n");
+        return(hashNumber);
     }
 
     // ==================================================
@@ -120,6 +141,29 @@ private:
     };
 
 
+    // Edit Proposals
+    // @abi table
+    struct editproposal {
+          uint64_t id;
+          ipfshash_t proposed_article_hash; // IPFS hash of the proposed new version
+          ipfshash_t old_article_hash; // IPFS hash of the old version
+          ipfshash_t grandparent_hash; // IPFS hash of the grandparent hash
+          account_name proposer; // account name of the proposer
+          account_name proposer_64t; // account name of the proposer in integer form
+          uint32_t tier;
+          uint32_t starttime; // epoch time of the proposal
+          uint32_t endtime;
+          uint32_t finalized_time; // when finalize() was called
+          uint32_t status;
+
+          uint64_t primary_key () const { return id; }
+          key256 get_hash_key256 () const { return eparticlectr::ipfs_to_key256(proposed_article_hash); }
+          uint64_t get_finalize_period()const { return (finalized_time / REWARD_INTERVAL); } // truncate to the nearest period
+          account_name get_proposer () const { return proposer; }
+          uint64_t get_proposer64t () const { return proposer_64t; }
+
+    };
+
     //  ==================================================
     //  ==================================================
     //  ==================================================
@@ -149,6 +193,16 @@ private:
         indexed_by< N(power), const_mem_fun< brainpower, uint64_t, &brainpower::get_power >>
     > brainpwrtbl;
 
+    // edit proposals table
+    // 12-char limit on table names, so proposals used instead of editproposals
+    // indexed by hash
+    // @abi table
+    typedef eosio::multi_index<N(propstbl), editproposal,
+        indexed_by< N(byhash), const_mem_fun< editproposal, eosio::key256, &editproposal::get_hash_key256 >>,
+        indexed_by< N(byproposer64t), const_mem_fun< editproposal, uint64_t, &editproposal::get_proposer64t >>,
+        indexed_by< N(byfinalper), const_mem_fun< editproposal, uint64_t, &editproposal::get_finalize_period >>
+    > propstbl; // EOS table for the edit proposals
+
 public:
     eparticlectr(account_name self) : contract(self) {};
 
@@ -165,4 +219,8 @@ public:
     void brainmeart( account_name staker,
                   uint64_t amount );
 
+    void propose( account_name proposer,
+                  ipfshash_t& proposed_article_hash,
+                  ipfshash_t& old_article_hash,
+                  ipfshash_t& grandparent_hash );
 };

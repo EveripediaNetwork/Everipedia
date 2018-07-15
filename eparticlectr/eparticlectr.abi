@@ -10,6 +10,15 @@
       "type": "name"
   }],
   "structs": [{
+      "name": "propose",
+      "base": "",
+      "fields": [
+        {"name":"proposer", "type":"account_name"},
+        {"name":"proposed_article_hash", "type":"ipfshash_t"},
+        {"name":"old_article_hash", "type":"ipfshash_t"},
+        {"name":"grandparent_hash", "type":"ipfshash_t"}
+      ]
+    },{
       "name": "updatewiki",
       "base": "",
       "fields": [
@@ -50,7 +59,23 @@
         {"name":"user_64t", "type":"uint64"},
         {"name":"power", "type":"uint64"}
       ]
-   }],
+   },{
+      "name": "editproposal",
+      "base": "",
+      "fields": [
+        {"name":"id", "type":"uint64"},
+        {"name":"proposed_article_hash", "type":"ipfshash_t"},
+        {"name":"old_article_hash", "type":"ipfshash_t"},
+        {"name":"grandparent_hash", "type":"ipfshash_t"},
+        {"name":"proposer", "type":"account_name"},
+        {"name":"proposer_64t", "type":"uint64"},
+        {"name":"tier", "type":"uint32"},
+        {"name":"starttime", "type":"time"},
+        {"name":"endtime", "type":"time"},
+        {"name":"finalized_time", "type":"time"},
+        {"name":"status", "type":"uint32"}
+      ]
+  }],
   "actions": [{
       "name": "updatewiki",
       "type": "updatewiki",
@@ -59,7 +84,11 @@
       "name": "brainmeart",
       "type": "brainmeart",
       "ricardian_contract": ""
-   }],
+   },{
+      "name": "propose",
+      "type": "propose",
+      "ricardian_contract": ""
+    }],
   "tables": [{
       "name": "wikistbl",
       "type": "wiki",

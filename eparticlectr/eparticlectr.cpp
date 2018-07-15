@@ -97,4 +97,44 @@ void eparticlectr::updatewiki( ipfshash_t& current_hash ){
     });
 }
 
-EOSIO_ABI( eparticlectr, (brainmeart)(updatewiki) )
+// Propose an edit for an article
+void eparticlectr::propose( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash, ipfshash_t& grandparent_hash ) {
+    require_auth(proposer);
+
+    // Temporary check: Only new wikis are allowed
+    eosio_assert(old_article_hash == "", "Only new wikis are currently permitted");
+    eosio_assert(grandparent_hash == "", "Only new wikis are currently permitted");
+
+    // Fetch the brainpower
+    brainpwrtbl braintable(_self, _self);
+    auto brainidx = braintable.get_index<N(byuser)>();
+    auto brain_it = brainidx.find(proposer);
+    eosio_assert( brain_it != brainidx.end(), "No brainpower found");
+
+    // Re-check that enough brainpower is available
+    eosio_assert(brain_it->power > EDIT_PROPOSE_BRAINPOWER, "Not enough brainpower to edit, you need to stake some more IQ using epiqtokenctr::brainmeiq first!");
+
+    // Check for a duplicate proposal
+    propstbl proptable( _self, _self );
+    auto propidx = proptable.get_index<N(byhash)>();
+    auto prop_it = propidx.find(eparticlectr::ipfs_to_key256(proposed_article_hash));
+    eosio_assert(prop_it == propidx.end(), "Proposal already exists");
+
+    // Store the proposal
+    uint64_t propPrimaryKey = ipfs_to_uint64_trunc(proposed_article_hash);
+    proptable.emplace( _self, [&]( auto& a ) {
+        a.id = propPrimaryKey; // TODO: Change this once client-side secondary index querying is available
+        a.proposed_article_hash = proposed_article_hash;
+        a.old_article_hash = old_article_hash;
+        a.grandparent_hash = grandparent_hash;
+        a.proposer = proposer;
+        a.proposer_64t = eparticlectr::swapEndian64(proposer);
+        a.starttime = now();
+        a.endtime = now() + DEFAULT_VOTING_TIME;
+        a.status = ProposalStatus::pending;
+    });
+
+    // NO VOTES ADDED FOR NOW. WILL BE ADDED LATER
+}
+
+EOSIO_ABI( eparticlectr, (brainmeart)(propose)(updatewiki) )
