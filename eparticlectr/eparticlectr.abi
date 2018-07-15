@@ -96,6 +96,12 @@
       "key_names" : ["id"],
       "key_types" : ["uint64"]
     },{
+      "name": "propstbl",
+      "type": "editproposal",
+      "index_type": "i64",
+      "key_names" : ["id"],
+      "key_types" : ["uint64"]
+    },{
       "name": "staketbl",
       "type": "stake",
       "index_type": "i64",
