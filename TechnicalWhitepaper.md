@@ -139,7 +139,7 @@ The annual mint rate, A, will be 5% to match the EOS inflation rate, but the num
 
 ### Transaction Fees
 
-The initial network transfer fee will be the lesser of 0.1% or 100 IQ tokens. The fee will be sent to a null address and burnt in a verifiable manner. These numbers can be changed by the governance module. These fees only exist for transfers that are not staking or governance based actions. 
+The initial network transfer fee will be the lesser of 0.1%. The fee will be sent to a null address and burnt in a verifiable manner. These numbers can be changed by the governance module. These fees only exist for transfers that are not staking or governance based actions. 
 
 The transfer fees are designed to counteract the inflationary effects of the edit rewards. Since the transaction rate for cryptocurrencies tends to be volatile, using the transfer fees directly for edit rewards would lead to too much daily uncertainty. 
 
