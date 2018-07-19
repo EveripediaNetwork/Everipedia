@@ -122,13 +122,13 @@ Listing 2: Reward period IQ minting formula
 
 S0 = Token Supply at Genesis
 
-F = Daily period mint rate
+F = Reward (30-minutes) period mint rate
 
 A = Annual mint rate
 
   
 
-F = (1 + A)1/1051200 - 1
+F = (1 + A)^1/1051200 - 1
 
 Q = F * S0
 
