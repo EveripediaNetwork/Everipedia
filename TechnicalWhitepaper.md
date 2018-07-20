@@ -244,7 +244,7 @@ It is possible to leverage upcoming on-chain identification and reputation syste
 
 ### Delegating Votes
 
-Users who do not wish to personally vote using their BP can delegate their BP to another entity or “pool” for consensus voting. Pools will be operated by the community and vote on behalf of their users according to transparent principles published in a constitution, wiki, or similar document. This could form a secondary market for the price of BP if there is sufficient demand similar to how secondary markets are likely to form over EOS.IO bandwidth, RAM, and storage. 
+Users who do not wish to personally vote using their BP can delegate their BP to another entity or “pool” for consensus voting. Pools will be operated by the community and vote on behalf of their users according to transparent principles published in a constitution, wiki, or similar document. This could form a secondary market for the price of BP if there is sufficient demand similar to how secondary markets are likely to form over EOS.IO bandwidth, RAM, and storage. Additionally, this could allow for passive earning of IQ tokens if delegates pass back some amount of the IQ earned by curating content to the original delegator. 
 
 
 
