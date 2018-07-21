@@ -80,15 +80,15 @@ The token module is responsible for making changes to the token balances of addr
 ### Initial Supply & Minting Schedule  
   
 
-Tokens will be minted every 30 minutes through the edit process and edit curation process. There will be a fixed amount of tokens minted each day. The amount will be reset every day at 00:00 UTC.
+Tokens will be minted every 30 minutes ("IQ reward period") through the edit process and edit curation process. There will be a fixed amount of tokens minted each day. The amount will be reset every day at 00:00 UTC.
 
   
 
-Proposed edits pass tiered thresholds and receive IQ rewards based on votes of token holders. The first tier gets their collateral back, but no additional reward (for an explanation of collateral, see the article module). Thresholds past the first tier earn from the daily IQ reward pool. The exact thresholds and distributions for the tiers will be determined by the community as one of the first governance actions.
+Proposed edits pass tiered thresholds and receive IQ rewards based on votes of token holders. The first tier gets their collateral back but no additional reward (for an explanation of collateral, see the Article Module). Thresholds past the first tier earn from the daily IQ reward pool. The exact thresholds and distributions for the tiers will be determined by the community as one of the first governance actions.
 
   
 
-At the end of the 30 minute period, editors will receive IQ rewards in proportion to the value of their contributions. An single editor’s contribution is valued based on the number and tiers of edits approved (Listing 1). The IQ reward available per day is determined by the daily minting formula (Listing 2).
+At the end of the 30-minute IQ reward period, editors will receive IQ rewards in proportion to the value of their contributions. A single editor’s contribution is valued based on the number and tiers of edits approved (Listing 1). The IQ reward available per day is determined by the reward-period minting formula (Listing 2).
 
   
 
@@ -100,41 +100,35 @@ R = Editor’s IQ reward
 
 E = Editor’s contribution value
 
-T = Total contribution value for the 30-min-period across all edits
+T = Total contribution value for the 30-minute period across all edits
 
-Q = IQ reward period mint rate constant
+Q = Mint-rate constant (available IQ reward) for IQ reward period 
 
-  
-
-R = E * T
-
-Q
+R = Q * E / T
 
   
 
-The available IQ reward for the period, Q, is determined by Listing 2:
+Q, the available IQ reward for the reward period, is determined by Listing 2:
 
   
 
-Listing 2: Reward period IQ minting formula
+Listing 2: Reward-period IQ minting formula
 
   
 
 S0 = Token Supply at Genesis
 
-F = Reward (30-minutes) period mint rate
+F = Mint rate for 30-minute reward period
 
-A = Annual mint rate
+A = Annual (365-day) mint rate
 
-  
-
-F = (1 + A)^1/1051200 - 1
+F = ((1 + A) ^ (1 / 365) - 1) / 48
 
 Q = F * S0
 
   
 
-The annual mint rate, A, will be 5% to match the EOS inflation rate, but the number can be changed by a governance action. Additionally, the minted tokens can be partially re-allocated by a governance action for a developer fund, bounties, or any other use.
+The annual (365-day) mint rate, A, will be 5% to match the EOS inflation rate, but the number can be changed by a governance action. Additionally, the minted tokens can be partially re-allocated by a governance action for a developer fund, bounties, or any other use.
 
 
 ### Transaction Fees
