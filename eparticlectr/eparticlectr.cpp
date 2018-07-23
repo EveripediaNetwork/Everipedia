@@ -189,7 +189,7 @@ void eparticlectr::propose( account_name proposer, ipfshash_t& proposed_article_
     eosio_assert( brain_it != brainidx.end(), "No brainpower found");
 
     // Re-check that enough brainpower is available
-    eosio_assert(brain_it->power > EDIT_PROPOSE_BRAINPOWER, "Not enough brainpower to edit, you need to stake some more IQ using epiqtokenctr::brainmeiq first!");
+    eosio_assert(brain_it->power > EDIT_PROPOSE_BRAINPOWER, "Not enough brainpower to edit, you need to stake some more IQ using everipediaiq::brainmeiq first!");
 
     // Check for a duplicate proposal
     propstbl proptable( _self, _self );

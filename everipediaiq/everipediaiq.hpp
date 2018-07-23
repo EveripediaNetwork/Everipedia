@@ -12,9 +12,9 @@
 using namespace eosio;
 using std::string;
 
-class epiqtokenctr : public contract {
+class everipediaiq : public contract {
   public:
-     epiqtokenctr( account_name self ):contract(self){}
+     everipediaiq( account_name self ):contract(self){}
 
      void create( account_name issuer,
                   asset        maximum_supply);
@@ -67,14 +67,14 @@ class epiqtokenctr : public contract {
      };
 };
 
-asset epiqtokenctr::get_supply( symbol_name sym )const
+asset everipediaiq::get_supply( symbol_name sym )const
 {
   stats statstable( _self, sym );
   const auto& st = statstable.get( sym );
   return st.supply;
 }
 
-asset epiqtokenctr::get_balance( account_name owner, symbol_name sym )const
+asset everipediaiq::get_balance( account_name owner, symbol_name sym )const
 {
   accounts accountstable( _self, owner );
   const auto& ac = accountstable.get( sym );
