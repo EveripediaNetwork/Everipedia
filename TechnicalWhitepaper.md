@@ -122,19 +122,32 @@ Listing 2: Reward period IQ minting formula
 
 S0 = Token Supply at Genesis
 
-F = Daily period mint rate
+F = Reward (30-minutes) period mint rate
 
 A = Annual mint rate
 
   
 
-F = (1 + A)1/1051200 - 1
+F = (1 + A)^1/1051200 - 1
 
 Q = F * S0
 
   
 
 The annual mint rate, A, will be 5% to match the EOS inflation rate, but the number can be changed by a governance action. Additionally, the minted tokens can be partially re-allocated by a governance action for a developer fund, bounties, or any other use.
+
+
+### Transaction Fees
+
+The initial network transfer fee will be 0.1%. The fee will be sent to a null address and burnt in a verifiable manner. These numbers can be changed by the governance module. These fees only exist for transfers that are not staking or governance based actions. 
+
+The transfer fees are designed to counteract the inflationary effects of the edit rewards. Since the transaction rate for cryptocurrencies tends to be volatile, using the transfer fees directly for edit rewards would lead to too much daily uncertainty. 
+
+The community should set the transfer fee at a rate where the moving average of the daily burn rate approximately matches the stable inflation rate from edit rewards. The usable token supply will be virtually hard-capped though day-to-day fluctuations will exist. 
+
+A large percentage of token transfers in existing blockchain networks take place for the purpose of speculation. Under most current systems, the economic value of this speculation is captured by the speculators, not the network. 
+
+The transfer fee model we propose will allow the network to benefit from market speculation. Since only non-governance, non-staking transfers incur a fee, the speculators are, in a way, funding the development of the Everipedia Network. The transfer fee can be burned to create a deflationary supply, used to fund network development, or used to further economic activity on the platform. Either way, a portion of the speculative activity’s value will be captured and allocated by the network. The EOS main network has a 1% trading fee on RAM. This unique fee in the EOS network is used to both offset inflation, monetize the speculation inherent in the scarce resources of the EOS network, as well as create allocative efficiency by bringing market dynamics to the main network. We propose a similar fee on the scarce resource of the Everipedia Network, the IQ token. 
 
 ## Article Module
 
@@ -147,7 +160,7 @@ Staking IQ tokens is required to propose edits, vote on edits, and propose/vote 
 Example: A user has 150 IQ tokens. They can call the staking function to lock up their 150 IQ tokens for 21 days and get their account allocated 150 Brain Power to use for proposing edits, governance actions, and voting. 
 
 
-The second feature of the article module is usiing BP for token holder voting of inclusion or exclusion of proposed edits in queue. The validation of articles goes through a validation algorithm (below) with parameters that can be changed through a governance vote.
+The second feature of the article module is using BP for token holder voting of inclusion or exclusion of proposed edits in queue. The validation of articles goes through a validation algorithm (below) with parameters that can be changed through a governance vote.
 
   
 
@@ -231,7 +244,7 @@ It is possible to leverage upcoming on-chain identification and reputation syste
 
 ### Delegating Votes
 
-Users who do not wish to personally vote using their BP can delegate their BP to another entity or “pool” for consensus voting. Pools will be operated by the community and vote on behalf of their users according to transparent principles published in a constitution, wiki, or similar document. This could form a secondary market for the price of BP if there is sufficient demand similar to how secondary markets are likely to form over EOS.IO bandwidth, RAM, and storage. 
+Users who do not wish to personally vote using their BP can delegate their BP to another entity or “pool” for consensus voting. Pools will be operated by the community and vote on behalf of their users according to transparent principles published in a constitution, wiki, or similar document. This could form a secondary market for the price of BP if there is sufficient demand similar to how secondary markets are likely to form over EOS.IO bandwidth, RAM, and storage. Additionally, this could allow for passive earning of IQ tokens if delegates pass back some amount of the IQ earned by curating content to the original delegator. 
 
 
 
