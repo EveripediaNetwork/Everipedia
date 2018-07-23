@@ -80,6 +80,83 @@ void eparticlectr::brainmeart( account_name staker, uint64_t amount ) {
     });
 }
 
+// Place a vote using the IPFS hash
+void eparticlectr::votebyhash ( account_name voter, ipfshash_t& proposed_article_hash, bool approve, uint64_t amount ) {
+    require_auth(voter);
+
+    // Check if article exists
+    propstbl proptable( _self, _self );
+    auto prop_idx = proptable.get_index<N(byhash)>();
+    auto prop_it = prop_idx.find(eparticlectr::ipfs_to_key256(proposed_article_hash));
+    eosio_assert( prop_it != prop_idx.end(), "proposal not found" );
+    uint64_t proposal_id = prop_it->id;
+
+    bool voterIsProposer = (voter == prop_it->proposer);
+
+    // Verify voting is still in progress
+    eosio_assert( now() < prop_it->endtime, "voting period is over");
+
+    // Get the brainpower
+    brainpwrtbl braintable(_self, _self);
+    auto brainidx = braintable.get_index<N(byuser)>();
+    auto brain_it = brainidx.find(voter);
+
+    // Consume brainpower
+    eosio_assert(brain_it->power >= amount, "Not enough brainpower");
+    brainidx.modify( brain_it, 0, [&]( auto& b ) {
+        b.sub(amount);
+    });
+
+    // Search for existing vote by voter
+    votestbl votetbl( _self, _self );
+    auto hashidx = votetbl.get_index<N(byhash)>();
+    auto voteridx = votetbl.get_index<N(byvoter)>();
+
+    auto hash_it = hashidx.find(eparticlectr::ipfs_to_key256(proposed_article_hash));
+    auto voter_it = voteridx.find(voter);
+
+    if (hash_it == hashidx.end() || voter_it == voteridx.end()) {
+        // First vote for proposal
+        print("FIRST VOTE FOR PROPOSAL BY USER", "\n");
+        votetbl.emplace( voter, [&]( auto& a ) {
+             a.id = votetbl.available_primary_key();
+             a.proposal_id = proposal_id;
+             a.proposed_article_hash = proposed_article_hash;
+             a.approve = approve;
+             a.is_editor = voterIsProposer;
+             a.amount = amount;
+             a.voter = voter;
+             a.voter_64t = eparticlectr::swapEndian64(voter);
+             a.timestamp = now();
+        });
+    }
+    else if (voter_it->approve == approve) {
+        // Strengthen existing vote
+        print("STRENGTHEN EXISTING VOTE", "\n");
+        voteridx.modify( voter_it, 0, [&]( auto& a ) {
+    	    a.amount += amount;
+    	    a.timestamp = now();
+        });
+    }
+    else if (voter_it->amount >= amount) {
+	// Weakening existing vote
+	print("WEAKEN EXISTING VOTE", "\n");
+	voteridx.modify( voter_it, 0, [&]( auto& a ) {
+	    a.amount = voter_it->amount - amount;
+	    a.timestamp = now();
+	});
+    }
+    else {
+	// Switch votes
+	print("SWITCH VOTE", "\n");
+	voteridx.modify( voter_it, 0, [&]( auto& a ) {
+	    a.amount = amount - voter_it->amount;
+	    a.approve = approve;
+	    a.timestamp = now();
+	});
+    }
+}
+
 void eparticlectr::updatewiki( ipfshash_t& current_hash ){
     // Manually update the wikistbl. This will be removed later.
     require_auth(ARTICLE_CONTRACT_ACCTNAME);
@@ -137,4 +214,4 @@ void eparticlectr::propose( account_name proposer, ipfshash_t& proposed_article_
     // NO VOTES ADDED FOR NOW. WILL BE ADDED LATER
 }
 
-EOSIO_ABI( eparticlectr, (brainmeart)(propose)(updatewiki) )
+EOSIO_ABI( eparticlectr, (brainmeart)(propose)(updatewiki)(votebyhash) )

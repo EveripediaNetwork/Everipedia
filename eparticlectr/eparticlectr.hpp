@@ -111,6 +111,26 @@ private:
         uint64_t get_user64t()const { return user_64t; }
     };
 
+    // Voting tally
+    // @abi table
+    struct vote {
+          uint64_t id;
+          uint64_t proposal_id;
+          ipfshash_t proposed_article_hash; // IPFS hash of the proposed new version
+          bool approve;
+          bool is_editor;
+          uint64_t amount;
+          account_name voter; // account name of the voter
+          account_name voter_64t; // account name of the voter in integer form
+          uint32_t timestamp; // epoch time of the vote
+
+          uint64_t primary_key()const { return id; }
+          key256 get_hash_key256 () const { return eparticlectr::ipfs_to_key256(proposed_article_hash); }
+          uint64_t get_proposal_id()const { return id; }
+          uint64_t get_voter64t()const { return voter_64t; }
+          uint64_t get_voter()const { return voter; }
+    };
+
     // Brainpower balances
     // @abi table
     struct brainpower {
@@ -193,6 +213,16 @@ private:
         indexed_by< N(power), const_mem_fun< brainpower, uint64_t, &brainpower::get_power >>
     > brainpwrtbl;
 
+    // votes table
+    // indexed by proposal
+    // @abi table
+    typedef eosio::multi_index<N(votestbl), vote,
+        indexed_by< N(byhash), const_mem_fun< vote, eosio::key256, &vote::get_hash_key256 >>,
+        indexed_by< N(byproposal), const_mem_fun< vote, uint64_t, &vote::get_proposal_id >>,
+        indexed_by< N(byvoter), const_mem_fun< vote, uint64_t, &vote::get_voter >>,
+        indexed_by< N(byvoter64t), const_mem_fun< vote, uint64_t, &vote::get_voter64t >>
+    > votestbl; // EOS table for the votes
+
     // edit proposals table
     // 12-char limit on table names, so proposals used instead of editproposals
     // indexed by hash
@@ -204,7 +234,7 @@ private:
     > propstbl; // EOS table for the edit proposals
 
 public:
-    eparticlectr(account_name self) : contract(self) {};
+    eparticlectr(account_name self) : contract(self) {}
 
 
     uint64_t swapEndian64( uint64_t input );
@@ -223,4 +253,10 @@ public:
                   ipfshash_t& proposed_article_hash,
                   ipfshash_t& old_article_hash,
                   ipfshash_t& grandparent_hash );
+
+    void votebyhash ( account_name voter,
+                      ipfshash_t& proposed_article_hash,
+                      bool approve,
+                      uint64_t amount );
+
 };

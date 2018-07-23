@@ -32,6 +32,15 @@
         {"name":"amount", "type":"uint64"}
       ]
    },{
+     "name": "votebyhash",
+     "base": "",
+     "fields": [
+        {"name":"voter", "type":"account_name"},
+        {"name":"proposal_hash", "type":"ipfshash_t"},
+        {"name":"approve", "type":"bool"},
+        {"name":"amount", "type":"uint64"}
+     ]
+  },{
        "name": "wiki",
        "base": "",
        "fields": [
@@ -39,6 +48,20 @@
          {"name":"hash", "type":"ipfshash_t"},
          {"name":"parent_hash", "type":"ipfshash_t"}
        ]
+    },{
+      "name": "vote",
+      "base": "",
+      "fields": [
+        {"name":"id", "type":"uint64"},
+        {"name":"proposal_id", "type":"uint64"},
+        {"name":"proposed_article_hash", "type":"ipfshash_t"},
+        {"name":"approve", "type":"bool"},
+        {"name":"is_approver", "type":"bool"},
+        {"name":"amount", "type":"uint64"},
+        {"name":"voter", "type":"account_name"},
+        {"name":"voter_64t", "type":"uint64"},
+        {"name":"timestamp", "type":"time"}
+      ]
     },{
       "name": "stake",
       "base": "",
@@ -88,6 +111,10 @@
       "name": "propose",
       "type": "propose",
       "ricardian_contract": ""
+    },{
+      "name": "votebyhash",
+      "type": "votebyhash",
+      "ricardian_contract": ""
     }],
   "tables": [{
       "name": "wikistbl",
@@ -113,6 +140,12 @@
       "index_type": "i64",
       "key_names" : ["user"],
       "key_types" : ["account_name"]
+    },{
+      "name": "votestbl",
+      "type": "vote",
+      "index_type": "i64",
+      "key_names" : ["id"],
+      "key_types" : ["uint64"]
     }],
   "clauses": []
 }
