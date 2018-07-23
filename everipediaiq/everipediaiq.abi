@@ -33,7 +33,7 @@
       "base": "",
       "fields": [
         {"name":"staker", "type":"account_name"},
-        {"name":"amount", "type":"uint64"}
+        {"name":"amount", "type":"int64"}
       ]
   },{
       "name": "account",

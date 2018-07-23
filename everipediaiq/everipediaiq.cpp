@@ -3,9 +3,9 @@
  *  @copyright defined in eos/LICENSE.txt
  */
 
-#include "epiqtokenctr.hpp"
+#include "everipediaiq.hpp"
 
-void epiqtokenctr::create( account_name issuer,
+void everipediaiq::create( account_name issuer,
                     asset        maximum_supply )
 {
     require_auth( _self );
@@ -27,7 +27,7 @@ void epiqtokenctr::create( account_name issuer,
 }
 
 
-void epiqtokenctr::issue( account_name to, asset quantity, string memo )
+void everipediaiq::issue( account_name to, asset quantity, string memo )
 {
     auto sym = quantity.symbol;
     eosio_assert( sym.is_valid(), "invalid symbol name" );
@@ -57,7 +57,7 @@ void epiqtokenctr::issue( account_name to, asset quantity, string memo )
     }
 }
 
-void epiqtokenctr::transfer( account_name from,
+void everipediaiq::transfer( account_name from,
                       account_name to,
                       asset        quantity,
                       string       memo )
@@ -82,7 +82,7 @@ void epiqtokenctr::transfer( account_name from,
     add_balance( to, quantity, from );
 }
 
-void epiqtokenctr::sub_balance( account_name owner, asset value ) {
+void everipediaiq::sub_balance( account_name owner, asset value ) {
    accounts from_acnts( _self, owner );
 
    const auto& from = from_acnts.get( value.symbol.name(), "no balance object found" );
@@ -98,7 +98,7 @@ void epiqtokenctr::sub_balance( account_name owner, asset value ) {
    }
 }
 
-void epiqtokenctr::add_balance( account_name owner, asset value, account_name ram_payer )
+void everipediaiq::add_balance( account_name owner, asset value, account_name ram_payer )
 {
    accounts to_acnts( _self, owner );
    auto to = to_acnts.find( value.symbol.name() );
@@ -113,19 +113,20 @@ void epiqtokenctr::add_balance( account_name owner, asset value, account_name ra
    }
 }
 
-void epiqtokenctr::brainmeiq( account_name staker, uint64_t amount) {
+void everipediaiq::brainmeiq( account_name staker, int64_t amount) {
     require_auth(staker);
-    require_recipient(_self);
+    
+    eosio_assert(amount > 0, "must transfer a positive amount");
 
     // Transfer the IQ to the eparticlectr contract for staking
     asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
-    epiqtokenctr::transfer(staker, N(eparticlectr), iqAssetPack, "memo");
-
+    everipediaiq::transfer(staker, N(eparticlectr), iqAssetPack, "stake for brainpower");
+    
     // Finish the brainpower issuance by calling the eparticlectr contract
     eosio::action theAction = action(permission_level{ N(eparticlectr), N(active) }, N(eparticlectr), N(brainmeart),
-                                    std::make_tuple(staker, amount));
+                                  std::make_tuple(staker, amount));
     theAction.send();
 }
 
 
-EOSIO_ABI( epiqtokenctr, (create)(issue)(transfer)(brainmeiq) )
+EOSIO_ABI( everipediaiq, (create)(issue)(transfer)(brainmeiq) )
