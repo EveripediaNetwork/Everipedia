@@ -46,7 +46,7 @@
        "fields": [
          {"name":"id", "type":"uint64"},
          {"name":"hash", "type":"ipfshash_t"},
-         {"name":"parent_hash", "type":"ipfshash_t"}
+         {"name":"parent_hash", "type":"ipfshash_t"},
        ]
     },{
       "name": "vote",
@@ -59,7 +59,6 @@
         {"name":"is_approver", "type":"bool"},
         {"name":"amount", "type":"uint64"},
         {"name":"voter", "type":"account_name"},
-        {"name":"voter_64t", "type":"uint64"},
         {"name":"timestamp", "type":"time"}
       ]
     },{
@@ -68,7 +67,6 @@
       "fields": [
         {"name":"id", "type":"uint64"},
         {"name":"user", "type":"account_name"},
-        {"name":"user_64t", "type":"uint64"},
         {"name":"amount", "type":"uint64"},
         {"name":"timestamp", "type":"time"},
         {"name":"completion_time", "type":"time"},
@@ -79,7 +77,6 @@
       "base": "",
       "fields": [
         {"name":"user", "type":"account_name"},
-        {"name":"user_64t", "type":"uint64"},
         {"name":"power", "type":"uint64"}
       ]
    },{
@@ -91,7 +88,6 @@
         {"name":"old_article_hash", "type":"ipfshash_t"},
         {"name":"grandparent_hash", "type":"ipfshash_t"},
         {"name":"proposer", "type":"account_name"},
-        {"name":"proposer_64t", "type":"uint64"},
         {"name":"tier", "type":"uint32"},
         {"name":"starttime", "type":"time"},
         {"name":"endtime", "type":"time"},

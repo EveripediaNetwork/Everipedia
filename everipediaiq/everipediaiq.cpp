@@ -5,6 +5,14 @@
 
 #include "everipediaiq.hpp"
 
+const account_name TOKEN_CONTRACT_ACCTNAME = N(everipediaiq);
+const account_name ARTICLE_CONTRACT_ACCTNAME = N(eparticlectr);
+const account_name FEE_CONTRACT_ACCTNAME = N(epiqtokenfee);
+const account_name GOVERNANCE_CONTRACT_ACCTNAME = N(epgovernance);
+using longdub_t = long double;
+const longdub_t TRANSFER_FEE = 0.001;
+
+
 void everipediaiq::create( account_name issuer,
                     asset        maximum_supply )
 {
@@ -78,8 +86,25 @@ void everipediaiq::transfer( account_name from,
     eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
 
 
-    sub_balance( from, quantity );
-    add_balance( to, quantity, from );
+    if ( (from == TOKEN_CONTRACT_ACCTNAME) || (from == ARTICLE_CONTRACT_ACCTNAME) || (from == GOVERNANCE_CONTRACT_ACCTNAME) ||
+              (to == TOKEN_CONTRACT_ACCTNAME) || (to == ARTICLE_CONTRACT_ACCTNAME) || (to == GOVERNANCE_CONTRACT_ACCTNAME) ){
+        // no transfer fee
+        sub_balance( from, quantity );
+        add_balance( to, quantity, from );
+    }
+    else{
+        // transfer fee
+        asset feeNugget = quantity;
+        uint64_t theFee = (uint64_t)(quantity.amount * TRANSFER_FEE);
+        feeNugget.amount = theFee;
+
+        sub_balance( from, quantity );
+        quantity.amount = quantity.amount - theFee;
+        add_balance( to, quantity, from );
+        add_balance( FEE_CONTRACT_ACCTNAME, feeNugget, from );
+    }
+
+
 }
 
 void everipediaiq::sub_balance( account_name owner, asset value ) {
@@ -115,13 +140,13 @@ void everipediaiq::add_balance( account_name owner, asset value, account_name ra
 
 void everipediaiq::brainmeiq( account_name staker, int64_t amount) {
     require_auth(staker);
-    
+
     eosio_assert(amount > 0, "must transfer a positive amount");
 
     // Transfer the IQ to the eparticlectr contract for staking
     asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
     everipediaiq::transfer(staker, N(eparticlectr), iqAssetPack, "stake for brainpower");
-    
+
     // Finish the brainpower issuance by calling the eparticlectr contract
     eosio::action theAction = action(permission_level{ N(eparticlectr), N(active) }, N(eparticlectr), N(brainmeart),
                                   std::make_tuple(staker, amount));
