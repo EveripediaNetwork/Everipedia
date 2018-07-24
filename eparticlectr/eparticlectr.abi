@@ -32,6 +32,18 @@
         {"name":"amount", "type":"uint64"}
       ]
    },{
+     "name": "finalize",
+     "base": "",
+     "fields": [
+        {"name":"proposal_id", "type":"uint64"}
+     ]
+  },{
+     "name": "fnlbyhash",
+     "base": "",
+     "fields": [
+        {"name":"proposal_hash", "type":"ipfshash_t"}
+     ]
+  },{
      "name": "votebyhash",
      "base": "",
      "fields": [
@@ -104,6 +116,14 @@
       "type": "brainmeart",
       "ricardian_contract": ""
    },{
+      "name": "finalize",
+      "type": "finalize",
+      "ricardian_contract": ""
+    },{
+      "name": "fnlbyhash",
+      "type": "fnlbyhash",
+      "ricardian_contract": ""
+    },{
       "name": "propose",
       "type": "propose",
       "ricardian_contract": ""

@@ -233,4 +233,95 @@ void eparticlectr::propose( account_name proposer, ipfshash_t& proposed_article_
     eparticlectr::votebyhash( proposer, proposed_article_hash, true, EDIT_PROPOSE_BRAINPOWER );
 }
 
-EOSIO_ABI( eparticlectr, (brainmeart)(propose)(updatewiki)(votebyhash) )
+void eparticlectr::fnlbyhash( ipfshash_t& proposal_hash ) {
+    // Add article to database, or update
+    propstbl proptable( _self, _self );
+    auto propidx = proptable.get_index<N(byhash)>();
+    auto prop_it = propidx.find(eparticlectr::ipfs_to_key256(proposal_hash));
+    eosio_assert( prop_it != propidx.end(), "proposal not found" );
+    print(prop_it->id);
+    eparticlectr::finalize(prop_it->id);
+}
+
+void eparticlectr::finalize( uint64_t proposal_id ) {
+    // Verify proposal exists
+    propstbl proptable( _self, _self );
+    auto prop_it = proptable.find( proposal_id );
+    eosio_assert( prop_it != proptable.end(), "proposal not found" );
+
+    // Verify voting period is complete
+    eosio_assert( now() > prop_it->endtime, "voting period is not over yet");
+
+    // Retrieve votes from DB
+    votestbl votetbl( _self, _self );
+    auto voteidx = votetbl.get_index<N(byhash)>();
+    auto vote_it = voteidx.find(eparticlectr::ipfs_to_key256(prop_it->proposed_article_hash));
+    eosio_assert( vote_it != voteidx.end(), "no votes found for proposal");
+
+    print("TALLYING VOTES\n");
+    // Tally votes
+    uint64_t for_votes = 0;
+    uint64_t against_votes = 0;
+    while(vote_it->proposal_id == proposal_id) {
+        if (vote_it->approve)
+            for_votes += vote_it->amount;
+        else
+            against_votes += vote_it->amount;
+        vote_it++;
+    }
+
+    // Determine approval
+    vote_it = voteidx.find(eparticlectr::ipfs_to_key256(prop_it->proposed_article_hash));
+    bool approved = 0;
+    longdub_t totalVotes = for_votes + against_votes;
+    if ((for_votes / (float)totalVotes) >= TIER_ONE_THRESHOLD){
+        approved = 1;
+    }
+
+    print("MARKING PROPOSALS\n");
+    // Mark proposal as accepted or rejected. Ties are rejected
+    uint32_t tier = 1;
+    uint32_t finalTime = now();
+    proptable.modify( prop_it, 0, [&]( auto& a ) {
+        if (for_votes > against_votes){
+            a.status =  ProposalStatus::accepted;
+            a.tier = tier;
+            a.finalized_time = finalTime;
+        }
+        else{
+            a.status =  ProposalStatus::rejected;
+            a.tier = tier;
+            a.finalized_time = finalTime;
+        }
+
+    });
+
+    if (approved){
+        // Add article to database, or update
+        print("ADDING ARTICLE TO DATABASE\n");
+        wikistbl wikitbl( _self, _self );
+        auto wikiidx = wikitbl.get_index<N(byhash)>();
+        auto wiki_it = wikiidx.find(eparticlectr::ipfs_to_key256(prop_it->old_article_hash));
+
+        if (wiki_it == wikiidx.end()){
+            wikitbl.emplace( _self,  [&]( auto& a ) {
+                a.id = wikitbl.available_primary_key();
+                a.hash = prop_it->proposed_article_hash;
+                a.parent_hash = prop_it->old_article_hash;
+            });
+        }
+        else{
+            wikiidx.modify( wiki_it, 0, [&]( auto& a ) {
+                a.hash = prop_it->proposed_article_hash;
+                a.parent_hash = prop_it->old_article_hash;
+            });
+        }
+    }
+    else{
+        // Reverts back to parent as current_hash and grandparent as parent_hash
+    }
+
+}
+
+
+EOSIO_ABI( eparticlectr, (brainmeart)(finalize)(fnlbyhash)(propose)(updatewiki)(votebyhash) )

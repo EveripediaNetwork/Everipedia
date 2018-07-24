@@ -35,7 +35,10 @@ const uint64_t IQ_TO_BRAINPOWER_RATIO = 1;
 const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
 const uint64_t EDIT_PROPOSE_BRAINPOWER = 10;
 const uint32_t REWARD_INTERVAL = 1800; // 30 min
-const uint32_t DEFAULT_VOTING_TIME = 86400; // 1 day
+// const uint32_t DEFAULT_VOTING_TIME = 21600; // 6 hours
+const uint32_t DEFAULT_VOTING_TIME = 60; // ` minute
+const float TIER_ONE_THRESHOLD = .5f; // 50%
+using longdub_t = long double;
 
 class eparticlectr : public eosio::contract {
 
@@ -278,15 +281,19 @@ public:
     //  ==================================================
     // ABI Functions
 
-    void updatewiki( ipfshash_t& current_hash );
-
     void brainmeart( account_name staker,
                   uint64_t amount );
+
+    void finalize( uint64_t proposal_id );
+
+    void fnlbyhash( ipfshash_t& proposal_hash );
 
     void propose( account_name proposer,
                   ipfshash_t& proposed_article_hash,
                   ipfshash_t& old_article_hash,
                   ipfshash_t& grandparent_hash );
+
+    void updatewiki( ipfshash_t& current_hash );
 
     void votebyhash ( account_name voter,
                       ipfshash_t& proposed_article_hash,
