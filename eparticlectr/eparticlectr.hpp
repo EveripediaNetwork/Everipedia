@@ -299,6 +299,5 @@ public:
                       bool approve,
                       uint64_t amount );
     
-    void etl ();
 
 };

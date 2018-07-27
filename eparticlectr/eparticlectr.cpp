@@ -50,7 +50,7 @@ void eparticlectr::brainmeart( account_name staker, uint64_t amount ) {
       });
     }
     else {
-      braintable.modify( brain_it, 0, [&]( auto& b ) {
+      braintable.modify( brain_it, _self, [&]( auto& b ) {
           b.add(newBrainpower);
       });
     }
@@ -88,7 +88,7 @@ void eparticlectr::votebyhash ( account_name voter, ipfshash_t& proposed_article
 
     // Consume brainpower
     eosio_assert(brain_it->power >= amount, "Not enough brainpower");
-    braintable.modify( brain_it, 0, [&]( auto& b ) {
+    braintable.modify( brain_it, _self, [&]( auto& b ) {
         b.sub(amount);
     });
 
@@ -119,7 +119,7 @@ void eparticlectr::votebyhash ( account_name voter, ipfshash_t& proposed_article
                 if(vote_it->approve == approve){
                     // Strengthen existing vote
                     print("STRENGTHEN EXISTING VOTE", "\n");
-                    voteidx.modify( vote_it, 0, [&]( auto& a ) {
+                    voteidx.modify( vote_it, _self, [&]( auto& a ) {
                         a.amount += amount;
                         a.timestamp = now();
                     });
@@ -129,7 +129,7 @@ void eparticlectr::votebyhash ( account_name voter, ipfshash_t& proposed_article
                     if(vote_it->amount >= amount){
                         // Weakening existing vote
                         print("WEAKEN EXISTING VOTE", "\n");
-                        voteidx.modify( vote_it, 0, [&]( auto& a ) {
+                        voteidx.modify( vote_it, _self, [&]( auto& a ) {
                             a.amount = vote_it->amount - amount;
                             a.timestamp = now();
                         });
@@ -138,7 +138,7 @@ void eparticlectr::votebyhash ( account_name voter, ipfshash_t& proposed_article
                     else{
                         // Switch votes
                         print("SWITCH VOTE", "\n");
-                        voteidx.modify( vote_it, 0, [&]( auto& a ) {
+                        voteidx.modify( vote_it, _self, [&]( auto& a ) {
                             a.amount = amount - vote_it->amount;
                             a.approve = approve;
                             a.timestamp = now();
@@ -273,7 +273,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     // Mark proposal as accepted or rejected. Ties are rejected
     uint32_t tier = 1;
     uint32_t finalTime = now();
-    proptable.modify( prop_it, 0, [&]( auto& a ) {
+    proptable.modify( prop_it, _self, [&]( auto& a ) {
         if (approved) {
             a.status =  ProposalStatus::accepted;
             a.tier = tier;
@@ -304,28 +304,4 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
 
 }
 
-void eparticlectr::etl () {
-    require_auth(ARTICLE_CONTRACT_ACCTNAME);
-
-    //brainpwrtbl braintable(ARTICLE_CONTRACT_ACCTNAME, ARTICLE_CONTRACT_ACCTNAME);
-    //staketbl staketable(ARTICLE_CONTRACT_ACCTNAME, ARTICLE_CONTRACT_ACCTNAME);
-
-    //auto stake_it = staketable.find(151);
-    //while (stake_it != staketable.end() && stake_it->id > 150 && stake_it->id < 200) {
-    //    auto brain_it = braintable.find(stake_it->user);
-    //    if (brain_it == braintable.end()) {
-    //        braintable.emplace( ARTICLE_CONTRACT_ACCTNAME, [&]( auto& b ) {
-    //            b.user = stake_it->user;
-    //            b.power = stake_it->amount;
-    //        });
-    //    }
-    //    else {
-    //        braintable.modify( brain_it, 0, [&]( auto& b ) {
-    //            b.add(stake_it->amount);
-    //        });
-    //    }
-    //    stake_it++;
-    //}
-}
-
-EOSIO_ABI( eparticlectr, (brainmeart)(finalize)(fnlbyhash)(propose)(updatewiki)(votebyhash)(etl) )
+EOSIO_ABI( eparticlectr, (brainmeart)(finalize)(fnlbyhash)(propose)(updatewiki)(votebyhash) )

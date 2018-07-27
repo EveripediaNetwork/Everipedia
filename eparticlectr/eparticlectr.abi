@@ -115,10 +115,6 @@
         {"name":"finalized_time", "type":"time"},
         {"name":"status", "type":"uint32"}
       ]
-  },{
-      "name": "etl",
-      "base": "",
-      "fields": []
   }],
   "actions": [{
       "name": "updatewiki",
@@ -139,10 +135,6 @@
     },{
       "name": "propose",
       "type": "propose",
-      "ricardian_contract": ""
-    },{
-      "name": "etl",
-      "type": "etl",
       "ricardian_contract": ""
     },{
       "name": "votebyhash",
