@@ -305,17 +305,12 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
 }
 
 void eparticlectr::etl () {
-    brainpwrtbl braintable(ARTICLE_CONTRACT_ACCTNAME, ARTICLE_CONTRACT_ACCTNAME);
-    brainptable braintable2(ARTICLE_CONTRACT_ACCTNAME, ARTICLE_CONTRACT_ACCTNAME);
+    require_auth(ARTICLE_CONTRACT_ACCTNAME);
 
-    auto brain_it = braintable.start();
-    while (brain_it != braintable.end()) {
-        braintable2.emplace( _self,  [&]( auto& a ) {
-            a.user = brain_it->user;	    
-            a.power = brain_it->power;
-        });
-        brain_it++;
-    }
+    brainpwrtbl braintable(ARTICLE_CONTRACT_ACCTNAME, ARTICLE_CONTRACT_ACCTNAME);
+
+    auto brain_it = braintable.begin();
+    brain_it = braintable.erase(brain_it);
 }
 
 EOSIO_ABI( eparticlectr, (brainmeart)(finalize)(fnlbyhash)(propose)(updatewiki)(votebyhash)(etl) )
