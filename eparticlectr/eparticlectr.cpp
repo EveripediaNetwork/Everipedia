@@ -29,6 +29,17 @@
 #include "eparticlectr.hpp"
 #include <typeinfo>
 
+// This function is used to swap endianess for uint64_t's for key and javascript 58-bit int limit issues.
+// Once secondary index queries are working, this will be removed
+uint64_t eparticlectr::swapEndian64(uint64_t X) {
+    uint64_t x = (uint64_t) X;
+    x = (x & 0x00000000FFFFFFFF) << 32 | (x & 0xFFFFFFFF00000000) >> 32;
+    x = (x & 0x0000FFFF0000FFFF) << 16 | (x & 0xFFFF0000FFFF0000) >> 16;
+    x = (x & 0x00FF00FF00FF00FF) << 8  | (x & 0xFF00FF00FF00FF00) >> 8;
+    return x;
+}
+
+
 // Stake IQ in exchange for brainpower
 // Note that the "amount" parameter is in full precision. Dividing it by IQ_PRECISION_MULTIPLIER would give the "clean" amount with a decimal.
 void eparticlectr::brainmeart( account_name staker, uint64_t amount ) {
@@ -292,19 +303,11 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
         auto wikiidx = wikitbl.get_index<N(byhash)>();
         auto wiki_it = wikiidx.find(eparticlectr::ipfs_to_key256(prop_it->old_article_hash));
 
-        if (wiki_it == wikiidx.end()){
-            wikitbl.emplace( _self,  [&]( auto& a ) {
-                a.id = wikitbl.available_primary_key();
-                a.hash = prop_it->proposed_article_hash;
-                a.parent_hash = prop_it->old_article_hash;
-            });
-        }
-        else{
-            wikiidx.modify( wiki_it, 0, [&]( auto& a ) {
-                a.hash = prop_it->proposed_article_hash;
-                a.parent_hash = prop_it->old_article_hash;
-            });
-        }
+        wikitbl.emplace( _self,  [&]( auto& a ) {
+            a.id = wikitbl.available_primary_key();
+            a.hash = prop_it->proposed_article_hash;
+            a.parent_hash = prop_it->old_article_hash;
+        });
     }
     else{
         // Reverts back to parent as current_hash and grandparent as parent_hash
