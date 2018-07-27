@@ -307,10 +307,25 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
 void eparticlectr::etl () {
     require_auth(ARTICLE_CONTRACT_ACCTNAME);
 
-    brainpwrtbl braintable(ARTICLE_CONTRACT_ACCTNAME, ARTICLE_CONTRACT_ACCTNAME);
+    //brainpwrtbl braintable(ARTICLE_CONTRACT_ACCTNAME, ARTICLE_CONTRACT_ACCTNAME);
+    //staketbl staketable(ARTICLE_CONTRACT_ACCTNAME, ARTICLE_CONTRACT_ACCTNAME);
 
-    auto brain_it = braintable.begin();
-    brain_it = braintable.erase(brain_it);
+    //auto stake_it = staketable.find(151);
+    //while (stake_it != staketable.end() && stake_it->id > 150 && stake_it->id < 200) {
+    //    auto brain_it = braintable.find(stake_it->user);
+    //    if (brain_it == braintable.end()) {
+    //        braintable.emplace( ARTICLE_CONTRACT_ACCTNAME, [&]( auto& b ) {
+    //            b.user = stake_it->user;
+    //            b.power = stake_it->amount;
+    //        });
+    //    }
+    //    else {
+    //        braintable.modify( brain_it, 0, [&]( auto& b ) {
+    //            b.add(stake_it->amount);
+    //        });
+    //    }
+    //    stake_it++;
+    //}
 }
 
 EOSIO_ABI( eparticlectr, (brainmeart)(finalize)(fnlbyhash)(propose)(updatewiki)(votebyhash)(etl) )

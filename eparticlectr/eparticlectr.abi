@@ -90,7 +90,6 @@
       "base": "",
       "fields": [
         {"name":"user", "type":"account_name"},
-        {"name":"deleteme", "type":"uint64"},
         {"name":"power", "type":"uint64"}
       ]
    },{

@@ -178,7 +178,6 @@ private:
     // @abi table
     struct brainpower {
         account_name user;
-        uint64_t deleteme; // required to maintain old schema
         uint64_t power = 0; // TODO: need to fix this later
 
         account_name primary_key()const { return user; }
@@ -202,30 +201,6 @@ private:
         }
     };
 
-    struct brainpower2 {
-        account_name user;
-        uint64_t power = 0; // TODO: need to fix this later
-
-        account_name primary_key()const { return user; }
-        uint64_t get_power()const { return power; }
-
-        // subtraction with underflow check
-        uint64_t sub (uint64_t value) {
-            eosio_assert(value != 0, "Please supply a nonzero value of brainpower to subtract");
-            eosio_assert(value <= power, "Underflow during subtraction");
-            power -= value;
-            return power;
-        }
-
-        // addition with overflow check
-        uint64_t add (uint64_t value) {
-            eosio_assert(value != 0, "Please supply a nonzero value of brainpower to add");
-            eosio_assert(value + power >= value && value + power > power, "Overflow during addition");
-            power += value;
-            print( "Added brainpower, ", name{power} );
-            return power;
-        }
-    };
 
     // Edit Proposals
     // @abi table
@@ -276,10 +251,6 @@ private:
     typedef eosio::multi_index<N(brainpwrtbl), brainpower,
         indexed_by< N(power), const_mem_fun< brainpower, uint64_t, &brainpower::get_power >>
     > brainpwrtbl;
-
-    typedef eosio::multi_index<N(brainptable), brainpower2,
-        indexed_by< N(power), const_mem_fun< brainpower2, uint64_t, &brainpower2::get_power >>
-    > brainptable;
 
     // votes table
     // indexed by proposal
