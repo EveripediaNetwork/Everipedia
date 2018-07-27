@@ -262,11 +262,11 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
 
     // Determine approval
     vote_it = voteidx.find(eparticlectr::ipfs_to_key256(prop_it->proposed_article_hash));
-    bool approved = 0;
+    bool approved = false;
     uint64_t totalVotes = for_votes + against_votes;
     double approval_percent = for_votes / (double)totalVotes;
     if (approval_percent >= TIER_ONE_THRESHOLD){
-        approved = 1;
+        approved = true;
     }
 
     print("MARKING PROPOSALS\n");
@@ -274,14 +274,14 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     uint32_t tier = 1;
     uint32_t finalTime = now();
     proptable.modify( prop_it, 0, [&]( auto& a ) {
-        if (for_votes > against_votes){
+        if (approved) {
             a.status =  ProposalStatus::accepted;
             a.tier = tier;
             a.finalized_time = finalTime;
         }
         else{
             a.status =  ProposalStatus::rejected;
-            a.tier = tier;
+            a.tier = 0;
             a.finalized_time = finalTime;
         }
 
@@ -291,8 +291,6 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
         // Add article to database, or update
         print("ADDING ARTICLE TO DATABASE\n");
         wikistbl wikitbl( _self, _self );
-        auto wikiidx = wikitbl.get_index<N(byhash)>();
-        auto wiki_it = wikiidx.find(eparticlectr::ipfs_to_key256(prop_it->old_article_hash));
 
         wikitbl.emplace( _self,  [&]( auto& a ) {
             a.id = wikitbl.available_primary_key();
