@@ -265,7 +265,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     bool approved = false;
     uint64_t totalVotes = for_votes + against_votes;
     double approval_percent = for_votes / (double)totalVotes;
-    if (approval_percent >= TIER_ONE_THRESHOLD){
+    if (approval_percent > TIER_ONE_THRESHOLD){
         approved = true;
     }
 
