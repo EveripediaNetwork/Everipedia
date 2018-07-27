@@ -35,10 +35,9 @@ const uint64_t IQ_TO_BRAINPOWER_RATIO = 1;
 const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
 const uint64_t EDIT_PROPOSE_BRAINPOWER = 10;
 const uint32_t REWARD_INTERVAL = 1800; // 30 min
-// const uint32_t DEFAULT_VOTING_TIME = 21600; // 6 hours
-const uint32_t DEFAULT_VOTING_TIME = 60; // ` minute
-const float TIER_ONE_THRESHOLD = .5f; // 50%
-using longdub_t = long double;
+const uint32_t DEFAULT_VOTING_TIME = 21600; // 6 hours
+//const uint32_t DEFAULT_VOTING_TIME = 60; // ` minute
+const double TIER_ONE_THRESHOLD = .5f; // 50%
 
 class eparticlectr : public eosio::contract {
 

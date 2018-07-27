@@ -263,8 +263,9 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     // Determine approval
     vote_it = voteidx.find(eparticlectr::ipfs_to_key256(prop_it->proposed_article_hash));
     bool approved = 0;
-    longdub_t totalVotes = for_votes + against_votes;
-    if ((for_votes / (float)totalVotes) >= TIER_ONE_THRESHOLD){
+    uint64_t totalVotes = for_votes + against_votes;
+    double approval_percent = for_votes / (double)totalVotes;
+    if (approval_percent >= TIER_ONE_THRESHOLD){
         approved = 1;
     }
 
