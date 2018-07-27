@@ -58,7 +58,7 @@
        "fields": [
          {"name":"id", "type":"uint64"},
          {"name":"hash", "type":"ipfshash_t"},
-         {"name":"parent_hash", "type":"ipfshash_t"},
+         {"name":"parent_hash", "type":"ipfshash_t"}
        ]
     },{
       "name": "vote",
@@ -79,6 +79,7 @@
       "fields": [
         {"name":"id", "type":"uint64"},
         {"name":"user", "type":"account_name"},
+        {"name":"deleteme", "type":"uint64"},
         {"name":"amount", "type":"uint64"},
         {"name":"timestamp", "type":"time"},
         {"name":"completion_time", "type":"time"},
@@ -86,6 +87,14 @@
        ]
      },{
       "name": "brainpower",
+      "base": "",
+      "fields": [
+        {"name":"user", "type":"account_name"},
+        {"name":"deleteme", "type":"uint64"},
+        {"name":"power", "type":"uint64"}
+      ]
+   },{
+      "name": "brainpower2",
       "base": "",
       "fields": [
         {"name":"user", "type":"account_name"},
@@ -100,12 +109,17 @@
         {"name":"old_article_hash", "type":"ipfshash_t"},
         {"name":"grandparent_hash", "type":"ipfshash_t"},
         {"name":"proposer", "type":"account_name"},
+        {"name":"deleteme", "type":"uint64"},
         {"name":"tier", "type":"uint32"},
         {"name":"starttime", "type":"time"},
         {"name":"endtime", "type":"time"},
         {"name":"finalized_time", "type":"time"},
         {"name":"status", "type":"uint32"}
       ]
+  },{
+      "name": "etl",
+      "base": "",
+      "fields": []
   }],
   "actions": [{
       "name": "updatewiki",
@@ -126,6 +140,10 @@
     },{
       "name": "propose",
       "type": "propose",
+      "ricardian_contract": ""
+    },{
+      "name": "etl",
+      "type": "etl",
       "ricardian_contract": ""
     },{
       "name": "votebyhash",
@@ -153,6 +171,12 @@
     },{
       "name": "brainpwrtbl",
       "type": "brainpower",
+      "index_type": "i64",
+      "key_names" : ["user"],
+      "key_types" : ["account_name"]
+    },{
+      "name": "brainptable",
+      "type": "brainpower2",
       "index_type": "i64",
       "key_names" : ["user"],
       "key_types" : ["account_name"]
