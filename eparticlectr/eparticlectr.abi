@@ -115,7 +115,6 @@
         {"name":"old_article_hash", "type":"ipfshash_t"},
         {"name":"grandparent_hash", "type":"ipfshash_t"},
         {"name":"proposer", "type":"account_name"},
-        {"name":"deleteme", "type":"uint64"},
         {"name":"tier", "type":"uint8"},
         {"name":"starttime", "type":"time"},
         {"name":"endtime", "type":"time"},

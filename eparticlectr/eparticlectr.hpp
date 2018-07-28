@@ -210,7 +210,6 @@ private:
           ipfshash_t old_article_hash; // IPFS hash of the old version
           ipfshash_t grandparent_hash; // IPFS hash of the grandparent hash
           account_name proposer; // account name of the proposer
-          uint64_t deleteme;
           uint8_t tier;
           uint32_t starttime; // epoch time of the proposal
           uint32_t endtime;
