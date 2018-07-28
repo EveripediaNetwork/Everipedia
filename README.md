@@ -15,4 +15,4 @@ The act of sending 1 IQ to the article contract is tracked by the stakes table. 
 ### Functions
 For staking IQ to generate brainpower, use the `brainme` function.
 For transferring brainpower, use the `brainyou` function.
-For claiming IQ back IQ after the staking period, use the `brainclaim` function.
+For claiming IQ back after the staking period, use the `brainclaim` function.
