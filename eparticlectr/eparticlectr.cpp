@@ -44,7 +44,7 @@ void eparticlectr::brainmeart( account_name staker, uint64_t amount ) {
 
     // Add the brainpower, creating a new table entry if the staker has never staked before
     if(brain_it == braintable.end()){
-      braintable.emplace( ARTICLE_CONTRACT_ACCTNAME, [&]( auto& b ) {
+      braintable.emplace( _self, [&]( auto& b ) {
           b.user = staker;
           b.power = newBrainpower;
       });
@@ -57,7 +57,7 @@ void eparticlectr::brainmeart( account_name staker, uint64_t amount ) {
 
     // Create the stake object
     staketbl staketblobj(ARTICLE_CONTRACT_ACCTNAME, ARTICLE_CONTRACT_ACCTNAME);
-    staketblobj.emplace( ARTICLE_CONTRACT_ACCTNAME, [&]( auto& s ) {
+    staketblobj.emplace( _self, [&]( auto& s ) {
         s.id = staketblobj.available_primary_key();
         s.user = staker;
         s.amount = amount;
@@ -101,7 +101,7 @@ void eparticlectr::votebyhash ( account_name voter, ipfshash_t& proposed_article
     if(vote_it == voteidx.end()){
         // First vote for proposal
         print("FIRST VOTE FOR PROPOSAL", "\n");
-        votetbl.emplace( voter, [&]( auto& a ) {
+        votetbl.emplace( _self, [&]( auto& a ) {
              a.id = votePrimaryKey;
              a.proposal_id = proposal_id;
              a.proposed_article_hash = proposed_article_hash;
@@ -153,7 +153,7 @@ void eparticlectr::votebyhash ( account_name voter, ipfshash_t& proposed_article
         if(vote_it == voteidx.end()){
             // Brand new vote
             print("BRAND NEW VOTE", "\n");
-            votetbl.emplace( voter, [&]( auto& a ) {
+            votetbl.emplace( _self, [&]( auto& a ) {
                  a.id = votePrimaryKey;
                  a.proposal_id = proposal_id;
                  a.proposed_article_hash = proposed_article_hash;
