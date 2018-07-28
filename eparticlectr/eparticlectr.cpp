@@ -50,7 +50,7 @@ void eparticlectr::brainmeart( account_name staker, uint64_t amount ) {
       });
     }
     else {
-      braintable.modify( brain_it, 0, [&]( auto& b ) {
+      braintable.modify( brain_it, _self, [&]( auto& b ) {
           b.add(newBrainpower);
       });
     }
@@ -88,7 +88,7 @@ void eparticlectr::votebyhash ( account_name voter, ipfshash_t& proposed_article
 
     // Consume brainpower
     eosio_assert(brain_it->power >= amount, "Not enough brainpower");
-    braintable.modify( brain_it, 0, [&]( auto& b ) {
+    braintable.modify( brain_it, _self, [&]( auto& b ) {
         b.sub(amount);
     });
 
@@ -119,7 +119,7 @@ void eparticlectr::votebyhash ( account_name voter, ipfshash_t& proposed_article
                 if(vote_it->approve == approve){
                     // Strengthen existing vote
                     print("STRENGTHEN EXISTING VOTE", "\n");
-                    voteidx.modify( vote_it, 0, [&]( auto& a ) {
+                    voteidx.modify( vote_it, _self, [&]( auto& a ) {
                         a.amount += amount;
                         a.timestamp = now();
                     });
@@ -129,7 +129,7 @@ void eparticlectr::votebyhash ( account_name voter, ipfshash_t& proposed_article
                     if(vote_it->amount >= amount){
                         // Weakening existing vote
                         print("WEAKEN EXISTING VOTE", "\n");
-                        voteidx.modify( vote_it, 0, [&]( auto& a ) {
+                        voteidx.modify( vote_it, _self, [&]( auto& a ) {
                             a.amount = vote_it->amount - amount;
                             a.timestamp = now();
                         });
@@ -138,7 +138,7 @@ void eparticlectr::votebyhash ( account_name voter, ipfshash_t& proposed_article
                     else{
                         // Switch votes
                         print("SWITCH VOTE", "\n");
-                        voteidx.modify( vote_it, 0, [&]( auto& a ) {
+                        voteidx.modify( vote_it, _self, [&]( auto& a ) {
                             a.amount = amount - vote_it->amount;
                             a.approve = approve;
                             a.timestamp = now();
@@ -238,6 +238,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     propstbl proptable( _self, _self );
     auto prop_it = proptable.find( proposal_id );
     eosio_assert( prop_it != proptable.end(), "proposal not found" );
+    ipfshash_t proposal_hash = prop_it->proposed_article_hash;
 
     // Verify voting period is complete
     eosio_assert( now() > prop_it->endtime, "voting period is not over yet");
@@ -261,11 +262,10 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     }
 
     // Determine approval
-    vote_it = voteidx.find(eparticlectr::ipfs_to_key256(prop_it->proposed_article_hash));
     bool approved = false;
     uint64_t totalVotes = for_votes + against_votes;
     double approval_percent = for_votes / (double)totalVotes;
-    if (approval_percent >= TIER_ONE_THRESHOLD){
+    if (approval_percent > TIER_ONE_THRESHOLD){
         approved = true;
     }
 
@@ -273,7 +273,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     // Mark proposal as accepted or rejected. Ties are rejected
     uint32_t tier = 1;
     uint32_t finalTime = now();
-    proptable.modify( prop_it, 0, [&]( auto& a ) {
+    proptable.modify( prop_it, _self, [&]( auto& a ) {
         if (approved) {
             a.status =  ProposalStatus::accepted;
             a.tier = tier;
@@ -294,7 +294,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
 
         wikitbl.emplace( _self,  [&]( auto& a ) {
             a.id = wikitbl.available_primary_key();
-            a.hash = prop_it->proposed_article_hash;
+            a.hash = proposal_hash;
             a.parent_hash = prop_it->old_article_hash;
         });
     }
@@ -302,7 +302,29 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
         // Reverts back to parent as current_hash and grandparent as parent_hash
     }
 
+    // Clean up the old votes to free RAM
+    eparticlectr::oldvotepurge( proposal_hash, 50);
 }
 
+void eparticlectr::oldvotepurge( ipfshash_t& proposed_article_hash, uint32_t loop_limit ) {
+    // Get the proposal object
+    propstbl proptable( _self, _self );
+    auto propidx = proptable.get_index<N(byhash)>();
+    auto prop_it = propidx.find(eparticlectr::ipfs_to_key256(proposed_article_hash));
+    eosio_assert( prop_it->status != 0, "Proposal not finalized yet!");
 
-EOSIO_ABI( eparticlectr, (brainmeart)(finalize)(fnlbyhash)(propose)(updatewiki)(votebyhash) )
+    // Retrieve votes from DB
+    votestbl votetbl( _self, _self );
+    auto voteidx = votetbl.get_index<N(byhash)>();
+    auto vote_it = voteidx.find(eparticlectr::ipfs_to_key256(proposed_article_hash));
+    eosio_assert( vote_it != voteidx.end(), "No votes found for proposal!");
+
+    // Free up RAM
+    uint32_t count = 0;
+    while(vote_it->proposed_article_hash == proposed_article_hash && count < loop_limit && vote_it != voteidx.end()) {
+        vote_it = voteidx.erase(vote_it);
+        count++;
+    }
+}
+
+EOSIO_ABI( eparticlectr, (brainmeart)(finalize)(fnlbyhash)(oldvotepurge)(propose)(updatewiki)(votebyhash) )

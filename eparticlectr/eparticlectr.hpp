@@ -145,6 +145,7 @@ private:
     struct stake {
         uint64_t id;
         account_name user;
+        uint64_t deleteme; // required to maintain old schema
         uint64_t amount;
         uint32_t timestamp;
         uint32_t completion_time;
@@ -209,11 +210,11 @@ private:
           ipfshash_t old_article_hash; // IPFS hash of the old version
           ipfshash_t grandparent_hash; // IPFS hash of the grandparent hash
           account_name proposer; // account name of the proposer
-          uint32_t tier;
+          uint8_t tier;
           uint32_t starttime; // epoch time of the proposal
           uint32_t endtime;
           uint32_t finalized_time; // when finalize() was called
-          uint32_t status;
+          uint8_t status;
 
           uint64_t primary_key () const { return id; }
           key256 get_hash_key256 () const { return eparticlectr::ipfs_to_key256(proposed_article_hash); }
@@ -285,6 +286,9 @@ public:
 
     void fnlbyhash( ipfshash_t& proposal_hash );
 
+    void oldvotepurge( ipfshash_t& proposed_article_hash,
+                       uint32_t loop_limit);
+
     void propose( account_name proposer,
                   ipfshash_t& proposed_article_hash,
                   ipfshash_t& old_article_hash,
@@ -296,5 +300,6 @@ public:
                       ipfshash_t& proposed_article_hash,
                       bool approve,
                       uint64_t amount );
+
 
 };
