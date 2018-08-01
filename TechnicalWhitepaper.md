@@ -84,7 +84,7 @@ Tokens will be minted every 30 minutes through the edit process and edit curatio
 
   
 
-Proposed edits pass tiered thresholds and receive IQ rewards based on votes of token holders. The first tier gets their collateral back, but no additional reward (for an explanation of collateral, see the article module). Thresholds past the first tier earn from the daily IQ reward pool. The exact thresholds and distributions for the tiers will be determined by the community as one of the first governance actions.
+Proposed edits pass tiered thresholds and receive IQ rewards based on votes of token holders. The first tier gets no additional reward. Thresholds past the first tier earn from the daily IQ reward pool. The exact thresholds and distributions for the tiers will be determined by the community as one of the first governance actions.
 
   
 
@@ -170,9 +170,9 @@ Edit proposals are approved in tiers which is an output of the validator functio
 
 Tier 1: Proposal not approved
 
-Tier 2: Proposal approved, no token reward given, collateral returned
+Tier 2: Proposal approved, no token reward given
 
-Tier 3: Proposal approved, token rewards given proportional to token holder votes, collateral returned
+Tier 3: Proposal approved, token rewards given proportional to token holder votes
 
   
 
