@@ -84,8 +84,8 @@ Tokens will be minted every 30 minutes ("IQ reward period") through the edit pro
 
   
 
-Proposed edits pass tiered thresholds and receive IQ rewards based on votes of token holders. The first tier gets their collateral back but no additional reward (for an explanation of collateral, see the Article Module). Thresholds past the first tier earn from the daily IQ reward pool. The exact thresholds and distributions for the tiers will be determined by the community as one of the first governance actions.
 
+Proposed edits pass tiered thresholds and receive IQ rewards based on votes of token holders. The first tier gets no additional reward. Thresholds past the first tier earn from the daily IQ reward pool. The exact thresholds and distributions for the tiers will be determined by the community as one of the first governance actions.
   
 
 At the end of the 30-minute IQ reward period, editors will receive IQ rewards in proportion to the value of their contributions. A single editor’s contribution is valued based on the number and tiers of edits approved (Listing 1). The IQ reward available per day is determined by the reward-period minting formula (Listing 2).
@@ -164,9 +164,9 @@ Edit proposals are approved in tiers which is an output of the validator functio
 
 Tier 1: Proposal not approved
 
-Tier 2: Proposal approved, no token reward given, collateral returned
+Tier 2: Proposal approved, no token reward given
 
-Tier 3: Proposal approved, token rewards given proportional to token holder votes, collateral returned
+Tier 3: Proposal approved, token rewards given proportional to token holder votes
 
   
 
@@ -262,15 +262,11 @@ This allows for feeless transactions since accounts are only rate-limited based 
 
   
 
-Additionally, the EOS protocol has a special process in which the community votes to allocate EOS tokens to up to 3 “[community benefit applications](https://github.com/EOSIO/Documentation/blob/master/TechnicalWhitePaper.md#community-benefit-applications)” that directly benefit the EOS network. An implementation of the Everipedia Network on EOS.IO software will plan to provide maximal community value and innovation to be successfully considered for one of these three coveted spots.[7]
+Everipedia Network articles (as well as their histories) will be stored using IPFS protocol nodes by community members and front end service providers. In order to block access to Everipedia Network content, actors would have to prevent any TCP/IP interaction and packet exchange between end users and the EOS mainnet entirely as even a single IPFS peer can provide access to Everipedia content. This task, while theoretically feasible, is substantially more difficult than blocking a single domain and is more akin to attempting to shut down torrent networks by going after all individual torrent seeders - a task that has consistently proven impossible for many well-funded organizations and state actors. Additionally, it is possible for community members to host any set of articles from their own private IPFS daemon which listens for edits of articles by connecting to the EOS network. This means that anyone who wishes to host articles (or some subset of articles) can do so from any location or server by running their own IPFS node and light EOS client.
 
   
 
-Everipedia Network articles (as well as their histories) will be stored using IPFS protocol nodes incentivized through EOS block producer rewards. This means that EOS block producers would provide IPFS retrieval of articles to users free of charge but rate limited by the balance of EOS tokens held by the Everipedia Network EOS account. Since EOS block producers are independent node operators on the EOS network, any block producer can retrieve Everipedia articles to a requesting user. In this sense, it would not be possible for states or other organizations to easily block access to Everipedia articles as they can do with Wikipedia by blocking access to a centralized server or a DNS recordset (ie: the domain name Wikipedia.org). In order to block access to Everipedia Network content, actors would have to prevent any TCP/IP interaction and packet exchange between end users and the EOS mainnet entirely as even a single EOS block producer can provide access to Everipedia content. This task, while theoretically feasible, is substantially more difficult than blocking a single domain and is more akin to attempting to shut down torrent networks by going after all individual torrent seeders - a task that has consistently proven impossible for many well-funded organizations and state actors. Additionally, it is possible for community members to host any set of articles from their own private IPFS daemon which listens for edits of articles by connecting to the EOS network. This means that anyone who wishes to host articles (or some subset of articles) can do so from any location or server by running their own IPFS node and light EOS client.
-
-  
-
-Under the EOS.IO implementation, an Everipedia “reader” is any individual with an internet connection that can access the EOS main network. Reading and requesting Everipedia content is planned to be free to all end users and does not require any IQ token balance. Conversely, an Everipedia “user” is any individual who possesses a functional wallet (an EOS.IO account) with a valid balance of IQ tokens to propose edits. Users will sign all their transactions with the associated private key to demonstrate ownership of a valid balance. Using the EOS.IO account system allows for various web standards and benefits that are not currently available on other blockchains such as account recovery and human readable usernames. This would essentially create a seamless user experience similar to using a web application with classical user and account authentication. Additionally, it is possible to leverage upcoming EOS.IO identification and reputation systems to incorporate into the validation algorithm and edit approval process such that previous edit histories and identities of editors can be measured in the consensus process.
+Under the EOS.IO implementation, an Everipedia “reader” is any individual with an internet connection that can access the EOS main network and query an IPFS protocol for an article hash as recorded in the EPN article module smart contract. Reading and requesting Everipedia content is planned to be free to all end users and does not require any IQ token balance. Conversely, an Everipedia “user” is any individual who possesses a functional wallet (an EOS.IO account) with a valid balance of IQ tokens to propose edits. Users will sign all their transactions with the associated private key to demonstrate ownership of a valid balance. Using the EOS.IO account system allows for various web standards and benefits that are not currently available on other blockchains such as account recovery and human readable usernames. This would essentially create a seamless user experience similar to using a web application with classical user and account authentication. Additionally, it is possible to leverage upcoming EOS.IO identification and reputation systems to incorporate into the validation algorithm and edit approval process such that previous edit histories and identities of editors can be measured in the consensus process.
 
 ![](https://lh5.googleusercontent.com/6nvFTiowOqFN_sYKjGapx3N1Y8KwBpc8yA-zSNFqLQ93daNNRB3T8S9MJYW3vrg1z2KEhXBKfuE94nQ4Mm5dTqp0e7nfKp6JdEDynR1OHUjMg76wmJhIM7ReYsWjRpMY27bJoX9M)![](https://lh4.googleusercontent.com/y4sYc45325qLjq_-0FXuxDQ8vneXgyg-uGoJFiL4_7N-3hBtwN-BDGDcC-yeMKcjOMDCxsnTTbASoKBYIObgWgk3ztgnWa-6VGgv0Ah5R4tXBoqj63cSHb4ruN-Qj-cI4ZdCjiyT)
 
