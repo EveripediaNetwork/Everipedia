@@ -25,6 +25,13 @@
         {"name":"current_hash", "type":"ipfshash_t"}
       ]
    },{
+      "name": "brainclmid",
+      "base": "",
+      "fields": [
+        {"name":"claimant", "type":"account_name"},
+        {"name":"stakeid", "type":"uint64"}
+      ]
+  },{
       "name": "brainmeart",
       "base": "",
       "fields": [
@@ -128,6 +135,10 @@
       "type": "updatewiki",
       "ricardian_contract": ""
    },{
+      "name": "brainclmid",
+      "type": "brainclmid",
+      "ricardian_contract": ""
+    },{
       "name": "brainmeart",
       "type": "brainmeart",
       "ricardian_contract": ""

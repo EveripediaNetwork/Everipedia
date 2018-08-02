@@ -38,6 +38,7 @@ const uint32_t REWARD_INTERVAL = 1800; // 30 min
 const uint32_t DEFAULT_VOTING_TIME = 21600; // 6 hours
 //const uint32_t DEFAULT_VOTING_TIME = 60; // ` minute
 const double TIER_ONE_THRESHOLD = .5f; // 50%
+const uint64_t IQ_PRECISION_MULTIPLIER = 1000;
 
 class eparticlectr : public eosio::contract {
 
@@ -46,6 +47,7 @@ private:
     enum ProposalStatus { pending, accepted, rejected };
 
 public:
+    symbol_type IQSYMBOL = eosio::symbol_type(eosio::string_to_symbol(4, "IQ"));
     static eosio::key256 ipfs_to_key256(const ipfshash_t& input) {
         key256 returnKey;
         if (input == "") {
@@ -279,6 +281,9 @@ public:
     //  ==================================================
     //  ==================================================
     // ABI Functions
+
+    void brainclmid( account_name claimant,
+                  uint64_t stakeid );
 
     void brainmeart( account_name staker,
                   uint64_t amount );

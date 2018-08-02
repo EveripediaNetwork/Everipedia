@@ -29,6 +29,39 @@
 #include "eparticlectr.hpp"
 #include <typeinfo>
 
+// Redeem IQ, with a specific stake specified
+void eparticlectr::brainclmid( account_name claimant, uint64_t stakeid ) {
+    require_auth(claimant);
+
+    // Get the brainpower
+    brainpwrtbl braintable(ARTICLE_CONTRACT_ACCTNAME, ARTICLE_CONTRACT_ACCTNAME);
+    auto brain_it = braintable.find(claimant);
+    eosio_assert( brain_it != braintable.end(), "No brainpower found");
+
+    // Get the stakes
+    staketbl staketable(ARTICLE_CONTRACT_ACCTNAME, ARTICLE_CONTRACT_ACCTNAME);
+    auto stake_it = staketable.find(stakeid);
+    eosio_assert( stake_it != staketable.end(), "No stakes found for proposal");
+
+    // Dummy initialization
+    asset iqAssetPack;
+
+    // Make sure the claimant is the same as the staker
+    eosio_assert( claimant == stake_it->user, "Cannot claim another staker's tokens!");
+
+    // See if the stake is over 21 days old
+    eosio_assert( now() > stake_it->completion_time, "Staking period not over yet");
+
+    // Transfer back the IQ
+    iqAssetPack = asset(stake_it->amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
+    eosio::action theAction = action(permission_level{ ARTICLE_CONTRACT_ACCTNAME, N(active) }, N(epiqtokenctr), N(transfer),
+                    std::make_tuple(ARTICLE_CONTRACT_ACCTNAME, claimant, iqAssetPack, std::string("brainpower refund")));
+    theAction.send();
+
+    // Delete the stake.
+    // Note that the erase() function increments the iterator, then gives it back after the erase is done
+    stake_it = staketable.erase(stake_it);
+}
 
 // Stake IQ in exchange for brainpower
 // Note that the "amount" parameter is in full precision. Dividing it by IQ_PRECISION_MULTIPLIER would give the "clean" amount with a decimal.
@@ -327,4 +360,4 @@ void eparticlectr::oldvotepurge( ipfshash_t& proposed_article_hash, uint32_t loo
     }
 }
 
-EOSIO_ABI( eparticlectr, (brainmeart)(finalize)(fnlbyhash)(oldvotepurge)(propose)(updatewiki)(votebyhash) )
+EOSIO_ABI( eparticlectr, (brainclmid)(brainmeart)(finalize)(fnlbyhash)(oldvotepurge)(propose)(updatewiki)(votebyhash) )
