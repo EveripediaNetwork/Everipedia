@@ -31,6 +31,7 @@
 using namespace eosio;
 
 const account_name ARTICLE_CONTRACT_ACCTNAME = N(eparticlectr);
+const account_name TOKEN_CONTRACT_ACCTNAME = N(everipediaiq);
 const uint64_t IQ_TO_BRAINPOWER_RATIO = 1;
 const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
 const uint64_t EDIT_PROPOSE_BRAINPOWER = 10;

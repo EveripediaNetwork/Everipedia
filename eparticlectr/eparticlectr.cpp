@@ -54,7 +54,7 @@ void eparticlectr::brainclmid( account_name claimant, uint64_t stakeid ) {
 
     // Transfer back the IQ
     iqAssetPack = asset(stake_it->amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
-    eosio::action theAction = action(permission_level{ ARTICLE_CONTRACT_ACCTNAME, N(active) }, N(epiqtokenctr), N(transfer),
+    eosio::action theAction = action(permission_level{ ARTICLE_CONTRACT_ACCTNAME, N(active) }, TOKEN_CONTRACT_ACCTNAME, N(transfer),
                     std::make_tuple(ARTICLE_CONTRACT_ACCTNAME, claimant, iqAssetPack, std::string("brainpower refund")));
     theAction.send();
 
