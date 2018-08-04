@@ -48,7 +48,7 @@ private:
     enum ProposalStatus { pending, accepted, rejected };
 
 public:
-    symbol_type IQSYMBOL = eosio::symbol_type(eosio::string_to_symbol(4, "IQ"));
+    symbol_type IQSYMBOL = eosio::symbol_type(eosio::string_to_symbol(3, "IQ"));
     static eosio::key256 ipfs_to_key256(const ipfshash_t& input) {
         key256 returnKey;
         if (input == "") {
