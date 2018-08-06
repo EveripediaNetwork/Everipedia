@@ -35,8 +35,8 @@ class everipediaiq : public contract {
      inline asset get_balance( account_name owner, symbol_name sym )const;
 
   private:
-     const account_name TOKEN_CONTRACT_ACCTNAME = N(everipediaip);
-     const account_name ARTICLE_CONTRACT_ACCTNAME = N(eparticlectt);
+     const account_name TOKEN_CONTRACT_ACCTNAME = N(everipediaiq);
+     const account_name ARTICLE_CONTRACT_ACCTNAME = N(eparticlectr);
      const account_name FEE_CONTRACT_ACCTNAME = N(epiqtokenfee);
      const account_name GOVERNANCE_CONTRACT_ACCTNAME = N(epgovernance);
      const double TRANSFER_FEE = 0.001;
