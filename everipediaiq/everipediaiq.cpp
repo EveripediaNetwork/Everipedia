@@ -5,14 +5,6 @@
 
 #include "everipediaiq.hpp"
 
-const account_name TOKEN_CONTRACT_ACCTNAME = N(everipediaiq);
-const account_name ARTICLE_CONTRACT_ACCTNAME = N(eparticlectr);
-const account_name FEE_CONTRACT_ACCTNAME = N(epiqtokenfee);
-const account_name GOVERNANCE_CONTRACT_ACCTNAME = N(epgovernance);
-using longdub_t = long double;
-const longdub_t TRANSFER_FEE = 0.001;
-
-
 void everipediaiq::create( account_name issuer,
                     asset        maximum_supply )
 {
@@ -95,13 +87,18 @@ void everipediaiq::transfer( account_name from,
     else{
         // transfer fee
         asset feeNugget = quantity;
-        uint64_t theFee = (uint64_t)(quantity.amount * TRANSFER_FEE);
+        int64_t theFee = (int64_t)(quantity.amount * TRANSFER_FEE);
+
+	// prevent decimal truncation from creating a zero-fee transfer
+	if (theFee == 0) 
+	    theFee = 1;
+
         feeNugget.amount = theFee;
 
         sub_balance( from, quantity );
         quantity.amount = quantity.amount - theFee;
         add_balance( to, quantity, from );
-        add_balance( FEE_CONTRACT_ACCTNAME, feeNugget, from );
+        add_balance( FEE_CONTRACT_ACCTNAME, feeNugget, _self );
     }
 
 
