@@ -37,9 +37,17 @@ const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
 const uint64_t EDIT_PROPOSE_BRAINPOWER = 10;
 const uint32_t REWARD_INTERVAL = 1800; // 30 min
 const uint32_t DEFAULT_VOTING_TIME = 21600; // 6 hours
-//const uint32_t DEFAULT_VOTING_TIME = 60; // ` minute
-const double TIER_ONE_THRESHOLD = .5f; // 50%
+const float ANNUAL_MINT_RATE = .025f;
+const double PERIOD_REWARD_AMOUNT = 100.000; // for testing purposes
+// const double PERIOD_REWARD_AMOUNT = 234.8993; // calculated from formula. Should be slightly less than ANNUAL_MINT_RATE * 10,000,000,000
+const float EDITOR_REWARD_RATIO = 0.8f;
+const float CURATION_REWARD_RATIO = 0.2f;
 const uint64_t IQ_PRECISION_MULTIPLIER = 1000;
+const uint64_t PERIOD_CURATION_REWARD = PERIOD_REWARD_AMOUNT * CURATION_REWARD_RATIO * IQ_PRECISION_MULTIPLIER;
+const uint64_t PERIOD_EDITOR_REWARD = PERIOD_REWARD_AMOUNT * EDITOR_REWARD_RATIO * IQ_PRECISION_MULTIPLIER;
+const float TIER_ONE_THRESHOLD = .5f;
+const float TIER_THREE_THRESHOLD = .75f;
+
 
 class eparticlectr : public eosio::contract {
 
@@ -228,6 +236,27 @@ private:
 
     };
 
+
+    // Internal struct for history of success rewards and reject slashes
+    // @abi table
+    struct rewardhistory {
+        uint64_t id;
+        account_name user;
+        uint64_t amount; // slash or reward amount
+        uint64_t proposal_id; // id of the proposal that this person voted on
+        uint32_t proposal_finalize_time; // when finalize() was called
+        uint8_t tier;
+        bool proposalresult = 0;
+        bool is_editor = 0;
+        bool rewardtype = 0; // 0 for reject/slash, 1 for reward/success
+        bool disbursed = 0; // slashes will be done immediately at finalize(). Rewards will be done at 24hr periods
+
+        auto primary_key()const { return id; }
+        account_name get_user()const { return user; }
+        uint64_t get_proposal()const { return proposal_id; }
+        uint64_t get_finalize_period()const { return (proposal_finalize_time / REWARD_INTERVAL); } // truncate to the nearest period
+    };
+
     //  ==================================================
     //  ==================================================
     //  ==================================================
@@ -275,6 +304,17 @@ private:
         indexed_by< N(byfinalper), const_mem_fun< editproposal, uint64_t, &editproposal::get_finalize_period >>
     > propstbl; // EOS table for the edit proposals
 
+
+    // rewards history table
+    // @abi table
+    typedef eosio::multi_index<N(rewardstbl), rewardhistory,
+        indexed_by< N(byuser), const_mem_fun<rewardhistory, account_name, &rewardhistory::get_user>>,
+        indexed_by< N(byfinalper), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_finalize_period >>,
+        indexed_by< N(byproposal), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_proposal >>
+    > rewardstbl;
+
+
+
 public:
     eparticlectr(account_name self) : contract(self) {}
 
@@ -295,6 +335,8 @@ public:
 
     void oldvotepurge( ipfshash_t& proposed_article_hash,
                        uint32_t loop_limit);
+
+    void procrewards( uint64_t reward_period );
 
     void propose( account_name proposer,
                   ipfshash_t& proposed_article_hash,

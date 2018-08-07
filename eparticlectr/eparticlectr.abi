@@ -58,6 +58,12 @@
         {"name":"loop_limit", "type":"uint32"},
      ]
   },{
+      "name": "procrewards",
+      "base": "",
+      "fields": [
+        {"name":"reward_period", "type":"uint64"}
+      ]
+  },{
      "name": "votebyhash",
      "base": "",
      "fields": [
@@ -114,6 +120,22 @@
         {"name":"power", "type":"uint64"}
       ]
    },{
+      "name": "rewardhistory",
+      "base": "",
+      "fields": [
+        {"name":"id", "type":"uint64"},
+        {"name":"user", "type":"account_name"},
+        {"name":"user_64t", "type":"uint64"},
+        {"name":"amount", "type":"uint64"},
+        {"name":"proposal_id", "type":"uint64"},
+        {"name":"proposal_finalize_time", "type":"time"},
+        {"name":"proposalresult", "type":"bool"},
+        {"name":"tier", "type":"uint8"},
+        {"name":"is_editor", "type":"bool"},
+        {"name":"rewardtype", "type":"bool"},
+        {"name":"disbursed", "type":"bool"}
+      ]
+  },{
       "name": "editproposal",
       "base": "",
       "fields": [
@@ -149,6 +171,10 @@
     },{
       "name": "fnlbyhash",
       "type": "fnlbyhash",
+      "ricardian_contract": ""
+    },{
+      "name": "procrewards",
+      "type": "procrewards",
       "ricardian_contract": ""
     },{
       "name": "propose",
