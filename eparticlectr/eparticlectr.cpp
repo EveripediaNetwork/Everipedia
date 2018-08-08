@@ -441,7 +441,7 @@ void eparticlectr::procrewards(uint64_t reward_period ) {
     print("Current interval is: ", currentInterval, "\n");
 
     // Make sure it is called AFTER the exiting reward period is done, so it isn't premature
-    // eosio_assert( currentInterval > reward_period, "Reward period is not over yet");
+    eosio_assert( currentInterval > reward_period, "Reward period is not over yet");
 
     // get all the rewards in that period
     rewardstbl rewardstable( _self, _self );
