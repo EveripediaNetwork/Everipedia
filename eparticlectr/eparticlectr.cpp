@@ -231,7 +231,7 @@ void eparticlectr::propose( account_name proposer, ipfshash_t& proposed_article_
     eosio_assert( brain_it != braintable.end(), "No brainpower found");
 
     // Re-check that enough brainpower is available
-    eosio_assert(brain_it->power > EDIT_PROPOSE_BRAINPOWER, "Not enough brainpower to edit, you need to stake some more IQ using everipediaiq::brainmeiq first!");
+    eosio_assert(brain_it->power >= EDIT_PROPOSE_BRAINPOWER, "Not enough brainpower to edit, you need to stake some more IQ using everipediaiq::brainmeiq first!");
 
     // Check for a duplicate proposal
     propstbl proptable( _self, _self );
@@ -262,7 +262,7 @@ void eparticlectr::fnlbyhash( ipfshash_t& proposal_hash ) {
     auto propidx = proptable.get_index<N(byhash)>();
     auto prop_it = propidx.find(eparticlectr::ipfs_to_key256(proposal_hash));
     eosio_assert( prop_it != propidx.end(), "proposal not found" );
-    print(prop_it->id);
+    // print(prop_it->id);
     eparticlectr::finalize(prop_it->id);
 }
 
@@ -281,11 +281,10 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     auto vote_it = voteidx.find(eparticlectr::ipfs_to_key256(prop_it->proposed_article_hash));
     eosio_assert( vote_it != voteidx.end(), "no votes found for proposal");
 
-    print("TALLYING VOTES\n");
     // Tally votes
     uint64_t for_votes = 0;
     uint64_t against_votes = 0;
-    while(vote_it->proposal_id == proposal_id) {
+    while(vote_it->proposal_id == proposal_id && vote_it != voteidx.end()) {
         if (vote_it->approve)
             for_votes += vote_it->amount;
         else
@@ -293,30 +292,37 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
         vote_it++;
     }
 
-    print("CHECKING SLASHING\n");
+    // print("CHECKING SLASHING\n");
     // Determine slashing conditions
     vote_it = voteidx.find(eparticlectr::ipfs_to_key256(prop_it->proposed_article_hash));
     bool approved = 0;
-    double totalVotes = for_votes + against_votes;
+    float totalVotes = for_votes + against_votes;
     if ((for_votes / (float)totalVotes) > TIER_ONE_THRESHOLD){
         approved = 1;
     }
     float slash_ratio;
     float tierRatio;
-    uint8_t tier = 1;
+    uint32_t tier = 1;
 
     if (approved) {
         slash_ratio = (for_votes - against_votes) / (float)totalVotes;
         tierRatio = for_votes / (float)totalVotes;
-        if (tierRatio >= TIER_THREE_THRESHOLD){ tier = 3; }
-        else if (tierRatio > TIER_ONE_THRESHOLD){ tier = 2; }
+        print("TIER RATIO IS: ", tierRatio, "\n");
+        if (tierRatio >= TIER_THREE_THRESHOLD){
+            tier = 3;
+        }
+        else if (tierRatio > TIER_ONE_THRESHOLD){
+            tier = 2;
+        }
     }
     else
         slash_ratio = (against_votes - for_votes) / (float)totalVotes;
 
-    print("MARKING PROPOSALS\n");
+    // print("MARKING PROPOSALS\n");
     // Mark proposal as accepted or rejected. Ties are rejected
     uint32_t finalTime = now();
+    uint64_t currentInterval = finalTime / REWARD_INTERVAL;
+    print("Current interval is: ", currentInterval, "\n");
     proptable.modify( prop_it, 0, [&]( auto& a ) {
         if (for_votes > against_votes){
             a.status =  ProposalStatus::accepted;
@@ -331,24 +337,24 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
 
     });
 
-    print("INITIALIZE REWARDS TABLE");
+    // print("INITIALIZE REWARDS TABLE");
     rewardstbl rewardstable( _self, _self );
 
-    print("SEEING VOTES\n");
-    while(vote_it->proposal_id == proposal_id) {
+    // print("SEEING VOTES\n");
+    while(vote_it->proposal_id == proposal_id && vote_it != voteidx.end()) {
         uint64_t change_amount = vote_it->amount;
         if (vote_it->approve != approved) {
             // Slash losers
-            print("SLASHING THE LOSERS\n");
+            // print("SLASHING THE LOSERS\n");
             uint64_t runningTally = vote_it->amount;
 
             // Get the stakes
-            print("GETTING THE STAKES\n");
+            // print("GETTING THE STAKES\n");
             staketbl staketable(_self, _self);
             auto stakeidx = staketable.get_index<N(byuser)>();
             auto stake_it = stakeidx.find(vote_it->voter);
 
-            while(stake_it->user == vote_it->voter) {
+            while(stake_it->user == vote_it->voter && stake_it != stakeidx.end()) {
                 if(stake_it->amount >= runningTally){
                     stakeidx.modify( stake_it, 0, [&]( auto& a ) {
                         a.completion_time += STAKING_DURATION * slash_ratio;
@@ -394,7 +400,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
         }
         else{
             // TODO: Reward the winners
-            print("REWARDING THE WINNERS\n");
+            // print("REWARDING THE WINNERS\n");
 
             // Return brainpower collateral
             brainpwrtbl braintable(_self, _self);
@@ -403,15 +409,17 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
                 b.add(change_amount);
             });
 
+            print("TIER IS: ", tier, "\n");
+
             rewardstable.emplace( _self,  [&]( auto& a ) {
                 a.id = rewardstable.available_primary_key();
                 a.user = vote_it->voter;
                 a.amount = change_amount;
                 a.proposal_id = proposal_id;
                 a.proposal_finalize_time = finalTime;
+                a.tier = (uint32_t)tier;
                 a.proposalresult = approved;
                 a.is_editor = vote_it->is_editor;
-                a.tier = tier;
                 a.rewardtype = 1;
                 a.disbursed = 0;
             });
@@ -421,7 +429,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
 
     if (approved){
         // Add article to database, or update
-        print("ADDING ARTICLE TO DATABASE\n");
+        // print("ADDING ARTICLE TO DATABASE\n");
         wikistbl wikitbl( _self, _self );
         auto wikiidx = wikitbl.get_index<N(byhash)>();
         auto wiki_it = wikiidx.find(eparticlectr::ipfs_to_key256(prop_it->old_article_hash));
@@ -480,7 +488,7 @@ void eparticlectr::procrewards(uint64_t reward_period ) {
     // Reset the rewards loop and start rewarding
     rewards_it = rewardsidx.find(reward_period);
 
-    while(rewards_it != rewardsidx.end() && rewards_it->disbursed == 0) {
+    while(rewards_it->disbursed == 0 && rewards_it != rewardsidx.end()) {
         if (rewards_it->rewardtype == 1){
             uint64_t rewardAmount = 0;
             if (rewards_it->is_editor == 1 && rewards_it->tier >= 3){
@@ -488,19 +496,19 @@ void eparticlectr::procrewards(uint64_t reward_period ) {
             }
             else{
                 rewardAmount = ((rewards_it->amount) / (double)curationRewardSum) * PERIOD_CURATION_REWARD;
-                curationRewardSum += rewards_it->amount;
             }
 
             // Issue IQ
             asset iqAssetPack = asset(rewardAmount, IQSYMBOL);
             vector<permission_level> perlvs;
-            permission_level tokenContract = permission_level{ N(epiqtokenctr), N(active) };
+            permission_level tokenContract = permission_level{ TOKEN_CONTRACT_ACCTNAME, N(active) };
             permission_level articleContract = permission_level{ ARTICLE_CONTRACT_ACCTNAME, N(active) };
             perlvs.push_back(tokenContract);
             perlvs.push_back(articleContract);
-            action(perlvs, N(epiqtokenctr), N(issue), std::make_tuple(rewards_it->user, iqAssetPack, std::string(""))).send();
+            action(perlvs, TOKEN_CONTRACT_ACCTNAME, N(issue), std::make_tuple(rewards_it->user, iqAssetPack, std::string(""))).send();
 
             // Mark the reward as disbursed
+            // TODO: may need to erase old reward notices once all disbursements occur
             rewardsidx.modify( rewards_it, 0, [&]( auto& a ) {
                 a.disbursed = 1;
             });

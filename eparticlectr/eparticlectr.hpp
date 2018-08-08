@@ -35,8 +35,10 @@ const account_name TOKEN_CONTRACT_ACCTNAME = N(everipediaiq);
 const uint64_t IQ_TO_BRAINPOWER_RATIO = 1;
 const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
 const uint64_t EDIT_PROPOSE_BRAINPOWER = 10;
-const uint32_t REWARD_INTERVAL = 1800; // 30 min
-const uint32_t DEFAULT_VOTING_TIME = 21600; // 6 hours
+// const uint32_t REWARD_INTERVAL = 1800; // 30 min
+// const uint32_t DEFAULT_VOTING_TIME = 21600; // 6 hours
+const uint32_t REWARD_INTERVAL = 60; // 1 min
+const uint32_t DEFAULT_VOTING_TIME = 30; // 30 sec
 const float ANNUAL_MINT_RATE = .025f;
 const double PERIOD_REWARD_AMOUNT = 100.000; // for testing purposes
 // const double PERIOD_REWARD_AMOUNT = 234.8993; // calculated from formula. Should be slightly less than ANNUAL_MINT_RATE * 10,000,000,000
@@ -245,7 +247,7 @@ private:
         uint64_t amount; // slash or reward amount
         uint64_t proposal_id; // id of the proposal that this person voted on
         uint32_t proposal_finalize_time; // when finalize() was called
-        uint8_t tier;
+        uint32_t tier;
         bool proposalresult = 0;
         bool is_editor = 0;
         bool rewardtype = 0; // 0 for reject/slash, 1 for reward/success

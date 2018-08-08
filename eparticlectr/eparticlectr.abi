@@ -125,12 +125,11 @@
       "fields": [
         {"name":"id", "type":"uint64"},
         {"name":"user", "type":"account_name"},
-        {"name":"user_64t", "type":"uint64"},
         {"name":"amount", "type":"uint64"},
         {"name":"proposal_id", "type":"uint64"},
         {"name":"proposal_finalize_time", "type":"time"},
+        {"name":"tier", "type":"uint32"},
         {"name":"proposalresult", "type":"bool"},
-        {"name":"tier", "type":"uint8"},
         {"name":"is_editor", "type":"bool"},
         {"name":"rewardtype", "type":"bool"},
         {"name":"disbursed", "type":"bool"}
@@ -207,6 +206,12 @@
       "index_type": "i64",
       "key_names" : ["user"],
       "key_types" : ["account_name"]
+    },{
+      "name": "rewardstbl",
+      "type": "rewardhistory",
+      "index_type": "i64",
+      "key_names" : ["id"],
+      "key_types" : ["uint64"]
     },{
       "name": "brainpwrtbl",
       "type": "brainpower",
