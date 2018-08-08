@@ -47,9 +47,7 @@ const float CURATION_REWARD_RATIO = 0.2f;
 const uint64_t IQ_PRECISION_MULTIPLIER = 1000;
 const uint64_t PERIOD_CURATION_REWARD = PERIOD_REWARD_AMOUNT * CURATION_REWARD_RATIO * IQ_PRECISION_MULTIPLIER;
 const uint64_t PERIOD_EDITOR_REWARD = PERIOD_REWARD_AMOUNT * EDITOR_REWARD_RATIO * IQ_PRECISION_MULTIPLIER;
-const float TIER_ONE_THRESHOLD = .5f;
-const float TIER_THREE_THRESHOLD = .75f;
-
+const float TIER_ONE_THRESHOLD = 0.5f;
 
 class eparticlectr : public eosio::contract {
 
@@ -86,11 +84,11 @@ public:
         ipfshash_t truncatedHash = newHash.substr(2,12);
         transform(truncatedHash.begin(), truncatedHash.end(), truncatedHash.begin(), ::tolower);
         const char* cstringedMiniHash = truncatedHash.c_str();
-        print(cstringedMiniHash, "\n");
+        // print(cstringedMiniHash, "\n");
         uint64_t hashNumber = eosio::string_to_name(cstringedMiniHash);
-        print("Before: ", hashNumber, "\n");
+        // print("Before: ", hashNumber, "\n");
         hashNumber = hashNumber % 9007199254740990; // Max safe javascript integer
-        print("After: ", hashNumber, "\n");
+        // print("After: ", hashNumber, "\n");
         return(hashNumber);
     }
 
@@ -245,9 +243,9 @@ private:
         uint64_t id;
         account_name user;
         uint64_t amount; // slash or reward amount
+        uint64_t approval_vote_sum; // sum of all "for" votes for this proposal
         uint64_t proposal_id; // id of the proposal that this person voted on
         uint32_t proposal_finalize_time; // when finalize() was called
-        uint32_t tier;
         bool proposalresult = 0;
         bool is_editor = 0;
         bool rewardtype = 0; // 0 for reject/slash, 1 for reward/success
