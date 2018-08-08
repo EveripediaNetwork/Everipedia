@@ -372,13 +372,15 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
                         a.completion_time += extraTimeInt;
                         a.amount = slashRemaining;
                     });
-                    staketable.emplace( _self,  [&]( auto& a ) {
-                        a.id = staketable.available_primary_key();
-                        a.user = vote_it->voter;
-                        a.amount = newAmount;
-                        a.timestamp = oldTimestamp;
-                        a.completion_time = oldCompletionTime;
-                    });
+                    if (newAmount > 0){
+                      staketable.emplace( _self,  [&]( auto& a ) {
+                          a.id = staketable.available_primary_key();
+                          a.user = vote_it->voter;
+                          a.amount = newAmount;
+                          a.timestamp = oldTimestamp;
+                          a.completion_time = oldCompletionTime;
+                      });
+                    }
                     break;
                 }
                 stake_it++;
@@ -495,8 +497,6 @@ void eparticlectr::procrewards(uint64_t reward_period ) {
     }
 
 }
-
-
 
 void eparticlectr::oldvotepurge( ipfshash_t& proposed_article_hash, uint32_t loop_limit ) {
     // Get the proposal object
