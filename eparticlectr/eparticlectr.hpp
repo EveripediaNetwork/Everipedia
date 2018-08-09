@@ -35,18 +35,18 @@ const account_name TOKEN_CONTRACT_ACCTNAME = N(everipediaiq);
 const uint64_t IQ_TO_BRAINPOWER_RATIO = 1;
 const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
 const uint64_t EDIT_PROPOSE_BRAINPOWER = 10;
-const uint32_t REWARD_INTERVAL = 1800; // 30 min
-const uint32_t DEFAULT_VOTING_TIME = 21600; // 6 hours
-// const uint32_t REWARD_INTERVAL = 60; // 1 min
-// const uint32_t DEFAULT_VOTING_TIME = 30; // 30 sec
+// const uint32_t REWARD_INTERVAL = 1800; // 30 min
+// const uint32_t DEFAULT_VOTING_TIME = 21600; // 6 hours
+const uint32_t REWARD_INTERVAL = 60; // 1 min
+const uint32_t DEFAULT_VOTING_TIME = 30; // 30 sec
 const float ANNUAL_MINT_RATE = .025f;
-const double PERIOD_REWARD_AMOUNT = 10.000; // for testing purposes
+const float PERIOD_REWARD_AMOUNT = 5.000; // for testing purposes
 // const double PERIOD_REWARD_AMOUNT = 234.8993; // calculated from formula. Should be slightly less than ANNUAL_MINT_RATE * 10,000,000,000
 const float EDITOR_REWARD_RATIO = 0.8f;
 const float CURATION_REWARD_RATIO = 0.2f;
 const uint64_t IQ_PRECISION_MULTIPLIER = 1000;
-const uint64_t PERIOD_CURATION_REWARD = PERIOD_REWARD_AMOUNT * CURATION_REWARD_RATIO * IQ_PRECISION_MULTIPLIER;
-const uint64_t PERIOD_EDITOR_REWARD = PERIOD_REWARD_AMOUNT * EDITOR_REWARD_RATIO * IQ_PRECISION_MULTIPLIER;
+const uint64_t PERIOD_CURATION_REWARD = uint64_t(PERIOD_REWARD_AMOUNT * CURATION_REWARD_RATIO * IQ_PRECISION_MULTIPLIER);
+const uint64_t PERIOD_EDITOR_REWARD = uint64_t(PERIOD_REWARD_AMOUNT * EDITOR_REWARD_RATIO * IQ_PRECISION_MULTIPLIER);
 const float TIER_ONE_THRESHOLD = 0.5f;
 
 class eparticlectr : public eosio::contract {
@@ -246,6 +246,7 @@ private:
         uint64_t approval_vote_sum; // sum of all "for" votes for this proposal
         uint64_t proposal_id; // id of the proposal that this person voted on
         uint32_t proposal_finalize_time; // when finalize() was called
+        uint32_t proposal_finalize_period; // truncate to the nearest period
         bool proposalresult = 0;
         bool is_editor = 0;
         bool rewardtype = 0; // 0 for reject/slash, 1 for reward/success
@@ -254,7 +255,7 @@ private:
         auto primary_key()const { return id; }
         account_name get_user()const { return user; }
         uint64_t get_proposal()const { return proposal_id; }
-        uint64_t get_finalize_period()const { return (proposal_finalize_time / REWARD_INTERVAL); } // truncate to the nearest period
+        uint64_t get_finalize_period()const { return proposal_finalize_period; }
     };
 
     //  ==================================================
@@ -333,10 +334,13 @@ public:
 
     void fnlbyhash( ipfshash_t& proposal_hash );
 
+    void oldrwdspurge( uint64_t reward_period );
+
     void oldvotepurge( ipfshash_t& proposed_article_hash,
                        uint32_t loop_limit);
 
-    void procrewards( uint64_t reward_period );
+    void procrewards( uint64_t reward_period,
+                       uint32_t loop_limit);
 
     void propose( account_name proposer,
                   ipfshash_t& proposed_article_hash,

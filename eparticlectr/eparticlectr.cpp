@@ -53,7 +53,7 @@ void eparticlectr::brainclmid( account_name claimant, uint64_t stakeid ) {
     eosio_assert( now() > stake_it->completion_time, "Staking period not over yet");
 
     // Transfer back the IQ
-    iqAssetPack = asset(stake_it->amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
+    iqAssetPack = asset(int64_t(stake_it->amount * IQ_PRECISION_MULTIPLIER), IQSYMBOL);
     eosio::action theAction = action(permission_level{ ARTICLE_CONTRACT_ACCTNAME, N(active) }, TOKEN_CONTRACT_ACCTNAME, N(transfer),
                     std::make_tuple(ARTICLE_CONTRACT_ACCTNAME, claimant, iqAssetPack, std::string("brainpower refund")));
     theAction.send();
@@ -397,6 +397,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
                 a.approval_vote_sum = for_votes;
                 a.proposal_id = proposal_id;
                 a.proposal_finalize_time = finalTime;
+                a.proposal_finalize_period = uint32_t((finalTime / REWARD_INTERVAL));
                 a.proposalresult = approved;
                 a.is_editor = vote_it->is_editor;
                 a.rewardtype = 1;
@@ -433,7 +434,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
 
 }
 
-void eparticlectr::procrewards(uint64_t reward_period ) {
+void eparticlectr::procrewards(uint64_t reward_period) {
     // This function needs to be universally callable. A cron job will be api calling this every REWARD_INTERVAL seconds.
     // require_auth(ARTICLE_CONTRACT_ACCTNAME);
 
@@ -472,14 +473,14 @@ void eparticlectr::procrewards(uint64_t reward_period ) {
         if (rewards_it->rewardtype == 1){
             uint64_t rewardAmount = 0;
 
-            rewardAmount = ((rewards_it->amount) / (double)curationRewardSum) * PERIOD_CURATION_REWARD;
+            rewardAmount = uint64_t(((rewards_it->amount) / (double)curationRewardSum) * PERIOD_CURATION_REWARD);
 
             if (rewards_it->is_editor == 1){
-                rewardAmount += ((rewards_it->approval_vote_sum) / (double)editorRewardSum) * PERIOD_EDITOR_REWARD;
+                rewardAmount += uint64_t(((rewards_it->approval_vote_sum) / (double)editorRewardSum) * PERIOD_EDITOR_REWARD);
             }
 
             // Issue IQ
-            asset iqAssetPack = asset(rewardAmount, IQSYMBOL);
+            asset iqAssetPack = asset(int64_t(rewardAmount), IQSYMBOL);
             vector<permission_level> perlvs;
             permission_level tokenContract = permission_level{ TOKEN_CONTRACT_ACCTNAME, N(active) };
             permission_level articleContract = permission_level{ ARTICLE_CONTRACT_ACCTNAME, N(active) };
@@ -494,6 +495,30 @@ void eparticlectr::procrewards(uint64_t reward_period ) {
             });
         }
         rewards_it++;
+    }
+
+}
+
+void eparticlectr::oldrwdspurge(uint64_t reward_period, uint32_t loop_limit) {
+    // This function needs to be universally callable. A cron job will be api calling this every REWARD_INTERVAL seconds.
+
+    uint64_t currentInterval = now() / REWARD_INTERVAL;
+    print("Current interval is: ", currentInterval, "\n");
+
+    // Make sure it is called AFTER the exiting reward period is done, so it isn't premature
+    eosio_assert( currentInterval > reward_period, "Reward period is not over yet");
+
+    // get all the rewards in that period
+    rewardstbl rewardstable( _self, _self );
+    auto rewardsidx = rewardstable.get_index<N(byfinalper)>();
+    auto rewards_it = rewardsidx.find(reward_period);
+    eosio_assert( rewards_it != rewardsidx.end(), "No rewards found in this period!");
+
+    // Free up RAM
+    uint32_t count = 0;
+    while(rewards_it->proposal_finalize_period == reward_period && count < loop_limit && rewards_it != rewardsidx.end()) {
+        rewards_it = rewardsidx.erase(rewards_it);
+        count++;
     }
 
 }
@@ -519,4 +544,4 @@ void eparticlectr::oldvotepurge( ipfshash_t& proposed_article_hash, uint32_t loo
     }
 }
 
-EOSIO_ABI( eparticlectr, (brainclmid)(brainmeart)(finalize)(fnlbyhash)(oldvotepurge)(procrewards)(propose)(updatewiki)(votebyhash) )
+EOSIO_ABI( eparticlectr, (brainclmid)(brainmeart)(finalize)(fnlbyhash)(oldrwdspurge)(oldvotepurge)(procrewards)(propose)(updatewiki)(votebyhash) )
