@@ -40,11 +40,7 @@ const uint64_t EDIT_PROPOSE_BRAINPOWER = 10;
 const uint32_t REWARD_INTERVAL = 60; // 1 min
 const uint32_t DEFAULT_VOTING_TIME = 30; // 30 sec
 const float ANNUAL_MINT_RATE = .025f;
-<<<<<<< HEAD
 const float PERIOD_REWARD_AMOUNT = 5.000; // for testing purposes
-=======
-const double PERIOD_REWARD_AMOUNT = 5.000; // for testing purposes
->>>>>>> 3b871cc8abe00a17d328259130083814da5b21eb
 // const double PERIOD_REWARD_AMOUNT = 234.8993; // calculated from formula. Should be slightly less than ANNUAL_MINT_RATE * 10,000,000,000
 const float EDITOR_REWARD_RATIO = 0.8f;
 const float CURATION_REWARD_RATIO = 0.2f;
@@ -338,13 +334,13 @@ public:
 
     void fnlbyhash( ipfshash_t& proposal_hash );
 
-    void oldrwdspurge( uint64_t reward_period );
+    void oldrwdspurge( uint64_t reward_period,
+                       uint32_t loop_limit );
 
     void oldvotepurge( ipfshash_t& proposed_article_hash,
                        uint32_t loop_limit);
 
-    void procrewards( uint64_t reward_period,
-                       uint32_t loop_limit);
+    void procrewards( uint64_t reward_period );
 
     void propose( account_name proposer,
                   ipfshash_t& proposed_article_hash,
