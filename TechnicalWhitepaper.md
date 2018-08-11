@@ -235,6 +235,7 @@ Ex: User has 200 Brain Power and votes “No” using all their BP for an edit p
 The 200 IQ that generated the 200 BP is locked up for an additional 10.5 days. Note: The more contentious the voting, the less the penalty is for voting in the minority. 
 
 ![](https://epcdn-vz.azureedge.net/static/images/SlashRatio.svg)
+
 ![](https://epcdn-vz.azureedge.net/static/images/SlashAmount.svg)
 
 ### Identity, Reputation, and Account Histories
