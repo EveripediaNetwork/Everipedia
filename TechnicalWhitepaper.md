@@ -203,8 +203,9 @@ SBP = Summaton of one user's Brain Power which voted on the majority side during
 
 OBP = Summation of all user's Brain Power which voted on the majority side during period P
 
-
 CMR * (SBP/OBP) = user's curation reward per period P
+
+![](https://epcdn-vz.azureedge.net/static/images/CuratorRewards.svg)
 
 ### Edit Rewards (Content Rewards) 
 EMR = Edit mint rate; number of IQ tokens minted for editor rewards per period P (initial network P = 30 minutes)
@@ -215,6 +216,8 @@ OTBP = Summation of all editor's Brain Power votes surpassing Tier 2 threshold d
 
 
 EMR * (TBP/OTBP) = user's curation reward per period P
+
+![](https://epcdn-vz.azureedge.net/static/images/EditorRewards.svg)
 
 ## Slashing Conditions
 
