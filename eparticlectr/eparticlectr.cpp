@@ -480,7 +480,7 @@ void eparticlectr::procrewards(uint64_t reward_period) {
             }
 
             // Make sure no weird bugs cause the reward amount to be larger than the period reward
-            eosio_assert( rewardAmount <= PERIOD_REWARD_AMOUNT, "Reward overflow");
+            eosio_assert( rewardAmount <= (PERIOD_REWARD_AMOUNT * IQ_PRECISION_MULTIPLIER), "Reward overflow");
 
             // Issue IQ
             asset iqAssetPack = asset(int64_t(rewardAmount), IQSYMBOL);
