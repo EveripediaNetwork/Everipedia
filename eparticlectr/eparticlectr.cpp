@@ -115,9 +115,6 @@ void eparticlectr::votebyhash ( account_name voter, ipfshash_t& proposed_article
     // Verify voting is still in progress
     eosio_assert( now() < prop_it->endtime, "Voting period is over");
 
-    // Ensure nonzero voting amount
-    eosio_assert( amount > 0, "Please enter a positive integer vote amount");
-
     // Get the brainpower
     brainpwrtbl braintable(_self, _self);
     auto brain_it = braintable.find(voter);
@@ -314,6 +311,9 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
         slash_ratio = (against_votes - for_votes) / (float)totalVotes;
     }
 
+    // Make sure no weird bugs cause the slash reward to under/overflow
+    eosio_assert( slash_ratio > 0.0f && slash_ratio <= 1.0f, "Slash ratio out of bounds");
+
     print("SLASH RATIO IS: ", slash_ratio, "\n");
 
     // print("MARKING PROPOSALS\n");
@@ -478,6 +478,9 @@ void eparticlectr::procrewards(uint64_t reward_period) {
             if (rewards_it->is_editor == 1){
                 rewardAmount += uint64_t(((rewards_it->approval_vote_sum) / (double)editorRewardSum) * PERIOD_EDITOR_REWARD);
             }
+
+            // Make sure no weird bugs cause the reward amount to be larger than the period reward
+            eosio_assert( rewardAmount <= PERIOD_REWARD_AMOUNT, "Reward overflow");
 
             // Issue IQ
             asset iqAssetPack = asset(int64_t(rewardAmount), IQSYMBOL);
