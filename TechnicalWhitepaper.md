@@ -203,8 +203,9 @@ SBP = Summaton of one user's Brain Power which voted on the majority side during
 
 OBP = Summation of all user's Brain Power which voted on the majority side during period P
 
-
 CMR * (SBP/OBP) = user's curation reward per period P
+
+![](https://epcdn-vz.azureedge.net/static/images/CuratorRewards.svg)
 
 ### Edit Rewards (Content Rewards) 
 EMR = Edit mint rate; number of IQ tokens minted for editor rewards per period P (initial network P = 30 minutes)
@@ -215,6 +216,8 @@ OTBP = Summation of all editor's Brain Power votes surpassing Tier 2 threshold d
 
 
 EMR * (TBP/OTBP) = user's curation reward per period P
+
+![](https://epcdn-vz.azureedge.net/static/images/EditorRewards.svg)
 
 ## Slashing Conditions
 
@@ -231,6 +234,9 @@ Ex: User has 200 Brain Power and votes “No” using all their BP for an edit p
 
 The 200 IQ that generated the 200 BP is locked up for an additional 10.5 days. Note: The more contentious the voting, the less the penalty is for voting in the minority. 
 
+![](https://epcdn-vz.azureedge.net/static/images/SlashRatio.svg)
+
+![](https://epcdn-vz.azureedge.net/static/images/SlashAmount.svg)
 
 ### Identity, Reputation, and Account Histories
 
