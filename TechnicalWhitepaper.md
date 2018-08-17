@@ -85,10 +85,10 @@ Tokens will be minted every 30 minutes ("IQ reward period") through the edit pro
   
 
 
-Proposed edits pass tiered thresholds and receive IQ rewards based on votes of token holders. The first tier gets no additional reward. Thresholds past the first tier earn from the daily IQ reward pool. The exact thresholds and distributions for the tiers will be determined by the community as one of the first governance actions.
+Proposed edits pass thresholds and receive IQ rewards based on votes of token holders. 
   
 
-At the end of the 30-minute IQ reward period, editors will receive IQ rewards in proportion to the value of their contributions. A single editor’s contribution is valued based on the number and tiers of edits approved (Listing 1). The IQ reward available per day is determined by the reward-period minting formula (Listing 2).
+At the end of the 30-minute IQ reward period, editors will receive IQ rewards in proportion to the value of their contributions. A single editor’s contribution is valued based on the number of edits approved (Listing 1). The IQ reward available per day is determined by the reward-period minting formula (Listing 2).
 
   
 
@@ -156,45 +156,15 @@ Example: A user has 150 IQ tokens. They can call the staking function to lock up
 
 The second feature of the article module is using BP for token holder voting of inclusion or exclusion of proposed edits in queue. The validation of articles goes through a validation algorithm (below) with parameters that can be changed through a governance vote.
 
-  
-
-Edit proposals are approved in tiers which is an output of the validator function inside the article module. The tiers are as follows:
-
-  
-
-Tier 1: Proposal not approved
-
-Tier 2: Proposal approved, no token reward given
-
-Tier 3: Proposal approved, token rewards given proportional to token holder votes
-
-  
-
-If edit proposals hit Tier 2 or Tier 3 then the article module will store the corresponding edit proposal object into the module database.
 
 ### Validation Algorithm (the content consensus method)
 
-One of the most important processes in the network is the validation of state changes to the database - that is, approval of changes to articles or creation of new ones. The validation algorithm is a function which takes in as arguments the proposed edit object of the article and the BP votes for that proposal. It returns the tier of the edit proposal and token rewards and slashing conditions (if applicable). 
+One of the most important processes in the network is the validation of state changes to the database - that is, approval of changes to articles or creation of new ones. The validation algorithm is a function which takes in as arguments the proposed edit object of the article and the BP votes for that proposal. It returns token rewards, accepted status, and slashing conditions. 
 
-  
 
-The validation period for each edit lasts a maximum of 72 hours or when a minimum staking threshold is reached. Front-ends are free to use their own criteria to display pending edits since even pending edit objects are located inside the database. For example, some front-ends could choose to display all pending edits with time-sensitive content.
 
-  
+The validation period for each edit lasts a maximum of 30 minutes. Front-ends are free to use their own criteria to display pending edits since even pending edit objects are located inside the database. For example, some front-ends could choose to display all pending edits with time-sensitive content.
 
-At the end of the validation period, an edit is classified into a tier using the following criteria. These criteria can be modified by the governance module. One vote is equivalent to one BP.
-
-  
-
-Tier 1 - Less than 50% yes votes
-
-Tier 2 - Greater than 50% of yes votes but fails to qualify for Tier 3.
-
-Tier 3 - Greater than 75% of yes votes
-
-  
-
-Every vote received by a Tier 3 edit counts towards an editor’s daily contribution value. IQ rewards for the day are dispersed based on the formulas in Listings 1 and 2 in the Token Module.
 
 ### Curation Rewards
 CMR = Curation mint rate; number of IQ tokens minted for curation rewards per period P (initial network P = 30 minutes)
@@ -210,9 +180,9 @@ CMR * (SBP/OBP) = user's curation reward per period P
 ### Edit Rewards (Content Rewards) 
 EMR = Edit mint rate; number of IQ tokens minted for editor rewards per period P (initial network P = 30 minutes)
 
-TBP = Summaton of one editor's Brain Power votes surpassing Tier 2 threshold during period P
+TBP = Summaton of one editor's Brain Power votes 
 
-OTBP = Summation of all editor's Brain Power votes surpassing Tier 2 threshold during period P
+OTBP = Summation of all editor's Brain Power votes 
 
 
 EMR * (TBP/OTBP) = user's curation reward per period P
