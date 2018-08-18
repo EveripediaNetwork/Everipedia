@@ -159,17 +159,17 @@ Travis = (25 / (10 + 25 + 50)) * 2 IQ = 0.588 IQ
 Kedar = (50 / (10 + 25 + 50)) * 2 IQ = 1.176 IQ 
 
 ### Scenario 2
-|     User     | Vote |  Reward  |
-|:------------:|:----:|:--------:|
-| Sam (Editor) |  +10 | 8.235 IQ |
-|    Travis    |  -25 | 0.588 IQ |
-|     Kedar    |  +50 | 1.176 IQ |
+|     User     | Vote |                Reward                  |
+|:------------:|:----:|:--------------------------------------:|
+| Sam (Editor) |  +10 |               8.333 IQ                 |
+|    Travis    |  -25 | 25 IQ slashed for an extra 741 seconds |
+|     Kedar    |  +50 |               1.666 IQ                 |
 
 Sam = ((10 + 50) / (10 + 50)) * 8 IQ + (10 / (10 + 50)) * 2 IQ = 8.333 IQ
 
 Travis = ((10 - 25 + 50) / (10 + 25 + 50))  * 1800 seconds = Current 25 IQ stake extended for an extra 741 seconds (slashing)
 
-Kedar = (50 / (10 + 50)) * 2 IQ = 1.6666 IQ 
+Kedar = (50 / (10 + 50)) * 2 IQ = 1.666 IQ 
 
 ## Slashing Conditions
 
