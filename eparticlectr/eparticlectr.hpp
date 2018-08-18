@@ -47,6 +47,7 @@ const float CURATION_REWARD_RATIO = 0.2f;
 const uint64_t IQ_PRECISION_MULTIPLIER = 1000;
 const uint64_t PERIOD_CURATION_REWARD = uint64_t(PERIOD_REWARD_AMOUNT * CURATION_REWARD_RATIO * IQ_PRECISION_MULTIPLIER);
 const uint64_t PERIOD_EDITOR_REWARD = uint64_t(PERIOD_REWARD_AMOUNT * EDITOR_REWARD_RATIO * IQ_PRECISION_MULTIPLIER);
+const uint64_t PERIOD_REWARD_AMOUNT_INT = uint64_t(PERIOD_REWARD_AMOUNT * IQ_PRECISION_MULTIPLIER);
 const float TIER_ONE_THRESHOLD = 0.5f;
 
 class eparticlectr : public eosio::contract {
@@ -249,7 +250,6 @@ private:
         uint32_t proposal_finalize_period; // truncate to the nearest period
         bool proposalresult = 0;
         bool is_editor = 0;
-        bool rewardtype = 0; // 0 for reject/slash, 1 for reward/success
         bool disbursed = 0; // slashes will be done immediately at finalize(). Rewards will be done at 24hr periods
 
         auto primary_key()const { return id; }

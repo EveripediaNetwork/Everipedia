@@ -312,7 +312,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     }
 
     // Make sure no weird bugs cause the slash reward to under/overflow
-    eosio_assert( slash_ratio > 0.0f && slash_ratio <= 1.0f, "Slash ratio out of bounds");
+    eosio_assert( slash_ratio >= 0.0f && slash_ratio <= 1.0f, "Slash ratio out of bounds");
 
     print("SLASH RATIO IS: ", slash_ratio, "\n");
 
@@ -324,15 +324,11 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     proptable.modify( prop_it, 0, [&]( auto& a ) {
         if (for_votes > against_votes){
             a.status =  ProposalStatus::accepted;
-            a.tier = 1;
-            a.finalized_time = finalTime;
         }
         else{
             a.status =  ProposalStatus::rejected;
-            a.tier = 1;
-            a.finalized_time = finalTime;
         }
-
+        a.finalized_time = finalTime;
     });
 
     // print("INITIALIZE REWARDS TABLE");
@@ -361,6 +357,8 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
                         a.timestamp = finalTime;
                         slashRemaining -= stake_it->amount;
                     });
+		    if (slashRemaining == 0)
+			break;
                 }
                 else{
                     // The slash amount does not fill a full stake, so the stake needs to be split
@@ -400,7 +398,6 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
                 a.proposal_finalize_period = uint32_t((finalTime / REWARD_INTERVAL));
                 a.proposalresult = approved;
                 a.is_editor = vote_it->is_editor;
-                a.rewardtype = 1;
                 a.disbursed = 0;
             });
         }
@@ -428,9 +425,6 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
             });
         }
     }
-    else{
-        // Reverts back to parent as current_hash and grandparent as parent_hash
-    }
 
 }
 
@@ -454,12 +448,10 @@ void eparticlectr::procrewards(uint64_t reward_period) {
     uint64_t curationRewardSum = 0;
     uint64_t editorRewardSum = 0;
     while(rewards_it != rewardsidx.end()) {
-        if (rewards_it->rewardtype == 1){
-            curationRewardSum += rewards_it->amount;
+        curationRewardSum += rewards_it->amount;
 
-            if (rewards_it->proposalresult == 1){
-                editorRewardSum += rewards_it->amount;
-            }
+        if (rewards_it->proposalresult == 1){
+            editorRewardSum += rewards_it->amount;
         }
         rewards_it++;
     }
@@ -470,33 +462,30 @@ void eparticlectr::procrewards(uint64_t reward_period) {
     rewards_it = rewardsidx.find(reward_period);
 
     while(rewards_it->disbursed == 0 && rewards_it != rewardsidx.end()) {
-        if (rewards_it->rewardtype == 1){
-            uint64_t rewardAmount = 0;
+        uint64_t rewardAmount = 0;
 
-            rewardAmount = uint64_t(((rewards_it->amount) / (double)curationRewardSum) * PERIOD_CURATION_REWARD);
+        rewardAmount = uint64_t(((rewards_it->amount) / (double)curationRewardSum) * PERIOD_CURATION_REWARD);
 
-            if (rewards_it->is_editor == 1){
-                rewardAmount += uint64_t(((rewards_it->approval_vote_sum) / (double)editorRewardSum) * PERIOD_EDITOR_REWARD);
-            }
-
-            // Make sure no weird bugs cause the reward amount to be larger than the period reward
-            eosio_assert( rewardAmount <= (PERIOD_REWARD_AMOUNT * IQ_PRECISION_MULTIPLIER), "Reward overflow");
-
-            // Issue IQ
-            asset iqAssetPack = asset(int64_t(rewardAmount), IQSYMBOL);
-            vector<permission_level> perlvs;
-            permission_level tokenContract = permission_level{ TOKEN_CONTRACT_ACCTNAME, N(active) };
-            permission_level articleContract = permission_level{ ARTICLE_CONTRACT_ACCTNAME, N(active) };
-            perlvs.push_back(tokenContract);
-            perlvs.push_back(articleContract);
-            action(perlvs, TOKEN_CONTRACT_ACCTNAME, N(issue), std::make_tuple(rewards_it->user, iqAssetPack, std::string(""))).send();
-
-            // Mark the reward as disbursed
-            // TODO: may need to erase old reward notices once all disbursements occur
-            rewardsidx.modify( rewards_it, 0, [&]( auto& a ) {
-                a.disbursed = 1;
-            });
+        if (rewards_it->is_editor == 1){
+            rewardAmount += uint64_t(((rewards_it->approval_vote_sum) / (double)editorRewardSum) * PERIOD_EDITOR_REWARD);
         }
+
+        eosio_assert( rewardAmount <= PERIOD_REWARD_AMOUNT_INT, "Reward overflow");
+
+        // Issue IQ
+        asset iqAssetPack = asset(int64_t(rewardAmount), IQSYMBOL);
+        vector<permission_level> perlvs;
+        permission_level tokenContract = permission_level{ TOKEN_CONTRACT_ACCTNAME, N(active) };
+        permission_level articleContract = permission_level{ ARTICLE_CONTRACT_ACCTNAME, N(active) };
+        perlvs.push_back(tokenContract);
+        perlvs.push_back(articleContract);
+        action(perlvs, TOKEN_CONTRACT_ACCTNAME, N(issue), std::make_tuple(rewards_it->user, iqAssetPack, std::string("curation reward"))).send();
+
+        // Mark the reward as disbursed
+        // TODO: may need to erase old reward notices once all disbursements occur
+        rewardsidx.modify( rewards_it, 0, [&]( auto& a ) {
+            a.disbursed = 1;
+        });
         rewards_it++;
     }
 
@@ -519,7 +508,7 @@ void eparticlectr::oldrwdspurge(uint64_t reward_period, uint32_t loop_limit) {
 
     // Free up RAM
     uint32_t count = 0;
-    while(rewards_it->proposal_finalize_period == reward_period && count < loop_limit && rewards_it != rewardsidx.end()) {
+    while(rewards_it->proposal_finalize_period == reward_period && count < loop_limit && rewards_it->disbursed == 1 && rewards_it != rewardsidx.end()) {
         rewards_it = rewardsidx.erase(rewards_it);
         count++;
     }
