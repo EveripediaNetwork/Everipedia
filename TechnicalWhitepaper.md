@@ -144,7 +144,7 @@ The validation period for each edit lasts a maximum of 30 minutes. Front-ends ar
 
 ## Examples
 Assuming period reward of 10 IQ:
-# Scenario 1
+### Scenario 1
 
 |     User     | Vote |  Reward  |
 |:------------:|:----:|:--------:|
@@ -158,7 +158,7 @@ Travis = (25 / (10 + 25 + 50)) * 2 IQ = 0.588 IQ
 
 Kedar = (50 / (10 + 25 + 50)) * 2 IQ = 1.176 IQ 
 
-# Scenario 2
+### Scenario 2
 |     User     | Vote |  Reward  |
 |:------------:|:----:|:--------:|
 | Sam (Editor) |  +10 | 8.235 IQ |
