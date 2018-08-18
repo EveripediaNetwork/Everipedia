@@ -27,7 +27,7 @@ Achieving such a goal would create a peer to peer distributed content system tha
 
 ![](https://lh5.googleusercontent.com/A4Pk1I1WWCjGLdEeRvmpSUsObgBwXSzJKG1nPQOKXgq19iV22w-kC8c-Q9afCIJYD43J_fJ3mYtfXcYVZWZGseat_HKlwq3SoaneWM2XJGS8TF7mxf-QPEHTVDhFf7bG-W9Y-CKg)
 
-<sub><sup>The three modules of the EPN and their interactions. The token module is responsible for holding token balances, minting schedule, and sending/receiving/fee functions. It can change the state of the article module. The article module is responsible for edit proposals and changing the state of the database of articles which are then sent to IPFS nodes. The governance module is responsible for proposals on changing network-wide rules. It can change the state of any module (including itself) by deploying new code that is voted through by token holders.</sub></sup>
+<sup>The three modules of the EPN and their interactions. The token module is responsible for holding token balances, minting schedule, and sending/receiving/fee functions. It can change the state of the article module. The article module is responsible for edit proposals and changing the state of the database of articles which are then sent to IPFS nodes. The governance module is responsible for proposals on changing network-wide rules. It can change the state of any module (including itself) by deploying new code that is voted through by token holders.</sup>
 
 ## On-chain Knowledge & Facts
 
