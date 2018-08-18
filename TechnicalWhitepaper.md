@@ -27,7 +27,7 @@ Achieving such a goal would create a peer to peer distributed content system tha
 
 ![](https://lh5.googleusercontent.com/A4Pk1I1WWCjGLdEeRvmpSUsObgBwXSzJKG1nPQOKXgq19iV22w-kC8c-Q9afCIJYD43J_fJ3mYtfXcYVZWZGseat_HKlwq3SoaneWM2XJGS8TF7mxf-QPEHTVDhFf7bG-W9Y-CKg)
 
-<sub><sup>The three modules of the EPN and their interactions. The token module is responsible for holding token balances, minting schedule, and sending/receiving/fee functions. It can change the state of the article module. The article module is responsible for edit proposals and changing the state of the database of articles which are then sent to IPFS nodes. The governance module is responsible for proposals on changing network-wide rules. It can change the state of any module (including itself) by deploying new code that is voted through by token holders.</sub></sup>
+*The three modules of the EPN and their interactions. The token module is responsible for holding token balances, minting schedule, and sending/receiving/fee functions. It can change the state of the article module. The article module is responsible for edit proposals and changing the state of the database of articles which are then sent to IPFS nodes. The governance module is responsible for proposals on changing network-wide rules. It can change the state of any module (including itself) by deploying new code that is voted through by token holders.*
 
 ## On-chain Knowledge & Facts
 
@@ -92,7 +92,7 @@ The annual (365-day) mint rate, A, will be 5% to match the EOS inflation rate, b
 
 ### Transaction Fees
 
-The initial network transfer fee will be 0.1%. The fee will be sent to a null address and burnt in a verifiable manner. These numbers can be changed by the governance module. These fees only exist for transfers that are not staking or governance based actions. 
+The initial network transfer fee will be 0.1%. The fee will be either 1) Be sent to a null address and burnt in a verifiable manner 2) Pay for RAM fees. These numbers can be changed by the governance module. These fees only exist for transfers that are not staking or governance based actions. 
 
 The transfer fees are designed to counteract the inflationary effects of the edit rewards. Since the transaction rate for cryptocurrencies tends to be volatile, using the transfer fees directly for edit rewards would lead to too much daily uncertainty. 
 
@@ -136,8 +136,6 @@ The validation period for each edit lasts a maximum of 30 minutes. Front-ends ar
 ### Edit Rewards (Content Rewards) 
 *PeriodReward<sub>Editor</sub>* = Edit mint rate; number of IQ tokens minted for editor rewards per period P (initial network P = 30 minutes)
 
-*Votes<sub>Editor</sub>* = Sum of one editor's Brainpower votes 
-
 *ApprovalVotes* = Sum of all Brainpower votes for an approval (including curators) in a period.
 
 *Reward<sub>Editor</sub>* = Editor's curation reward per period P
@@ -146,6 +144,7 @@ The validation period for each edit lasts a maximum of 30 minutes. Front-ends ar
 
 ## Examples
 Assuming period reward of 10 IQ:
+### Scenario 1
 
 |     User     | Vote |  Reward  |
 |:------------:|:----:|:--------:|
@@ -158,6 +157,19 @@ Sam = ((10 + 25 + 50) / (10 + 25 + 50)) * 8 IQ + (10 / (10 + 25 + 50)) * 2 IQ = 
 Travis = (25 / (10 + 25 + 50)) * 2 IQ = 0.588 IQ
 
 Kedar = (50 / (10 + 25 + 50)) * 2 IQ = 1.176 IQ 
+
+### Scenario 2
+|     User     | Vote |                Reward                  |
+|:------------:|:----:|:--------------------------------------:|
+| Sam (Editor) |  +10 |               8.333 IQ                 |
+|    Travis    |  -25 | 25 IQ slashed for an extra 741 seconds |
+|     Kedar    |  +50 |               1.666 IQ                 |
+
+Sam = ((10 + 50) / (10 + 50)) * 8 IQ + (10 / (10 + 50)) * 2 IQ = 8.333 IQ
+
+Travis = ((10 - 25 + 50) / (10 + 25 + 50))  * 1800 seconds = Current 25 IQ stake extended for an extra 741 seconds (slashing)
+
+Kedar = (50 / (10 + 50)) * 2 IQ = 1.666 IQ 
 
 ## Slashing Conditions
 
@@ -197,7 +209,7 @@ EOS.IO software is a Turing-complete distributed computing platform and smart co
 
 ![](https://lh4.googleusercontent.com/FcluTkiaZR64iMsHK6F7OxgTBvzkrlVidp08r30JaRusBPmL2RrmrXLKLhhnsAs7BEKCWL_bnliSw9hfzxVrFeHJ4eJfXhmUJe7m8I_nWrnLn9XwP9Oh1inITWjle6EtZ4WmGtcm)
 
-<sub><sup>EOS.IO schematic: Block producers of the network provide bandwidth, IPFS storage, query services, servers, and gateway interfaces. They are incentivized to do this through newly minted EOS tokens, similar to how Bitcoin miners are incentivized to provide SHA256 hashing services to the network through Bitcoin block rewards. Users (clients) then connect to services made available by block producers similar to using classical internet services. Since there are multiple block producers, there is a distributed entry point to all software on the EOS.io network unlike classical centralized web applications. img-source: EOS.IO retrieved from: steemit.com</sub></sup>
+*EOS.IO schematic: Block producers of the network provide bandwidth, IPFS storage, query services, servers, and gateway interfaces. They are incentivized to do this through newly minted EOS tokens, similar to how Bitcoin miners are incentivized to provide SHA256 hashing services to the network through Bitcoin block rewards. Users (clients) then connect to services made available by block producers similar to using classical internet services. Since there are multiple block producers, there is a distributed entry point to all software on the EOS.io network unlike classical centralized web applications. img-source: EOS.IO retrieved from: steemit.com*
 
   
 
@@ -209,7 +221,7 @@ Under the EOS.IO implementation, an Everipedia “reader” is any individual wi
 
 ![](https://lh5.googleusercontent.com/6nvFTiowOqFN_sYKjGapx3N1Y8KwBpc8yA-zSNFqLQ93daNNRB3T8S9MJYW3vrg1z2KEhXBKfuE94nQ4Mm5dTqp0e7nfKp6JdEDynR1OHUjMg76wmJhIM7ReYsWjRpMY27bJoX9M)![](https://lh4.googleusercontent.com/y4sYc45325qLjq_-0FXuxDQ8vneXgyg-uGoJFiL4_7N-3hBtwN-BDGDcC-yeMKcjOMDCxsnTTbASoKBYIObgWgk3ztgnWa-6VGgv0Ah5R4tXBoqj63cSHb4ruN-Qj-cI4ZdCjiyT)
 
-<sub><sup>Current internet content businesses are based on the model on the left. A company is formed which creates a service or platform using rented or bought centralized server hardware. Users produce content and/or use the service. The business owners extract value from users, content-producers, and value creators through advertising, subscriptions, and as many means as possible to pay for server and business costs. The profits are then accrued for investors and stockholders. A distributed autonomous platform (right) uses token value stores to align the incentives of all participants (content creators, curators, bandwidth). There are no central stockholders, profit-takers, or rent-seeking behavior since all participants hold the same type of value store in the network. All participants also directly work toward making each part of the service useful to each class of participant. Img-sources (partially altered): EOS.io presentation. retrieved from: youtube.com</sub></sup>
+*Current internet content businesses are based on the model on the left. A company is formed which creates a service or platform using rented or bought centralized server hardware. Users produce content and/or use the service. The business owners extract value from users, content-producers, and value creators through advertising, subscriptions, and as many means as possible to pay for server and business costs. The profits are then accrued for investors and stockholders. A distributed autonomous platform (right) uses token value stores to align the incentives of all participants (content creators, curators, bandwidth). There are no central stockholders, profit-takers, or rent-seeking behavior since all participants hold the same type of value store in the network. All participants also directly work toward making each part of the service useful to each class of participant. Img-sources (partially altered): EOS.io presentation. retrieved from: youtube.com*
 
 ## Database Schema
 
@@ -259,7 +271,7 @@ While the above structure has many advantages, it has several issues that should
 
 ![](https://lh5.googleusercontent.com/ctHqyAUfu1e8Jw4w9K6TOMc_f5puYBOgIgDyXywAUM4MYILLYsF21A0BwK81vOtaOtmuAt-xshKyJb9BLV9FlLkiHhByxpsFXfjy9H4FVIBHrr5tD0-O1WXt1w2TNzAnnNXhLtQr)
 
-<sub><sup>Visual schematic of the above database schema showing 4 distinct articles: “University of California, Los Angeles,” “Travis Moore,” “Qajar Dynasty,” and “Barack Obama.” Each article is hashed. The first edit of an article (article creation) points to a null parent hash. Subsequent edits create new content and hence a new hash and point to the article’s immediate previous state. This forms a tree which makes the article history.</sub></sup>
+*Visual schematic of the above database schema showing 4 distinct articles: “University of California, Los Angeles,” “Travis Moore,” “Qajar Dynasty,” and “Barack Obama.” Each article is hashed. The first edit of an article (article creation) points to a null parent hash. Subsequent edits create new content and hence a new hash and point to the article’s immediate previous state. This forms a tree which makes the article history.*
 
 ## Article Data Structure
 
@@ -269,7 +281,7 @@ Finally, within the HTML file, there will be one designated JSON-LD class for li
 
 ![](https://lh5.googleusercontent.com/HmJzd-dR4LSokav_cy1LgEuCXCm_OVa57f2ObfuiZUo4RXJ3pGLD6Cjmp01-kjmfVb2ZN-kfmO7WgiOEejY7XqXySGTRk3vyECzK32W1zMOifj9n9Px0Ko-1DEOfU6wCi_YK7F_S)
 
-<sub><sup>Each article is an HTML file that can be served from IPFS nodes or EOS.IO storage across many jurisdictions and participants. CSS and styling is applied on the front end UX layer and can be customized by website owners that serve the content and compete with other front end services. The article content, metadata, and class objects are edited by network participants and require token holder consensus.</sub></sup>
+*Each article is an HTML file that can be served from IPFS nodes or EOS.IO storage across many jurisdictions and participants. CSS and styling is applied on the front end UX layer and can be customized by website owners that serve the content and compete with other front end services. The article content, metadata, and class objects are edited by network participants and require token holder consensus.*
 
 ## Blockchain Agnosticism
 
