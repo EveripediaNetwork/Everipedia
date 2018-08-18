@@ -4,9 +4,8 @@ Sam Kazemian, Kedar Iyer, Travis Moore, Theodor Forselius, Larry Sanger
 
 [sam@everipedia.com](mailto:sam@everipedia.com)  [kedar@everipedia.com](mailto:kedar@everipedia.com)  [travis@everipedia.com](mailto:travis@everipedia.com)  [theodor@everipedia.com](mailto:theodor@everipedia.com)  [larry@everipedia.com](mailto:larry@everipedia.com)
 
-  
-
-DISCLAIMER: This Everipedia Network Technical White Paper version 1.21 (June 21 2018) is a work in progress and for informational purposes only. It is meant to serve as a proposal of ideas for free, open-source software.
+ 
+DISCLAIMER: This Everipedia Network Technical White Paper version 1.22 (August 17 2018) is a work in progress and for informational purposes only. It is meant to serve as a proposal of ideas for free, open-source software.
 
 ## Abstract
 
@@ -24,12 +23,7 @@ Network effects have had a heavy centralization effect on the knowledge industry
 
 Additionally, one clear shortcoming Wikipedia has demonstrated is its inability to capture any of the monetary and intrinsic value of content that its platform and community has created, as evidenced by bi-annual donation banner campaigns.[3][4] In this regard, there is room to dramatically upend the status quo by creating an open, distributed knowledge base with technology that properly tracks the value creation of the community and returns this value back to the creators, curators, and developers of the platform. Additionally, a distributed platform which draws consensus, contributions, incentives, and value from the participants of the network also has a unique opportunity for the participants to take part in the actual hosting, storage, and distribution of the content on such a network.
 
-  
-
 Achieving such a goal would create a peer to peer distributed content system that is properly incentivized and coordinated. Such a system would be immune to single points of failure which makes it nearly impossible to censor or block access by various bad actors.
-
-  
-  
 
 ![](https://lh5.googleusercontent.com/A4Pk1I1WWCjGLdEeRvmpSUsObgBwXSzJKG1nPQOKXgq19iV22w-kC8c-Q9afCIJYD43J_fJ3mYtfXcYVZWZGseat_HKlwq3SoaneWM2XJGS8TF7mxf-QPEHTVDhFf7bG-W9Y-CKg)
 
@@ -39,27 +33,17 @@ Achieving such a goal would create a peer to peer distributed content system tha
 
 Current smart contracts are fairly simplistic and do not have the capability to replicate more nuanced financial arrangements in the real world. Additionally, the “oracle problem” is still unresolved. There is no standard, trustless, and sybil resistant method for agreeing on real-world knowledge so that financial transactions can reference them. One of the direct uses of the Everipedia Network should be to create the world’s first repository of on-chain knowledge so that financial transactions and decentralized applications can reference them without having to re-invent their own oracle systems. In this sense, the IQ token’s intrinsic value is the stake it provides in the largest distributed repository of facts used by a growing industry. 
 
-
 ## Governance Module
 
 The governance module is an object which has scope to make changes to every module, including itself. Governance actions can modify the software for any of the three modules, but not the databases containing token balances and articles.
 
-  
-
 The governance module allows for submitting changes to the community of token holders for approval. If approved, the governance module then deploys those changes to the corresponding module(s). This allows for the community to come to social consensus on the rules that govern the network as a whole. Discussion about this consensus can take place off-chain on social media and other communication hubs, but deployment of new code needs to be done on-chain in a trustless manner.
-
-  
 
 The EPN will be a system of smart contracts on the EOS platform, so users will not be running full nodes of the Everipedia Network. This means users cannot vote on software updates by updating their client software as they do in Bitcoin or Ethereum. Instead, a trustless on-chain consensus process must be designed for deployment of new updates.
 
-  
-
 Without an internal consensus process, the only viable alternative for updating the module software would be for a trusted party (such as core developers or a foundation) to process off-chain consensus and deploy new updates with their elevated permissions. This is undesirable given the spirit of the industry and the clear trustless alternative that is possible.
 
-  
-
 Research and development, solutions to scaling, and improvements to the codebase are just as critical (if not more critical) as any service and feature built on top of the network. For this reason, we have laid the foundation for proposing edits and additions to the source code of the network through the governance module. This mechanism will be used for meta-governance of the network protocol itself in a fully trustless, on-chain process.
-
 
 ### Funding the Network and Self-Sustainability
 
@@ -71,22 +55,13 @@ The token module is responsible for making changes to the token balances of addr
 
 ### Initial Supply & Minting Schedule  
   
-
 Tokens will be minted every 30 minutes ("IQ reward period") through the edit process and edit curation process. There will be a fixed amount of tokens minted each day. The amount will be reset every day at 00:00 UTC.
-
-  
-
 
 Proposed edits pass thresholds and receive IQ rewards based on votes of token holders. 
   
-
 At the end of the 30-minute IQ reward period, editors will receive IQ rewards in proportion to the value of their contributions. A single editor’s contribution is valued based on the number of edits approved (Listing 1). The IQ reward available per day is determined by the reward-period minting formula (Listing 2).
 
-  
-
 Listing 1: IQ reward formula for a single editor
-
-  
 
 R = Editor’s IQ reward
 
@@ -98,15 +73,9 @@ Q = Mint-rate constant (available IQ reward) for IQ reward period
 
 R = Q * E / T
 
-  
-
 Q, the available IQ reward for the reward period, is determined by Listing 2:
 
-  
-
 Listing 2: Reward-period IQ minting formula
-
-  
 
 S0 = Token Supply at Genesis
 
@@ -117,8 +86,6 @@ A = Annual (365-day) mint rate
 F = ((1 + A) ^ (1 / 365) - 1) / 48
 
 Q = F * S0
-
-  
 
 The annual (365-day) mint rate, A, will be 5% to match the EOS inflation rate, but the number can be changed by a governance action. Additionally, the minted tokens can be partially re-allocated by a governance action for a developer fund, bounties, or any other use.
 
@@ -148,12 +115,9 @@ Example: A user has 150 IQ tokens. They can call the staking function to lock up
 
 The second feature of the article module is using BP for token holder voting of inclusion or exclusion of proposed edits in queue. The validation of articles goes through a validation algorithm (below) with parameters that can be changed through a governance vote.
 
-
 ### Validation Algorithm (the content consensus method)
 
 One of the most important processes in the network is the validation of state changes to the database - that is, approval of changes to articles or creation of new ones. The validation algorithm is a function which takes in as arguments the proposed edit object of the article and the BP votes for that proposal. It returns token rewards, accepted status, and slashing conditions. 
-
-
 
 The validation period for each edit lasts a maximum of 30 minutes. Front-ends are free to use their own criteria to display pending edits since even pending edit objects are located inside the database. For example, some front-ends could choose to display all pending edits with time-sensitive content.
 
@@ -186,7 +150,6 @@ Editing articles can be a fairly contentious activity. However, there must be sy
 
 Slashing increases the staking lock-up period inversely proportional to the minority voting ratio. If a user’s account is slashed, their lock-up period for withdrawing their IQ tokens increases by some amount. This solves two issues: 1. Repeatedly voting on the minority side effectively burns IQ tokens since the lock-up period consistently increases so that repeated attacks on the network de facto remove the attacker’s IQ tokens from circulation (since they will not be able to withdraw and re-stake their tokens for a very long duration). 2. Participation in genuine contentious discussions (“edit wars”) is not discouraged since losing sides do not get their tokens burned permanently. Additionally, the more contentious an edit is, the less penalty there is for voting on the minority side (since the minority is almost as large as the majority).  
 
-
 Voters in the majority are given a proportional amount of the IQ inflationary token reward allotted for content. Voters that vote in the minority have their token lock-up period increased for an extended amount of time, inversely-proportional to the minority stake. The slashing ratio can be modeled with the following: 
 
 (Total Majority BP Votes - Total Minority BP Votes) / (Total BP Votes) = Slashing Ratio
@@ -207,8 +170,6 @@ It is possible to leverage upcoming on-chain identification and reputation syste
 
 Users who do not wish to personally vote using their BP can delegate their BP to another entity or “pool” for consensus voting. Pools will be operated by the community and vote on behalf of their users according to transparent principles published in a constitution, wiki, or similar document. This could form a secondary market for the price of BP if there is sufficient demand similar to how secondary markets are likely to form over EOS.IO bandwidth, RAM, and storage. Additionally, this could allow for passive earning of IQ tokens if delegates pass back some amount of the IQ earned by curating content to the original delegator. 
 
-
-
 Building a delegate layer on top of the base voting protocol would allow a market to form over article narratives as “thought leaders” pledge curation ideals they would follow should they be delegated votes. For example, an anti-censorship staking pool could state that they will vote in favor of any edit that adequately cites its sources regardless of the specifics of the content. Users who believe in this vision for the encyclopedia network could delegate their votes to the staking pool.
 
 ### Staking by Article or Topic
@@ -227,11 +188,7 @@ EOS.IO software is a Turing-complete distributed computing platform and smart co
 
 This allows for feeless transactions since accounts are only rate-limited based on their EOS token balance. The more EOS tokens an account holds, the more of their transactions an account can expect to be included in the ledger. This gasless protocol (compared to Ethereum) allows for the building of rich decentralized consumer applications.
 
-  
-
 Everipedia Network articles (as well as their histories) will be stored using IPFS protocol nodes by community members and front end service providers. In order to block access to Everipedia Network content, actors would have to prevent any TCP/IP interaction and packet exchange between end users and the EOS mainnet entirely as even a single IPFS peer can provide access to Everipedia content. This task, while theoretically feasible, is substantially more difficult than blocking a single domain and is more akin to attempting to shut down torrent networks by going after all individual torrent seeders - a task that has consistently proven impossible for many well-funded organizations and state actors. Additionally, it is possible for community members to host any set of articles from their own private IPFS daemon which listens for edits of articles by connecting to the EOS network. This means that anyone who wishes to host articles (or some subset of articles) can do so from any location or server by running their own IPFS node and light EOS client.
-
-  
 
 Under the EOS.IO implementation, an Everipedia “reader” is any individual with an internet connection that can access the EOS main network and query an IPFS protocol for an article hash as recorded in the EPN article module smart contract. Reading and requesting Everipedia content is planned to be free to all end users and does not require any IQ token balance. Conversely, an Everipedia “user” is any individual who possesses a functional wallet (an EOS.IO account) with a valid balance of IQ tokens to propose edits. Users will sign all their transactions with the associated private key to demonstrate ownership of a valid balance. Using the EOS.IO account system allows for various web standards and benefits that are not currently available on other blockchains such as account recovery and human readable usernames. This would essentially create a seamless user experience similar to using a web application with classical user and account authentication. Additionally, it is possible to leverage upcoming EOS.IO identification and reputation systems to incorporate into the validation algorithm and edit approval process such that previous edit histories and identities of editors can be measured in the consensus process.
 
@@ -243,11 +200,7 @@ Under the EOS.IO implementation, an Everipedia “reader” is any individual wi
 
 Collective collaboration requires agreed norms and standards, especially norms in handling the data that is stored, updated, and consumed. Bitcoin’s unspent transaction output (UTXO) database model is only effective because all network participants agree to keep account values stored in such a structure. Otherwise, the same security guarantees would not be possible.
 
-  
-
 The “database schema” refers the structure of on-chain storage in the EOS.IO blockchain inside of the article module (the associated smart contract). The database for the Everipedia Network will be a 2 column element that pertains to the current hash of the article state. The second element is the immediate preceding hash of the previous state of the article which functions as a pointer. This allows for a tree-like structure of the history of IPFS hashes of the article and allows quick querying of the Everipedia Network database to find the current state of an article in relation to some historical snapshot (as well as any forks or merges). This is similar to a git protocol tree of all previous commits to a codebase except the work done to be committed is an encyclopedia article or edit. This schema has two technical guarantees that make it ideal for distributed ledger storage: 1. Querying for a complete state tree of an article (therefore showing all previous historical edits). 2. Easy branching and merging of articles while keeping a unified history of previous states.
-
-  
 
 An example database of 10 rows is shown below:  
 {  
@@ -283,19 +236,11 @@ QmSRvE5W6WV4KGRwhttumnamJgGGyiaAGYLEaubRgRreP2]
 QmcHn96sJBZY4QaGeDh6vVBDznygqbVCgh7bwHbskxcoaY ]  
 }
 
-  
-
 The first element in each tuple marks some current state, while the second element refers to the previous article state. If the second element is null, this means that the article state has no previous state (meaning the article was just created). In the example above, rows 1, 3, 4, and 7 depict the creation of a new article with no previous state. Row 2 simply shows the article in line one being edited. Row 9 shows the article state in row 2 being edited (now with 3 total edits in its history)
-
-  
 
 Line 5 and 8 demonstrate an article of the same state forking into two different states (perhaps edited by two different communities or telling different narratives of the same topic). Both line 5 and 8 share the previous state of an article created on row 4. Row 6 shows the article in 5 being edited further but the forked off article in row 8 clearly ignores the change because row 9 depicts an edit made to the forked article. Row 10 shows the original forked article in row 8 being merged back into the article that it forked from. The two forked articles are now merged into one again (perhaps due to an edit proposal and community agreement).
 
-  
-
 While the above structure has many advantages, it has several issues that should be directly addressed. For example, concurrent edit proposals can potentially cause issues. If one individual proposes an edit to an article and submits an edit object, then before that object is finalized through consensus, another edit object referencing the same parent hash essentially creates an unintended fork of the article. A potential way to resolve this issue would be to only allow one pending edit proposal referencing the same parent hash at a time in the queue of pending edits.
-
-  
 
 ![](https://lh5.googleusercontent.com/ctHqyAUfu1e8Jw4w9K6TOMc_f5puYBOgIgDyXywAUM4MYILLYsF21A0BwK81vOtaOtmuAt-xshKyJb9BLV9FlLkiHhByxpsFXfjy9H4FVIBHrr5tD0-O1WXt1w2TNzAnnNXhLtQr)
 
@@ -305,11 +250,7 @@ While the above structure has many advantages, it has several issues that should
 
 Articles will be stored as HTML files. This is because using the HTML document object model allows for high compatibility of possible front end combinations for the data which is retrieved from the network. By using HTML, any developer can create a front end to display articles in customized manners, submit edits, and analyze data inside the document. Designated HTML class attributes will be used to mark specific portions of articles so that all front end software can easily detect standard sections of an article. Such classes could include “infobox,” “citation,” or “title.” A data structure standard should be decided on by community members and early adopters of the technology which should include linking schemes and hyperlink rules (such as whether only internal links to the database can be embedded in articles etc). Although the standards can, in theory, be changed with a governance vote, practical application of such a data-structure change is highly cumbersome as some changes are not backwards compatible and would need to be retroactively applied to all older articles within the network.
 
-  
-
 Finally, within the HTML file, there will be one designated JSON-LD class for linked data to the object topic of the article. This allows easy retrievability of key-value descriptors from any article using API endpoints and allows bots to add information easily to the JSON-LD class. JSON-LD is used to build rich graph relationships between objects and is currently used in web pages to describe semantic relationships between the webpage’s topic and content. Having a robust data class for building rich graph relationships between topics within the article helps create a meta-network layer which can be queried for rich data by machines, services, and artificial intelligence training.
-
-  
 
 ![](https://lh5.googleusercontent.com/HmJzd-dR4LSokav_cy1LgEuCXCm_OVa57f2ObfuiZUo4RXJ3pGLD6Cjmp01-kjmfVb2ZN-kfmO7WgiOEejY7XqXySGTRk3vyECzK32W1zMOifj9n9Px0Ko-1DEOfU6wCi_YK7F_S)
 
@@ -318,8 +259,6 @@ Finally, within the HTML file, there will be one designated JSON-LD class for li
 ## Blockchain Agnosticism
 
 This whitepaper discusses the implementation of the Everipedia Network using EOS.IO software. It is entirely possible for the three modules discussed above to be built and implemented using different distributed ledger technology while preserving the fundamental substance and utility proposed. Additionally, it is entirely possible to build the three modules using different distributed ledger technology which interact through cross-blockchain transfers of value and data. One example of such an implementation would be building an entire blockchain in a proof of stake system using the Ethereum Plasma Framework. IQ would act as the staking token for production and proposition of blocks.[5][6] Another example of cross-chain implementation could be building the governance module using the upcoming Tezos network since Tezos software is bundled with sophisticated self-governance features to be used for its own network rule-making. Additionally, the storage of article blobs through IPFS nodes can be incentivized using different implementations, such as Filecoin, in addition to EOS.IO Storage (like discussed above).
-
-  
 
 Wikipedia started with 1990s server hardware and architecture but upgraded to caching infrastructure and state of the art data centers. The Everipedia Network is a long term self-sustainable project that has the goal of creating the first global decentralized knowledge base. Given that goal, the network should specifically use technology that has long term potential and developers should keep open minds towards future scaling solutions. This allows network developers and maintainers to make bets on what will be valuable blockchain technology today and in the foreseeable future, but allows building an expandable and platform agnostic network which can use multiple breakthrough technologies to function efficiently.
 
@@ -333,42 +272,27 @@ Additionally, in future updates, it would be possible to use zero knowledge succ
 
 The Everipedia network uses IQ tokens, which track the stakes of users and act as incentive rewards for content creators and curators. The network uses a three module system (token, governance, and article) to create a self-sustaining database of encyclopedia articles. The structure of content is uniform and standardized so that it is easily analyzed, consumable, and improved upon by services, front-end websites, AI, and bots. The database schema allows all the technical guarantees of prior wiki software (such as historical snapshot of all article states) as well as new functions not possible before (such as distributed, real-time hosting and scalable forking & merging of articles)
 
-  
-
 Innovation in the encyclopedia industry has stagnated in the past 10 years. Creating a synchronized, collaborative encyclopedia database accessible by all applications on the internet will generate the network effects required to re-ignite growth and innovation in the documenting of knowledge.
 
 ## References
 
 [1] Page Views for Wikipedia, Both sites, Normalized. (2005). Retrieved Oct. & nov., 2017, from [https://stats.wikimedia.org/EN/TablesPageViewsMonthlyCombined.htm](https://stats.wikimedia.org/EN/TablesPageViewsMonthlyCombined.htm)
 
-  
-
 [2] Matei, S. A., & Britt, B. C. (2017). Analytic Investigation of a Structural Differentiation Model for Social Media Production Groups. Lecture Notes in Social Networks Structural Differentiation in Social Media, 69-84. doi:10.1007/978-3-319-64425-7_5
-
-  
 
 [3] Denning, P., Horning, J., Parnas, D., & Weinstein, L. (2005). Wikipedia risks. Communications of the ACM, 48(12), 152. doi:10.1145/1101779.1101804
 
-  
-
 [4] Blockchain Investing - Olaf Carlson-Wee and Aaron Harris (25:01). (2017, July 19). Retrieved August 10, 2017, from [https://www.youtube.com/watch?v=9SYVX2wcMVM&feature=youtu.be&t=25m1s](https://www.youtube.com/watch?v=9SYVX2wcMVM&feature=youtu.be&t=25m1s)
-
-  
 
 [5] Buterin, V., & Poon, J. (2017, August 11). Plasma: Scalable Autonomous Smart Contracts. Retrieved August 12, 2017, from [http://plasma.io/plasma.pdf](http://plasma.io/plasma.pdf)
 
-  
-
 [6] Poon, J. (2017, June 17). OmiseGO: Decentralized Exchange and Payments Platform. Retrieved July 3, 2017, from [https://cdn.omise.co/omg/whitepaper.pdf](https://cdn.omise.co/omg/whitepaper.pdf)
 
-  
 
 [7] Larimer, D., (Bytemaster), & Lavin, J., (hkshwa). (2017, June 3). EOS.IO Technical White Paper. Retrieved June 11, 2017, from [https://github.com/EOSIO/Documentation/wiki/Whitepaper-Test](https://github.com/EOSIO/Documentation/wiki/Whitepaper-Test)
 
-  
 
 [8] Buterin, V. (2017, November 9). STARKs, Part I: Proofs with Polynomials. Retrieved November 10, 2017, from [http://vitalik.ca/general/2017/11/09/starks_part_1.html](http://vitalik.ca/general/2017/11/09/starks_part_1.html)
 
-  
 
 [9] Larimer D., Scott N., Zavgorodnev V., Johnson B., Calfee J., Vandeberg M. Steem: An incentivized, blockchain-based social media platform. March 2016. Retrieved January 7th, 2018 from [https://github.com/steemit/whitepaper/commit/da16f36bf23bc53d30b57787d7b9044d9c07399c](https://github.com/steemit/whitepaper/commit/da16f36bf23bc53d30b57787d7b9044d9c07399c).
