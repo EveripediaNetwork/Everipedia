@@ -136,8 +136,6 @@ The validation period for each edit lasts a maximum of 30 minutes. Front-ends ar
 ### Edit Rewards (Content Rewards) 
 *PeriodReward<sub>Editor</sub>* = Edit mint rate; number of IQ tokens minted for editor rewards per period P (initial network P = 30 minutes)
 
-*Votes<sub>Editor</sub>* = Sum of one editor's Brainpower votes 
-
 *ApprovalVotes* = Sum of all Brainpower votes for an approval (including curators) in a period.
 
 *Reward<sub>Editor</sub>* = Editor's curation reward per period P
@@ -146,6 +144,7 @@ The validation period for each edit lasts a maximum of 30 minutes. Front-ends ar
 
 ## Examples
 Assuming period reward of 10 IQ:
+# Scenario 1
 
 |     User     | Vote |  Reward  |
 |:------------:|:----:|:--------:|
@@ -158,6 +157,19 @@ Sam = ((10 + 25 + 50) / (10 + 25 + 50)) * 8 IQ + (10 / (10 + 25 + 50)) * 2 IQ = 
 Travis = (25 / (10 + 25 + 50)) * 2 IQ = 0.588 IQ
 
 Kedar = (50 / (10 + 25 + 50)) * 2 IQ = 1.176 IQ 
+
+# Scenario 2
+|     User     | Vote |  Reward  |
+|:------------:|:----:|:--------:|
+| Sam (Editor) |  +10 | 8.235 IQ |
+|    Travis    |  -25 | 0.588 IQ |
+|     Kedar    |  +50 | 1.176 IQ |
+
+Sam = ((10 + 50) / (10 + 50)) * 8 IQ + (10 / (10 + 50)) * 2 IQ = 8.333 IQ
+
+Travis = ((10 - 25 + 50) / (10 + 25 + 50))  * 1800 seconds = Current 25 IQ stake extended for an extra 741 seconds (slashing)
+
+Kedar = (50 / (10 + 50)) * 2 IQ = 1.6666 IQ 
 
 ## Slashing Conditions
 
