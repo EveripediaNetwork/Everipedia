@@ -142,7 +142,7 @@ The validation period for each edit lasts a maximum of 30 minutes. Front-ends ar
 
 *Reward<sub>Editor</sub>* = Editor's curation reward per period P
 
-![](https://epcdn-vz.azureedge.net/static/images/EditorRewards.svg)
+![](https://epcdn-vz.azureedge.net/static/images/EditorRewards.svg#1)
 
 ## Examples
 Assuming period reward of 10 IQ:
