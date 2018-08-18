@@ -167,13 +167,13 @@ The validation period for each edit lasts a maximum of 30 minutes. Front-ends ar
 
 
 ### Curation Rewards
-CMR = Curation mint rate; number of IQ tokens minted for curation rewards per period P (initial network P = 30 minutes)
+PeriodReward<sub>Curation</sub> = Curation mint rate; number of IQ tokens minted for curation rewards per period P (initial network P = 30 minutes)
 
-SBP = Summaton of one user's Brain Power which voted on the majority side during period P
+Votes<sub>Curator</sub> = Sum of one user's Brain Power who voted on the majority side during period P
 
-OBP = Summation of all user's Brain Power which voted on the majority side during period P
+Votes<sub>Majority</sub> = Sum of all user's Brain Power who voted on the majority side during period P
 
-CMR * (SBP/OBP) = user's curation reward per period P
+Reward<sub>Curator</sub> = user's curation reward per period P
 
 ![](https://epcdn-vz.azureedge.net/static/images/CuratorRewards.svg)
 
