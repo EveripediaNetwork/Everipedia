@@ -154,7 +154,9 @@ Assuming period reward of 10 IQ:
 |     Kedar    |  +50 | 1.176 IQ |
 
 Sam = ((10 + 25 + 50) / (10 + 25 + 50)) * 8 IQ + (10 / (10 + 25 + 50)) * 2 IQ = 8.235 IQ
+
 Travis = (25 / (10 + 25 + 50)) * 2 IQ = 0.588 IQ
+
 Kedar = (50 / (10 + 25 + 50)) * 2 IQ = 1.176 IQ 
 
 ## Slashing Conditions
