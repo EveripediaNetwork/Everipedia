@@ -12,23 +12,15 @@ DISCLAIMER: This Everipedia Network Technical White Paper version 1.21 (June 21 
 
 Emerging blockchain technology has made it possible to create an incentivized peer-to-peer network for submitting, curating, and governing a database of encyclopedia articles. Participants in the network earn tokens for curating and submitting content to the database, then use these tokens to vote on protocol upgrades and further submissions or modifications to the database of articles. Websites, businesses, or individuals can build their own user interface to interact with the network or a subset of the network. This allows websites and applications to access and collaborate on a synchronized database of human knowledge, a “greater wiki,” that is constantly updated by all participants and applications on the network.
 
-  
-
 We propose a three module system consisting of a token module, a governance module, and an article submission module. These components interact to create a sustainable, decentralized, immutable, incentivized network of editors that create quality, well-cited encyclopedia articles. The usefulness of having credible information included in this highly ordered, historically recorded, and community maintained distributed database becomes valuable. This usefulness and a stake in the overall network provides the token its utility and value.
 
 ## Introduction: The Everipedia Network
 
 The Everipedia Network (EPN) is a decentralized encyclopedia database fully governed by token holders. Token holders can approve edits, create network-wide rules that govern the encyclopedia, as well as buy and sell services for tokens on the network. This also means that tokens play a central role in the consensus protocol of finalizing data entry into the network.
 
-  
-
 The Everipedia Network turns the non-profit knowledge industry into a knowledge economy where economic incentives can guide the creation of knowledge content. With the EPN one can connect directly to the world’s largest wiki database from any site. We imagine a future in which even non-programmers can create sites that utilize the Everipedia Network through something as simple as a Wordpress template.
 
-  
-
 Network effects have had a heavy centralization effect on the knowledge industry preventing serious competition and market forces from springing up. Wikipedia is one of the largest websites in the world boasting over 19 billion pageviews a month across all languages.[1][2] However, Wikipedia unintentionally traps the knowledge capital it generates within its own platform when its content could be used to create a thriving knowledge economy.
-
-  
 
 Additionally, one clear shortcoming Wikipedia has demonstrated is its inability to capture any of the monetary and intrinsic value of content that its platform and community has created, as evidenced by bi-annual donation banner campaigns.[3][4] In this regard, there is room to dramatically upend the status quo by creating an open, distributed knowledge base with technology that properly tracks the value creation of the community and returns this value back to the creators, curators, and developers of the platform. Additionally, a distributed platform which draws consensus, contributions, incentives, and value from the participants of the network also has a unique opportunity for the participants to take part in the actual hosting, storage, and distribution of the content on such a network.
 
@@ -149,9 +141,9 @@ The article module is used to propose edits to be included in the database. Prop
 
 ## Staking IQ Tokens
 
-Staking IQ tokens is required to propose edits, vote on edits, and propose/vote on network governance actions. IQ is staked by locking up tokens in a 21-day vesting period. This is similar to other blockchains such as Steem which requires users to “power up” (essentially lock and vest) their tokens in order to vote/stake them on content published on the platform.[9] The process of staking IQ is also called powering up (as a token of appreciation to Steem’s pioneering design). IQ that is locked up for 21 days gives the holder “brain power” (BP) at a 1:1 ratio. Brain power is not a fungible or transferable token and only spent during usage of the EPN by the staking account. Once an account’s BP is entirely spent, they must wait for the IQ staking period of 21 days to end before re-staking their tokens for BP to use the EPN. Otherwise, they can acquire more IQ tokens and stake the newly acquired IQ for BP. 
+Staking IQ tokens is required to propose edits, vote on edits, and propose/vote on network governance actions. IQ is staked by locking up tokens in a 21-day vesting period. This is similar to other blockchains such as Steem which requires users to “power up” (essentially lock and vest) their tokens in order to vote/stake them on content published on the platform.[9] The process of staking IQ is also called powering up (as a token of appreciation to Steem’s pioneering design). IQ that is locked up for 21 days gives the holder “Brainpower” (BP) at a 1:1 ratio. Brainpower is not a fungible or transferable token and only spent during usage of the EPN by the staking account. Once an account’s BP is entirely spent, they must wait for the IQ staking period of 21 days to end before re-staking their tokens for BP to use the EPN. Otherwise, they can acquire more IQ tokens and stake the newly acquired IQ for BP. 
 
-Example: A user has 150 IQ tokens. They can call the staking function to lock up their 150 IQ tokens for 21 days and get their account allocated 150 Brain Power to use for proposing edits, governance actions, and voting. 
+Example: A user has 150 IQ tokens. They can call the staking function to lock up their 150 IQ tokens for 21 days and get their account allocated 150 Brainpower to use for proposing edits, governance actions, and voting. 
 
 
 The second feature of the article module is using BP for token holder voting of inclusion or exclusion of proposed edits in queue. The validation of articles goes through a validation algorithm (below) with parameters that can be changed through a governance vote.
@@ -169,9 +161,9 @@ The validation period for each edit lasts a maximum of 30 minutes. Front-ends ar
 ### Curation Rewards
 *PeriodReward<sub>Curation</sub>* = Curation mint rate; number of IQ tokens minted for curation rewards per period P (initial network P = 30 minutes)
 
-*Votes<sub>Curator</sub>* = Sum of one user's Brain Power who voted on the majority side during period P
+*Votes<sub>Curator</sub>* = Sum of one user's Brainpower who voted on a majority side during period P
 
-*Votes<sub>Majority</sub>* = Sum of all user's Brain Power who voted on the majority side during period P
+*Votes<sub>Majority</sub>* = Sum of all users' Brainpower who voted on a majority side during period P
 
 *Reward<sub>Curator</sub>* = Voter/Curator's curation reward per period P
 
@@ -180,9 +172,9 @@ The validation period for each edit lasts a maximum of 30 minutes. Front-ends ar
 ### Edit Rewards (Content Rewards) 
 *PeriodReward<sub>Editor</sub>* = Edit mint rate; number of IQ tokens minted for editor rewards per period P (initial network P = 30 minutes)
 
-*Votes<sub>Editor</sub>* = Sum of one editor's Brain Power votes 
+*Votes<sub>Editor</sub>* = Sum of one editor's Brainpower votes 
 
-*ApprovalVotes* = Sum of all Brain Power votes for an approval (including curators) in a period.
+*ApprovalVotes* = Sum of all Brainpower votes for an approval (including curators) in a period.
 
 *Reward<sub>Editor</sub>* = Editor's curation reward per period P
 
@@ -199,7 +191,7 @@ Voters in the majority are given a proportional amount of the IQ inflationary to
 
 (Total Majority BP Votes - Total Minority BP Votes) / (Total BP Votes) = Slashing Ratio
 
-Ex: User has 200 Brain Power and votes “No” using all their BP for an edit proposal. Total votes equal 2000 Brain Power with 1500 BP votes “Yes” and 500 total BP votes “No.” Because the user voted on the minority side, the slashing ratio is calculated as: ((1500) - (500)) / (2000) = (.5) then multiplied by (21 days) to get the increased lock-up time. 
+Ex: User has 200 Brainpower and votes “No” using all their BP for an edit proposal. Total votes equal 2000 Brainpower with 1500 BP votes “Yes” and 500 total BP votes “No.” Because the user voted on the minority side, the slashing ratio is calculated as: ((1500) - (500)) / (2000) = (.5) then multiplied by (21 days) to get the increased lock-up time. 
 
 The 200 IQ that generated the 200 BP is locked up for an additional 10.5 days. Note: The more contentious the voting, the less the penalty is for voting in the minority. 
 
