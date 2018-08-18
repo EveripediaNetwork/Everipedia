@@ -144,6 +144,19 @@ The validation period for each edit lasts a maximum of 30 minutes. Front-ends ar
 
 ![](https://epcdn-vz.azureedge.net/static/images/EditorRewards.svg)
 
+## Examples
+Assuming period reward of 10 IQ:
+
+|     User     | Vote |  Reward  |
+|:------------:|:----:|:--------:|
+| Sam (Editor) |  +10 | 8.235 IQ |
+|    Travis    |  +25 | 0.588 IQ |
+|     Kedar    |  +50 | 1.176 IQ |
+
+Sam = ((10 + 25 + 50) / (10 + 25 + 50)) * 8 IQ + (10 / (10 + 25 + 50)) * 2 IQ = 8.235 IQ
+Travis = (25 / (10 + 25 + 50)) * 2 IQ = 0.588 IQ
+Kedar = (50 / (10 + 25 + 50)) * 2 IQ = 1.176 IQ 
+
 ## Slashing Conditions
 
 Editing articles can be a fairly contentious activity. However, there must be sybil-resistant economic incentives to have token holders arrive at the common, salient answer of the edit proposal. That is, there must be incentives for each individual agent to arrive at what they believe to be the common response - the correct one. Likewise, there should be disincentives proportional to arriving at the minority response - the incorrect one. Unlike proof of stake based consensus methods which slash/burn the staker’s tokens for voting on incorrect blocks, the EPN slashing condition does not permanently burn tokens for voting incorrectly (voting on the minority side). 
