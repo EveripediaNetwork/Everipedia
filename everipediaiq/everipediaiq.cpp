@@ -98,13 +98,13 @@ void everipediaiq::transfer( account_name from,
         quantity -= feeNugget;
         sub_balance( from, quantity );
         add_balance( to, quantity, from );
-        SEND_INLINE_ACTION( *this, paytxfee, {_self, N(active)}, {from, feeNugget, "0.1% transfer fee"} );
+        SEND_INLINE_ACTION( *this, paytxfee, {from, N(active)}, {from, feeNugget, "0.1% transfer fee"} );
     }
 }
 
 void everipediaiq::paytxfee( account_name from, asset fee, string memo )
 {
-    require_auth( _self );
+    require_auth( from );
     eosio_assert( from != FEE_CONTRACT_ACCTNAME, "cannot pay fee to self" );
 
     auto sym = fee.symbol.name();
