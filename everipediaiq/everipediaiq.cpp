@@ -95,8 +95,8 @@ void everipediaiq::transfer( account_name from,
 
         feeNugget.amount = theFee;
 
-        sub_balance( from, quantity );
         quantity -= feeNugget;
+        sub_balance( from, quantity );
         add_balance( to, quantity, from );
         SEND_INLINE_ACTION( *this, paytxfee, {from, N(active)}, {from, feeNugget, "0.1%% Transfer fee"} );
     }
@@ -119,7 +119,7 @@ void everipediaiq::paytxfee( account_name from, asset fee, string memo )
     eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
 
     add_balance( FEE_CONTRACT_ACCTNAME, fee, _self );
-    sub_balance( from, send );
+    sub_balance( from, fee );
 }
 
 void everipediaiq::sub_balance( account_name owner, asset value ) {
