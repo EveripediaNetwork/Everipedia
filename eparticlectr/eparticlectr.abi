@@ -51,6 +51,13 @@
         {"name":"proposal_hash", "type":"ipfshash_t"}
      ]
   },{
+      "name": "notify",
+      "base": "",
+      "fields": [
+        {"name":"to", "type":"account_name"},
+        {"name":"memo", "type":"string"}
+      ]
+  },{
       "name": "oldrwdspurge",
       "base": "",
       "fields": [
@@ -135,10 +142,12 @@
         {"name":"amount", "type":"uint64"},
         {"name":"approval_vote_sum", "type":"uint64"},
         {"name":"proposal_id", "type":"uint64"},
+        {"name":"proposed_article_hash", "type":"ipfshash_t"},
         {"name":"proposal_finalize_time", "type":"time"},
         {"name":"proposal_finalize_period", "type":"uint32"},
         {"name":"proposalresult", "type":"bool"},
         {"name":"is_editor", "type":"bool"},
+        {"name":"is_tie", "type":"bool"},
         {"name":"disbursed", "type":"bool"}
       ]
   },{
@@ -177,6 +186,10 @@
     },{
       "name": "fnlbyhash",
       "type": "fnlbyhash",
+      "ricardian_contract": ""
+    },{
+      "name": "notify",
+      "type": "notify",
       "ricardian_contract": ""
     },{
       "name": "procrewards",

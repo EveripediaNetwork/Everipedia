@@ -299,11 +299,15 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     // Determine slashing conditions
     vote_it = voteidx.find(eparticlectr::ipfs_to_key256(prop_it->proposed_article_hash));
     bool approved = 0;
+    bool istie = 0;
     float totalVotes = for_votes + against_votes;
-    if ((for_votes / (float)totalVotes) > TIER_ONE_THRESHOLD){
+    if ((for_votes / (float)totalVotes) >= TIER_ONE_THRESHOLD){
         approved = 1;
+        if ((for_votes / (float)totalVotes) == TIER_ONE_THRESHOLD){
+            istie = 1;
+        }
     }
-    float slash_ratio = 1.0f;
+    float slash_ratio = 0.0f;
     if (approved){
         slash_ratio = (for_votes - against_votes) / (float)totalVotes;
     }
@@ -341,6 +345,9 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
             // Slash losers
             // print("SLASHING THE LOSERS\n");
             uint64_t slashRemaining = vote_it->amount;
+            uint32_t extraTimeInt = uint32_t((float)STAKING_DURATION * slash_ratio);
+
+            std::string slashString = std::to_string(slashRemaining) + " IQ slashed " + std::to_string(extraTimeInt) + " seconds on proposal " + vote_it->proposed_article_hash ;
 
             // Get the stakes
             // print("GETTING THE STAKES\n");
@@ -348,7 +355,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
             auto stakeidx = staketable.get_index<N(byuser)>();
             auto stake_it = stakeidx.find(vote_it->voter);
 
-            uint32_t extraTimeInt = uint32_t((float)STAKING_DURATION * slash_ratio);
+
 
             while(stake_it->user == vote_it->voter && stake_it != stakeidx.end()) {
                 if(stake_it->amount <= slashRemaining){
@@ -357,8 +364,10 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
                         a.timestamp = finalTime;
                         slashRemaining -= stake_it->amount;
                     });
-		    if (slashRemaining == 0)
-			break;
+	                  if (slashRemaining == 0){
+                        break;
+                    }
+
                 }
                 else{
                     // The slash amount does not fill a full stake, so the stake needs to be split
@@ -383,6 +392,9 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
                 }
                 stake_it++;
             }
+            // Notify that a slash has occurred
+            SEND_INLINE_ACTION( *this, notify, {_self, N(active)}, {vote_it->voter, slashString} );
+
         }
         else{
             // TODO: Reward the winners
@@ -394,10 +406,12 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
                 a.amount = change_amount;
                 a.approval_vote_sum = for_votes;
                 a.proposal_id = proposal_id;
+                a.proposed_article_hash = vote_it->proposed_article_hash;
                 a.proposal_finalize_time = finalTime;
                 a.proposal_finalize_period = uint32_t((finalTime / REWARD_INTERVAL));
                 a.proposalresult = approved;
                 a.is_editor = vote_it->is_editor;
+                a.is_tie = istie;
                 a.disbursed = 0;
             });
         }
@@ -467,25 +481,36 @@ void eparticlectr::procrewards(uint64_t reward_period) {
     // Reset the rewards loop and start rewarding
     rewards_it = rewardsidx.find(reward_period);
 
-    while(rewards_it->disbursed == 0 && rewards_it != rewardsidx.end()) {
-        uint64_t rewardAmount = 0;
+    // Set up permissions
+    vector<permission_level> perlvs;
+    permission_level tokenContract = permission_level{ TOKEN_CONTRACT_ACCTNAME, N(active) };
+    permission_level articleContract = permission_level{ ARTICLE_CONTRACT_ACCTNAME, N(active) };
+    perlvs.push_back(tokenContract);
+    perlvs.push_back(articleContract);
 
+    uint64_t rewardAmount = 0;
+    std::string curationString = "";
+    std::string editorString = "";
+
+    while(rewards_it->disbursed == 0 && rewards_it != rewardsidx.end()) {
+        rewardAmount = 0;
+
+        // Calculate curation reward
         rewardAmount = uint64_t(((rewards_it->amount) / (double)curationRewardSum) * PERIOD_CURATION_REWARD);
 
-        if (rewards_it->is_editor == 1){
-            rewardAmount += uint64_t(((rewards_it->approval_vote_sum) / (double)editorRewardSum) * PERIOD_EDITOR_REWARD);
-        }
-
-        eosio_assert( rewardAmount <= PERIOD_REWARD_AMOUNT_INT, "Reward overflow");
-
-        // Issue IQ
+        // Issue curation reward
+        eosio_assert( rewardAmount <= PERIOD_REWARD_AMOUNT_INT, "Curation reward overflow");
         asset iqAssetPack = asset(int64_t(rewardAmount), IQSYMBOL);
-        vector<permission_level> perlvs;
-        permission_level tokenContract = permission_level{ TOKEN_CONTRACT_ACCTNAME, N(active) };
-        permission_level articleContract = permission_level{ ARTICLE_CONTRACT_ACCTNAME, N(active) };
-        perlvs.push_back(tokenContract);
-        perlvs.push_back(articleContract);
-        action(perlvs, TOKEN_CONTRACT_ACCTNAME, N(issue), std::make_tuple(rewards_it->user, iqAssetPack, std::string("curation reward"))).send();
+        curationString = "Curation reward for " + rewards_it->proposed_article_hash;
+        action(perlvs, TOKEN_CONTRACT_ACCTNAME, N(issue), std::make_tuple(rewards_it->user, iqAssetPack, curationString)).send();
+
+        if (rewards_it->is_editor == 1 && rewards_it->is_tie == 0){
+            rewardAmount = uint64_t(((rewards_it->approval_vote_sum) / (double)editorRewardSum) * PERIOD_EDITOR_REWARD);
+            eosio_assert( rewardAmount <= PERIOD_REWARD_AMOUNT_INT, "Editor reward overflow");
+            iqAssetPack = asset(int64_t(rewardAmount), IQSYMBOL);
+            editorString = "Editor reward for " + rewards_it->proposed_article_hash;
+            action(perlvs, TOKEN_CONTRACT_ACCTNAME, N(issue), std::make_tuple(rewards_it->user, iqAssetPack, editorString)).send();
+        }
 
         // Mark the reward as disbursed
         // TODO: may need to erase old reward notices once all disbursements occur
@@ -541,4 +566,9 @@ void eparticlectr::oldvotepurge( ipfshash_t& proposed_article_hash, uint32_t loo
     }
 }
 
-EOSIO_ABI( eparticlectr, (brainclmid)(brainmeart)(finalize)(fnlbyhash)(oldrwdspurge)(oldvotepurge)(procrewards)(propose)(updatewiki)(votebyhash) )
+void eparticlectr::notify( account_name to, std::string memo ){
+    require_auth(ARTICLE_CONTRACT_ACCTNAME);
+    require_recipient( to );
+}
+
+EOSIO_ABI( eparticlectr, (brainclmid)(brainmeart)(notify)(finalize)(fnlbyhash)(oldrwdspurge)(oldvotepurge)(procrewards)(propose)(updatewiki)(votebyhash) )

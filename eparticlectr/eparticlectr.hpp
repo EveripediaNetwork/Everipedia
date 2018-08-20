@@ -35,10 +35,10 @@ const account_name TOKEN_CONTRACT_ACCTNAME = N(everipediaiq);
 const uint64_t IQ_TO_BRAINPOWER_RATIO = 1;
 const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
 const uint64_t EDIT_PROPOSE_BRAINPOWER = 10;
-const uint32_t REWARD_INTERVAL = 1800; // 30 min
-const uint32_t DEFAULT_VOTING_TIME = 21600; // 6 hours
-// const uint32_t REWARD_INTERVAL = 60; // 1 min
-// const uint32_t DEFAULT_VOTING_TIME = 30; // 30 sec
+// const uint32_t REWARD_INTERVAL = 1800; // 30 min
+// const uint32_t DEFAULT_VOTING_TIME = 21600; // 6 hours
+const uint32_t REWARD_INTERVAL = 45; // 45 sec
+const uint32_t DEFAULT_VOTING_TIME = 30; // 30 sec
 const float ANNUAL_MINT_RATE = .025f;
 const float EDITOR_REWARD_RATIO = 0.8f;
 const float CURATION_REWARD_RATIO = 0.2f;
@@ -241,10 +241,12 @@ private:
         uint64_t amount; // slash or reward amount
         uint64_t approval_vote_sum; // sum of all "for" votes for this proposal
         uint64_t proposal_id; // id of the proposal that this person voted on
+        ipfshash_t proposed_article_hash; // IPFS hash of the proposed new version
         uint32_t proposal_finalize_time; // when finalize() was called
         uint32_t proposal_finalize_period; // truncate to the nearest period
         bool proposalresult = 0;
         bool is_editor = 0;
+        bool is_tie = 0;
         bool disbursed = 0; // slashes will be done immediately at finalize(). Rewards will be done at 24hr periods
 
         auto primary_key()const { return id; }
@@ -324,6 +326,9 @@ public:
 
     void brainmeart( account_name staker,
                   uint64_t amount );
+
+    void notify( account_name to,
+                  std::string memo );
 
     void finalize( uint64_t proposal_id );
 
