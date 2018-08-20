@@ -16,6 +16,10 @@ class everipediaiq : public contract {
   public:
      everipediaiq( account_name self ):contract(self){}
 
+     void burn( account_name from,
+                   asset        quantity,
+                   string       memo );
+
      void create( account_name issuer,
                   asset        maximum_supply);
 
