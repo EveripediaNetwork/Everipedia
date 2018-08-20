@@ -98,11 +98,13 @@ void everipediaiq::transfer( account_name from,
         quantity -= feeNugget;
         sub_balance( from, quantity );
         add_balance( to, quantity, from );
-        SEND_INLINE_ACTION( *this, paytxfee, {from, N(active)}, {from, feeNugget, "0.1% transfer fee"} );
+        SEND_INLINE_ACTION( *this, paytxfee, {from, N(active)}, {from, to, feeNugget, "0.1% transfer fee"} );
     }
 }
 
-void everipediaiq::paytxfee( account_name from, asset fee, string memo )
+// nothing is sent to the `notify` field, it is only used to notify another user (e.g. a transfer recipient)
+// that a fee has been deducted
+void everipediaiq::paytxfee( account_name from, account_name notify, asset fee, string memo )
 {
     require_auth( from );
     eosio_assert( from != FEE_CONTRACT_ACCTNAME, "cannot pay fee to self" );
@@ -111,12 +113,12 @@ void everipediaiq::paytxfee( account_name from, asset fee, string memo )
     stats statstable( _self, sym );
     const auto& st = statstable.get( sym );
 
-    require_recipient( FEE_CONTRACT_ACCTNAME );
-
     eosio_assert( fee.is_valid(), "invalid fee" );
     eosio_assert( fee.amount > 0, "must transfer positive fee" );
     eosio_assert( fee.symbol == st.supply.symbol, "symbol precision mismatch" );
     eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
+
+    require_recipient(notify);
 
     add_balance( FEE_CONTRACT_ACCTNAME, fee, _self );
     sub_balance( from, fee );
