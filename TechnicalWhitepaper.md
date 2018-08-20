@@ -71,7 +71,7 @@ At the end of the 30-minute IQ reward period, editors will receive IQ rewards in
 
 *T<sub>Period</sub>* = 1425.964 IQ
 
-This number can be changed by a governance action. Additionally, the minted tokens can be partially re-allocated by a governance action for a developer fund, bounties, or any other use. If no edits or votes are made in a specific 30-minute period, then no IQ will be rewarded.
+This number can be changed by a governance action. Additionally, the minted tokens can be partially re-allocated by a governance action for a developer fund, bounties, or any other use. If no edits or votes are made in a specific 30-minute period, then no IQ will be rewarded in that period.
 
 
 ### Transaction Fees
