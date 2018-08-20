@@ -98,7 +98,7 @@ void everipediaiq::transfer( account_name from,
         quantity -= feeNugget;
         sub_balance( from, quantity );
         add_balance( to, quantity, from );
-        SEND_INLINE_ACTION( *this, paytxfee, {from, N(active)}, {from, feeNugget, "0.1%% Transfer fee"} );
+        SEND_INLINE_ACTION( *this, paytxfee, {_self, N(active)}, {from, feeNugget, "0.1%% Transfer fee"} );
     }
 }
 
