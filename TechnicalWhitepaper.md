@@ -65,19 +65,11 @@ Tokens will be minted every 30 minutes ("IQ reward period") through the edit pro
 
 Proposed edits pass thresholds and receive IQ rewards based on votes of token holders. 
   
-At the end of the 30-minute IQ reward period, editors will receive IQ rewards in proportion to the value of their contributions. The IQ reward available per day (Q) is determined by the reward-period minting formula below:
+At the end of the 30-minute IQ reward period, editors will receive IQ rewards in proportion to the value of their contributions. The IQ reward available for the first year (subject to change) will be set at 250 million IQ which corresponds to 0.25% of the genesis amount of 10 billion IQ. The amount available per 30 minute period is as follows:
 
-S<sub>0</sub> = Token Supply at Genesis
+![](https://epcdn-vz.azureedge.net/static/images/PeriodRewards.svg)
 
-F = Mint rate for 30-minute reward period
-
-A = Annual (365-day) mint rate
-
-F = ((1 + A) ^ (1 / 365) - 1) / 48
-
-Q = F * S<sub>0</sub>
-
-The annual (365-day) mint rate, A, will be 1-5%, but the number can be changed by a governance action. Additionally, the minted tokens can be partially re-allocated by a governance action for a developer fund, bounties, or any other use.
+This number can be changed by a governance action. Additionally, the minted tokens can be partially re-allocated by a governance action for a developer fund, bounties, or any other use. If no edits or votes are made in a specific 30-minute period, then no IQ will be rewarded.
 
 
 ### Transaction Fees
