@@ -5,7 +5,7 @@ Sam Kazemian, Kedar Iyer, Travis Moore, Theodor Forselius, Larry Sanger
 [sam@everipedia.com](mailto:sam@everipedia.com)  [kedar@everipedia.com](mailto:kedar@everipedia.com)  [travis@everipedia.com](mailto:travis@everipedia.com)  [theodor@everipedia.com](mailto:theodor@everipedia.com)  [larry@everipedia.com](mailto:larry@everipedia.com)
 
  
-DISCLAIMER: This Everipedia Network Technical White Paper version 1.22 (August 17 2018) is a work in progress and for informational purposes only. It is meant to serve as a proposal of ideas for free, open-source software.
+DISCLAIMER: This Everipedia Network Technical White Paper version 1.23 (August 19 2018) is a work in progress and for informational purposes only. It is meant to serve as a proposal of ideas for free, open-source software.
 
 ## Abstract
 
@@ -59,25 +59,9 @@ Tokens will be minted every 30 minutes ("IQ reward period") through the edit pro
 
 Proposed edits pass thresholds and receive IQ rewards based on votes of token holders. 
   
-At the end of the 30-minute IQ reward period, editors will receive IQ rewards in proportion to the value of their contributions. A single editor’s contribution is valued based on the number of edits approved (Listing 1). The IQ reward available per day is determined by the reward-period minting formula (Listing 2).
+At the end of the 30-minute IQ reward period, editors will receive IQ rewards in proportion to the value of their contributions. The IQ reward available per day (Q) is determined by the reward-period minting formula below:
 
-Listing 1: IQ reward formula for a single editor
-
-R = Editor’s IQ reward
-
-E = Editor’s contribution value
-
-T = Total contribution value for the 30-minute period across all edits
-
-Q = Mint-rate constant (available IQ reward) for IQ reward period 
-
-R = Q * E / T
-
-Q, the available IQ reward for the reward period, is determined by Listing 2:
-
-Listing 2: Reward-period IQ minting formula
-
-S0 = Token Supply at Genesis
+S<sub>0</sub> = Token Supply at Genesis
 
 F = Mint rate for 30-minute reward period
 
@@ -85,9 +69,9 @@ A = Annual (365-day) mint rate
 
 F = ((1 + A) ^ (1 / 365) - 1) / 48
 
-Q = F * S0
+Q = F * S<sub>0</sub>
 
-The annual (365-day) mint rate, A, will be 5% to match the EOS inflation rate, but the number can be changed by a governance action. Additionally, the minted tokens can be partially re-allocated by a governance action for a developer fund, bounties, or any other use.
+The annual (365-day) mint rate, A, will be 1-5%, but the number can be changed by a governance action. Additionally, the minted tokens can be partially re-allocated by a governance action for a developer fund, bounties, or any other use.
 
 
 ### Transaction Fees
