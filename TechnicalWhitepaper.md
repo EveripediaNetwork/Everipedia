@@ -5,7 +5,7 @@ Sam Kazemian, Kedar Iyer, Travis Moore, Theodor Forselius, Larry Sanger
 [sam@everipedia.com](mailto:sam@everipedia.com)  [kedar@everipedia.com](mailto:kedar@everipedia.com)  [travis@everipedia.com](mailto:travis@everipedia.com)  [theodor@everipedia.com](mailto:theodor@everipedia.com)  [larry@everipedia.com](mailto:larry@everipedia.com)
 
  
-DISCLAIMER: This Everipedia Network Technical White Paper version 1.22 (August 17 2018) is a work in progress and for informational purposes only. It is meant to serve as a proposal of ideas for free, open-source software.
+DISCLAIMER: This Everipedia Network Technical White Paper version 1.23 (August 19 2018) is a work in progress and for informational purposes only. It is meant to serve as a proposal of ideas for free, open-source software.
 
 ## Abstract
 
@@ -15,7 +15,9 @@ We propose a three module system consisting of a token module, a governance modu
 
 ## Introduction: The Everipedia Network
 
-The Everipedia Network (EPN) is a decentralized encyclopedia database fully governed by token holders. Token holders can approve edits, create network-wide rules that govern the encyclopedia, as well as buy and sell services for tokens on the network. This also means that tokens play a central role in the consensus protocol of finalizing data entry into the network.
+The non-blockchain version of the Everipedia (https://everipedia.org) attracts approximately 1-2 million unique visitors each month (as of August 2018). We anticipate that after the code is merged from the the blockchain version (https://iqnetwork.io), there will be a massive opportunity for the average person to encounter blockchain technology, much like Steemit has done (https://steemit.com/).
+
+The Everipedia Network (EPN) is a decentralized encyclopedia database fully governed by token holders. Token holders can approve or reject edits, create network-wide rules that govern the encyclopedia, and buy and sell services for tokens on the network. This also means that the tokens play a central role in the consensus protocol of finalizing data entry into the network.
 
 The Everipedia Network turns the non-profit knowledge industry into a knowledge economy where economic incentives can guide the creation of knowledge content. With the EPN one can connect directly to the world’s largest wiki database from any site. We imagine a future in which even non-programmers can create sites that utilize the Everipedia Network through something as simple as a Wordpress template.
 
@@ -47,7 +49,11 @@ Research and development, solutions to scaling, and improvements to the codebase
 
 ### Funding the Network and Self-Sustainability
 
-The Everipedia Network is a series of modules (smart contracts) which runs on the EOS Virtual Machine (EVM). The virtual machine’s storage, random access memory, and bandwidth/compute resources are allocated to accounts proportional to their EOS token balances. The Everipedia Network will require EVM resources to run and function. As the network increases in size, it would require a higher percentage of the EOS network’s compute power and as a result need more EOS tokens. There are many ways for the EPN to fund itself ranging from older generation methods such as simple donations (such as Wikipedia.org), UX layer revenue as well as new generation methods based on token inflation and auctioning. One such funding method would be a governance action which would propose minting new IQ tokens to be auctioned for EOS tokens. If the action is approved by voters, the newly acquired EOS tokens would then be used to fund the EPN's new bandwidth, storage, and compute needs. This method is similar to the EOS network's own inflation based funding model where block producers are paid EOS tokens for their services.
+The Everipedia Network is a series of modules (smart contracts) which runs on the EOS Virtual Machine (EVM). The virtual machine’s storage, random access memory, and bandwidth/compute resources are allocated to accounts proportional to their EOS token balances. The Everipedia Network will require EVM resources to run and function. As the network increases in size, it would require a higher percentage of the EOS network’s compute power and as a result need more EOS tokens. 
+
+There are many ways for the EPN to fund itself ranging from older generation methods such as simple donations (such as Wikipedia.org), UX layer revenue as well as new generation methods based on token inflation and auctioning. One such funding method would be a governance action which would propose minting new IQ tokens to be auctioned for EOS tokens. If the action is approved by voters, the newly acquired EOS tokens would then be used to fund the EPN's new bandwidth, storage, and compute needs. This method is similar to the EOS network's own inflation based funding model where block producers are paid EOS tokens for their services.
+
+Another possibility is to auction off the IQ generated from transaction fees for EOS, which would then be bound by an EOS smart contract to automatically purchase RAM or other resources as needed to sustain operations. An auction would only occur if it were detected that RAM was near capacity, say 90%.
 
 ## Token Module
 
@@ -59,35 +65,13 @@ Tokens will be minted every 30 minutes ("IQ reward period") through the edit pro
 
 Proposed edits pass thresholds and receive IQ rewards based on votes of token holders. 
   
-At the end of the 30-minute IQ reward period, editors will receive IQ rewards in proportion to the value of their contributions. A single editor’s contribution is valued based on the number of edits approved (Listing 1). The IQ reward available per day is determined by the reward-period minting formula (Listing 2).
+At the end of the 30-minute IQ reward period, editors will receive IQ rewards in proportion to the value of their contributions. The IQ reward available for the first year (subject to change) will be set at 25 million IQ which corresponds to 0.25% of the genesis amount of 10 billion IQ. The amount available per 30 minute period is as follows:
 
-Listing 1: IQ reward formula for a single editor
+![](https://epcdn-vz.azureedge.net/static/images/PeriodRewards.svg)
 
-R = Editor’s IQ reward
+*T<sub>Period</sub>* = 1425.964 IQ
 
-E = Editor’s contribution value
-
-T = Total contribution value for the 30-minute period across all edits
-
-Q = Mint-rate constant (available IQ reward) for IQ reward period 
-
-R = Q * E / T
-
-Q, the available IQ reward for the reward period, is determined by Listing 2:
-
-Listing 2: Reward-period IQ minting formula
-
-S0 = Token Supply at Genesis
-
-F = Mint rate for 30-minute reward period
-
-A = Annual (365-day) mint rate
-
-F = ((1 + A) ^ (1 / 365) - 1) / 48
-
-Q = F * S0
-
-The annual (365-day) mint rate, A, will be 5% to match the EOS inflation rate, but the number can be changed by a governance action. Additionally, the minted tokens can be partially re-allocated by a governance action for a developer fund, bounties, or any other use.
+This number can be changed by a governance action. Additionally, the minted tokens can be partially re-allocated by a governance action for a developer fund, bounties, or any other use. If no edits or votes are made in a specific 30-minute period, then no IQ will be rewarded in that period.
 
 
 ### Transaction Fees
@@ -111,7 +95,6 @@ The article module is used to propose edits to be included in the database. Prop
 Staking IQ tokens is required to propose edits, vote on edits, and propose/vote on network governance actions. IQ is staked by locking up tokens in a 21-day vesting period. This is similar to other blockchains such as Steem which requires users to “power up” (essentially lock and vest) their tokens in order to vote/stake them on content published on the platform.[9] The process of staking IQ is also called powering up (as a token of appreciation to Steem’s pioneering design). IQ that is locked up for 21 days gives the holder “Brainpower” (BP) at a 1:1 ratio. Brainpower is not a fungible or transferable token and only spent during usage of the EPN by the staking account. Once an account’s BP is entirely spent, they must wait for the IQ staking period of 21 days to end before re-staking their tokens for BP to use the EPN. Otherwise, they can acquire more IQ tokens and stake the newly acquired IQ for BP. 
 
 Example: A user has 150 IQ tokens. They can call the staking function to lock up their 150 IQ tokens for 21 days and get their account allocated 150 Brainpower to use for proposing edits, governance actions, and voting. 
-
 
 The second feature of the article module is using BP for token holder voting of inclusion or exclusion of proposed edits in queue. The validation of articles goes through a validation algorithm (below) with parameters that can be changed through a governance vote.
 
@@ -211,8 +194,6 @@ EOS.IO software is a Turing-complete distributed computing platform and smart co
 
 *EOS.IO schematic: Block producers of the network provide bandwidth, IPFS storage, query services, servers, and gateway interfaces. They are incentivized to do this through newly minted EOS tokens, similar to how Bitcoin miners are incentivized to provide SHA256 hashing services to the network through Bitcoin block rewards. Users (clients) then connect to services made available by block producers similar to using classical internet services. Since there are multiple block producers, there is a distributed entry point to all software on the EOS.io network unlike classical centralized web applications. img-source: EOS.IO retrieved from: steemit.com*
 
-  
-
 This allows for feeless transactions since accounts are only rate-limited based on their EOS token balance. The more EOS tokens an account holds, the more of their transactions an account can expect to be included in the ledger. This gasless protocol (compared to Ethereum) allows for the building of rich decentralized consumer applications.
 
 Everipedia Network articles (as well as their histories) will be stored using IPFS protocol nodes by community members and front end service providers. In order to block access to Everipedia Network content, actors would have to prevent any TCP/IP interaction and packet exchange between end users and the EOS mainnet entirely as even a single IPFS peer can provide access to Everipedia content. This task, while theoretically feasible, is substantially more difficult than blocking a single domain and is more akin to attempting to shut down torrent networks by going after all individual torrent seeders - a task that has consistently proven impossible for many well-funded organizations and state actors. Additionally, it is possible for community members to host any set of articles from their own private IPFS daemon which listens for edits of articles by connecting to the EOS network. This means that anyone who wishes to host articles (or some subset of articles) can do so from any location or server by running their own IPFS node and light EOS client.
@@ -275,7 +256,7 @@ While the above structure has many advantages, it has several issues that should
 
 ## Article Data Structure
 
-Articles will be stored as HTML files. This is because using the HTML document object model allows for high compatibility of possible front end combinations for the data which is retrieved from the network. By using HTML, any developer can create a front end to display articles in customized manners, submit edits, and analyze data inside the document. Designated HTML class attributes will be used to mark specific portions of articles so that all front end software can easily detect standard sections of an article. Such classes could include “infobox,” “citation,” or “title.” A data structure standard should be decided on by community members and early adopters of the technology which should include linking schemes and hyperlink rules (such as whether only internal links to the database can be embedded in articles etc). Although the standards can, in theory, be changed with a governance vote, practical application of such a data-structure change is highly cumbersome as some changes are not backwards compatible and would need to be retroactively applied to all older articles within the network.
+Articles will be stored as gzipped HTML files. This is because using the HTML document object model allows for high compatibility of possible front end combinations for the data which is retrieved from the network. By using HTML, any developer can create a front end to display articles in customized manners, submit edits, and analyze data inside the document. Designated HTML class attributes will be used to mark specific portions of articles so that all front end software can easily detect standard sections of an article. Such classes could include “infobox,” “citation,” or “title.” A data structure standard should be decided on by community members and early adopters of the technology which should include linking schemes and hyperlink rules (such as whether only internal links to the database can be embedded in articles etc). Although the standards can, in theory, be changed with a governance vote, practical application of such a data-structure change is highly cumbersome as some changes are not backwards compatible and would need to be retroactively applied to all older articles within the network.
 
 Finally, within the HTML file, there will be one designated JSON-LD class for linked data to the object topic of the article. This allows easy retrievability of key-value descriptors from any article using API endpoints and allows bots to add information easily to the JSON-LD class. JSON-LD is used to build rich graph relationships between objects and is currently used in web pages to describe semantic relationships between the webpage’s topic and content. Having a robust data class for building rich graph relationships between topics within the article helps create a meta-network layer which can be queried for rich data by machines, services, and artificial intelligence training.
 

@@ -21,7 +21,8 @@ assert ()
 
 
 # Don't allow tests on mainnet
-CHAIN_ID=$(cleos get info | jq ".chain_id")
+CHAIN_ID=$(cleos get info | jq ".chain_id" | tr -d '"')
+echo $CHAIN_ID
 if [ $CHAIN_ID = "aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906" ]; then
     >&2 echo "Cannot run test on mainnet"
     exit 1
