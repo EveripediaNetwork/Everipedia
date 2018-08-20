@@ -4,7 +4,6 @@
  */
 
 #include "everipediaiq.hpp"
-#include <sstream>
 
 void everipediaiq::create( account_name issuer,
                     asset        maximum_supply )
