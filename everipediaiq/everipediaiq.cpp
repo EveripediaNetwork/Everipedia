@@ -4,6 +4,7 @@
  */
 
 #include "everipediaiq.hpp"
+#include <sstream>
 
 void everipediaiq::create( account_name issuer,
                     asset        maximum_supply )
@@ -95,9 +96,9 @@ void everipediaiq::transfer( account_name from,
 
         feeNugget.amount = theFee;
 
-        quantity -= feeNugget;
         sub_balance( from, quantity );
         add_balance( to, quantity, from );
+
         SEND_INLINE_ACTION( *this, paytxfee, {from, N(active)}, {from, to, feeNugget, "0.1% transfer fee"} );
     }
 }
@@ -109,6 +110,10 @@ void everipediaiq::paytxfee( account_name from, account_name notify, asset fee, 
     require_auth( from );
     eosio_assert( from != FEE_CONTRACT_ACCTNAME, "cannot pay fee to self" );
 
+    accounts from_acnts( _self, from );
+    const auto& from_act = from_acnts.get( fee.symbol.name(), "insufficient funds for fee" );
+    eosio_assert( from_act.balance.amount >= fee.amount, "insufficient fundds for fee" );
+    
     auto sym = fee.symbol.name();
     stats statstable( _self, sym );
     const auto& st = statstable.get( sym );
