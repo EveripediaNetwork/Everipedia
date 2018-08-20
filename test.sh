@@ -174,7 +174,6 @@ NEW_BALANCE6=$(balance eptestusersf)
 NEW_BALANCE7=$(balance eptestusersg)
 NEW_FEE_BALANCE=$(balance $FEE_ACCOUNT)
 
-echo $(bc <<< "$OLD_BALANCE1- $NEW_BALANCE1")
 assert $(bc <<< "$OLD_BALANCE1 - $NEW_BALANCE1 == 6000")
 assert $(bc <<< "$NEW_BALANCE2 - $OLD_BALANCE2 == 999")
 assert $(bc <<< "$NEW_BALANCE3 - $OLD_BALANCE3 == 999")
