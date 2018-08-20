@@ -55,7 +55,7 @@ void eparticlectr::brainclmid( account_name claimant, uint64_t stakeid ) {
     // Transfer back the IQ
     iqAssetPack = asset(int64_t(stake_it->amount * IQ_PRECISION_MULTIPLIER), IQSYMBOL);
     eosio::action theAction = action(permission_level{ ARTICLE_CONTRACT_ACCTNAME, N(active) }, TOKEN_CONTRACT_ACCTNAME, N(transfer),
-                    std::make_tuple(ARTICLE_CONTRACT_ACCTNAME, claimant, iqAssetPack, std::string("brainpower refund")));
+                    std::make_tuple(ARTICLE_CONTRACT_ACCTNAME, claimant, iqAssetPack, std::string("IQ refund from stake")));
     theAction.send();
 
     // Delete the stake.
@@ -512,7 +512,6 @@ void eparticlectr::oldrwdspurge(uint64_t reward_period, uint32_t loop_limit) {
         rewards_it = rewardsidx.erase(rewards_it);
         count++;
     }
-
 }
 
 void eparticlectr::oldvotepurge( ipfshash_t& proposed_article_hash, uint32_t loop_limit ) {

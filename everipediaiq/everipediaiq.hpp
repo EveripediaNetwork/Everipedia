@@ -26,6 +26,10 @@ class everipediaiq : public contract {
                     asset        quantity,
                     string       memo );
 
+     void paytxfee( account_name from,
+                   asset        quantity,
+                   string       memo );
+
      void brainmeiq( account_name staker,
                    int64_t amount );
 

@@ -89,19 +89,23 @@ void everipediaiq::transfer( account_name from,
         asset feeNugget = quantity;
         int64_t theFee = (int64_t)(quantity.amount * TRANSFER_FEE);
 
-	// prevent decimal truncation from creating a zero-fee transfer
-	if (theFee == 0) 
-	    theFee = 1;
+      	// prevent decimal truncation from creating a zero-fee transfer
+      	if (theFee == 0)
+      	    theFee = 1;
 
         feeNugget.amount = theFee;
 
         sub_balance( from, quantity );
         quantity.amount = quantity.amount - theFee;
         add_balance( to, quantity, from );
-        add_balance( FEE_CONTRACT_ACCTNAME, feeNugget, _self );
+        SEND_INLINE_ACTION( *this, paytxfee, {from, N(active)}, {from, feeNugget, "0.1%% Transfer fee"} );
     }
+}
 
-
+void everipediaiq::paytxfee( account_name from, asset quantity, string memo )
+{
+    require_auth( from );
+    add_balance( FEE_CONTRACT_ACCTNAME, quantity, _self );
 }
 
 void everipediaiq::sub_balance( account_name owner, asset value ) {
@@ -151,4 +155,4 @@ void everipediaiq::brainmeiq( account_name staker, int64_t amount) {
 }
 
 
-EOSIO_ABI( everipediaiq, (create)(issue)(transfer)(brainmeiq) )
+EOSIO_ABI( everipediaiq, (create)(issue)(paytxfee)(transfer)(brainmeiq) )
