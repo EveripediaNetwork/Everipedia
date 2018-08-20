@@ -1,4 +1,5 @@
 BOOTSTRAP=0 # 1 if chain bootstrapping (bios, system contract, etc.) is needed, else 0
+BUILD=1
 MAIN_ACCOUNT=eosio
 ARTICLE_CONTRACT=eparticlectr
 TOKEN_CONTRACT=everipediaiq
@@ -106,6 +107,14 @@ if [ $BOOTSTRAP -eq 1 ]; then
     cleos push action $TOKEN_CONTRACT issue "[\"$TOKEN_CONTRACT\", \"10000000000.000 IQ\", \"initial supply\"]" -p $TOKEN_CONTRACT@active
 fi
 
+# Build
+if [ $BUILD -eq 1 ]; then
+    cp everipediaiq/* ~/eos/contracts/everipediaiq/
+    cp eparticlectr/* ~/eos/contracts/eparticlectr/
+    cd ~/eos
+    ./eosio_build.sh
+    cd -
+fi
 
 ## Deploy contracts
 cleos set contract $TOKEN_CONTRACT ~/eos/build/contracts/everipediaiq/
@@ -174,22 +183,25 @@ NEW_BALANCE6=$(balance eptestusersf)
 NEW_BALANCE7=$(balance eptestusersg)
 NEW_FEE_BALANCE=$(balance $FEE_ACCOUNT)
 
-assert $(bc <<< "$OLD_BALANCE1 - $NEW_BALANCE1 == 6000")
-assert $(bc <<< "$NEW_BALANCE2 - $OLD_BALANCE2 == 999")
-assert $(bc <<< "$NEW_BALANCE3 - $OLD_BALANCE3 == 999")
-assert $(bc <<< "$NEW_BALANCE4 - $OLD_BALANCE4 == 999")
-assert $(bc <<< "$NEW_BALANCE5 - $OLD_BALANCE5 == 999")
-assert $(bc <<< "$NEW_BALANCE6 - $OLD_BALANCE6 == 999")
-assert $(bc <<< "$NEW_BALANCE7 - $OLD_BALANCE7 == 999")
+assert $(bc <<< "$OLD_BALANCE1 - $NEW_BALANCE1 == 6006")
+assert $(bc <<< "$NEW_BALANCE2 - $OLD_BALANCE2 == 1000")
+assert $(bc <<< "$NEW_BALANCE3 - $OLD_BALANCE3 == 1000")
+assert $(bc <<< "$NEW_BALANCE4 - $OLD_BALANCE4 == 1000")
+assert $(bc <<< "$NEW_BALANCE5 - $OLD_BALANCE5 == 1000")
+assert $(bc <<< "$NEW_BALANCE6 - $OLD_BALANCE6 == 1000")
+assert $(bc <<< "$NEW_BALANCE7 - $OLD_BALANCE7 == 1000")
 assert $(bc <<< "$NEW_FEE_BALANCE - $OLD_FEE_BALANCE == 6")
 
 # Failed transfers
-echo "Next 3 transfers should fail"
+echo "Next 4 transfers should fail"
 cleos push action $TOKEN_CONTRACT transfer '["eptestusersa", "eptestusersb", "10000000.000 IQ"]' -p eptestusersa
 assert $(bc <<< "$? == 1")
 cleos push action $TOKEN_CONTRACT transfer '["eptestusersa", "eptestusersb", "0.000 IQ"]' -p eptestusersa
 assert $(bc <<< "$? == 1")
 cleos push action $TOKEN_CONTRACT transfer '["eptestusersa", "eptestusersb", "-100.000 IQ"]' -p eptestusersa
+assert $(bc <<< "$? == 1")
+FULLBAL=$(balance eptestusersg)
+cleos push action $TOKEN_CONTRACT transfer "[\"eptestusersg\", \"eptestuserse\", \"$FULLBAL IQ\"]" -p eptestusersg
 assert $(bc <<< "$? == 1")
 
 # Stake tokens

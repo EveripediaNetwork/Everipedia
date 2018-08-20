@@ -127,6 +127,8 @@ The validation period for each edit lasts a maximum of 30 minutes. Front-ends ar
 
 ![](https://epcdn-vz.azureedge.net/static/images/EditorRewards.svg#1)
 
+Editor rewards will not be given for proposals that are ties (50%/50%), but they will still be approved.
+
 ## Examples
 Assuming period reward of 10 IQ:
 ### Scenario 1

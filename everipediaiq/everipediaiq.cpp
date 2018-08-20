@@ -95,18 +95,22 @@ void everipediaiq::transfer( account_name from,
 
         feeNugget.amount = theFee;
 
-        quantity -= feeNugget;
         sub_balance( from, quantity );
         add_balance( to, quantity, from );
-        SEND_INLINE_ACTION( *this, paytxfee, {from, N(active)}, {from, to, feeNugget, "0.1% transfer fee"} );
+
+        SEND_INLINE_ACTION( *this, paytxfee, {from, N(active)}, {from, feeNugget, "0.1% transfer fee"} );
     }
 }
 
-void everipediaiq::paytxfee( account_name from, account_name notify, asset fee, string memo )
+void everipediaiq::paytxfee( account_name from, asset fee, string memo )
 {
     require_auth( from );
     eosio_assert( from != FEE_CONTRACT_ACCTNAME, "cannot pay fee to self" );
 
+    accounts from_acnts( _self, from );
+    const auto& from_act = from_acnts.get( fee.symbol.name(), "insufficient funds for fee" );
+    eosio_assert( from_act.balance.amount >= fee.amount, "insufficient fundds for fee" );
+    
     auto sym = fee.symbol.name();
     stats statstable( _self, sym );
     const auto& st = statstable.get( sym );
@@ -116,7 +120,7 @@ void everipediaiq::paytxfee( account_name from, account_name notify, asset fee, 
     eosio_assert( fee.symbol == st.supply.symbol, "symbol precision mismatch" );
     eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
 
-    require_recipient(notify);
+    require_recipient( from );
 
     add_balance( FEE_CONTRACT_ACCTNAME, fee, _self );
     sub_balance( from, fee );
