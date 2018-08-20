@@ -31,6 +31,7 @@ class everipediaiq : public contract {
                     string       memo );
 
      void paytxfee( account_name from,
+                   account_name notify,
                    asset        quantity,
                    string       memo );
 
