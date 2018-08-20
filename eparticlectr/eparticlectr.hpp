@@ -40,14 +40,9 @@ const uint32_t DEFAULT_VOTING_TIME = 21600; // 6 hours
 // const uint32_t REWARD_INTERVAL = 60; // 1 min
 // const uint32_t DEFAULT_VOTING_TIME = 30; // 30 sec
 const float ANNUAL_MINT_RATE = .025f;
-const float PERIOD_REWARD_AMOUNT = 10.000; // for testing purposes
-// const double PERIOD_REWARD_AMOUNT = 234.8993; // calculated from formula. Should be slightly less than ANNUAL_MINT_RATE * 10,000,000,000
 const float EDITOR_REWARD_RATIO = 0.8f;
 const float CURATION_REWARD_RATIO = 0.2f;
 const uint64_t IQ_PRECISION_MULTIPLIER = 1000;
-const uint64_t PERIOD_CURATION_REWARD = uint64_t(PERIOD_REWARD_AMOUNT * CURATION_REWARD_RATIO * IQ_PRECISION_MULTIPLIER);
-const uint64_t PERIOD_EDITOR_REWARD = uint64_t(PERIOD_REWARD_AMOUNT * EDITOR_REWARD_RATIO * IQ_PRECISION_MULTIPLIER);
-const uint64_t PERIOD_REWARD_AMOUNT_INT = uint64_t(PERIOD_REWARD_AMOUNT * IQ_PRECISION_MULTIPLIER);
 const float TIER_ONE_THRESHOLD = 0.5f;
 
 class eparticlectr : public eosio::contract {

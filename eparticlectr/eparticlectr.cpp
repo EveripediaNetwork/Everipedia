@@ -432,6 +432,12 @@ void eparticlectr::procrewards(uint64_t reward_period) {
     // This function needs to be universally callable. A cron job will be api calling this every REWARD_INTERVAL seconds.
     // require_auth(ARTICLE_CONTRACT_ACCTNAME);
 
+    float PERIOD_REWARD_AMOUNT = 10.000; // for testing purposes
+    // float PERIOD_REWARD_AMOUNT = 1425.964; // 25 million tokens a year = 0.25%
+    uint64_t PERIOD_CURATION_REWARD = uint64_t(PERIOD_REWARD_AMOUNT * CURATION_REWARD_RATIO * IQ_PRECISION_MULTIPLIER);
+    uint64_t PERIOD_EDITOR_REWARD = uint64_t(PERIOD_REWARD_AMOUNT * EDITOR_REWARD_RATIO * IQ_PRECISION_MULTIPLIER);
+    uint64_t PERIOD_REWARD_AMOUNT_INT = uint64_t(PERIOD_REWARD_AMOUNT * IQ_PRECISION_MULTIPLIER);
+
     uint64_t currentInterval = now() / REWARD_INTERVAL;
     print("Current interval is: ", currentInterval, "\n");
 
