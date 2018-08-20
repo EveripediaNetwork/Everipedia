@@ -14,6 +14,14 @@
         {"name":"memo", "type":"string"}
       ]
     },{
+        "name": "burn",
+        "base": "",
+        "fields": [
+          {"name":"from", "type":"account_name"},
+          {"name":"quantity", "type":"asset"},
+          {"name":"memo", "type":"string"}
+        ]
+    },{
         "name": "paytxfee",
         "base": "",
         "fields": [
@@ -21,14 +29,14 @@
           {"name":"quantity", "type":"asset"},
           {"name":"memo", "type":"string"}
         ]
-      },{
+    },{
      "name": "create",
      "base": "",
      "fields": [
         {"name":"issuer", "type":"account_name"},
         {"name":"maximum_supply", "type":"asset"}
      ]
-  },{
+    },{
      "name": "issue",
      "base": "",
      "fields": [
@@ -62,10 +70,14 @@
   "actions": [{
       "name": "transfer",
       "type": "transfer",
-      "ricardian_contract": "Everipedia has been paying the RAM costs for stakings, votes, and proposals. To help mitigate this, we are introducing a 0.1% transfer fee ( x0.001) for all IQ movements outside of the article and token contracts. This will help to reduce speculation and fund the continued use of RAM, as well as introduce some deflation to counteract the inflation introduced by the edit rewards. This is modeled in the same way as the EOS RAM trading fee reward which is taken out of direct circulation."
+      "ricardian_contract": "Everipedia has been paying the RAM costs for stakings, votes, and proposals. To help mitigate this, we are introducing a 0.1% transfer fee ( x0.001 ) for all IQ movements outside of the article and token contracts. This will help to reduce speculation and fund the continued use of RAM, as well as introduce some deflation to counteract the inflation introduced by the edit rewards. This is modeled in the same way as the EOS RAM trading fee reward which is taken out of direct circulation."
     },{
       "name": "paytxfee",
       "type": "paytxfee",
+      "ricardian_contract": ""
+    },{
+      "name": "burn",
+      "type": "burn",
       "ricardian_contract": ""
     },{
       "name": "issue",
