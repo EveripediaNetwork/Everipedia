@@ -31,6 +31,7 @@ fi
 
 if [ $BOOTSTRAP -eq 1 ]; then
     # Create BIOS accounts
+    cleos wallet import --private-key 5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3
     cleos wallet import --private-key 5JgqWJYVBcRhviWZB3TU1tN9ui6bGpQgrXVtYZtTG2d3yXrDtYX
     cleos wallet import --private-key 5JjjgrrdwijEUU2iifKF94yKduoqfAij4SKk6X5Q3HfgHMS4Ur6
     cleos wallet import --private-key 5HxJN9otYmhgCKEbsii5NWhKzVj2fFXu3kzLhuS75upN5isPWNL
@@ -52,10 +53,11 @@ if [ $BOOTSTRAP -eq 1 ]; then
     
     # Bootstrap new chain
     cleos set contract eosio.token ~/eos/build/contracts/eosio.token/
-    cleos set contract eosio.msig ~/eos/build/contracts/eosio.msig/
+    cleos set contract eosio.msig ~/eos/build/contracts/eosio.msig/ 
     cleos push action eosio.token create '[ "eosio", "10000000000.0000 EOS" ]' -p eosio.token
     cleos push action eosio.token issue '[ "eosio", "1000000000.0000 EOS", "memo" ]' -p eosio
-    cleos set contract eosio ~/eos/build/contracts/eosio.system/
+    cleos set contract eosio ~/eos/build/contracts/eosio.bios/ 
+    cleos set contract eosio ~/eos/build/contracts/eosio.system/ 
     cleos push action eosio setpriv '["eosio.msig", 1]' -p eosio@active
     
     # Import keys
@@ -68,11 +70,14 @@ if [ $BOOTSTRAP -eq 1 ]; then
     cleos wallet import --private-key 5KZC9soBHR4AF1kt93pCNfjSLPJN9y51AKR4r4vvPsiPvFdLG3t
     cleos wallet import --private-key 5K9dtgQXBCggrMugEAxsBfcUZ8mmnbDpiZZYt7RvoxwChqiFdS1
     cleos wallet import --private-key 5JU8qQMV3cD4HzA14meGEBWwWxNWAk9QAebSkQotv4wXHkKncNh
+    cleos wallet import --private-key 5JU8qQMV3cD4HzA14meGEBWwWxNWAk9QAebSkQotv4wXHkKncNh
+    cleos wallet import --private-key 5JJB2Ut8NLJXkADonL8GBH6q8vVZq9BK2zTLTrHh8bURFG2tQia
     
     
     ## Create testing accounts
     cleos system newaccount eosio $TOKEN_CONTRACT EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP --stake-cpu "1 EOS" --stake-net "1 EOS" --buy-ram-kbytes 1000 --transfer
     cleos system newaccount eosio $ARTICLE_CONTRACT EOS8dYVzNktdam3Vn31mSXcmbj7J7MzGNudqKb3MLW1wdxWJpEbrw --stake-cpu "1 EOS" --stake-net "1 EOS" --buy-ram-kbytes 1000 --transfer
+    cleos system newaccount eosio epiqtokenfee EOS7mWN4AAmyPwY9ib1zYBKbwAteViwPQ4v9MtBWau4AKNZ4z2X4F --stake-cpu "5 EOS" --stake-net "1 EOS" --buy-ram-kbytes 1000 --transfer
     cleos system newaccount eosio eptestusersa EOS6HfoynFKZ1Msq1bKNwtSTTpEu8NssYMcgsy6nHqhRp3mz7tNkB --stake-cpu "5 EOS" --stake-net "1 EOS" --buy-ram-kbytes 1000 --transfer
     cleos system newaccount eosio eptestusersb EOS68s2PrHPDeGWTKczrNZCn4MDMgoW6SFHuTQhXYUNLT1hAmJei8 --stake-cpu "5 EOS" --stake-net "1 EOS" --buy-ram-kbytes 1000 --transfer
     cleos system newaccount eosio eptestusersc EOS7LpZDPKwWWXgJnNYnX6LCBgNqCEqugW9oUQr7XqcSfz7aSFk8o --stake-cpu "5 EOS" --stake-net "1 EOS" --buy-ram-kbytes 1000 --transfer
@@ -169,6 +174,7 @@ NEW_BALANCE6=$(balance eptestusersf)
 NEW_BALANCE7=$(balance eptestusersg)
 NEW_FEE_BALANCE=$(balance $FEE_ACCOUNT)
 
+echo $(bc <<< "$OLD_BALANCE1- $NEW_BALANCE1")
 assert $(bc <<< "$OLD_BALANCE1 - $NEW_BALANCE1 == 6000")
 assert $(bc <<< "$NEW_BALANCE2 - $OLD_BALANCE2 == 999")
 assert $(bc <<< "$NEW_BALANCE3 - $OLD_BALANCE3 == 999")
