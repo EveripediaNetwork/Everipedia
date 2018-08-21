@@ -100,7 +100,7 @@ if [ $BOOTSTRAP -eq 1 ]; then
     cleos set contract $TOKEN_CONTRACT ~/eos/build/contracts/everipediaiq/
     cleos set contract $ARTICLE_CONTRACT ~/eos/build/contracts/eparticlectr/
     cleos set account permission $TOKEN_CONTRACT active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }] }' owner -p $TOKEN_CONTRACT
-    cleos set account permission $ARTICLE_CONTRACT active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p $ARTICLE_CONTRACT
+    cleos set account permission $ARTICLE_CONTRACT active '{ "threshold": 1, "keys": [{ "key": "EOS8dYVzNktdam3Vn31mSXcmbj7J7MzGNudqKb3MLW1wdxWJpEbrw", "weight": 1 }], "accounts": [{ "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p $ARTICLE_CONTRACT
     
     # Create and issue token
     cleos push action $TOKEN_CONTRACT create "[\"$TOKEN_CONTRACT\", \"100000000000.000 IQ\"]" -p $TOKEN_CONTRACT@active
