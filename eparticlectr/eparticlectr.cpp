@@ -339,7 +339,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     rewardstbl rewardstable( _self, _self );
 
     // print("SEEING VOTES\n");
-    while(vote_it->proposal_id == proposal_id && vote_it != voteidx.end()) {
+    while(vote_it->proposal_id == proposal_id && vote_it != voteidx.end() && istie == 0) {
         uint64_t change_amount = vote_it->amount;
         if (vote_it->approve != approved) {
             // Slash losers
