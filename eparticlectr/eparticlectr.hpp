@@ -367,6 +367,8 @@ public:
                       bool approve,
                       uint64_t amount );
 
-    void rewardclaim ( account_name user );
+    void rewardclmall ( account_name user );
+
+    void rewardclaim ( uint64_t reward_id );
 
 };

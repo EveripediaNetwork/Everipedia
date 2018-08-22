@@ -482,7 +482,7 @@ void eparticlectr::procrewards(uint64_t reward_period) {
     });
 }
 
-void eparticlectr::rewardclaim ( account_name user ) {
+void eparticlectr::rewardclmall ( account_name user ) {
     require_auth( user );
 
     // prep tables
@@ -516,6 +516,39 @@ void eparticlectr::rewardclaim ( account_name user ) {
         permission_level { TOKEN_CONTRACT_ACCTNAME, N(active) },
         TOKEN_CONTRACT_ACCTNAME, N(issue),
         std::make_tuple( user, quantity, std::string("IQ reward") ) 
+    ).send();
+}
+
+void eparticlectr::rewardclaim ( uint64_t reward_id ) {
+
+    // prep tables
+    periodrewardtbl perrewards( _self, _self );
+    rewardstbl rewardstable( _self, _self );
+
+    // check if user rewards exist and is unclaimed
+    auto reward_it = rewardstable.find( reward_id );
+    eosio_assert( reward_it != rewardstable.end(), "reward doesn't exist in database");
+    eosio_assert( !reward_it->disbursed, "reward has already been claimed" );
+
+    // only user is allowed to claim
+    require_auth( reward_it->user );
+
+    // Sanity check
+    auto period_it = perrewards.find( reward_it->proposal_finalize_period );
+    eosio_assert(period_it != perrewards.end(), "Something went very wrong during reward distribution");
+
+    // Sum curation + editor reward
+    uint64_t reward_amount = 0;
+    reward_amount += reward_it->amount * PERIOD_CURATION_REWARD / period_it->curation_sum;
+    if (reward_it->is_editor && reward_it->proposalresult)
+        reward_amount += reward_it->approval_vote_sum * PERIOD_EDITOR_REWARD / period_it->editor_sum;
+
+    eosio_assert(reward_amount > 0, "No unclaimed rewards");
+    asset quantity = asset(reward_amount, IQSYMBOL);
+    action( 
+        permission_level { TOKEN_CONTRACT_ACCTNAME, N(active) },
+        TOKEN_CONTRACT_ACCTNAME, N(issue),
+        std::make_tuple( reward_it->user, quantity, std::string("IQ reward") ) 
     ).send();
 }
 

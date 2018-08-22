@@ -175,10 +175,16 @@
         {"name":"editor_sum", "type":"uint64"}
       ]
   },{
-      "name": "rewardclaim",
+      "name": "rewardclmall",
       "base": "",
       "fields": [
         {"name":"user", "type":"account_name"}
+      ]
+  },{
+      "name": "rewardclaim",
+      "base": "",
+      "fields": [
+        {"name":"reward_id", "type":"uint64"}
       ]
   }],
   "actions": [{
@@ -208,6 +214,10 @@
     },{
       "name": "procrewards",
       "type": "procrewards",
+      "ricardian_contract": ""
+    },{
+      "name": "rewardclmall",
+      "type": "rewardclmall",
       "ricardian_contract": ""
     },{
       "name": "rewardclaim",
