@@ -65,11 +65,11 @@ Tokens will be minted every 30 minutes ("IQ reward period") through the edit pro
 
 Proposed edits pass thresholds and receive IQ rewards based on votes of token holders. 
   
-At the end of the 30-minute IQ reward period, editors will receive IQ rewards in proportion to the value of their contributions. The IQ reward available for the first year (subject to change) will be set at 25 million IQ which corresponds to 0.25% of the genesis amount of 10 billion IQ. The amount available per 30 minute period is as follows:
+At the end of the 30-minute IQ reward period, editors will receive IQ rewards in proportion to the value of their contributions. The IQ reward available for the first year (subject to change) will be set between 1% and 5%. Assuming 5% is chosen, that would be 500 million IQ. The amount available per 30 minute period is as follows:
 
 ![](https://epcdn-vz.azureedge.net/static/images/PeriodRewards.svg)
 
-*T<sub>Period</sub>* = 1425.964 IQ
+*T<sub>Period</sub>* = 28538.813 IQ
 
 **NOTE (as of August 20 2018): For testing purposes, T<sub>Period</sub> will be set to 10 IQ per 30 minute period until the platform and code is mature enough to increase it.**
 
@@ -118,6 +118,8 @@ The validation period for each edit lasts a maximum of 30 minutes. Front-ends ar
 
 ![](https://epcdn-vz.azureedge.net/static/images/CuratorRewards.svg)
 
+Curation rewards will not be given for proposals that are ties (50% / 50%).
+
 ### Edit Rewards (Content Rewards) 
 *PeriodReward<sub>Editor</sub>* = Edit mint rate; number of IQ tokens minted for editor rewards per period P (initial network P = 30 minutes)
 
@@ -127,7 +129,7 @@ The validation period for each edit lasts a maximum of 30 minutes. Front-ends ar
 
 ![](https://epcdn-vz.azureedge.net/static/images/EditorRewards.svg#1)
 
-Editor rewards will not be given for proposals that are ties (50%/50%), but they will still be approved.
+Editor rewards will not be given for proposals that are ties (50% / 50%), but they will still be approved.
 
 ## Examples
 Assuming period reward of 10 IQ:
