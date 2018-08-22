@@ -55,6 +55,7 @@ fi
 
 if [ $BOOTSTRAP -eq 1 ]; then
     # Create BIOS accounts
+    rm ~/eosio-wallet/default.wallet
     cleos wallet create --to-console
     cleos wallet import --private-key 5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3
     cleos wallet import --private-key 5JgqWJYVBcRhviWZB3TU1tN9ui6bGpQgrXVtYZtTG2d3yXrDtYX
@@ -123,8 +124,8 @@ if [ $BOOTSTRAP -eq 1 ]; then
     ## Deploy contracts
     cleos set contract everipediaiq ~/eos/build/contracts/everipediaiq/
     cleos set contract eparticlectr ~/eos/build/contracts/eparticlectr/
-    cleos set account permission everipediaiq active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }] }' owner -p everipediaiq
-    cleos set account permission eparticlectr active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p eparticlectr
+    cleos set account permission everipediaiq active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p everipediaiq
+    cleos set account permission eparticlectr active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p eparticlectr
     
     # Create and issue token
     cleos push action everipediaiq create "[\"everipediaiq\", \"100000000000.000 IQ\"]" -p everipediaiq@active
@@ -301,6 +302,7 @@ assert $(bc <<< "$? == 1")
 echo "Below should pass"
 
 # Votes
+sleep 1
 cleos push action eparticlectr votebyhash "[ \"eptestusersb\", \"$IPFS1\", 1, 50 ]" -p eptestusersb
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr votebyhash "[ \"eptestusersc\", \"$IPFS1\", 1, 100 ]" -p eptestusersc
@@ -363,8 +365,6 @@ assert $(bc <<< "$? == 1")
 
 echo "Sleeping until voting period ends..."
 sleep 4 # wait for test voting period to end
-NOW=$(date +%s)
-FINALIZE_PERIOD=$(bc <<< "$NOW / 5")
 
 echo "Below should pass"
 cleos push action eparticlectr fnlbyhash "[ \"$IPFS1\" ]" -p eptestusersa
@@ -384,24 +384,9 @@ assert $(bc <<< "$? == 1")
 
 # Procrewards
 echo "Sleeping until reward period ends..."
-sleep 5 # wait for test voting period to end
+sleep 5 
+FINALIZE_PERIOD=$(cleos get table eparticlectr eparticlectr rewardstbl -l 500 | jq ".rows[-1].proposal_finalize_period")
+
 echo "Below should pass"
-echo $FINALIZE_PERIOD
 cleos push action eparticlectr procrewards "[\"$FINALIZE_PERIOD\"]" -p eptestusersa
 assert $(bc <<< "$? == 0")
-
-
-## TEST 4
-## coincoin start 20140.000 IQ | minieo start 9899998.000 IQ
-## Expected reward of 80 for coincoin, 20 for minieo, and a slash for beetoken
-#cleos push action eparticlectr propose '[ "coincoin", "QmYE4tqhnJWNPxe7wBDkbq3g8gcLbheU7gxoVsf77XEKDE", "", "" ]' -p coincoin
-#cleos push action eparticlectr votebyhash '[ "minieo", "QmYE4tqhnJWNPxe7wBDkbq3g8gcLbheU7gxoVsf77XEKDE", 1, 25 ]' -p minieo
-#cleos push action eparticlectr votebyhash '[ "beetoken", "QmYE4tqhnJWNPxe7wBDkbq3g8gcLbheU7gxoVsf77XEKDE", 0, 15 ]' -p beetoken
-#
-#cleos push action eparticlectr propose '[ "coincoin", "QmYE2iqhnJWNPxe7wBDkbq3g8gcLbheU7gxoVsf77XEKDE", "", "" ]' -p coincoin
-#cleos push action eparticlectr votebyhash '[ "minieo", "QmYE2iqhnJWNPxe7wBDkbq3g8gcLbheU7gxoVsf77XEKDE", 1, 25 ]' -p minieo
-#cleos push action eparticlectr votebyhash '[ "beetoken", "QmYE2iqhnJWNPxe7wBDkbq3g8gcLbheU7gxoVsf77XEKDE", 0, 15 ]' -p beetoken
-#
-#cleos push action eparticlectr fnlbyhash  '[ "QmYE4tqhnJWNPxe7wBDkbq3g8gcLbheU7gxoVsf77XEKDE"]' -p coincoin
-#cleos push action eparticlectr fnlbyhash  '[ "QmYE2iqhnJWNPxe7wBDkbq3g8gcLbheU7gxoVsf77XEKDE"]' -p coincoin
-#cleos push action eparticlectr procrewards '[25562991]' -p coincoin
