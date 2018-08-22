@@ -35,15 +35,17 @@ const account_name TOKEN_CONTRACT_ACCTNAME = N(everipediaiq);
 const uint64_t IQ_TO_BRAINPOWER_RATIO = 1;
 const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
 const uint64_t EDIT_PROPOSE_BRAINPOWER = 10;
-// const uint32_t REWARD_INTERVAL = 1800; // 30 min
-// const uint32_t DEFAULT_VOTING_TIME = 21600; // 6 hours
-const uint32_t REWARD_INTERVAL = 45; // 45 sec
-const uint32_t DEFAULT_VOTING_TIME = 30; // 30 sec
+const uint32_t REWARD_INTERVAL = 1800; // 30 min
+const uint32_t DEFAULT_VOTING_TIME = 21600; // 6 hours
 const float ANNUAL_MINT_RATE = .025f;
 const float EDITOR_REWARD_RATIO = 0.8f;
 const float CURATION_REWARD_RATIO = 0.2f;
 const uint64_t IQ_PRECISION_MULTIPLIER = 1000;
 const float TIER_ONE_THRESHOLD = 0.5f;
+const float PERIOD_REWARD_AMOUNT = 10.000; // for first couple months only to test. will increase later
+uint64_t PERIOD_CURATION_REWARD = uint64_t(PERIOD_REWARD_AMOUNT * CURATION_REWARD_RATIO * IQ_PRECISION_MULTIPLIER);
+uint64_t PERIOD_EDITOR_REWARD = uint64_t(PERIOD_REWARD_AMOUNT * EDITOR_REWARD_RATIO * IQ_PRECISION_MULTIPLIER);
+//uint64_t PERIOD_REWARD_AMOUNT_INT = uint64_t(PERIOD_REWARD_AMOUNT * IQ_PRECISION_MULTIPLIER);
 
 class eparticlectr : public eosio::contract {
 
@@ -255,6 +257,14 @@ private:
         uint64_t get_finalize_period()const { return proposal_finalize_period; }
     };
 
+    struct periodreward {
+        uint64_t period;
+	uint64_t curation_sum;
+	uint64_t editor_sum;
+
+	uint64_t primary_key() const { return period; }
+    };
+
     //  ==================================================
     //  ==================================================
     //  ==================================================
@@ -311,6 +321,9 @@ private:
         indexed_by< N(byproposal), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_proposal >>
     > rewardstbl;
 
+    // period rewards table
+    // @abi table
+    typedef eosio::multi_index<N(periodreward), periodreward> periodrewardtbl;
 
 
 public:
@@ -354,5 +367,6 @@ public:
                       bool approve,
                       uint64_t amount );
 
+    void rewardclaim ( account_name user );
 
 };

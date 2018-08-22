@@ -444,13 +444,6 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
 
 void eparticlectr::procrewards(uint64_t reward_period) {
     // This function needs to be universally callable. A cron job will be api calling this every REWARD_INTERVAL seconds.
-    // require_auth(ARTICLE_CONTRACT_ACCTNAME);
-
-    float PERIOD_REWARD_AMOUNT = 10.000; // for testing purposes
-    // float PERIOD_REWARD_AMOUNT = 1425.964; // 25 million tokens a year = 0.25%
-    uint64_t PERIOD_CURATION_REWARD = uint64_t(PERIOD_REWARD_AMOUNT * CURATION_REWARD_RATIO * IQ_PRECISION_MULTIPLIER);
-    uint64_t PERIOD_EDITOR_REWARD = uint64_t(PERIOD_REWARD_AMOUNT * EDITOR_REWARD_RATIO * IQ_PRECISION_MULTIPLIER);
-    uint64_t PERIOD_REWARD_AMOUNT_INT = uint64_t(PERIOD_REWARD_AMOUNT * IQ_PRECISION_MULTIPLIER);
 
     uint64_t currentInterval = now() / REWARD_INTERVAL;
     print("Current interval is: ", currentInterval, "\n");
@@ -464,6 +457,11 @@ void eparticlectr::procrewards(uint64_t reward_period) {
     auto rewards_it = rewardsidx.find(reward_period);
     eosio_assert( rewards_it != rewardsidx.end(), "No rewards found in this period!");
 
+    // no duplicate calculations
+    periodrewardtbl perrewards( _self, _self );
+    auto period_it = perrewards.find( reward_period );
+    eosio_assert( period_it == perrewards.end(), "Rewards have already been calculated for this period");
+
     // Calculate the total rewards amount in a period
     uint64_t curationRewardSum = 0;
     uint64_t editorRewardSum = 0;
@@ -475,51 +473,50 @@ void eparticlectr::procrewards(uint64_t reward_period) {
         }
         rewards_it++;
     }
-    print("CURATION REWARD DENOMINATOR: ", curationRewardSum, "\n");
-    print("EDITOR REWARD DENOMINATOR: ", editorRewardSum, "\n");
 
-    // Reset the rewards loop and start rewarding
-    rewards_it = rewardsidx.find(reward_period);
+    // Store the reward sums for the period
+    perrewards.emplace( _self, [&]( auto& p ) {
+	    p.period = reward_period;
+	    p.curation_sum = curationRewardSum;
+	    p.editor_sum = editorRewardSum;
+    });
+}
 
-    // Set up permissions
-    vector<permission_level> perlvs;
-    permission_level tokenContract = permission_level{ TOKEN_CONTRACT_ACCTNAME, N(active) };
-    permission_level articleContract = permission_level{ ARTICLE_CONTRACT_ACCTNAME, N(active) };
-    perlvs.push_back(tokenContract);
-    perlvs.push_back(articleContract);
+void eparticlectr::rewardclaim ( account_name user ) {
+    require_auth( user );
 
-    uint64_t rewardAmount = 0;
-    std::string curationString = "";
-    std::string editorString = "";
+    // prep tables
+    periodrewardtbl perrewards( _self, _self );
+    rewardstbl rewardstable( _self, _self );
 
-    while(rewards_it->disbursed == 0 && rewards_it != rewardsidx.end()) {
-        rewardAmount = 0;
+    // check if user rewards exist
+    auto useridx = rewardstable.get_index<N(byuser)>();
+    auto reward_it = useridx.find( user );
+    eosio_assert( reward_it != useridx.end(), "no rewards found for user");
 
-        // Calculate curation reward
-        rewardAmount = uint64_t(((rewards_it->amount) / (double)curationRewardSum) * PERIOD_CURATION_REWARD);
+    // calculate total reward across periods
+    uint64_t reward_amount = 0;
+    while (reward_it != useridx.end() && reward_it->user == user) {
+        if (reward_it->disbursed == 1)
+            continue;
 
-        // Issue curation reward
-        eosio_assert( rewardAmount <= PERIOD_REWARD_AMOUNT_INT, "Curation reward overflow");
-        asset iqAssetPack = asset(int64_t(rewardAmount), IQSYMBOL);
-        curationString = "Curation reward for " + rewards_it->proposed_article_hash;
-        action(perlvs, TOKEN_CONTRACT_ACCTNAME, N(issue), std::make_tuple(rewards_it->user, iqAssetPack, curationString)).send();
+        auto period_it = perrewards.find( reward_it->proposal_finalize_period );
+        eosio_assert(period_it != perrewards.end(), "Something went very wrong during reward distribution");
 
-        if (rewards_it->is_editor == 1 && rewards_it->is_tie == 0){
-            rewardAmount = uint64_t(((rewards_it->approval_vote_sum) / (double)editorRewardSum) * PERIOD_EDITOR_REWARD);
-            eosio_assert( rewardAmount <= PERIOD_REWARD_AMOUNT_INT, "Editor reward overflow");
-            iqAssetPack = asset(int64_t(rewardAmount), IQSYMBOL);
-            editorString = "Editor reward for " + rewards_it->proposed_article_hash;
-            action(perlvs, TOKEN_CONTRACT_ACCTNAME, N(issue), std::make_tuple(rewards_it->user, iqAssetPack, editorString)).send();
-        }
+        reward_amount += reward_it->amount * PERIOD_CURATION_REWARD / period_it->curation_sum;
+        if (reward_it->is_editor && reward_it->proposalresult)
+            reward_amount += reward_it->approval_vote_sum * PERIOD_EDITOR_REWARD / period_it->editor_sum;
 
-        // Mark the reward as disbursed
-        // TODO: may need to erase old reward notices once all disbursements occur
-        rewardsidx.modify( rewards_it, 0, [&]( auto& a ) {
-            a.disbursed = 1;
-        });
-        rewards_it++;
+        reward_it++;
     }
 
+    eosio_assert(reward_amount > 0, "No unclaimed rewards");
+    asset quantity = asset(reward_amount, IQSYMBOL);
+    action( 
+        permission_level { TOKEN_CONTRACT_ACCTNAME, N(active) },
+        TOKEN_CONTRACT_ACCTNAME, N(issue),
+        std::make_tuple( user, quantity, std::string("IQ reward") ) 
+    ).send();
 }
 
 void eparticlectr::oldrwdspurge(uint64_t reward_period, uint32_t loop_limit) {
