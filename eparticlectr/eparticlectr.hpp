@@ -35,8 +35,10 @@ const account_name TOKEN_CONTRACT_ACCTNAME = N(everipediaiq);
 const uint64_t IQ_TO_BRAINPOWER_RATIO = 1;
 const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
 const uint64_t EDIT_PROPOSE_BRAINPOWER = 10;
-const uint32_t REWARD_INTERVAL = 1800; // 30 min
-const uint32_t DEFAULT_VOTING_TIME = 21600; // 6 hours
+// const uint32_t REWARD_INTERVAL = 1800; // 30 min
+// const uint32_t DEFAULT_VOTING_TIME = 21600; // 6 hours
+const uint32_t REWARD_INTERVAL = 45; // 30 min
+const uint32_t DEFAULT_VOTING_TIME = 30; // 6 hours
 const float ANNUAL_MINT_RATE = .025f;
 const float EDITOR_REWARD_RATIO = 0.8f;
 const float CURATION_REWARD_RATIO = 0.2f;
@@ -259,10 +261,10 @@ private:
 
     struct periodreward {
         uint64_t period;
-	uint64_t curation_sum;
-	uint64_t editor_sum;
+      	uint64_t curation_sum;
+      	uint64_t editor_sum;
 
-	uint64_t primary_key() const { return period; }
+        uint64_t primary_key() const { return period; }
     };
 
     //  ==================================================
@@ -323,7 +325,7 @@ private:
 
     // period rewards table
     // @abi table
-    typedef eosio::multi_index<N(periodreward), periodreward> periodrewardtbl;
+    typedef eosio::multi_index<N(periodreward), periodreward> perrwdstbl;
 
 
 public:
@@ -369,6 +371,6 @@ public:
 
     void rewardclmall ( account_name user );
 
-    void rewardclaim ( uint64_t reward_id );
+    void rewardclmid ( uint64_t reward_id );
 
 };

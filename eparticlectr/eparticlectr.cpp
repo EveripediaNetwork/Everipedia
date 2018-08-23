@@ -458,7 +458,7 @@ void eparticlectr::procrewards(uint64_t reward_period) {
     eosio_assert( rewards_it != rewardsidx.end(), "No rewards found in this period!");
 
     // no duplicate calculations
-    periodrewardtbl perrewards( _self, _self );
+    perrwdstbl perrewards( _self, _self );
     auto period_it = perrewards.find( reward_period );
     eosio_assert( period_it == perrewards.end(), "Rewards have already been calculated for this period");
 
@@ -486,7 +486,7 @@ void eparticlectr::rewardclmall ( account_name user ) {
     require_auth( user );
 
     // prep tables
-    periodrewardtbl perrewards( _self, _self );
+    perrwdstbl perrewards( _self, _self );
     rewardstbl rewardstable( _self, _self );
 
     // check if user rewards exist
@@ -512,17 +512,17 @@ void eparticlectr::rewardclmall ( account_name user ) {
 
     eosio_assert(reward_amount > 0, "No unclaimed rewards");
     asset quantity = asset(reward_amount, IQSYMBOL);
-    action( 
+    action(
         permission_level { TOKEN_CONTRACT_ACCTNAME, N(active) },
         TOKEN_CONTRACT_ACCTNAME, N(issue),
-        std::make_tuple( user, quantity, std::string("IQ reward") ) 
+        std::make_tuple( user, quantity, std::string("IQ reward") )
     ).send();
 }
 
-void eparticlectr::rewardclaim ( uint64_t reward_id ) {
+void eparticlectr::rewardclmid ( uint64_t reward_id ) {
 
     // prep tables
-    periodrewardtbl perrewards( _self, _self );
+    perrwdstbl perrewards( _self, _self );
     rewardstbl rewardstable( _self, _self );
 
     // check if user rewards exist and is unclaimed
@@ -545,10 +545,10 @@ void eparticlectr::rewardclaim ( uint64_t reward_id ) {
 
     eosio_assert(reward_amount > 0, "No unclaimed rewards");
     asset quantity = asset(reward_amount, IQSYMBOL);
-    action( 
+    action(
         permission_level { TOKEN_CONTRACT_ACCTNAME, N(active) },
         TOKEN_CONTRACT_ACCTNAME, N(issue),
-        std::make_tuple( reward_it->user, quantity, std::string("IQ reward") ) 
+        std::make_tuple( reward_it->user, quantity, std::string("IQ reward") )
     ).send();
 }
 
