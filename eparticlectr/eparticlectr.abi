@@ -181,7 +181,7 @@
         {"name":"user", "type":"account_name"}
       ]
   },{
-      "name": "rewardclaim",
+      "name": "rewardclmid",
       "base": "",
       "fields": [
         {"name":"reward_id", "type":"uint64"}
@@ -220,8 +220,8 @@
       "type": "rewardclmall",
       "ricardian_contract": ""
     },{
-      "name": "rewardclaim",
-      "type": "rewardclaim",
+      "name": "rewardclmid",
+      "type": "rewardclmid",
       "ricardian_contract": ""
     },{
       "name": "propose",
@@ -263,6 +263,12 @@
       "type": "rewardhistory",
       "index_type": "i64",
       "key_names" : ["id"],
+      "key_types" : ["uint64"]
+    },{
+      "name": "perrwdstbl",
+      "type": "periodreward",
+      "index_type": "i64",
+      "key_names" : ["period"],
       "key_types" : ["uint64"]
     },{
       "name": "brainpwrtbl",
