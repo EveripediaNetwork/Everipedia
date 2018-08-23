@@ -42,9 +42,9 @@ const float EDITOR_REWARD_RATIO = 0.8f;
 const float CURATION_REWARD_RATIO = 0.2f;
 const uint64_t IQ_PRECISION_MULTIPLIER = 1000;
 const float TIER_ONE_THRESHOLD = 0.5f;
-const float PERIOD_REWARD_AMOUNT = 10.000; // for first couple months only to test. will increase later
-uint64_t PERIOD_CURATION_REWARD = uint64_t(PERIOD_REWARD_AMOUNT * CURATION_REWARD_RATIO * IQ_PRECISION_MULTIPLIER);
-uint64_t PERIOD_EDITOR_REWARD = uint64_t(PERIOD_REWARD_AMOUNT * EDITOR_REWARD_RATIO * IQ_PRECISION_MULTIPLIER);
+const float PERIOD_REWARD_AMOUNT = 10000; // 10 IQ: for first couple months only to test. will increase later
+uint64_t PERIOD_CURATION_REWARD = 2000; // 2 IQ
+uint64_t PERIOD_EDITOR_REWARD = 8000; // 8 IQ
 //uint64_t PERIOD_REWARD_AMOUNT_INT = uint64_t(PERIOD_REWARD_AMOUNT * IQ_PRECISION_MULTIPLIER);
 
 class eparticlectr : public eosio::contract {

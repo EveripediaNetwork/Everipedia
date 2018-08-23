@@ -340,7 +340,6 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
 
     // print("SEEING VOTES\n");
     while(vote_it->proposal_id == proposal_id && vote_it != voteidx.end() && istie == 0) {
-        uint64_t change_amount = vote_it->amount;
         if (vote_it->approve != approved) {
             // Slash losers
             // print("SLASHING THE LOSERS\n");
@@ -403,7 +402,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
             rewardstable.emplace( _self,  [&]( auto& a ) {
                 a.id = rewardstable.available_primary_key();
                 a.user = vote_it->voter;
-                a.amount = change_amount;
+                a.amount = vote_it->amount;
                 a.approval_vote_sum = for_votes;
                 a.proposal_id = proposal_id;
                 a.proposed_article_hash = vote_it->proposed_article_hash;
@@ -468,8 +467,8 @@ void eparticlectr::procrewards(uint64_t reward_period) {
     while(rewards_it != rewardsidx.end()) {
         curationRewardSum += rewards_it->amount;
 
-        if (rewards_it->proposalresult == 1){
-            editorRewardSum += rewards_it->amount;
+        if (rewards_it->is_editor && rewards_it->proposalresult == 1){
+            editorRewardSum += rewards_it->approval_vote_sum;
         }
         rewards_it++;
     }
@@ -497,15 +496,26 @@ void eparticlectr::rewardclmall ( account_name user ) {
     // calculate total reward across periods
     uint64_t reward_amount = 0;
     while (reward_it != useridx.end() && reward_it->user == user) {
-        if (reward_it->disbursed == 1)
-            continue;
+
+        // no duplicate dispersals
+        if (reward_it->disbursed == 1) {
+            print("already disbursed ", reward_it->id, ". ");
+            reward_it++; continue;
+        }
+        print("disbursing ", reward_it->id, ". ");
 
         auto period_it = perrewards.find( reward_it->proposal_finalize_period );
-        eosio_assert(period_it != perrewards.end(), "Something went very wrong during reward distribution");
+        eosio_assert(period_it != perrewards.end(), "Must call procrewards for this period first");
 
+        // calculate editor and curation rewards
         reward_amount += reward_it->amount * PERIOD_CURATION_REWARD / period_it->curation_sum;
         if (reward_it->is_editor && reward_it->proposalresult)
             reward_amount += reward_it->approval_vote_sum * PERIOD_EDITOR_REWARD / period_it->editor_sum;
+
+        // mark as disbursed
+        rewardstable.modify( *reward_it, _self, [&]( auto& r ) {
+            r.disbursed = 1;
+        });
 
         reward_it++;
     }
@@ -520,7 +530,6 @@ void eparticlectr::rewardclmall ( account_name user ) {
 }
 
 void eparticlectr::rewardclaim ( uint64_t reward_id ) {
-
     // prep tables
     periodrewardtbl perrewards( _self, _self );
     rewardstbl rewardstable( _self, _self );
@@ -544,6 +553,11 @@ void eparticlectr::rewardclaim ( uint64_t reward_id ) {
         reward_amount += reward_it->approval_vote_sum * PERIOD_EDITOR_REWARD / period_it->editor_sum;
 
     eosio_assert(reward_amount > 0, "No unclaimed rewards");
+
+    rewardstable.modify( reward_it, _self, [&]( auto& r ) {
+        r.disbursed = 1;
+    });
+
     asset quantity = asset(reward_amount, IQSYMBOL);
     action( 
         permission_level { TOKEN_CONTRACT_ACCTNAME, N(active) },
@@ -601,4 +615,4 @@ void eparticlectr::notify( account_name to, std::string memo ){
     require_recipient( to );
 }
 
-EOSIO_ABI( eparticlectr, (brainclmid)(brainmeart)(notify)(finalize)(fnlbyhash)(oldrwdspurge)(oldvotepurge)(procrewards)(propose)(updatewiki)(votebyhash) )
+EOSIO_ABI( eparticlectr, (brainclmid)(brainmeart)(notify)(finalize)(fnlbyhash)(oldrwdspurge)(oldvotepurge)(procrewards)(propose)(rewardclaim)(rewardclmall)(updatewiki)(votebyhash) )

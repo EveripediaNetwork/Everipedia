@@ -282,6 +282,12 @@
       "index_type": "i64",
       "key_names" : ["id"],
       "key_types" : ["uint64"]
+    },{
+      "name": "periodreward",
+      "type": "periodreward",
+      "index_type": "i64",
+      "key_names" : ["period"],
+      "key_types" : ["uint64"]
     }],
   "clauses": []
 }

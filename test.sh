@@ -303,6 +303,8 @@ echo "Below should pass"
 
 # Votes
 sleep 1
+
+# Win
 cleos push action eparticlectr votebyhash "[ \"eptestusersb\", \"$IPFS1\", 1, 50 ]" -p eptestusersb
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr votebyhash "[ \"eptestusersc\", \"$IPFS1\", 1, 100 ]" -p eptestusersc
@@ -316,6 +318,7 @@ assert $(bc <<< "$? == 0")
 cleos push action eparticlectr votebyhash "[ \"eptestusersg\", \"$IPFS1\", 0, 80 ]" -p eptestusersg
 assert $(bc <<< "$? == 0")
 
+# Lose
 cleos push action eparticlectr votebyhash "[ \"eptestusersb\", \"$IPFS2\", 1, 5 ]" -p eptestusersb
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr votebyhash "[ \"eptestusersc\", \"$IPFS2\", 0, 100 ]" -p eptestusersc
@@ -329,11 +332,12 @@ assert $(bc <<< "$? == 0")
 cleos push action eparticlectr votebyhash "[ \"eptestusersg\", \"$IPFS2\", 0, 800 ]" -p eptestusersg
 assert $(bc <<< "$? == 0")
 
+# Tie (net votes dont't sum to 0 because proposer auto-votes 10 in favor)
 cleos push action eparticlectr votebyhash "[ \"eptestusersb\", \"$IPFS3\", 1, 5 ]" -p eptestusersb
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr votebyhash "[ \"eptestusersc\", \"$IPFS3\", 0, 100 ]" -p eptestusersc
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr votebyhash "[ \"eptestusersd\", \"$IPFS3\", 1, 500 ]" -p eptestusersd
+cleos push action eparticlectr votebyhash "[ \"eptestusersd\", \"$IPFS3\", 1, 490 ]" -p eptestusersd
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr votebyhash "[ \"eptestuserse\", \"$IPFS3\", 0, 500 ]" -p eptestuserse
 assert $(bc <<< "$? == 0")
@@ -342,6 +346,7 @@ assert $(bc <<< "$? == 0")
 cleos push action eparticlectr votebyhash "[ \"eptestusersg\", \"$IPFS3\", 1, 60 ]" -p eptestusersg
 assert $(bc <<< "$? == 0")
 
+# Unananimous win
 cleos push action eparticlectr votebyhash "[ \"eptestusersb\", \"$IPFS4\", 1, 5 ]" -p eptestusersb
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr votebyhash "[ \"eptestusersc\", \"$IPFS4\", 1, 10 ]" -p eptestusersc
@@ -355,7 +360,8 @@ assert $(bc <<< "$? == 0")
 cleos push action eparticlectr votebyhash "[ \"eptestusersg\", \"$IPFS4\", 1, 60 ]" -p eptestusersg
 assert $(bc <<< "$? == 0")
 
-cleos push action eparticlectr votebyhash "[ \"eptestusersc\", \"$IPFS5\", 0, 20 ]" -p eptestusersc
+# Flip vote loss
+cleos push action eparticlectr votebyhash "[ \"eptestuserse\", \"$IPFS5\", 0, 20 ]" -p eptestuserse
 assert $(bc <<< "$? == 0")
 
 # Finalize
@@ -379,14 +385,95 @@ cleos push action eparticlectr fnlbyhash "[ \"$IPFS5\" ]" -p eptestusersa
 assert $(bc <<< "$? == 0")
 
 echo "Next finalize should fail"
-cleos push action eparticlectr fnlbyhash "[ \"$IPFS3\" ]" -p eptestuserse
+cleos push action --force-unique eparticlectr fnlbyhash "[ \"$IPFS3\" ]" -p eptestuserse
 assert $(bc <<< "$? == 1")
 
 # Procrewards
 echo "Sleeping until reward period ends..."
 sleep 5 
 FINALIZE_PERIOD=$(cleos get table eparticlectr eparticlectr rewardstbl -l 500 | jq ".rows[-1].proposal_finalize_period")
+ONE_BACK_PERIOD=$(bc <<< "$FINALIZE_PERIOD - 1")
 
 echo "Below should pass"
 cleos push action eparticlectr procrewards "[\"$FINALIZE_PERIOD\"]" -p eptestusersa
 assert $(bc <<< "$? == 0")
+cleos push action eparticlectr procrewards "[\"$ONE_BACK_PERIOD\"]" -p eptestusersa
+
+CURATION_REWARD_SUM=$(cleos get table eparticlectr eparticlectr periodreward -l 500 | jq ".rows[-1].curation_sum")
+EDITOR_REWARD_SUM=$(cleos get table eparticlectr eparticlectr periodreward -l 500 | jq ".rows[-1].editor_sum")
+
+assert $(bc <<< "$CURATION_REWARD_SUM == 2290")
+assert $(bc <<< "$EDITOR_REWARD_SUM == 880")
+
+# Claim rewards
+OLD_BALANCE1=$(balance eptestusersa)
+OLD_BALANCE2=$(balance eptestusersb)
+OLD_BALANCE3=$(balance eptestusersc)
+OLD_BALANCE4=$(balance eptestusersd)
+OLD_BALANCE5=$(balance eptestuserse)
+OLD_BALANCE6=$(balance eptestusersf)
+OLD_BALANCE7=$(balance eptestusersg)
+
+REWARD_ID1=$(cleos get table eparticlectr eparticlectr rewardstbl -l 500 | jq ".rows[-1].id")
+REWARD_ID2=$(bc <<< "$REWARD_ID1 - 1")
+REWARD_ID3=$(bc <<< "$REWARD_ID1 - 2")
+REWARD_ID4=$(bc <<< "$REWARD_ID1 - 3")
+
+cleos push action eparticlectr rewardclaim "[\"$REWARD_ID1\"]" -p eptestuserse
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr rewardclaim "[\"$REWARD_ID2\"]" -p eptestusersg
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr rewardclaim "[\"$REWARD_ID3\"]" -p eptestusersf
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr rewardclaim "[\"$REWARD_ID4\"]" -p eptestuserse
+assert $(bc <<< "$? == 0")
+
+MID_BALANCE1=$(balance eptestusersa)
+MID_BALANCE2=$(balance eptestusersb)
+MID_BALANCE3=$(balance eptestusersc)
+MID_BALANCE4=$(balance eptestusersd)
+MID_BALANCE5=$(balance eptestuserse)
+MID_BALANCE6=$(balance eptestusersf)
+MID_BALANCE7=$(balance eptestusersg)
+
+bc <<< "$MID_BALANCE3 - $OLD_BALANCE3"
+assert $(bc <<< "$MID_BALANCE5 - $OLD_BALANCE5 == .051")
+assert $(bc <<< "$MID_BALANCE7 - $OLD_BALANCE7 == .052")
+assert $(bc <<< "$MID_BALANCE6 - $OLD_BALANCE6 == .030")
+
+cleos push action eparticlectr rewardclmall '["eptestusersa"]' -p eptestusersa
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr rewardclmall '["eptestusersb"]' -p eptestusersb
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr rewardclmall '["eptestusersc"]' -p eptestusersc
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr rewardclmall '["eptestusersd"]' -p eptestusersd
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr rewardclmall '["eptestuserse"]' -p eptestuserse
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr rewardclmall '["eptestusersg"]' -p eptestusersg
+assert $(bc <<< "$? == 0")
+
+NEW_BALANCE1=$(balance eptestusersa)
+NEW_BALANCE2=$(balance eptestusersb)
+NEW_BALANCE3=$(balance eptestusersc)
+NEW_BALANCE4=$(balance eptestusersd)
+NEW_BALANCE5=$(balance eptestuserse)
+NEW_BALANCE6=$(balance eptestusersf)
+NEW_BALANCE7=$(balance eptestusersg)
+
+assert $(bc <<< "$NEW_BALANCE1 - $MID_BALANCE1 == 6.008")
+assert $(bc <<< "$NEW_BALANCE2 - $MID_BALANCE2 == 0.047") # should be 0.048?
+assert $(bc <<< "$NEW_BALANCE3 - $MID_BALANCE3 == 0.182") # should be 0.183?
+assert $(bc <<< "$NEW_BALANCE4 - $MID_BALANCE4 == 2.052")
+assert $(bc <<< "$NEW_BALANCE5 - $MID_BALANCE5 == 0.872") # should be 0.873?
+assert $(bc <<< "$NEW_BALANCE6 - $MID_BALANCE6 == 0.000") 
+assert $(bc <<< "$NEW_BALANCE7 - $MID_BALANCE7 == 0.698")
+
+echo "Next 3 claims should fail"
+cleos push action eparticlectr rewardclmall '["eptestusersf"]' -p eptestusersf
+assert $(bc <<< "$? != 0")
+cleos push action --force-unique eparticlectr rewardclaim "[\"$REWARD_ID3\"]" -p eptestusersf
+assert $(bc <<< "$? != 0")
+cleos push action eparticlectr rewardclaim '[764333]' -p eptestusersf
+assert $(bc <<< "$? != 0")
