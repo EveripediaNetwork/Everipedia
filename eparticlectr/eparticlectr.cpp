@@ -529,7 +529,7 @@ void eparticlectr::rewardclmall ( account_name user ) {
     ).send();
 }
 
-void eparticlectr::rewardclaim ( uint64_t reward_id ) {
+void eparticlectr::rewardclmid ( uint64_t reward_id ) {
     // prep tables
     perrwdstbl perrewards( _self, _self );
     rewardstbl rewardstable( _self, _self );
@@ -615,4 +615,4 @@ void eparticlectr::notify( account_name to, std::string memo ){
     require_recipient( to );
 }
 
-EOSIO_ABI( eparticlectr, (brainclmid)(brainmeart)(notify)(finalize)(fnlbyhash)(oldrwdspurge)(oldvotepurge)(procrewards)(propose)(rewardclaim)(rewardclmall)(updatewiki)(votebyhash) )
+EOSIO_ABI( eparticlectr, (brainclmid)(brainmeart)(notify)(finalize)(fnlbyhash)(oldrwdspurge)(oldvotepurge)(procrewards)(propose)(rewardclmid)(rewardclmall)(updatewiki)(votebyhash) )
