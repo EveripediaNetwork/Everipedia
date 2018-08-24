@@ -109,7 +109,7 @@ void everipediaiq::paytxfee( account_name from, asset fee, string memo )
 
     accounts from_acnts( _self, from );
     const auto& from_act = from_acnts.get( fee.symbol.name(), "insufficient funds for fee" );
-    eosio_assert( from_act.balance.amount >= fee.amount, "insufficient fundds for fee" );
+    eosio_assert( from_act.balance.amount >= fee.amount, "insufficient funds for fee" );
     
     auto sym = fee.symbol.name();
     stats statstable( _self, sym );

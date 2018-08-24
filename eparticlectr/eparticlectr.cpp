@@ -146,8 +146,8 @@ void eparticlectr::votebyhash ( account_name voter, ipfshash_t& proposed_article
         });
     }
     else{
-        while(vote_it != voteidx.end()) {
-            if(vote_it->proposal_id == proposal_id && vote_it->voter == voter){
+        while(vote_it != voteidx.end() && vote_it->proposal_id == proposal_id) {
+            if(vote_it->voter == voter){
                 print("PROPOSAL AND VOTER MATCH FOUND", "\n");
                 if(vote_it->approve == approve){
                     // Strengthen existing vote

@@ -138,6 +138,7 @@ if [ $BUILD -eq 1 ]; then
     cp eparticlectr/* ~/eos/contracts/eparticlectr/
     sed -i -e 's/REWARD_INTERVAL = 1800/REWARD_INTERVAL = 5/g' ~/eos/contracts/eparticlectr/eparticlectr.hpp
     sed -i -e 's/DEFAULT_VOTING_TIME = 21600/DEFAULT_VOTING_TIME = 3/g' ~/eos/contracts/eparticlectr/eparticlectr.hpp
+    sed -i -e 's/STAKING_DURATION = 21 \* 86400/STAKING_DURATION = 5/g' ~/eos/contracts/eparticlectr/eparticlectr.hpp
     cd ~/eos
     ./eosio_build.sh
     cd -
@@ -364,6 +365,14 @@ assert $(bc <<< "$? == 0")
 cleos push action eparticlectr votebyhash "[ \"eptestuserse\", \"$IPFS5\", 0, 20 ]" -p eptestuserse
 assert $(bc <<< "$? == 0")
 
+# Bad votes
+echo "Next 2 votes should fail"
+cleos push action eparticlectr votebyhash "[ \"eptestusersg\", \"$IPFS4\", 1, 50000 ]" -p eptestusersg
+assert $(bc <<< "$? == 1")
+cleos push action eparticlectr votebyhash "[ \"eptestusersc\", \"$IPFS4\", 1, 500 ]" -p eptestusersg
+assert $(bc <<< "$? == 1")
+
+
 # Finalize
 echo "Early finalize should fail"
 cleos push action eparticlectr fnlbyhash "[ \"$IPFS3\" ]" -p eptestuserse
@@ -371,6 +380,11 @@ assert $(bc <<< "$? == 1")
 
 echo "Sleeping until voting period ends..."
 sleep 4 # wait for test voting period to end
+
+# Bad vote
+echo "Late vote should fail"
+cleos push action eparticlectr votebyhash "[ \"eptestusersc\", \"$IPFS4\", 1, 500 ]" -p eptestusersg
+assert $(bc <<< "$? == 1")
 
 echo "Below should pass"
 cleos push action eparticlectr fnlbyhash "[ \"$IPFS1\" ]" -p eptestusersa
@@ -387,6 +401,8 @@ assert $(bc <<< "$? == 0")
 echo "Next finalize should fail"
 cleos push action --force-unique eparticlectr fnlbyhash "[ \"$IPFS3\" ]" -p eptestuserse
 assert $(bc <<< "$? == 1")
+
+# Slash checks
 
 # Procrewards
 echo "Sleeping until reward period ends..."
@@ -477,3 +493,49 @@ cleos push action --force-unique eparticlectr rewardclmid "[\"$REWARD_ID3\"]" -p
 assert $(bc <<< "$? != 0")
 cleos push action eparticlectr rewardclmid '[764333]' -p eptestusersf
 assert $(bc <<< "$? != 0")
+
+echo "Below should pass"
+echo $IPFS1
+cleos push action eparticlectr oldvotepurge "[\"$IPFS1\", 100]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr oldvotepurge "[\"$IPFS2\", 100]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr oldvotepurge "[\"$IPFS3\", 2]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr oldvotepurge "[\"$IPFS3\", 5]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+
+echo "Next 2 vote purges should fail"
+cleos push action eparticlectr oldvotepurge "[\"$IPFS1\", 100]" -p eptestusersa
+assert $(bc <<< "$? == 1")
+cleos push action eparticlectr oldvotepurge '["gumdrop", 100]' -p eptestusersa
+assert $(bc <<< "$? == 1")
+
+echo "Below should pass"
+STAKE1=$(cleos get table eparticlectr eparticlectr staketbl -l 500 | jq ".rows[-1]")
+STAKE_USER1=$(echo $STAKE1 | jq ".user" | tr -d '"')
+STAKE_ID1=$(echo $STAKE1 | jq ".id" | tr -d '"')
+STAKE2=$(cleos get table eparticlectr eparticlectr staketbl -l 500 | jq ".rows[-2]")
+STAKE_USER2=$(echo $STAKE2 | jq ".user" | tr -d '"')
+STAKE_ID2=$(echo $STAKE2 | jq ".id" | tr -d '"')
+STAKE3=$(cleos get table eparticlectr eparticlectr staketbl -l 500 | jq ".rows[-3]")
+STAKE_USER3=$(echo $STAKE3 | jq ".user" | tr -d '"')
+STAKE_ID3=$(echo $STAKE3 | jq ".id" | tr -d '"')
+STAKE4=$(cleos get table eparticlectr eparticlectr staketbl -l 500 | jq ".rows[-4]")
+STAKE_USER4=$(echo $STAKE4 | jq ".user" | tr -d '"')
+STAKE_ID4=$(echo $STAKE4 | jq ".id" | tr -d '"')
+
+cleos push action eparticlectr brainclmid "[\"$STAKE_USER1\", \"$STAKE_ID1\"]" -p $STAKE_USER1
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr brainclmid "[\"$STAKE_USER2\", \"$STAKE_ID2\"]" -p $STAKE_USER2
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr brainclmid "[\"$STAKE_USER3\", \"$STAKE_ID3\"]" -p $STAKE_USER3
+assert $(bc <<< "$? == 0")
+
+echo "The following 2 claims should fail"
+cleos push action eparticlectr brainclmid "[\"eptestuserse\", \"$STAKE_ID4\"]" -p eptestuserse 
+assert $(bc <<< "$? == 1")
+cleos push action eparticlectr brainclmid "[\"eptestusersa\", \"$STAKE_ID1\"]" -p eptestusersf
+assert $(bc <<< "$? == 1")
+
+echo "Testing successfully complete"
