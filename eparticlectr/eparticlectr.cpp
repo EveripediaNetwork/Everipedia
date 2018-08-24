@@ -129,13 +129,12 @@ void eparticlectr::votebyhash ( account_name voter, ipfshash_t& proposed_article
     votestbl votetbl( _self, _self );
     auto voteidx = votetbl.get_index<N(byhash)>();
     auto vote_it = voteidx.find(eparticlectr::ipfs_to_key256(proposed_article_hash));
-    uint64_t votePrimaryKey = votetbl.available_primary_key();
 
     if(vote_it == voteidx.end()){
         // First vote for proposal
-        print("FIRST VOTE FOR PROPOSAL", "\n");
+        print("FIRST VOTE FOR PROPOSAL. ");
         votetbl.emplace( _self, [&]( auto& a ) {
-             a.id = votePrimaryKey;
+             a.id = votetbl.available_primary_key();
              a.proposal_id = proposal_id;
              a.proposed_article_hash = proposed_article_hash;
              a.approve = approve;
@@ -148,10 +147,10 @@ void eparticlectr::votebyhash ( account_name voter, ipfshash_t& proposed_article
     else{
         while(vote_it != voteidx.end() && vote_it->proposal_id == proposal_id) {
             if(vote_it->voter == voter){
-                print("PROPOSAL AND VOTER MATCH FOUND", "\n");
+                print("PROPOSAL AND VOTER MATCH FOUND. ");
                 if(vote_it->approve == approve){
                     // Strengthen existing vote
-                    print("STRENGTHEN EXISTING VOTE", "\n");
+                    print("STRENGTHEN EXISTING VOTE. ");
                     voteidx.modify( vote_it, _self, [&]( auto& a ) {
                         a.amount += amount;
                         a.timestamp = now();
@@ -161,7 +160,7 @@ void eparticlectr::votebyhash ( account_name voter, ipfshash_t& proposed_article
                 else {
                     if(vote_it->amount >= amount){
                         // Weakening existing vote
-                        print("WEAKEN EXISTING VOTE", "\n");
+                        print("WEAKEN EXISTING VOTE. ");
                         voteidx.modify( vote_it, _self, [&]( auto& a ) {
                             a.amount = vote_it->amount - amount;
                             a.timestamp = now();
@@ -170,7 +169,7 @@ void eparticlectr::votebyhash ( account_name voter, ipfshash_t& proposed_article
                     }
                     else{
                         // Switch votes
-                        print("SWITCH VOTE", "\n");
+                        print("SWITCH VOTE. ");
                         voteidx.modify( vote_it, _self, [&]( auto& a ) {
                             a.amount = amount - vote_it->amount;
                             a.approve = approve;
@@ -183,11 +182,11 @@ void eparticlectr::votebyhash ( account_name voter, ipfshash_t& proposed_article
             }
             vote_it++;
         }
-        if(vote_it == voteidx.end()){
+        if(vote_it == voteidx.end() || vote_it->proposal_id != proposal_id){
             // Brand new vote
-            print("BRAND NEW VOTE", "\n");
+            print("BRAND NEW VOTE. ");
             votetbl.emplace( _self, [&]( auto& a ) {
-                 a.id = votePrimaryKey;
+                 a.id = votetbl.available_primary_key();
                  a.proposal_id = proposal_id;
                  a.proposed_article_hash = proposed_article_hash;
                  a.approve = approve;
