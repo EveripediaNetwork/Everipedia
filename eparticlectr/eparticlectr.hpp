@@ -236,6 +236,7 @@ private:
 
 
     // Internal struct for history of success rewards and reject slashes
+    // slashes will be done immediately at finalize(). Rewards will be done at 30min periods
     // @abi table
     struct rewardhistory {
         uint64_t id;
@@ -249,7 +250,6 @@ private:
         bool proposalresult = 0;
         bool is_editor = 0;
         bool is_tie = 0;
-        bool disbursed = 0; // slashes will be done immediately at finalize(). Rewards will be done at 24hr periods
 
         auto primary_key()const { return id; }
         account_name get_user()const { return user; }
@@ -346,9 +346,6 @@ public:
     void finalize( uint64_t proposal_id );
 
     void fnlbyhash( ipfshash_t& proposal_hash );
-
-    void oldrwdspurge( uint64_t reward_period,
-                       uint32_t loop_limit );
 
     void oldvotepurge( ipfshash_t& proposed_article_hash,
                        uint32_t loop_limit);

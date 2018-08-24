@@ -419,13 +419,13 @@ REWARD_ID2=$(bc <<< "$REWARD_ID1 - 1")
 REWARD_ID3=$(bc <<< "$REWARD_ID1 - 2")
 REWARD_ID4=$(bc <<< "$REWARD_ID1 - 3")
 
-cleos push action eparticlectr rewardclaim "[\"$REWARD_ID1\"]" -p eptestuserse
+cleos push action eparticlectr rewardclmid "[\"$REWARD_ID1\"]" -p eptestuserse
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr rewardclaim "[\"$REWARD_ID2\"]" -p eptestusersg
+cleos push action eparticlectr rewardclmid "[\"$REWARD_ID2\"]" -p eptestusersg
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr rewardclaim "[\"$REWARD_ID3\"]" -p eptestusersf
+cleos push action eparticlectr rewardclmid "[\"$REWARD_ID3\"]" -p eptestusersf
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr rewardclaim "[\"$REWARD_ID4\"]" -p eptestuserse
+cleos push action eparticlectr rewardclmid "[\"$REWARD_ID4\"]" -p eptestuserse
 assert $(bc <<< "$? == 0")
 
 MID_BALANCE1=$(balance eptestusersa)
@@ -473,7 +473,7 @@ assert $(bc <<< "$NEW_BALANCE7 - $MID_BALANCE7 == 0.698")
 echo "Next 3 claims should fail"
 cleos push action eparticlectr rewardclmall '["eptestusersf"]' -p eptestusersf
 assert $(bc <<< "$? != 0")
-cleos push action --force-unique eparticlectr rewardclaim "[\"$REWARD_ID3\"]" -p eptestusersf
+cleos push action --force-unique eparticlectr rewardclmid "[\"$REWARD_ID3\"]" -p eptestusersf
 assert $(bc <<< "$? != 0")
-cleos push action eparticlectr rewardclaim '[764333]' -p eptestusersf
+cleos push action eparticlectr rewardclmid '[764333]' -p eptestusersf
 assert $(bc <<< "$? != 0")

@@ -58,13 +58,6 @@
         {"name":"memo", "type":"string"}
       ]
   },{
-      "name": "oldrwdspurge",
-      "base": "",
-      "fields": [
-        {"name":"reward_period", "type":"uint64"},
-        {"name":"loop_limit", "type":"uint32"}
-      ]
-  },{
      "name": "oldvotepurge",
      "base": "",
      "fields": [
@@ -147,8 +140,7 @@
         {"name":"proposal_finalize_period", "type":"uint32"},
         {"name":"proposalresult", "type":"bool"},
         {"name":"is_editor", "type":"bool"},
-        {"name":"is_tie", "type":"bool"},
-        {"name":"disbursed", "type":"bool"}
+        {"name":"is_tie", "type":"bool"}
       ]
   },{
       "name": "editproposal",
@@ -226,10 +218,6 @@
     },{
       "name": "propose",
       "type": "propose",
-      "ricardian_contract": ""
-    },{
-      "name": "oldrwdspurge",
-      "type": "oldrwdspurge",
       "ricardian_contract": ""
     },{
       "name": "oldvotepurge",

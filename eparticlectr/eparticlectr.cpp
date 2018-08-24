@@ -411,7 +411,6 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
                 a.proposalresult = approved;
                 a.is_editor = vote_it->is_editor;
                 a.is_tie = istie;
-                a.disbursed = 0;
             });
         }
         vote_it++;
@@ -494,14 +493,8 @@ void eparticlectr::rewardclmall ( account_name user ) {
     eosio_assert( reward_it != useridx.end(), "no rewards found for user");
 
     // calculate total reward across periods
-    uint64_t reward_amount = 0;
+    int64_t reward_amount = 0;
     while (reward_it != useridx.end() && reward_it->user == user) {
-
-        // no duplicate dispersals
-        if (reward_it->disbursed == 1) {
-            print("already disbursed ", reward_it->id, ". ");
-            reward_it++; continue;
-        }
         print("disbursing ", reward_it->id, ". ");
 
         auto period_it = perrewards.find( reward_it->proposal_finalize_period );
@@ -512,12 +505,7 @@ void eparticlectr::rewardclmall ( account_name user ) {
         if (reward_it->is_editor && reward_it->proposalresult)
             reward_amount += reward_it->approval_vote_sum * PERIOD_EDITOR_REWARD / period_it->editor_sum;
 
-        // mark as disbursed
-        rewardstable.modify( *reward_it, _self, [&]( auto& r ) {
-            r.disbursed = 1;
-        });
-
-        reward_it++;
+        reward_it = useridx.erase( reward_it );
     }
 
     eosio_assert(reward_amount > 0, "No unclaimed rewards");
@@ -527,6 +515,7 @@ void eparticlectr::rewardclmall ( account_name user ) {
         TOKEN_CONTRACT_ACCTNAME, N(issue),
         std::make_tuple( user, quantity, std::string("IQ reward") )
     ).send();
+
 }
 
 void eparticlectr::rewardclmid ( uint64_t reward_id ) {
@@ -537,7 +526,6 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
     // check if user rewards exist and is unclaimed
     auto reward_it = rewardstable.find( reward_id );
     eosio_assert( reward_it != rewardstable.end(), "reward doesn't exist in database");
-    eosio_assert( !reward_it->disbursed, "reward has already been claimed" );
 
     // only user is allowed to claim
     require_auth( reward_it->user );
@@ -547,16 +535,12 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
     eosio_assert(period_it != perrewards.end(), "Something went very wrong during reward distribution");
 
     // Sum curation + editor reward
-    uint64_t reward_amount = 0;
+    int64_t reward_amount = 0;
     reward_amount += reward_it->amount * PERIOD_CURATION_REWARD / period_it->curation_sum;
     if (reward_it->is_editor && reward_it->proposalresult)
         reward_amount += reward_it->approval_vote_sum * PERIOD_EDITOR_REWARD / period_it->editor_sum;
 
     eosio_assert(reward_amount > 0, "No unclaimed rewards");
-
-    rewardstable.modify( reward_it, _self, [&]( auto& r ) {
-        r.disbursed = 1;
-    });
 
     asset quantity = asset(reward_amount, IQSYMBOL);
     action(
@@ -564,29 +548,8 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
         TOKEN_CONTRACT_ACCTNAME, N(issue),
         std::make_tuple( reward_it->user, quantity, std::string("IQ reward") )
     ).send();
-}
 
-void eparticlectr::oldrwdspurge(uint64_t reward_period, uint32_t loop_limit) {
-    // This function needs to be universally callable. A cron job will be api calling this every REWARD_INTERVAL seconds.
-
-    uint64_t currentInterval = now() / REWARD_INTERVAL;
-    print("Current interval is: ", currentInterval, "\n");
-
-    // Make sure it is called AFTER the exiting reward period is done, so it isn't premature
-    eosio_assert( currentInterval > reward_period, "Reward period is not over yet");
-
-    // get all the rewards in that period
-    rewardstbl rewardstable( _self, _self );
-    auto rewardsidx = rewardstable.get_index<N(byfinalper)>();
-    auto rewards_it = rewardsidx.find(reward_period);
-    eosio_assert( rewards_it != rewardsidx.end(), "No rewards found in this period!");
-
-    // Free up RAM
-    uint32_t count = 0;
-    while(rewards_it->proposal_finalize_period == reward_period && count < loop_limit && rewards_it->disbursed == 1 && rewards_it != rewardsidx.end()) {
-        rewards_it = rewardsidx.erase(rewards_it);
-        count++;
-    }
+    reward_it = rewardstable.erase( reward_it );
 }
 
 void eparticlectr::oldvotepurge( ipfshash_t& proposed_article_hash, uint32_t loop_limit ) {
@@ -615,4 +578,4 @@ void eparticlectr::notify( account_name to, std::string memo ){
     require_recipient( to );
 }
 
-EOSIO_ABI( eparticlectr, (brainclmid)(brainmeart)(notify)(finalize)(fnlbyhash)(oldrwdspurge)(oldvotepurge)(procrewards)(propose)(rewardclmid)(rewardclmall)(updatewiki)(votebyhash) )
+EOSIO_ABI( eparticlectr, (brainclmid)(brainmeart)(notify)(finalize)(fnlbyhash)(oldvotepurge)(procrewards)(propose)(rewardclmid)(rewardclmall)(updatewiki)(votebyhash) )
