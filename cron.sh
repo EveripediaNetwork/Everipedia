@@ -14,7 +14,7 @@ for i in $(seq 1 20); do
     cleos push action eparticlectr procrewards "[$PERIOD]" -p evrpdcronjob
 done
 
-# finalize 50 most recent proposals
+# finalize for 50 most recent proposals
 MORE="true"
 MOST_RECENT=0
 while [ $MORE = "true" ]; do
@@ -25,5 +25,11 @@ done
 for i in $(seq 1 50); do
     id=$(bc <<< "$MOST_RECENT - $i")
     cleos push action eparticlectr finalize "[$id]" -p evrpdcronjob
+done
+
+# purge old votes
+HASHES=$(cleos get table eparticlectr eparticlectr votestbl -l 500 | jq ".rows[] | .proposed_article_hash" | tr -d '"')
+for IPFS in $HASHES; do
+    cleos push action eparticlectr oldvotepurge "[\"$IPFS\", 100]" -p evrpdcronjob
 done
 
