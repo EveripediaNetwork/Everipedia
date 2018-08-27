@@ -573,6 +573,7 @@ void eparticlectr::oldvotepurge( ipfshash_t& proposed_article_hash, uint32_t loo
 
 void eparticlectr::notify( account_name to, std::string memo ){
     require_auth(ARTICLE_CONTRACT_ACCTNAME);
+    eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
     require_recipient( to );
 }
 
