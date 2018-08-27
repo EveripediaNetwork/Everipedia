@@ -188,55 +188,55 @@
   "actions": [{
       "name": "updatewiki",
       "type": "updatewiki",
-      "ricardian_contract": ""
+      "ricardian_contract": "Manually update the wiki table. Will be removed later."
    },{
       "name": "brainclmid",
       "type": "brainclmid",
-      "ricardian_contract": ""
+      "ricardian_contract": "Claim back IQ that was staked for Brainpower. Must happen after the 21 day staking period."
     },{
       "name": "brainmeart",
       "type": "brainmeart",
-      "ricardian_contract": ""
+      "ricardian_contract": "Stake IQ (only callable by eparticlectr)."
    },{
       "name": "finalize",
       "type": "finalize",
-      "ricardian_contract": ""
+      "ricardian_contract": "Finalize a proposal and calculate rewards & slashings."
     },{
       "name": "fnlbyhash",
       "type": "fnlbyhash",
-      "ricardian_contract": ""
+      "ricardian_contract": "Call finalize via a hash."
     },{
       "name": "notify",
       "type": "notify",
-      "ricardian_contract": ""
+      "ricardian_contract": "Dummy function to notify users of various things."
     },{
       "name": "procrewards",
       "type": "procrewards",
-      "ricardian_contract": ""
+      "ricardian_contract": "Process rewards from finalized proposals."
     },{
       "name": "rewardclmall",
       "type": "rewardclmall",
-      "ricardian_contract": ""
+      "ricardian_contract": "Claim editor and curator IQ rewards by user."
     },{
       "name": "rewardclmid",
       "type": "rewardclmid",
-      "ricardian_contract": ""
+      "ricardian_contract": "Claim editor and curator IQ rewards by reward id."
     },{
       "name": "propose",
       "type": "propose",
-      "ricardian_contract": ""
+      "ricardian_contract": "Propose and edit (uses Brainpower)."
     },{
       "name": "oldvotepurge",
       "type": "oldvotepurge",
-      "ricardian_contract": ""
+      "ricardian_contract": "Purge old votes to free up RAM."
     },{
       "name": "votebyhash",
       "type": "votebyhash",
-      "ricardian_contract": ""
+      "ricardian_contract": "Vote on a proposal (identified by an IPFS hash) using Brainpower."
     },{
       "name": "setrwdperiod",
       "type": "setrwdperiod",
-      "ricardian_contract": ""
+      "ricardian_contract": "Custom cleanup function. Will be removed later."
     }],
   "tables": [{
       "name": "wikistbl",
