@@ -74,23 +74,23 @@
     },{
       "name": "paytxfee",
       "type": "paytxfee",
-      "ricardian_contract": ""
+      "ricardian_contract": "Pay the transfer fee (currently 0.1%)."
     },{
       "name": "burn",
       "type": "burn",
-      "ricardian_contract": ""
+      "ricardian_contract": "Burn IQ tokens and take them out of circulation."
     },{
       "name": "issue",
       "type": "issue",
-      "ricardian_contract": ""
+      "ricardian_contract": "Issue IQ tokens."
     },{
       "name": "brainmeiq",
       "type": "brainmeiq",
-      "ricardian_contract": ""
+      "ricardian_contract": "Stake IQ for Brainpower"
     }, {
       "name": "create",
       "type": "create",
-      "ricardian_contract": ""
+      "ricardian_contract": "Create a token."
     }
 
   ],
