@@ -363,4 +363,5 @@ public:
 
     void rewardclmid ( uint64_t reward_id );
 
+    void setrwdperiod( uint64_t proposal_id );
 };

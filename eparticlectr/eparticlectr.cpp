@@ -321,8 +321,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
 
     // print("MARKING PROPOSALS\n");
     // Mark proposal as accepted or rejected. Ties are rejected
-    uint32_t finalTime = now();
-    uint64_t currentInterval = finalTime / REWARD_INTERVAL;
+    uint64_t currentInterval = now() / REWARD_INTERVAL;
     print("Current interval is: ", currentInterval, "\n");
     proptable.modify( prop_it, 0, [&]( auto& a ) {
         if (for_votes > against_votes){
@@ -331,7 +330,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
         else{
             a.status =  ProposalStatus::rejected;
         }
-        a.finalized_time = finalTime;
+        a.finalized_time = now();
     });
 
     // print("INITIALIZE REWARDS TABLE");
@@ -359,7 +358,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
                 if(stake_it->amount <= slashRemaining){
                     stakeidx.modify( stake_it, 0, [&]( auto& a ) {
                         a.completion_time += extraTimeInt;
-                        a.timestamp = finalTime;
+                        a.timestamp = now();
                         slashRemaining -= stake_it->amount;
                     });
 	                  if (slashRemaining == 0){
@@ -405,8 +404,8 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
                 a.approval_vote_sum = for_votes;
                 a.proposal_id = proposal_id;
                 a.proposed_article_hash = vote_it->proposed_article_hash;
-                a.proposal_finalize_time = finalTime;
-                a.proposal_finalize_period = uint32_t((finalTime / REWARD_INTERVAL));
+                a.proposal_finalize_time = now();
+                a.proposal_finalize_period = uint32_t(prop_it->starttime / REWARD_INTERVAL);
                 a.proposalresult = approved;
                 a.is_editor = vote_it->is_editor;
                 a.is_tie = istie;
@@ -577,4 +576,18 @@ void eparticlectr::notify( account_name to, std::string memo ){
     require_recipient( to );
 }
 
-EOSIO_ABI( eparticlectr, (brainclmid)(brainmeart)(notify)(finalize)(fnlbyhash)(oldvotepurge)(procrewards)(propose)(rewardclmid)(rewardclmall)(updatewiki)(votebyhash) )
+void eparticlectr::setrwdperiod( uint64_t reward_id ) {
+    rewardstbl rewardstable( _self, _self );
+    auto rewards_it = rewardstable.find(reward_id);
+    eosio_assert( rewards_it != rewardstable.end(), "Reward does not exist");
+
+    propstbl proptbl( _self, _self );
+    auto prop_it = proptbl.find(rewards_it->proposal_id);
+    eosio_assert( prop_it != proptbl.end(), "Proposal does not exist");
+
+    rewardstable.modify( rewards_it, _self, [&]( auto& r ) {
+        r.proposal_finalize_period = uint32_t(prop_it->starttime / REWARD_INTERVAL);
+    });
+}
+
+EOSIO_ABI( eparticlectr, (brainclmid)(brainmeart)(notify)(finalize)(fnlbyhash)(oldvotepurge)(procrewards)(propose)(rewardclmid)(rewardclmall)(setrwdperiod)(updatewiki)(votebyhash) )

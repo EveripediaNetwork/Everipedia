@@ -383,7 +383,7 @@ sleep 4 # wait for test voting period to end
 
 # Bad vote
 echo "Late vote should fail"
-cleos push action eparticlectr votebyhash "[ \"eptestusersc\", \"$IPFS4\", 1, 500 ]" -p eptestusersg
+cleos push action eparticlectr votebyhash "[ \"eptestusersc\", \"$IPFS4\", 1, 500 ]" -p eptestusersc
 assert $(bc <<< "$? == 1")
 
 echo "Below should pass"
