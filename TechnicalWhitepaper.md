@@ -151,12 +151,12 @@ Kedar = (50 / (10 + 25 + 50)) * 2 IQ = 1.176 IQ
 |     User     | Vote |                Reward                  |
 |:------------:|:----:|:--------------------------------------:|
 | Sam (Editor) |  +10 |               8.333 IQ                 |
-|    Travis    |  -25 | 25 IQ slashed for an extra 741 seconds |
+|    Travis    |  -25 | 25 IQ slashed for an extra 747106 seconds |
 |     Kedar    |  +50 |               1.666 IQ                 |
 
 Sam = ((10 + 50) / (10 + 50)) * 8 IQ + (10 / (10 + 50)) * 2 IQ = 8.333 IQ
 
-Travis = ((10 - 25 + 50) / (10 + 25 + 50))  * 1800 seconds = Current 25 IQ stake extended for an extra 741 seconds (slashing)
+Travis = ((10 - 25 + 50) / (10 + 25 + 50))  * 1814400 seconds = Current 25 IQ stake extended for an extra 747106 seconds (slashing)
 
 Kedar = (50 / (10 + 50)) * 2 IQ = 1.666 IQ 
 
