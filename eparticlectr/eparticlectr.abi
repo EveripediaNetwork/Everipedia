@@ -182,7 +182,7 @@
       "name": "setrwdperiod",
       "base": "",
       "fields": [
-        {"name":"proposal_id", "type":"uint64"}
+        {"name":"reward_id", "type":"uint64"}
       ]
   }],
   "actions": [{

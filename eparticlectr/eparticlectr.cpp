@@ -461,7 +461,7 @@ void eparticlectr::procrewards(uint64_t reward_period) {
     // Calculate the total rewards amount in a period
     uint64_t curationRewardSum = 0;
     uint64_t editorRewardSum = 0;
-    while(rewards_it != rewardsidx.end()) {
+    while(rewards_it != rewardsidx.end() && rewards_it->proposal_finalize_period == reward_period ) {
         curationRewardSum += rewards_it->amount;
 
         if (rewards_it->is_editor && rewards_it->proposalresult == 1){
@@ -586,8 +586,11 @@ void eparticlectr::setrwdperiod( uint64_t reward_id ) {
     auto prop_it = proptbl.find(rewards_it->proposal_id);
     eosio_assert( prop_it != proptbl.end(), "Proposal does not exist");
 
+    uint32_t period = uint32_t(prop_it->starttime / REWARD_INTERVAL);
+    eosio_assert(period != rewards_it->proposal_finalize_period, "New reward period has already been set");
+
     rewardstable.modify( rewards_it, _self, [&]( auto& r ) {
-        r.proposal_finalize_period = uint32_t(prop_it->starttime / REWARD_INTERVAL);
+        r.proposal_finalize_period = period;
     });
 }
 
