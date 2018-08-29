@@ -539,6 +539,7 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
         reward_amount += reward_it->approval_vote_sum * PERIOD_EDITOR_REWARD / period_it->editor_sum;
 
     eosio_assert(reward_amount > 0, "No unclaimed rewards");
+    eosio_assert(reward_amount <= PERIOD_CURATION_REWARD + PERIOD_EDITOR_REWARD, "System logic error. Too much IQ calculated for reward.");
 
     asset quantity = asset(reward_amount, IQSYMBOL);
     action(
