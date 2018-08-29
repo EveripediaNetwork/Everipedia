@@ -526,9 +526,9 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
     // only user is allowed to claim
     require_auth( reward_it->user );
 
-    // Sanity check
+    // Make sure period has been processed before claiming
     auto period_it = perrewards.find( reward_it->proposal_finalize_period );
-    eosio_assert(period_it != perrewards.end(), "Something went very wrong during reward distribution");
+    eosio_assert(period_it != perrewards.end(), "Must call procrewards for this period first");
 
     // Sum curation + editor reward
     int64_t reward_amount = 0;
