@@ -405,7 +405,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
                 a.proposal_id = proposal_id;
                 a.proposed_article_hash = vote_it->proposed_article_hash;
                 a.proposal_finalize_time = now();
-                a.proposal_finalize_period = uint32_t(prop_it->starttime / REWARD_INTERVAL);
+                a.proposal_finalize_period = uint32_t(now() / REWARD_INTERVAL);
                 a.proposalresult = approved;
                 a.is_editor = vote_it->is_editor;
                 a.is_tie = istie;
@@ -493,8 +493,6 @@ void eparticlectr::rewardclmall ( account_name user ) {
     // calculate total reward across periods
     int64_t reward_amount = 0;
     while (reward_it != useridx.end() && reward_it->user == user) {
-        print("disbursing ", reward_it->id, ". ");
-
         auto period_it = perrewards.find( reward_it->proposal_finalize_period );
         eosio_assert(period_it != perrewards.end(), "Must call procrewards for this period first");
 
