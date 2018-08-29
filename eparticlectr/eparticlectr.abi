@@ -178,12 +178,6 @@
       "fields": [
         {"name":"reward_id", "type":"uint64"}
       ]
-  },{
-      "name": "setrwdperiod",
-      "base": "",
-      "fields": [
-        {"name":"reward_id", "type":"uint64"}
-      ]
   }],
   "actions": [{
       "name": "updatewiki",
@@ -233,10 +227,6 @@
       "name": "votebyhash",
       "type": "votebyhash",
       "ricardian_contract": "Vote on a proposal (identified by an IPFS hash) using Brainpower."
-    },{
-      "name": "setrwdperiod",
-      "type": "setrwdperiod",
-      "ricardian_contract": "Custom cleanup function. Will be removed later."
     }],
   "tables": [{
       "name": "wikistbl",

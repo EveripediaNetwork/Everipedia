@@ -362,6 +362,4 @@ public:
     void rewardclmall ( account_name user );
 
     void rewardclmid ( uint64_t reward_id );
-
-    void setrwdperiod( uint64_t reward_id );
 };

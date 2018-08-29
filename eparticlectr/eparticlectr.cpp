@@ -578,21 +578,4 @@ void eparticlectr::notify( account_name to, std::string memo ){
     require_recipient( to );
 }
 
-void eparticlectr::setrwdperiod( uint64_t reward_id ) {
-    rewardstbl rewardstable( _self, _self );
-    auto rewards_it = rewardstable.find(reward_id);
-    eosio_assert( rewards_it != rewardstable.end(), "Reward does not exist");
-
-    propstbl proptbl( _self, _self );
-    auto prop_it = proptbl.find(rewards_it->proposal_id);
-    eosio_assert( prop_it != proptbl.end(), "Proposal does not exist");
-
-    uint32_t period = uint32_t(prop_it->starttime / REWARD_INTERVAL);
-    eosio_assert(period != rewards_it->proposal_finalize_period, "New reward period has already been set");
-
-    rewardstable.modify( rewards_it, _self, [&]( auto& r ) {
-        r.proposal_finalize_period = period;
-    });
-}
-
-EOSIO_ABI( eparticlectr, (brainclmid)(brainmeart)(notify)(finalize)(fnlbyhash)(oldvotepurge)(procrewards)(propose)(rewardclmid)(rewardclmall)(setrwdperiod)(updatewiki)(votebyhash) )
+EOSIO_ABI( eparticlectr, (brainclmid)(brainmeart)(notify)(finalize)(fnlbyhash)(oldvotepurge)(procrewards)(propose)(rewardclmid)(rewardclmall)(updatewiki)(votebyhash) )
