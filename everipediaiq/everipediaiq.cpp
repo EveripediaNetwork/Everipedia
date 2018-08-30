@@ -78,8 +78,10 @@ void everipediaiq::transfer( account_name from,
     eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
 
 
-    if ( (from == TOKEN_CONTRACT_ACCTNAME) || (from == ARTICLE_CONTRACT_ACCTNAME) || (from == GOVERNANCE_CONTRACT_ACCTNAME) ||
-              (to == TOKEN_CONTRACT_ACCTNAME) || (to == ARTICLE_CONTRACT_ACCTNAME) || (to == GOVERNANCE_CONTRACT_ACCTNAME) ){
+    if ( (from == TOKEN_CONTRACT_ACCTNAME) || (from == ARTICLE_CONTRACT_ACCTNAME) || 
+         (from == GOVERNANCE_CONTRACT_ACCTNAME) || (from == FEE_CONTRACT_ACCTNAME) ||
+         (to == TOKEN_CONTRACT_ACCTNAME) || (to == ARTICLE_CONTRACT_ACCTNAME) || 
+         (to == GOVERNANCE_CONTRACT_ACCTNAME) || (to == FEE_CONTRACT_ACCTNAME) ){
         // no transfer fee
         sub_balance( from, quantity );
         add_balance( to, quantity, from );
