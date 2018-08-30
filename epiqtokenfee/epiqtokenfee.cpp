@@ -1,6 +1,7 @@
 #include "epiqtokenfee.hpp"
 #include <everipediaiq/everipediaiq.hpp>
 #include <eosio.token/eosio.token.hpp>
+#include <cmath>
 
 void epiqtokenfee::buyiq( const transfer& t ) {
     if (t.to == N(epiqtokenfee)) {
@@ -10,11 +11,10 @@ void epiqtokenfee::buyiq( const transfer& t ) {
         asset balance = everipediaiq( N(everipediaiq) ).get_balance( N(epiqtokenfee), sym_name );
 
         asset iq = asset(0, S(3,IQ));
-        uint64_t X = balance.amount;
-        double C = 1e-7;
-        uint64_t E = t.quantity.amount;
-        iq.amount = int64_t(X*C*E / (1 + E*C/2));
-        print(iq);
+        double X = double(balance.amount);
+        double C = 3.5e7;
+        double E = double(t.quantity.amount);
+        iq.amount = int64_t( (exp(E/C)*X - X) / exp(E/C) );
         
         // send IQ to user
         action(
