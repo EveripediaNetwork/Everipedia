@@ -4,14 +4,16 @@
 
 void epiqtokenfee::buyiq( const transfer& t ) {
     if (t.to == N(epiqtokenfee)) {
-        eosio_assert(t.quantity.amount == 50000, "only purchases of 5 EOS allowed until integral price curve is implemented");
 
         // get total IQ fee balance
         auto sym_name = eosio::symbol_type(S(3,IQ)).name();
         asset balance = everipediaiq( N(everipediaiq) ).get_balance( N(epiqtokenfee), sym_name );
 
         asset iq = asset(0, S(3,IQ));
-        iq.amount = t.quantity.amount * balance.amount / 60000;
+        uint64_t X = balance.amount;
+        double C = 1e-7;
+        uint64_t E = t.quantity.amount;
+        iq.amount = int64_t(X*C*E / (1 + E*C/2));
         print(iq);
         
         // send IQ to user
