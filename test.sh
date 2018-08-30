@@ -255,12 +255,14 @@ assert $(bc <<< "$? == 1")
 
 # Buy IQ from DEX
 echo "Below should pass"
+cleos push action everipediaiq paytxfee '["everipediaiq", "200000.000 IQ"]' -p everipediaiq
 
 OLD_BALANCE1=$(balance eptestusersa)
 OLD_BALANCE2=$(balance eptestusersb)
 OLD_BALANCE3=$(balance eptestusersc)
 OLD_FEE_BALANCE=$(balance epiqtokenfee)
 
+echo "Current Fee Balance: $OLD_FEE_BALANCE"
 cleos transfer eptestusersa epiqtokenfee "10 EOS"
 assert $(bc <<< "$? == 0")
 cleos transfer eptestusersb epiqtokenfee "1 EOS"
