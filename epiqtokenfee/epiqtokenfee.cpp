@@ -4,6 +4,8 @@
 
 void epiqtokenfee::buyiq( const transfer& t ) {
     if (t.to == N(epiqtokenfee)) {
+        eosio_assert(t.quantity.amount == 50000, "only purchases of 5 EOS allowed until integral price curve is implemented");
+
         // get total IQ fee balance
         auto sym_name = eosio::symbol_type(S(3,IQ)).name();
         asset balance = everipediaiq( N(everipediaiq) ).get_balance( N(epiqtokenfee), sym_name );
@@ -25,6 +27,9 @@ void epiqtokenfee::buyiq( const transfer& t ) {
             N(eosio), N(buyram),
             std::make_tuple( N(epiqtokenfee) , N(eparticlectr), t.quantity)
         ).send();
+    }
+    else {
+        // ignore all messages where fee contract is the sender
     }
 }
 
