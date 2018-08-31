@@ -538,7 +538,7 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
 
     // Minimum reward of 0.001 IQ to prevent unclaimable rewards
     if (reward_amount == 0)
-        reward_amount == 1;
+        reward_amount = 1;
 
     eosio_assert(reward_amount <= PERIOD_CURATION_REWARD + PERIOD_EDITOR_REWARD, "System logic error. Too much IQ calculated for reward.");
 
