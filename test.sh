@@ -165,6 +165,7 @@ OLD_BALANCE5=$(balance eptestuserse)
 OLD_BALANCE6=$(balance eptestusersf)
 OLD_BALANCE7=$(balance eptestusersg)
 OLD_FEE_BALANCE=$(balance epiqtokenfee)
+OLD_SUPPLY=$(cleos get table everipediaiq IQ stat | jq ".rows[0].supply" | tr -d '"' | awk '{print $1}')
 
 cleos push action everipediaiq transfer '["everipediaiq", "eptestusersa", "10000.000 IQ"]' -p everipediaiq
 assert $(bc <<< "$? == 0")
@@ -180,6 +181,7 @@ cleos push action everipediaiq transfer '["everipediaiq", "eptestusersf", "10000
 assert $(bc <<< "$? == 0")
 cleos push action everipediaiq transfer '["everipediaiq", "eptestusersg", "10000.000 IQ"]' -p everipediaiq
 assert $(bc <<< "$? == 0")
+
 
 NEW_BALANCE1=$(balance eptestusersa)
 NEW_BALANCE2=$(balance eptestusersb)
@@ -251,6 +253,30 @@ cleos push action everipediaiq transfer '["eptestusersa", "eptestusersb", "-100.
 assert $(bc <<< "$? == 1")
 FULLBAL=$(balance eptestusersg)
 cleos push action everipediaiq transfer "[\"eptestusersg\", \"eptestuserse\", \"$FULLBAL IQ\"]" -p eptestusersg
+assert $(bc <<< "$? == 1")
+
+# Burns
+OLD_SUPPLY=$(cleos get table everipediaiq IQ stat | jq ".rows[0].supply" | tr -d '"' | awk '{print $1}')
+OLD_BALANCE6=$(balance eptestusersf)
+OLD_BALANCE7=$(balance eptestusersg)
+
+cleos push action everipediaiq burn '["eptestusersg", "1000.000 IQ"]' -p eptestusersg
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq burn '["eptestusersf", "1000.000 IQ"]' -p eptestusersf
+assert $(bc <<< "$? == 0")
+
+NEW_BALANCE6=$(balance eptestusersf)
+NEW_BALANCE7=$(balance eptestusersg)
+NEW_SUPPLY=$(cleos get table everipediaiq IQ stat | jq ".rows[0].supply" | tr -d '"' | awk '{print $1}')
+
+assert $(bc <<< "$OLD_BALANCE6 - $NEW_BALANCE6 == 1000")
+assert $(bc <<< "$OLD_BALANCE7 - $NEW_BALANCE7 == 1000")
+assert $(bc <<< "$OLD_SUPPLY - $NEW_SUPPLY == 2000")
+
+# Failed burns
+cleos push action everipediaiq burn '["eptestusersg", "1000.000 IQ"]' -p eptestusersf
+assert $(bc <<< "$? == 1")
+cleos push action everipediaiq burn '["eptestusersf", "10000000.000 IQ"]' -p eptestusersf
 assert $(bc <<< "$? == 1")
 
 # Buy IQ from DEX
