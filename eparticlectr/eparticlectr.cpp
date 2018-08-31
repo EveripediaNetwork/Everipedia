@@ -519,7 +519,7 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
     perrwdstbl perrewards( _self, _self );
     rewardstbl rewardstable( _self, _self );
 
-    // check if user rewards exist and is unclaimed
+    // check if user rewards exist 
     auto reward_it = rewardstable.find( reward_id );
     eosio_assert( reward_it != rewardstable.end(), "reward doesn't exist in database");
 
@@ -536,7 +536,10 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
     if (reward_it->is_editor && reward_it->proposalresult)
         reward_amount += reward_it->approval_vote_sum * PERIOD_EDITOR_REWARD / period_it->editor_sum;
 
-    eosio_assert(reward_amount > 0, "No unclaimed rewards");
+    // Minimum reward of 0.001 IQ to prevent unclaimable rewards
+    if (reward_amount == 0)
+        reward_amount == 1;
+
     eosio_assert(reward_amount <= PERIOD_CURATION_REWARD + PERIOD_EDITOR_REWARD, "System logic error. Too much IQ calculated for reward.");
 
     asset quantity = asset(reward_amount, IQSYMBOL);
