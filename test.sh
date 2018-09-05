@@ -336,6 +336,7 @@ IPFS4=$(ipfsgen)
 IPFS5=$(ipfsgen)
 IPFS6=$(ipfsgen)
 IPFS7=$(ipfsgen)
+IPFS8=$(ipfsgen)
 
 cleos push action eparticlectr propose "[ \"eptestusersa\", \"$IPFS1\" ]" -p eptestusersa
 assert $(bc <<< "$? == 0")
@@ -347,14 +348,14 @@ cleos push action eparticlectr propose "[ \"eptestusersd\", \"$IPFS4\" ]" -p ept
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr propose "[ \"eptestuserse\", \"$IPFS5\" ]" -p eptestuserse
 assert $(bc <<< "$? == 0")
+cleos push action eparticlectr propose "[ \"eptestuserse\", \"$IPFS6\", \"$IPFS7\" ]" -p eptestuserse
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr propose "[ \"eptestuserse\", \"$IPFS7\", \"\", \"$IPFS8\" ]" -p eptestuserse
+assert $(bc <<< "$? == 0")
 
 # Failed proposals
 echo "Next 3 proposals should fail"
 cleos push action eparticlectr propose "[ \"eptestuserse\", \"$IPFS1\" ]" -p eptestuserse
-assert $(bc <<< "$? == 1")
-cleos push action eparticlectr propose "[ \"eptestuserse\", \"$IPFS6\", \"$IPFS7\" ]" -p eptestuserse
-assert $(bc <<< "$? == 1")
-cleos push action eparticlectr propose "[ \"eptestuserse\", \"$IPFS6\", \"\", \"$IPFS7\" ]" -p eptestuserse
 assert $(bc <<< "$? == 1")
 echo "Below should pass"
 

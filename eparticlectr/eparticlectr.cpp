@@ -220,10 +220,6 @@ void eparticlectr::updatewiki( ipfshash_t& current_hash ){
 void eparticlectr::propose( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash, ipfshash_t& grandparent_hash ) {
     require_auth(proposer);
 
-    // Temporary check: Only new wikis are allowed
-    eosio_assert(old_article_hash == "", "Only new wikis are currently permitted");
-    eosio_assert(grandparent_hash == "", "Only new wikis are currently permitted");
-
     // Fetch the brainpower
     brainpwrtbl braintable(_self, _self);
     auto brain_it = braintable.find(proposer);
