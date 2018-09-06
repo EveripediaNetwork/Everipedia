@@ -78,7 +78,7 @@ This number can be changed by a governance action. Additionally, the minted toke
 
 ### Transaction Fees
 
-The initial network transfer fee will be 0.1%. The fee will be either 1) Be sent to a null address and burnt in a verifiable manner 2) Pay for RAM fees. These numbers can be changed by the governance module. These fees only exist for transfers that are not staking or governance based actions. 
+The initial network transfer fee will be 0.1%. The fee will be either 1) Be sent to a null address and burnt in a verifiable manner 2) Pay for RAM, CPU, and bandwidth on the EOS mainnet. These numbers can be changed by the governance module. These fees only exist for transfers that are not staking or governance based actions. 
 
 The transfer fees are designed to counteract the inflationary effects of the edit rewards. Since the transaction rate for cryptocurrencies tends to be volatile, using the transfer fees directly for edit rewards would lead to too much daily uncertainty. 
 
