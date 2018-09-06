@@ -160,7 +160,7 @@ Travis = ((10 - 25 + 50) / (10 + 25 + 50))  * 1814400 seconds = Current 25 IQ st
 
 Kedar = (50 / (10 + 50)) * 2 IQ = 1.666 IQ 
 
-## Slashing Conditions
+### Slashing Conditions
 
 Editing articles can be a fairly contentious activity. However, there must be sybil-resistant economic incentives to have token holders arrive at the common, salient answer of the edit proposal. That is, there must be incentives for each individual agent to arrive at what they believe to be the common response - the correct one. Likewise, there should be disincentives proportional to arriving at the minority response - the incorrect one. Unlike proof of stake based consensus methods which slash/burn the staker’s tokens for voting on incorrect blocks, the EPN slashing condition does not permanently burn tokens for voting incorrectly (voting on the minority side). 
 
