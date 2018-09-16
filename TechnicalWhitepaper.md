@@ -78,7 +78,7 @@ This number can be changed by a governance action. Additionally, the minted toke
 
 ### Transaction Fees
 
-The initial network transfer fee will be 0.1%. The fee will be either 1) Be sent to a null address and burnt in a verifiable manner 2) Pay for RAM fees. These numbers can be changed by the governance module. These fees only exist for transfers that are not staking or governance based actions. 
+The initial network transfer fee will be 0.1%. The fee will be either 1) Be sent to a null address and burnt in a verifiable manner 2) Pay for RAM, CPU, and bandwidth on the EOS mainnet. These numbers can be changed by the governance module. These fees only exist for transfers that are not staking or governance based actions. 
 
 The transfer fees are designed to counteract the inflationary effects of the edit rewards. Since the transaction rate for cryptocurrencies tends to be volatile, using the transfer fees directly for edit rewards would lead to too much daily uncertainty. 
 
@@ -160,7 +160,7 @@ Travis = ((10 - 25 + 50) / (10 + 25 + 50))  * 1814400 seconds = Current 25 IQ st
 
 Kedar = (50 / (10 + 50)) * 2 IQ = 1.666 IQ 
 
-## Slashing Conditions
+### Slashing Conditions
 
 Editing articles can be a fairly contentious activity. However, there must be sybil-resistant economic incentives to have token holders arrive at the common, salient answer of the edit proposal. That is, there must be incentives for each individual agent to arrive at what they believe to be the common response - the correct one. Likewise, there should be disincentives proportional to arriving at the minority response - the incorrect one. Unlike proof of stake based consensus methods which slash/burn the staker’s tokens for voting on incorrect blocks, the EPN slashing condition does not permanently burn tokens for voting incorrectly (voting on the minority side). 
 
