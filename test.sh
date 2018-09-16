@@ -509,9 +509,13 @@ MID_BALANCE5=$(balance eptestuserse)
 MID_BALANCE6=$(balance eptestusersf)
 MID_BALANCE7=$(balance eptestusersg)
 
-assert $(bc <<< "$MID_BALANCE5 - $OLD_BALANCE5 == .051")
-assert $(bc <<< "$MID_BALANCE7 - $OLD_BALANCE7 == .052")
-assert $(bc <<< "$MID_BALANCE6 - $OLD_BALANCE6 == .030")
+echo "$MID_BALANCE5 -$OLD_BALANCE5" | bc -l
+echo "$MID_BALANCE7 -$OLD_BALANCE7" | bc -l
+echo "$MID_BALANCE6 -$OLD_BALANCE6" | bc -l
+
+assert $(bc <<< "$MID_BALANCE5 - $OLD_BALANCE5 == .523")
+assert $(bc <<< "$MID_BALANCE7 - $OLD_BALANCE7 == .524")
+assert $(bc <<< "$MID_BALANCE6 - $OLD_BALANCE6 == .305")
 
 cleos push action eparticlectr rewardclmall '["eptestusersa"]' -p eptestusersa
 assert $(bc <<< "$? == 0")
@@ -534,13 +538,21 @@ NEW_BALANCE5=$(balance eptestuserse)
 NEW_BALANCE6=$(balance eptestusersf)
 NEW_BALANCE7=$(balance eptestusersg)
 
-assert $(bc <<< "$NEW_BALANCE1 - $MID_BALANCE1 == 6.008")
-assert $(bc <<< "$NEW_BALANCE2 - $MID_BALANCE2 == 0.047") # should be 0.048?
-assert $(bc <<< "$NEW_BALANCE3 - $MID_BALANCE3 == 0.182") # should be 0.183?
-assert $(bc <<< "$NEW_BALANCE4 - $MID_BALANCE4 == 2.052")
-assert $(bc <<< "$NEW_BALANCE5 - $MID_BALANCE5 == 0.872") # should be 0.873?
+bc <<< "$NEW_BALANCE1 -$MID_BALANCE1"
+bc <<< "$NEW_BALANCE2 -$MID_BALANCE2"
+bc <<< "$NEW_BALANCE3 -$MID_BALANCE3"
+bc <<< "$NEW_BALANCE4 -$MID_BALANCE4"
+bc <<< "$NEW_BALANCE5 -$MID_BALANCE5"
+bc <<< "$NEW_BALANCE6 -$MID_BALANCE6"
+bc <<< "$NEW_BALANCE7 -$MID_BALANCE7"
+
+assert $(bc <<< "$NEW_BALANCE1 - $MID_BALANCE1 == 60.087")
+assert $(bc <<< "$NEW_BALANCE2 - $MID_BALANCE2 == 0.479") 
+assert $(bc <<< "$NEW_BALANCE3 - $MID_BALANCE3 == 1.833")
+assert $(bc <<< "$NEW_BALANCE4 - $MID_BALANCE4 == 20.524")
+assert $(bc <<< "$NEW_BALANCE5 - $MID_BALANCE5 == 8.732")
 assert $(bc <<< "$NEW_BALANCE6 - $MID_BALANCE6 == 0.000") 
-assert $(bc <<< "$NEW_BALANCE7 - $MID_BALANCE7 == 0.698")
+assert $(bc <<< "$NEW_BALANCE7 - $MID_BALANCE7 == 6.986")
 
 echo "Next 3 claims should fail"
 cleos push action eparticlectr rewardclmall '["eptestusersf"]' -p eptestusersf
