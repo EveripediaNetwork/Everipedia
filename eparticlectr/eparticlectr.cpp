@@ -53,10 +53,15 @@ void eparticlectr::brainclmid( account_name claimant, uint64_t stakeid ) {
     eosio_assert( now() > stake_it->completion_time, "Staking period not over yet");
 
     // Transfer back the IQ
+    // use the safesend temporarily until RAM stealing exploit is fixed
+    auto n = name{claimant};
+    std::string tempmemo = n.to_string();
     iqAssetPack = asset(int64_t(stake_it->amount * IQ_PRECISION_MULTIPLIER), IQSYMBOL);
-    eosio::action theAction = action(permission_level{ ARTICLE_CONTRACT_ACCTNAME, N(active) }, TOKEN_CONTRACT_ACCTNAME, N(transfer),
-                    std::make_tuple(ARTICLE_CONTRACT_ACCTNAME, claimant, iqAssetPack, std::string("IQ refund from stake")));
-    theAction.send();
+    action(
+        permission_level{ ARTICLE_CONTRACT_ACCTNAME, N(active) }, 
+        TOKEN_CONTRACT_ACCTNAME, N(transfer),
+        std::make_tuple(ARTICLE_CONTRACT_ACCTNAME, N(iqsafesendiq), iqAssetPack, tempmemo)
+    ).send();
 
     // Delete the stake.
     // Note that the erase() function increments the iterator, then gives it back after the erase is done
