@@ -47,6 +47,7 @@ class everipediaiq : public contract {
      const account_name ARTICLE_CONTRACT_ACCTNAME = N(eparticlectr);
      const account_name FEE_CONTRACT_ACCTNAME = N(epiqtokenfee);
      const account_name GOVERNANCE_CONTRACT_ACCTNAME = N(epgovernance);
+     const account_name SAFESEND_CONTRACT_ACCTNAME = N(iqsafesendiq);
      const double TRANSFER_FEE = 0.001;
      symbol_type IQSYMBOL = eosio::symbol_type(eosio::string_to_symbol(3, "IQ"));
      const int64_t IQ_PRECISION_MULTIPLIER = 1000;

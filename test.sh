@@ -58,6 +58,7 @@ if [ $BUILD -eq 1 ]; then
     cp everipediaiq/* ~/eos/contracts/everipediaiq/
     cp eparticlectr/* ~/eos/contracts/eparticlectr/
     cp epiqtokenfee/* ~/eos/contracts/epiqtokenfee/
+    cp iqsafesendiq/* ~/eos/contracts/iqsafesendiq/
     sed -i -e 's/REWARD_INTERVAL = 1800/REWARD_INTERVAL = 5/g' ~/eos/contracts/eparticlectr/eparticlectr.hpp
     sed -i -e 's/DEFAULT_VOTING_TIME = 21600/DEFAULT_VOTING_TIME = 3/g' ~/eos/contracts/eparticlectr/eparticlectr.hpp
     sed -i -e 's/STAKING_DURATION = 21 \* 86400/STAKING_DURATION = 5/g' ~/eos/contracts/eparticlectr/eparticlectr.hpp
@@ -67,6 +68,7 @@ if [ $BUILD -eq 1 ]; then
     cp everipediaiq/* ~/eos/contracts/everipediaiq/
     cp eparticlectr/* ~/eos/contracts/eparticlectr/
     cp epiqtokenfee/* ~/eos/contracts/epiqtokenfee/
+    cp iqsafesendiq/* ~/eos/contracts/iqsafesendiq/
 fi
 
 if [ $BOOTSTRAP -eq 1 ]; then
@@ -114,12 +116,14 @@ if [ $BOOTSTRAP -eq 1 ]; then
     cleos wallet import --private-key 5JU8qQMV3cD4HzA14meGEBWwWxNWAk9QAebSkQotv4wXHkKncNh
     cleos wallet import --private-key 5JU8qQMV3cD4HzA14meGEBWwWxNWAk9QAebSkQotv4wXHkKncNh
     cleos wallet import --private-key 5JJB2Ut8NLJXkADonL8GBH6q8vVZq9BK2zTLTrHh8bURFG2tQia
+    cleos wallet import --private-key 5Jr6r8roVHE9NWUX1oag39pBxRwNeD2D6mgeityBbvorge8YA6n
     
     
     ## Create testing accounts
     cleos system newaccount eosio everipediaiq EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
     cleos system newaccount eosio eparticlectr EOS8dYVzNktdam3Vn31mSXcmbj7J7MzGNudqKb3MLW1wdxWJpEbrw --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
     cleos system newaccount eosio epiqtokenfee EOS7mWN4AAmyPwY9ib1zYBKbwAteViwPQ4v9MtBWau4AKNZ4z2X4F --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
+    cleos system newaccount eosio iqsafesendiq EOS7mJctpRnPPDhLHgnQVU3En7rvy3XHxrQPcsCqU8XZBV6tc7tMW --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
     cleos system newaccount eosio eptestusersa EOS6HfoynFKZ1Msq1bKNwtSTTpEu8NssYMcgsy6nHqhRp3mz7tNkB --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
     cleos system newaccount eosio eptestusersb EOS68s2PrHPDeGWTKczrNZCn4MDMgoW6SFHuTQhXYUNLT1hAmJei8 --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
     cleos system newaccount eosio eptestusersc EOS7LpZDPKwWWXgJnNYnX6LCBgNqCEqugW9oUQr7XqcSfz7aSFk8o --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
@@ -141,9 +145,11 @@ if [ $BOOTSTRAP -eq 1 ]; then
     cleos set contract everipediaiq ~/eos/build/contracts/everipediaiq/
     cleos set contract eparticlectr ~/eos/build/contracts/eparticlectr/
     cleos set contract epiqtokenfee ~/eos/build/contracts/epiqtokenfee/
+    cleos set contract iqsafesendiq ~/eos/build/contracts/iqsafesendiq/
     cleos set account permission everipediaiq active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p everipediaiq
     cleos set account permission eparticlectr active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p eparticlectr
     cleos set account permission epiqtokenfee active '{ "threshold": 1, "keys": [{ "key": "EOS7mWN4AAmyPwY9ib1zYBKbwAteViwPQ4v9MtBWau4AKNZ4z2X4F", "weight": 1 }], "accounts": [{ "permission": { "actor":"epiqtokenfee","permission":"eosio.code" }, "weight":1 }] }' owner -p epiqtokenfee
+    cleos set account permission iqsafesendiq active '{ "threshold": 1, "keys": [{ "key": "EOS7mJctpRnPPDhLHgnQVU3En7rvy3XHxrQPcsCqU8XZBV6tc7tMW", "weight": 1 }], "accounts": [{ "permission": { "actor":"iqsafesendiq","permission":"eosio.code" }, "weight":1 }] }' owner -p iqsafesendiq
     
     # Create and issue token
     cleos push action everipediaiq create "[\"everipediaiq\", \"100000000000.000 IQ\"]" -p everipediaiq@active
@@ -155,6 +161,7 @@ fi
 cleos set contract everipediaiq ~/eos/build/contracts/everipediaiq/
 cleos set contract eparticlectr ~/eos/build/contracts/eparticlectr/
 cleos set contract epiqtokenfee ~/eos/build/contracts/epiqtokenfee/
+cleos set contract iqsafesendiq ~/eos/build/contracts/iqsafesendiq/
 
 # No transfer fees for privileged accounts
 OLD_BALANCE1=$(balance eptestusersa)
@@ -225,6 +232,12 @@ assert $(bc <<< "$? == 0")
 cleos push action everipediaiq transfer '["eptestusersa", "eptestusersg", "1000.000 IQ"]' -p eptestusersa
 assert $(bc <<< "$? == 0")
 
+# Safe transfers
+cleos push action everipediaiq transfer '["eptestusersa", "iqsafesendiq", "1000.000 IQ", "eptestuserse"]' -p eptestusersa
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq transfer '["eptestusersa", "iqsafesendiq", "1000.000 IQ", "eptestusersc"]' -p eptestusersa
+assert $(bc <<< "$? == 0")
+
 NEW_BALANCE1=$(balance eptestusersa)
 NEW_BALANCE2=$(balance eptestusersb)
 NEW_BALANCE3=$(balance eptestusersc)
@@ -233,15 +246,17 @@ NEW_BALANCE5=$(balance eptestuserse)
 NEW_BALANCE6=$(balance eptestusersf)
 NEW_BALANCE7=$(balance eptestusersg)
 NEW_FEE_BALANCE=$(balance epiqtokenfee)
+SAFESEND_BALANCE=$(balance iqsafesendiq)
 
-assert $(bc <<< "$OLD_BALANCE1 - $NEW_BALANCE1 == 6006")
+assert $(bc <<< "$OLD_BALANCE1 - $NEW_BALANCE1 == 8008")
 assert $(bc <<< "$NEW_BALANCE2 - $OLD_BALANCE2 == 1000")
-assert $(bc <<< "$NEW_BALANCE3 - $OLD_BALANCE3 == 1000")
+assert $(bc <<< "$NEW_BALANCE3 - $OLD_BALANCE3 == 2000")
 assert $(bc <<< "$NEW_BALANCE4 - $OLD_BALANCE4 == 1000")
-assert $(bc <<< "$NEW_BALANCE5 - $OLD_BALANCE5 == 1000")
+assert $(bc <<< "$NEW_BALANCE5 - $OLD_BALANCE5 == 2000")
 assert $(bc <<< "$NEW_BALANCE6 - $OLD_BALANCE6 == 1000")
 assert $(bc <<< "$NEW_BALANCE7 - $OLD_BALANCE7 == 1000")
-assert $(bc <<< "$NEW_FEE_BALANCE - $OLD_FEE_BALANCE == 6")
+assert $(bc <<< "$NEW_FEE_BALANCE - $OLD_FEE_BALANCE == 8")
+assert $(bc <<< "$SAFESEND_BALANCE == 0")
 
 # Failed transfers
 echo "Next 4 transfers should fail"

@@ -52,8 +52,11 @@ void everipediaiq::issue( account_name to, asset quantity, string memo )
 
     add_balance( st.issuer, quantity, st.issuer );
 
+    // use the safesend temporarily until RAM stealing exploit is fixed
+    auto n = name{to};
+    std::string tempmemo = n.to_string();
     if( to != st.issuer ) {
-       SEND_INLINE_ACTION( *this, transfer, {st.issuer,N(active)}, {st.issuer, to, quantity, memo} );
+       SEND_INLINE_ACTION( *this, transfer, {st.issuer,N(active)}, {st.issuer, N(iqsafesendiq), quantity, tempmemo} );
     }
 }
 
@@ -79,7 +82,7 @@ void everipediaiq::transfer( account_name from,
 
 
     if ( (from == TOKEN_CONTRACT_ACCTNAME) || (from == ARTICLE_CONTRACT_ACCTNAME) || 
-         (from == GOVERNANCE_CONTRACT_ACCTNAME) || (from == FEE_CONTRACT_ACCTNAME) ||
+         (from == GOVERNANCE_CONTRACT_ACCTNAME) || (from == FEE_CONTRACT_ACCTNAME) || (from == SAFESEND_CONTRACT_ACCTNAME) ||
          (to == TOKEN_CONTRACT_ACCTNAME) || (to == ARTICLE_CONTRACT_ACCTNAME) || 
          (to == GOVERNANCE_CONTRACT_ACCTNAME) || (to == FEE_CONTRACT_ACCTNAME) ){
         // no transfer fee
