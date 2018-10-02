@@ -80,31 +80,8 @@ void everipediaiq::transfer( account_name from,
     eosio_assert( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
     eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
 
-
-    if ( (from == TOKEN_CONTRACT_ACCTNAME) || (from == ARTICLE_CONTRACT_ACCTNAME) || 
-         (from == GOVERNANCE_CONTRACT_ACCTNAME) || (from == FEE_CONTRACT_ACCTNAME) || (from == SAFESEND_CONTRACT_ACCTNAME) ||
-         (to == TOKEN_CONTRACT_ACCTNAME) || (to == ARTICLE_CONTRACT_ACCTNAME) || 
-         (to == GOVERNANCE_CONTRACT_ACCTNAME) || (to == FEE_CONTRACT_ACCTNAME) ){
-        // no transfer fee
-        sub_balance( from, quantity );
-        add_balance( to, quantity, from );
-    }
-    else{
-        // transfer fee
-        asset feeNugget = quantity;
-        int64_t theFee = (int64_t)(quantity.amount * TRANSFER_FEE);
-
-      	// prevent decimal truncation from creating a zero-fee transfer
-      	if (theFee == 0)
-      	    theFee = 1;
-
-        feeNugget.amount = theFee;
-
-        sub_balance( from, quantity );
-        add_balance( to, quantity, from );
-
-        SEND_INLINE_ACTION( *this, paytxfee, {from, N(active)}, {from, feeNugget, "0.1% transfer fee"} );
-    }
+    sub_balance( from, quantity );
+    add_balance( to, quantity, from );
 }
 
 void everipediaiq::paytxfee( account_name from, asset fee, string memo )

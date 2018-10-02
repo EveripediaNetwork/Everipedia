@@ -197,7 +197,6 @@ NEW_BALANCE4=$(balance eptestusersd)
 NEW_BALANCE5=$(balance eptestuserse)
 NEW_BALANCE6=$(balance eptestusersf)
 NEW_BALANCE7=$(balance eptestusersg)
-NEW_FEE_BALANCE=$(balance epiqtokenfee)
 
 assert $(bc <<< "$NEW_BALANCE1 - $OLD_BALANCE1 == 10000")
 assert $(bc <<< "$NEW_BALANCE2 - $OLD_BALANCE2 == 10000")
@@ -206,10 +205,9 @@ assert $(bc <<< "$NEW_BALANCE4 - $OLD_BALANCE4 == 10000")
 assert $(bc <<< "$NEW_BALANCE5 - $OLD_BALANCE5 == 10000")
 assert $(bc <<< "$NEW_BALANCE6 - $OLD_BALANCE6 == 10000")
 assert $(bc <<< "$NEW_BALANCE7 - $OLD_BALANCE7 == 10000")
-assert $(bc <<< "$NEW_FEE_BALANCE == $OLD_FEE_BALANCE")
 
 
-# Transfer fees for standard transfers
+# Standard transfers
 OLD_BALANCE1=$(balance eptestusersa)
 OLD_BALANCE2=$(balance eptestusersb)
 OLD_BALANCE3=$(balance eptestusersc)
@@ -217,7 +215,6 @@ OLD_BALANCE4=$(balance eptestusersd)
 OLD_BALANCE5=$(balance eptestuserse)
 OLD_BALANCE6=$(balance eptestusersf)
 OLD_BALANCE7=$(balance eptestusersg)
-OLD_FEE_BALANCE=$(balance epiqtokenfee)
 
 cleos push action everipediaiq transfer '["eptestusersa", "eptestusersb", "1000.000 IQ"]' -p eptestusersa
 assert $(bc <<< "$? == 0")
@@ -245,17 +242,15 @@ NEW_BALANCE4=$(balance eptestusersd)
 NEW_BALANCE5=$(balance eptestuserse)
 NEW_BALANCE6=$(balance eptestusersf)
 NEW_BALANCE7=$(balance eptestusersg)
-NEW_FEE_BALANCE=$(balance epiqtokenfee)
 SAFESEND_BALANCE=$(balance iqsafesendiq)
 
-assert $(bc <<< "$OLD_BALANCE1 - $NEW_BALANCE1 == 8008")
+assert $(bc <<< "$OLD_BALANCE1 - $NEW_BALANCE1 == 8000")
 assert $(bc <<< "$NEW_BALANCE2 - $OLD_BALANCE2 == 1000")
 assert $(bc <<< "$NEW_BALANCE3 - $OLD_BALANCE3 == 2000")
 assert $(bc <<< "$NEW_BALANCE4 - $OLD_BALANCE4 == 1000")
 assert $(bc <<< "$NEW_BALANCE5 - $OLD_BALANCE5 == 2000")
 assert $(bc <<< "$NEW_BALANCE6 - $OLD_BALANCE6 == 1000")
 assert $(bc <<< "$NEW_BALANCE7 - $OLD_BALANCE7 == 1000")
-assert $(bc <<< "$NEW_FEE_BALANCE - $OLD_FEE_BALANCE == 8")
 assert $(bc <<< "$SAFESEND_BALANCE == 0")
 
 # Failed transfers
@@ -265,9 +260,6 @@ assert $(bc <<< "$? == 1")
 cleos push action everipediaiq transfer '["eptestusersa", "eptestusersb", "0.000 IQ"]' -p eptestusersa
 assert $(bc <<< "$? == 1")
 cleos push action everipediaiq transfer '["eptestusersa", "eptestusersb", "-100.000 IQ"]' -p eptestusersa
-assert $(bc <<< "$? == 1")
-FULLBAL=$(balance eptestusersg)
-cleos push action everipediaiq transfer "[\"eptestusersg\", \"eptestuserse\", \"$FULLBAL IQ\"]" -p eptestusersg
 assert $(bc <<< "$? == 1")
 
 # Burns
@@ -301,7 +293,6 @@ cleos push action everipediaiq paytxfee '["everipediaiq", "200000.000 IQ"]' -p e
 OLD_BALANCE1=$(balance eptestusersa)
 OLD_BALANCE2=$(balance eptestusersb)
 OLD_BALANCE3=$(balance eptestusersc)
-OLD_FEE_BALANCE=$(balance epiqtokenfee)
 
 echo "Current Fee Balance: $OLD_FEE_BALANCE"
 cleos transfer eptestusersa epiqtokenfee "10 EOS"
@@ -314,7 +305,6 @@ assert $(bc <<< "$? == 0")
 NEW_BALANCE1=$(balance eptestusersa)
 NEW_BALANCE2=$(balance eptestusersb)
 NEW_BALANCE3=$(balance eptestusersc)
-NEW_FEE_BALANCE=$(balance epiqtokenfee)
 
 
 # Stake tokens
