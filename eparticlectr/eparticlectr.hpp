@@ -39,8 +39,8 @@ const uint32_t REWARD_INTERVAL = 1800; // 30 min
 const uint32_t DEFAULT_VOTING_TIME = 21600; // 6 hours
 const uint64_t IQ_PRECISION_MULTIPLIER = 1000;
 const float TIER_ONE_THRESHOLD = 0.5f;
-uint64_t PERIOD_CURATION_REWARD = 20000; // 20 IQ per period 
-uint64_t PERIOD_EDITOR_REWARD = 80000; // 80 IQ per period 
+uint64_t PERIOD_CURATION_REWARD = 100000; // 100 IQ per period 
+uint64_t PERIOD_EDITOR_REWARD = 400000; // 400 IQ per period 
 
 class eparticlectr : public eosio::contract {
 
