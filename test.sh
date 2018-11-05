@@ -54,11 +54,11 @@ fi
 
 # Build
 if [ $BUILD -eq 1 ]; then
-    #eosiocpp -g epiqtokenfee/epiqtokenfee.abi epiqtokenfee/epiqtokenfee.hpp
     cp everipediaiq/* ~/eos/contracts/everipediaiq/
     cp eparticlectr/* ~/eos/contracts/eparticlectr/
     cp epiqtokenfee/* ~/eos/contracts/epiqtokenfee/
     cp iqsafesendiq/* ~/eos/contracts/iqsafesendiq/
+    cp epsidechainn/* ~/eos/contracts/epsidechainn/
     sed -i -e 's/REWARD_INTERVAL = 1800/REWARD_INTERVAL = 5/g' ~/eos/contracts/eparticlectr/eparticlectr.hpp
     sed -i -e 's/DEFAULT_VOTING_TIME = 21600/DEFAULT_VOTING_TIME = 3/g' ~/eos/contracts/eparticlectr/eparticlectr.hpp
     sed -i -e 's/STAKING_DURATION = 21 \* 86400/STAKING_DURATION = 5/g' ~/eos/contracts/eparticlectr/eparticlectr.hpp
@@ -69,6 +69,7 @@ if [ $BUILD -eq 1 ]; then
     cp eparticlectr/* ~/eos/contracts/eparticlectr/
     cp epiqtokenfee/* ~/eos/contracts/epiqtokenfee/
     cp iqsafesendiq/* ~/eos/contracts/iqsafesendiq/
+    cp epsidechainn/* ~/eos/contracts/epsidechainn/
 fi
 
 if [ $BOOTSTRAP -eq 1 ]; then
@@ -103,6 +104,12 @@ if [ $BOOTSTRAP -eq 1 ]; then
     cleos set contract eosio ~/eos/build/contracts/eosio.bios/ 
     cleos set contract eosio ~/eos/build/contracts/eosio.system/ 
     cleos push action eosio setpriv '["eosio.msig", 1]' -p eosio@active
+    
+    # Deploy eosio.wrap
+    cleos wallet import --private-key 5J3JRDhf4JNhzzjEZAsQEgtVuqvsPPdZv4Tm6SjMRx1ZqToaray
+    cleos system newaccount eosio eosio.wrap EOS7LpGN1Qz5AbCJmsHzhG7sWEGd9mwhTXWmrYXqxhTknY2fvHQ1A --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
+    cleos push action eosio setpriv '["eosio.wrap", 1]' -p eosio@active
+    cleos set contract eosio.wrap ~/eos/build/contracts/eosio.sudo/ 
     
     # Import keys
     cleos wallet import --private-key 5JVvgRBGKXSzLYMHgyMFH5AHjDzrMbyEPRdj8J6EVrXJs8adFpK
@@ -146,6 +153,7 @@ if [ $BOOTSTRAP -eq 1 ]; then
     cleos set contract eparticlectr ~/eos/build/contracts/eparticlectr/
     cleos set contract epiqtokenfee ~/eos/build/contracts/epiqtokenfee/
     cleos set contract iqsafesendiq ~/eos/build/contracts/iqsafesendiq/
+    cleos set contract epsidechainn ~/eos/build/contracts/epsidechainn/
     cleos set account permission everipediaiq active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p everipediaiq
     cleos set account permission eparticlectr active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p eparticlectr
     cleos set account permission epiqtokenfee active '{ "threshold": 1, "keys": [{ "key": "EOS7mWN4AAmyPwY9ib1zYBKbwAteViwPQ4v9MtBWau4AKNZ4z2X4F", "weight": 1 }], "accounts": [{ "permission": { "actor":"epiqtokenfee","permission":"eosio.code" }, "weight":1 }] }' owner -p epiqtokenfee
@@ -514,13 +522,9 @@ MID_BALANCE5=$(balance eptestuserse)
 MID_BALANCE6=$(balance eptestusersf)
 MID_BALANCE7=$(balance eptestusersg)
 
-echo "$MID_BALANCE5 -$OLD_BALANCE5" | bc -l
-echo "$MID_BALANCE7 -$OLD_BALANCE7" | bc -l
-echo "$MID_BALANCE6 -$OLD_BALANCE6" | bc -l
-
-assert $(bc <<< "$MID_BALANCE5 - $OLD_BALANCE5 == .523")
-assert $(bc <<< "$MID_BALANCE7 - $OLD_BALANCE7 == .524")
-assert $(bc <<< "$MID_BALANCE6 - $OLD_BALANCE6 == .305")
+assert $(bc <<< "$MID_BALANCE5 - $OLD_BALANCE5 == 2.619")
+assert $(bc <<< "$MID_BALANCE7 - $OLD_BALANCE7 == 2.62")
+assert $(bc <<< "$MID_BALANCE6 - $OLD_BALANCE6 == 1.528")
 
 cleos push action eparticlectr rewardclmall '["eptestusersa"]' -p eptestusersa
 assert $(bc <<< "$? == 0")
@@ -551,13 +555,13 @@ bc <<< "$NEW_BALANCE5 -$MID_BALANCE5"
 bc <<< "$NEW_BALANCE6 -$MID_BALANCE6"
 bc <<< "$NEW_BALANCE7 -$MID_BALANCE7"
 
-assert $(bc <<< "$NEW_BALANCE1 - $MID_BALANCE1 == 60.087")
-assert $(bc <<< "$NEW_BALANCE2 - $MID_BALANCE2 == 0.479") 
-assert $(bc <<< "$NEW_BALANCE3 - $MID_BALANCE3 == 1.833")
-assert $(bc <<< "$NEW_BALANCE4 - $MID_BALANCE4 == 20.524")
-assert $(bc <<< "$NEW_BALANCE5 - $MID_BALANCE5 == 8.732")
+assert $(bc <<< "$NEW_BALANCE1 - $MID_BALANCE1 == 300.436")
+assert $(bc <<< "$NEW_BALANCE2 - $MID_BALANCE2 == 2.401") 
+assert $(bc <<< "$NEW_BALANCE3 - $MID_BALANCE3 == 9.168")
+assert $(bc <<< "$NEW_BALANCE4 - $MID_BALANCE4 == 102.620")
+assert $(bc <<< "$NEW_BALANCE5 - $MID_BALANCE5 == 43.668")
 assert $(bc <<< "$NEW_BALANCE6 - $MID_BALANCE6 == 0.000") 
-assert $(bc <<< "$NEW_BALANCE7 - $MID_BALANCE7 == 6.986")
+assert $(bc <<< "$NEW_BALANCE7 - $MID_BALANCE7 == 34.934")
 
 echo "Next 3 claims should fail"
 cleos push action eparticlectr rewardclmall '["eptestusersf"]' -p eptestusersf
