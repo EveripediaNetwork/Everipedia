@@ -60,9 +60,9 @@ public:
     // ===============================================================
     // Table structs
     
-    // Staked tokens to move to the sidechain
+    // Sent IQ tokens to move to the sidechain
     // @abi table
-    struct stake {
+    struct sentIQ {
         asset balance;
         uint32_t last_renewed;
         uint32_t unlock_time;
@@ -72,14 +72,14 @@ public:
     
     // stake table
     // @abi table
-    typedef eosio::multi_index<N(staketbl), stake > staketbl;
+    typedef eosio::multi_index<N(sendtbl), sentIQ > sendtbl;
 
     epsidechainn(account_name self) : contract(self) {}
 
     //  ==================================================
     // User Actions
 
-    void stake( const transfer_t& t );
+    void sendIQtoSidechain( const transfer_t& t );
 
     void renew( const renew_t& t );
 
