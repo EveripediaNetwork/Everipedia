@@ -34,7 +34,7 @@ const account_name ARTICLE_CONTRACT_ACCTNAME = N(eparticlectr);
 const account_name TOKEN_CONTRACT_ACCTNAME = N(everipediaiq);
 const uint64_t IQ_TO_BRAINPOWER_RATIO = 1;
 const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
-const uint64_t EDIT_PROPOSE_BRAINPOWER = 10;
+const uint64_t EDIT_PROPOSE_BRAINPOWER = 50;
 const uint32_t REWARD_INTERVAL = 1800; // 30 min
 const uint32_t DEFAULT_VOTING_TIME = 21600; // 6 hours
 const uint64_t IQ_PRECISION_MULTIPLIER = 1000;
@@ -329,8 +329,7 @@ public:
     //  ==================================================
     // ABI Functions
 
-    void brainclmid( account_name claimant,
-                  uint64_t stakeid );
+    void brainclmid( uint64_t stakeid );
 
     void brainmeart( account_name staker,
                   uint64_t amount );
@@ -362,4 +361,6 @@ public:
     void rewardclmall ( account_name user );
 
     void rewardclmid ( uint64_t reward_id );
+
+    void logpropres( ipfshash_t& proposal, bool approved, uint64_t yes_votes, uint64_t no_votes ); 
 };

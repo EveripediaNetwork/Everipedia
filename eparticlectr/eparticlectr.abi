@@ -1,4 +1,5 @@
 {
+  "version": "eosio::abi/1.0",
   "types": [{
       "new_type_name": "ipfshash_t",
       "type": "string"
@@ -28,7 +29,6 @@
       "name": "brainclmid",
       "base": "",
       "fields": [
-        {"name":"claimant", "type":"account_name"},
         {"name":"stakeid", "type":"uint64"}
       ]
   },{
@@ -178,6 +178,15 @@
       "fields": [
         {"name":"reward_id", "type":"uint64"}
       ]
+  },{
+      "name": "logpropres",
+      "base": "",
+      "fields": [
+        {"name":"proposal", "type":"ipfshash_t"},
+        {"name":"approved", "type":"bool"},
+        {"name":"yes_votes", "type":"uint64"},
+        {"name":"no_votes", "type":"uint64"}
+      ]
   }],
   "actions": [{
       "name": "updatewiki",
@@ -227,6 +236,10 @@
       "name": "votebyhash",
       "type": "votebyhash",
       "ricardian_contract": "Vote on a proposal (identified by an IPFS hash) using Brainpower."
+    },{
+      "name": "logpropres",
+      "type": "logpropres",
+      "ricardian_contract": "Log proposal results."
     }],
   "tables": [{
       "name": "wikistbl",

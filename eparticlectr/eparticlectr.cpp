@@ -30,37 +30,28 @@
 #include <typeinfo>
 
 // Redeem IQ, with a specific stake specified
-void eparticlectr::brainclmid( account_name claimant, uint64_t stakeid ) {
-    require_auth(claimant);
-
-    // Get the brainpower
-    brainpwrtbl braintable(ARTICLE_CONTRACT_ACCTNAME, ARTICLE_CONTRACT_ACCTNAME);
-    auto brain_it = braintable.find(claimant);
-    eosio_assert( brain_it != braintable.end(), "No brainpower found");
-
+void eparticlectr::brainclmid( uint64_t stakeid ) {
+    
     // Get the stakes
-    staketbl staketable(ARTICLE_CONTRACT_ACCTNAME, ARTICLE_CONTRACT_ACCTNAME);
+    staketbl staketable(_self, _self);
     auto stake_it = staketable.find(stakeid);
-    eosio_assert( stake_it != staketable.end(), "No stakes found for proposal");
-
-    // Dummy initialization
-    asset iqAssetPack;
-
-    // Make sure the claimant is the same as the staker
-    eosio_assert( claimant == stake_it->user, "Cannot claim another staker's tokens!");
+    eosio_assert( stake_it != staketable.end(), "Stake does not exist in database");
 
     // See if the stake is over 21 days old
     eosio_assert( now() > stake_it->completion_time, "Staking period not over yet");
 
+    // Inform the user
+    require_recipient(stake_it->user);
+
     // Transfer back the IQ
     // use the safesend temporarily until RAM stealing exploit is fixed
-    auto n = name{claimant};
+    auto n = name{stake_it->user};
     std::string tempmemo = n.to_string();
-    iqAssetPack = asset(int64_t(stake_it->amount * IQ_PRECISION_MULTIPLIER), IQSYMBOL);
+    asset iqAssetPack = asset(int64_t(stake_it->amount * IQ_PRECISION_MULTIPLIER), IQSYMBOL);
     action(
-        permission_level{ ARTICLE_CONTRACT_ACCTNAME, N(active) }, 
-        TOKEN_CONTRACT_ACCTNAME, N(transfer),
-        std::make_tuple(ARTICLE_CONTRACT_ACCTNAME, N(iqsafesendiq), iqAssetPack, tempmemo)
+        permission_level{ _self, N(active) }, 
+        N(everipediaiq), N(transfer),
+        std::make_tuple(_self, N(iqsafesendiq), iqAssetPack, tempmemo)
     ).send();
 
     // Delete the stake.
@@ -320,6 +311,13 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
 
     print("SLASH RATIO IS: ", slash_ratio, "\n");
 
+    // Log result
+    action(
+        permission_level { _self , N(active) },
+        _self, N(logpropres),
+        std::make_tuple( prop_it->proposed_article_hash, approved, for_votes, against_votes )
+    ).send();
+
     // print("MARKING PROPOSALS\n");
     // Mark proposal as accepted or rejected. Ties are rejected
     uint64_t currentInterval = now() / REWARD_INTERVAL;
@@ -524,9 +522,6 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
     auto reward_it = rewardstable.find( reward_id );
     eosio_assert( reward_it != rewardstable.end(), "reward doesn't exist in database");
 
-    // only user is allowed to claim
-    require_auth( reward_it->user );
-
     // Make sure period has been processed before claiming
     auto period_it = perrewards.find( reward_it->proposal_finalize_period );
     eosio_assert(period_it != perrewards.end(), "Must call procrewards for this period first");
@@ -541,6 +536,7 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
     if (reward_amount == 0)
         reward_amount = 1;
 
+    // Sanity check
     eosio_assert(reward_amount <= PERIOD_CURATION_REWARD + PERIOD_EDITOR_REWARD, "System logic error. Too much IQ calculated for reward.");
 
     asset quantity = asset(reward_amount, IQSYMBOL);
@@ -575,9 +571,13 @@ void eparticlectr::oldvotepurge( ipfshash_t& proposed_article_hash, uint32_t loo
 }
 
 void eparticlectr::notify( account_name to, std::string memo ){
-    require_auth(ARTICLE_CONTRACT_ACCTNAME);
+    require_auth( _self );
     eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
     require_recipient( to );
 }
 
-EOSIO_ABI( eparticlectr, (brainclmid)(brainmeart)(notify)(finalize)(fnlbyhash)(oldvotepurge)(procrewards)(propose)(rewardclmid)(rewardclmall)(updatewiki)(votebyhash) )
+void eparticlectr::logpropres( ipfshash_t& proposal, bool approved, uint64_t yes_votes, uint64_t no_votes ) {
+    require_auth( _self );
+}
+
+EOSIO_ABI( eparticlectr, (brainclmid)(brainmeart)(notify)(finalize)(fnlbyhash)(oldvotepurge)(procrewards)(propose)(rewardclmid)(rewardclmall)(updatewiki)(votebyhash)(logpropres) )
