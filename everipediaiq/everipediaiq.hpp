@@ -12,84 +12,91 @@
 using namespace eosio;
 using std::string;
 
-class everipediaiq : public contract {
-  public:
-     everipediaiq( account_name self ):contract(self){}
+class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
+  using contract::contract;
 
-     void burn( account_name from,
+  public:
+
+     [[eosio::action]]
+     void burn( name from,
                    asset        quantity,
                    string       memo );
 
-     void create( account_name issuer,
+     [[eosio::action]]
+     void create( name issuer,
                   asset        maximum_supply);
 
-     void issue( account_name to, asset quantity, string memo );
+     [[eosio::action]]
+     void issue( name to, asset quantity, string memo );
 
-     void transfer( account_name from,
-                    account_name to,
+     [[eosio::action]]
+     void transfer( name from,
+                    name to,
                     asset        quantity,
                     string       memo );
 
-     void paytxfee( account_name from,
+     [[eosio::action]]
+     void paytxfee( name from,
                    asset        quantity,
                    string       memo );
 
-     void brainmeiq( account_name staker,
+     [[eosio::action]]
+     void brainmeiq( name staker,
                    int64_t amount );
 
 
-     inline asset get_supply( symbol_name sym )const;
+     inline asset get_supply( symbol_code sym )const;
 
-     inline asset get_balance( account_name owner, symbol_name sym )const;
+     inline asset get_balance( name owner, symbol_code sym )const;
 
   private:
-     const account_name TOKEN_CONTRACT_ACCTNAME = N(everipediaiq);
-     const account_name ARTICLE_CONTRACT_ACCTNAME = N(eparticlectr);
-     const account_name FEE_CONTRACT_ACCTNAME = N(epiqtokenfee);
-     const account_name GOVERNANCE_CONTRACT_ACCTNAME = N(epgovernance);
-     const account_name SAFESEND_CONTRACT_ACCTNAME = N(iqsafesendiq);
-     symbol_type IQSYMBOL = eosio::symbol_type(eosio::string_to_symbol(3, "IQ"));
+     const name TOKEN_CONTRACT_ACCTNAME = name("everipediaiq");
+     const name ARTICLE_CONTRACT_ACCTNAME = name("eparticlectr");
+     const name FEE_CONTRACT_ACCTNAME = name("epiqtokenfee");
+     const name GOVERNANCE_CONTRACT_ACCTNAME = name("epgovernance");
+     const name SAFESEND_CONTRACT_ACCTNAME = name("iqsafesendiq");
+     eosio::symbol IQSYMBOL = symbol(symbol_code("IQ"), 3);
      const int64_t IQ_PRECISION_MULTIPLIER = 1000;
 
-     struct account {
+     struct [[eosio::table]] account {
         asset    balance;
 
-        uint64_t primary_key()const { return balance.symbol.name(); }
+        uint64_t primary_key()const { return balance.symbol.code().raw(); }
      };
 
-     struct currency_stats {
+     struct [[eosio::table]] currency_stats {
         asset          supply;
         asset          max_supply;
-        account_name   issuer;
+        name   issuer;
 
-        uint64_t primary_key()const { return supply.symbol.name(); }
+        uint64_t primary_key()const { return supply.symbol.code().raw(); }
      };
 
-     typedef eosio::multi_index<N(accounts), account> accounts;
-     typedef eosio::multi_index<N(stat), currency_stats> stats;
+     typedef eosio::multi_index<name("accounts"), account> accounts;
+     typedef eosio::multi_index<name("stat"), currency_stats> stats;
 
-     void sub_balance( account_name owner, asset value );
-     void add_balance( account_name owner, asset value, account_name ram_payer );
+     void sub_balance( name owner, asset value );
+     void add_balance( name owner, asset value, name ram_payer );
 
   public:
      struct transfer_args {
-        account_name  from;
-        account_name  to;
-        asset         quantity;
-        string        memo;
+        name   from;
+        name   to;
+        asset  quantity;
+        string memo;
      };
 };
 
-asset everipediaiq::get_supply( symbol_name sym )const
+asset everipediaiq::get_supply( symbol_code sym )const
 {
-  stats statstable( _self, sym );
-  const auto& st = statstable.get( sym );
+  stats statstable( _self, sym.raw() );
+  const auto& st = statstable.get( sym.raw() );
   return st.supply;
 }
 
-asset everipediaiq::get_balance( account_name owner, symbol_name sym )const
+asset everipediaiq::get_balance( name owner, symbol_code sym )const
 {
-  accounts accountstable( _self, owner );
-  const auto& ac = accountstable.get( sym );
+  accounts accountstable( _self, owner.value );
+  const auto& ac = accountstable.get( sym.raw() );
   return ac.balance;
 }
