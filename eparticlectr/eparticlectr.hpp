@@ -51,39 +51,9 @@ private:
 
 public:
     eosio::symbol IQSYMBOL = symbol(symbol_code("IQ"), 3);
-    static fixed_bytes<32> ipfs_to_fixed_bytes32(const ipfshash_t& input) {
-        fixed_bytes<32> returnKey;
-        if (input == "") {
-            returnKey = fixed_bytes<32>::make_from_word_sequence<uint64_t>(0ULL, 0ULL, 0ULL, 0ULL);
-        }
-        else {
-            // This is needed for indexing since indexes cannot be done by strings, only max fixed_bytes<32>'s, for now...
-            uint64_t p1 = name(input.substr(0, 12)).value;
-            uint64_t p2 = name(input.substr(13, 24)).value;
-            uint64_t p3 = name(input.substr(25, 36)).value;
-            uint64_t p4 = name(input.substr(37, 45)).value;
-            returnKey = fixed_bytes<32>::make_from_word_sequence<uint64_t>(p1, p2, p3, p4);
-        }
-        return returnKey;
-    }
 
-    // This is until secondary keys get fixed with cleos get table :)
-    static uint64_t ipfs_to_uint64_trunc(const ipfshash_t& input) {
-        ipfshash_t newHash = input;
-        char chars[] = "6789";
-        for (unsigned int i = 0; i < strlen(chars); ++i)
-        {
-           newHash.erase(std::remove(newHash.begin(), newHash.end(), chars[i]), newHash.end());
-        }
-        ipfshash_t truncatedHash = newHash.substr(2,12);
-        transform(truncatedHash.begin(), truncatedHash.end(), truncatedHash.begin(), ::tolower);
-        const char* cstringedMiniHash = truncatedHash.c_str();
-        // print(cstringedMiniHash, "\n");
-        uint64_t hashNumber = name(cstringedMiniHash).value;
-        // print("Before: ", hashNumber, "\n");
-        hashNumber = hashNumber % 9007199254740990; // Max safe javascript integer
-        // print("After: ", hashNumber, "\n");
-        return(hashNumber);
+    static fixed_bytes<32> ipfs_to_fixed_bytes32(const ipfshash_t& input) {
+        return sha256(input.c_str(), sizeof(input));
     }
 
 private:
@@ -132,7 +102,6 @@ private:
 
           uint64_t primary_key()const { return id; }
           fixed_bytes<32> get_hash_fixed_bytes32 () const { return eparticlectr::ipfs_to_fixed_bytes32(proposed_article_hash); }
-          uint64_t get_hash_uint64 () const { return eparticlectr::ipfs_to_uint64_trunc(proposed_article_hash); }
           uint64_t get_proposal_id() const { return id; }
           uint64_t get_voter()const { return voter.value; }
     };
@@ -182,7 +151,6 @@ private:
 
           uint64_t primary_key () const { return id; }
           fixed_bytes<32> get_hash_fixed_bytes32 () const { return eparticlectr::ipfs_to_fixed_bytes32(proposed_article_hash); }
-          uint64_t get_hash_uint64 () const { return eparticlectr::ipfs_to_uint64_trunc(proposed_article_hash); }
           uint64_t get_finalize_period() const { return (finalized_time / REWARD_INTERVAL); } // truncate to the nearest period
           uint64_t get_proposer () const { return proposer.value; }
 
@@ -251,7 +219,6 @@ private:
     // @abi table
     typedef eosio::multi_index<name("votestbl"), vote,
         indexed_by< name("byhash"), const_mem_fun< vote, fixed_bytes<32>, &vote::get_hash_fixed_bytes32 >>,
-        indexed_by< name("byhashtrunc"), const_mem_fun< vote, uint64_t, &vote::get_hash_uint64 >>,
         indexed_by< name("byproposal"), const_mem_fun< vote, uint64_t, &vote::get_proposal_id >>,
         indexed_by< name("byvoter"), const_mem_fun< vote, uint64_t, &vote::get_voter >>
     > votestbl; // EOS table for the votes
@@ -262,7 +229,6 @@ private:
     // @abi table
     typedef eosio::multi_index<name("propstbl"), editproposal,
         indexed_by< name("byhash"), const_mem_fun< editproposal, fixed_bytes<32>, &editproposal::get_hash_fixed_bytes32 >>,
-        indexed_by< name("byhashtrunc"), const_mem_fun< editproposal, uint64_t, &editproposal::get_hash_uint64 >>,
         indexed_by< name("byfinalper"), const_mem_fun< editproposal, uint64_t, &editproposal::get_finalize_period >>
     > propstbl; // EOS table for the edit proposals
 

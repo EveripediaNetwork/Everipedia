@@ -1,3 +1,8 @@
+trap ctrl_c INT
+function ctrl_c {
+    exit 11;
+}
+
 BOOTSTRAP=0 # 1 if chain bootstrapping (bios, system contract, etc.) is needed, else 0
 BUILD=0
 HELP=0
@@ -54,22 +59,13 @@ fi
 
 # Build
 if [ $BUILD -eq 1 ]; then
-    cp everipediaiq/* ~/eos/contracts/everipediaiq/
-    cp eparticlectr/* ~/eos/contracts/eparticlectr/
-    cp epiqtokenfee/* ~/eos/contracts/epiqtokenfee/
-    cp iqsafesendiq/* ~/eos/contracts/iqsafesendiq/
-    cp epsidechainn/* ~/eos/contracts/epsidechainn/
-    sed -i -e 's/REWARD_INTERVAL = 1800/REWARD_INTERVAL = 5/g' ~/eos/contracts/eparticlectr/eparticlectr.hpp
-    sed -i -e 's/DEFAULT_VOTING_TIME = 21600/DEFAULT_VOTING_TIME = 3/g' ~/eos/contracts/eparticlectr/eparticlectr.hpp
-    sed -i -e 's/STAKING_DURATION = 21 \* 86400/STAKING_DURATION = 5/g' ~/eos/contracts/eparticlectr/eparticlectr.hpp
-    cd ~/eos
-    ./eosio_build.sh
-    cd -
-    cp everipediaiq/* ~/eos/contracts/everipediaiq/
-    cp eparticlectr/* ~/eos/contracts/eparticlectr/
-    cp epiqtokenfee/* ~/eos/contracts/epiqtokenfee/
-    cp iqsafesendiq/* ~/eos/contracts/iqsafesendiq/
-    cp epsidechainn/* ~/eos/contracts/epsidechainn/
+    sed -i -e 's/REWARD_INTERVAL = 1800/REWARD_INTERVAL = 5/g' eparticlectr/eparticlectr.hpp
+    sed -i -e 's/DEFAULT_VOTING_TIME = 21600/DEFAULT_VOTING_TIME = 3/g' eparticlectr/eparticlectr.hpp
+    sed -i -e 's/STAKING_DURATION = 21 \* 86400/STAKING_DURATION = 5/g' eparticlectr/eparticlectr.hpp
+    ./build.sh
+    sed -i -e 's/REWARD_INTERVAL = 5/REWARD_INTERVAL = 1800/g' eparticlectr/eparticlectr.hpp
+    sed -i -e 's/DEFAULT_VOTING_TIME = 3/DEFAULT_VOTING_TIME = 21600/g' eparticlectr/eparticlectr.hpp
+    sed -i -e 's/STAKING_DURATION = 5/STAKING_DURATION = 21 \* 86400/g' eparticlectr/eparticlectr.hpp
 fi
 
 if [ $BOOTSTRAP -eq 1 ]; then
@@ -97,19 +93,19 @@ if [ $BOOTSTRAP -eq 1 ]; then
     cleos create account eosio eosio.vpay EOS6szGbnziz224T1JGoUUFu2LynVG72f8D3UVAS25QgwawdH983U
     
     # Bootstrap new chain
-    cleos set contract eosio.token ~/eos/build/contracts/eosio.token/
-    cleos set contract eosio.msig ~/eos/build/contracts/eosio.msig/ 
+    cleos set contract eosio.token ~/eosio.contracts/build/eosio.token/
+    cleos set contract eosio.msig ~/eosio.contracts/build/eosio.msig/ 
     cleos push action eosio.token create '[ "eosio", "10000000000.0000 EOS" ]' -p eosio.token
     cleos push action eosio.token issue '[ "eosio", "1000000000.0000 EOS", "memo" ]' -p eosio
-    cleos set contract eosio ~/eos/build/contracts/eosio.bios/ 
-    cleos set contract eosio ~/eos/build/contracts/eosio.system/ 
+    cleos set contract eosio ~/eosio.contracts/build/eosio.bios/
+    cleos set contract eosio ~/eosio.contracts/build/eosio.system/
     cleos push action eosio setpriv '["eosio.msig", 1]' -p eosio@active
     
     # Deploy eosio.wrap
     cleos wallet import --private-key 5J3JRDhf4JNhzzjEZAsQEgtVuqvsPPdZv4Tm6SjMRx1ZqToaray
     cleos system newaccount eosio eosio.wrap EOS7LpGN1Qz5AbCJmsHzhG7sWEGd9mwhTXWmrYXqxhTknY2fvHQ1A --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
     cleos push action eosio setpriv '["eosio.wrap", 1]' -p eosio@active
-    cleos set contract eosio.wrap ~/eos/build/contracts/eosio.sudo/ 
+    cleos set contract eosio.wrap ~/eosio.contracts/build/eosio.wrap/
     
     # Import keys
     cleos wallet import --private-key 5JVvgRBGKXSzLYMHgyMFH5AHjDzrMbyEPRdj8J6EVrXJs8adFpK
@@ -149,11 +145,9 @@ if [ $BOOTSTRAP -eq 1 ]; then
     cleos transfer eosio eptestusersg "1000 EOS"
 
     ## Deploy contracts
-    cleos set contract everipediaiq ~/eos/build/contracts/everipediaiq/
-    cleos set contract eparticlectr ~/eos/build/contracts/eparticlectr/
-    cleos set contract epiqtokenfee ~/eos/build/contracts/epiqtokenfee/
-    cleos set contract iqsafesendiq ~/eos/build/contracts/iqsafesendiq/
-    cleos set contract epsidechainn ~/eos/build/contracts/epsidechainn/
+    cleos set contract everipediaiq everipediaiq/
+    cleos set contract eparticlectr eparticlectr/
+    cleos set contract iqsafesendiq iqsafesendiq/
     cleos set account permission everipediaiq active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p everipediaiq
     cleos set account permission eparticlectr active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p eparticlectr
     cleos set account permission epiqtokenfee active '{ "threshold": 1, "keys": [{ "key": "EOS7mWN4AAmyPwY9ib1zYBKbwAteViwPQ4v9MtBWau4AKNZ4z2X4F", "weight": 1 }], "accounts": [{ "permission": { "actor":"epiqtokenfee","permission":"eosio.code" }, "weight":1 }] }' owner -p epiqtokenfee
@@ -166,10 +160,9 @@ fi
 
 
 ## Deploy contracts
-cleos set contract everipediaiq ~/eos/build/contracts/everipediaiq/
-cleos set contract eparticlectr ~/eos/build/contracts/eparticlectr/
-cleos set contract epiqtokenfee ~/eos/build/contracts/epiqtokenfee/
-cleos set contract iqsafesendiq ~/eos/build/contracts/iqsafesendiq/
+cleos set contract everipediaiq everipediaiq/
+cleos set contract eparticlectr eparticlectr/
+cleos set contract iqsafesendiq iqsafesendiq/
 
 # No transfer fees for privileged accounts
 OLD_BALANCE1=$(balance eptestusersa)

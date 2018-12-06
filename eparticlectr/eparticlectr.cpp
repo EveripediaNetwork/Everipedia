@@ -231,9 +231,8 @@ void eparticlectr::propose( name proposer, ipfshash_t& proposed_article_hash, ip
     eosio_assert(prop_it == propidx.end(), "Proposal already exists");
 
     // Store the proposal
-    // uint64_t propPrimaryKey = ipfs_to_uint64_trunc(proposed_article_hash);
     proptable.emplace( _self, [&]( auto& a ) {
-        a.id = proptable.available_primary_key(); // TODO: Change this once client-side secondary index querying is available
+        a.id = proptable.available_primary_key(); 
         a.proposed_article_hash = proposed_article_hash;
         a.old_article_hash = old_article_hash;
         a.grandparent_hash = grandparent_hash;
