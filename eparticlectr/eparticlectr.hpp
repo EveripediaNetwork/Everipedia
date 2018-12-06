@@ -78,7 +78,6 @@ private:
     struct stake {
         uint64_t id;
         name user;
-        uint64_t deleteme; // required to maintain old schema
         uint64_t amount;
         uint32_t timestamp;
         uint32_t completion_time;
@@ -140,9 +139,7 @@ private:
           uint64_t id;
           ipfshash_t proposed_article_hash; // IPFS hash of the proposed new version
           ipfshash_t old_article_hash; // IPFS hash of the old version
-          ipfshash_t grandparent_hash; // IPFS hash of the grandparent hash
           name proposer; // account name of the proposer
-          uint64_t deleteme; // required to maintain old schema
           uint32_t tier;
           uint32_t starttime; // epoch time of the proposal
           uint32_t endtime;
@@ -271,8 +268,7 @@ public:
 
     void propose( name proposer,
                   ipfshash_t& proposed_article_hash,
-                  ipfshash_t& old_article_hash,
-                  ipfshash_t& grandparent_hash );
+                  ipfshash_t& old_article_hash );
 
     void updatewiki( ipfshash_t& current_hash );
 

@@ -213,7 +213,7 @@ void eparticlectr::updatewiki( ipfshash_t& current_hash ){
 }
 
 // Propose an edit for an article
-void eparticlectr::propose( name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash, ipfshash_t& grandparent_hash ) {
+void eparticlectr::propose( name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ) {
     require_auth(proposer);
 
     // Fetch the brainpower
@@ -235,7 +235,6 @@ void eparticlectr::propose( name proposer, ipfshash_t& proposed_article_hash, ip
         a.id = proptable.available_primary_key(); 
         a.proposed_article_hash = proposed_article_hash;
         a.old_article_hash = old_article_hash;
-        a.grandparent_hash = grandparent_hash;
         a.proposer = proposer;
         a.starttime = now();
         a.endtime = now() + DEFAULT_VOTING_TIME;
