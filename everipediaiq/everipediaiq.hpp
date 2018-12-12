@@ -36,11 +36,6 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
                     string       memo );
 
      [[eosio::action]]
-     void paytxfee( name from,
-                   asset        quantity,
-                   string       memo );
-
-     [[eosio::action]]
      void brainmeiq( name staker,
                    int64_t amount );
 
@@ -78,13 +73,6 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
      void sub_balance( name owner, asset value );
      void add_balance( name owner, asset value, name ram_payer );
 
-  public:
-     struct transfer_args {
-        name   from;
-        name   to;
-        asset  quantity;
-        string memo;
-     };
 };
 
 asset everipediaiq::get_supply( symbol_code sym )const

@@ -30,6 +30,7 @@
 
 
 // Stake IQ in exchange for brainpower when user sends IQ to the contract
+[[eosio::action]]
 void epsidechainn::stake( const transfer_t& t ) {
     account_name staker = t.from;
 
@@ -63,13 +64,14 @@ void epsidechainn::stake( const transfer_t& t ) {
 
     // Alert sidechain to issue new brainpower
     action(
-        permission_level{ _self, N(active) }, 
+        permission_level{ _self, N(active) },
         _self, N(brainissue),
         std::make_tuple( staker, new_brainpower )
     ).send_context_free();
 }
 
 // Redeem IQ, with a specific stake specified
+[[eosio::action]]
 void epsidechainn::unstake( const unstake_t& u  ) {
     require_auth(u.unstaker);
 
@@ -97,7 +99,7 @@ void epsidechainn::unstake( const unstake_t& u  ) {
     auto n = name{u.unstaker};
     std::string tempmemo = n.to_string();
     action(
-        permission_level{ _self, N(active) }, 
+        permission_level{ _self, N(active) },
         N(everipediaiq), N(transfer),
         std::make_tuple(_self, N(iqsafesendiq), u.quantity, tempmemo)
     ).send();

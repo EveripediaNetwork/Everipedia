@@ -1,300 +1,517 @@
 {
-  "version": "eosio::abi/1.0",
-  "types": [{
-      "new_type_name": "ipfshash_t",
-      "type": "string"
-  },{
-      "new_type_name": "time",
-      "type": "uint32"
-  },{
-      "new_type_name": "account_name",
-      "type": "name"
-  }],
-  "structs": [{
-      "name": "propose",
-      "base": "",
-      "fields": [
-        {"name":"proposer", "type":"account_name"},
-        {"name":"proposed_article_hash", "type":"ipfshash_t"},
-        {"name":"old_article_hash", "type":"ipfshash_t"},
-        {"name":"grandparent_hash", "type":"ipfshash_t"}
-      ]
-    },{
-      "name": "updatewiki",
-      "base": "",
-      "fields": [
-        {"name":"current_hash", "type":"ipfshash_t"}
-      ]
-   },{
-      "name": "brainclmid",
-      "base": "",
-      "fields": [
-        {"name":"stakeid", "type":"uint64"}
-      ]
-  },{
-      "name": "brainmeart",
-      "base": "",
-      "fields": [
-        {"name":"staker", "type":"account_name"},
-        {"name":"amount", "type":"uint64"}
-      ]
-   },{
-     "name": "finalize",
-     "base": "",
-     "fields": [
-        {"name":"proposal_id", "type":"uint64"}
-     ]
-  },{
-     "name": "fnlbyhash",
-     "base": "",
-     "fields": [
-        {"name":"proposal_hash", "type":"ipfshash_t"}
-     ]
-  },{
-      "name": "notify",
-      "base": "",
-      "fields": [
-        {"name":"to", "type":"account_name"},
-        {"name":"memo", "type":"string"}
-      ]
-  },{
-     "name": "oldvotepurge",
-     "base": "",
-     "fields": [
-        {"name":"proposed_article_hash", "type":"ipfshash_t"},
-        {"name":"loop_limit", "type":"uint32"}
-     ]
-  },{
-      "name": "procrewards",
-      "base": "",
-      "fields": [
-        {"name":"reward_period", "type":"uint64"}
-      ]
-  },{
-     "name": "votebyhash",
-     "base": "",
-     "fields": [
-        {"name":"voter", "type":"account_name"},
-        {"name":"proposal_hash", "type":"ipfshash_t"},
-        {"name":"approve", "type":"bool"},
-        {"name":"amount", "type":"uint64"}
-     ]
-  },{
-       "name": "wiki",
-       "base": "",
-       "fields": [
-         {"name":"id", "type":"uint64"},
-         {"name":"hash", "type":"ipfshash_t"},
-         {"name":"parent_hash", "type":"ipfshash_t"}
-       ]
-    },{
-      "name": "vote",
-      "base": "",
-      "fields": [
-        {"name":"id", "type":"uint64"},
-        {"name":"proposal_id", "type":"uint64"},
-        {"name":"proposed_article_hash", "type":"ipfshash_t"},
-        {"name":"approve", "type":"bool"},
-        {"name":"is_approver", "type":"bool"},
-        {"name":"amount", "type":"uint64"},
-        {"name":"voter", "type":"account_name"},
-        {"name":"timestamp", "type":"time"}
-      ]
-    },{
-      "name": "stake",
-      "base": "",
-      "fields": [
-        {"name":"id", "type":"uint64"},
-        {"name":"user", "type":"account_name"},
-        {"name":"deleteme", "type":"uint64"},
-        {"name":"amount", "type":"uint64"},
-        {"name":"timestamp", "type":"time"},
-        {"name":"completion_time", "type":"time"},
-        {"name":"autorenew", "type":"bool"}
-       ]
-     },{
-      "name": "brainpower",
-      "base": "",
-      "fields": [
-        {"name":"user", "type":"account_name"},
-        {"name":"power", "type":"uint64"}
-      ]
-   },{
-      "name": "brainpower2",
-      "base": "",
-      "fields": [
-        {"name":"user", "type":"account_name"},
-        {"name":"power", "type":"uint64"}
-      ]
-   },{
-      "name": "rewardhistory",
-      "base": "",
-      "fields": [
-        {"name":"id", "type":"uint64"},
-        {"name":"user", "type":"account_name"},
-        {"name":"amount", "type":"uint64"},
-        {"name":"approval_vote_sum", "type":"uint64"},
-        {"name":"proposal_id", "type":"uint64"},
-        {"name":"proposed_article_hash", "type":"ipfshash_t"},
-        {"name":"proposal_finalize_time", "type":"time"},
-        {"name":"proposal_finalize_period", "type":"uint32"},
-        {"name":"proposalresult", "type":"bool"},
-        {"name":"is_editor", "type":"bool"},
-        {"name":"is_tie", "type":"bool"}
-      ]
-  },{
-      "name": "editproposal",
-      "base": "",
-      "fields": [
-        {"name":"id", "type":"uint64"},
-        {"name":"proposed_article_hash", "type":"ipfshash_t"},
-        {"name":"old_article_hash", "type":"ipfshash_t"},
-        {"name":"grandparent_hash", "type":"ipfshash_t"},
-        {"name":"proposer", "type":"account_name"},
-        {"name":"deleteme", "type":"uint64"},
-        {"name":"tier", "type":"uint32"},
-        {"name":"starttime", "type":"time"},
-        {"name":"endtime", "type":"time"},
-        {"name":"finalized_time", "type":"time"},
-        {"name":"status", "type":"uint32"}
-      ]
-  },{
-      "name": "periodreward",
-      "base": "",
-      "fields": [
-        {"name":"period", "type":"uint64"},
-        {"name":"curation_sum", "type":"uint64"},
-        {"name":"editor_sum", "type":"uint64"}
-      ]
-  },{
-      "name": "rewardclmall",
-      "base": "",
-      "fields": [
-        {"name":"user", "type":"account_name"}
-      ]
-  },{
-      "name": "rewardclmid",
-      "base": "",
-      "fields": [
-        {"name":"reward_id", "type":"uint64"}
-      ]
-  },{
-      "name": "logpropres",
-      "base": "",
-      "fields": [
-        {"name":"proposal", "type":"ipfshash_t"},
-        {"name":"approved", "type":"bool"},
-        {"name":"yes_votes", "type":"uint64"},
-        {"name":"no_votes", "type":"uint64"}
-      ]
-  }],
-  "actions": [{
-      "name": "updatewiki",
-      "type": "updatewiki",
-      "ricardian_contract": "Manually update the wiki table. Will be removed later."
-   },{
-      "name": "brainclmid",
-      "type": "brainclmid",
-      "ricardian_contract": "Claim back IQ that was staked for Brainpower. Must happen after the 21 day staking period."
-    },{
-      "name": "brainmeart",
-      "type": "brainmeart",
-      "ricardian_contract": "Stake IQ (only callable by eparticlectr)."
-   },{
-      "name": "finalize",
-      "type": "finalize",
-      "ricardian_contract": "Finalize a proposal and calculate rewards & slashings."
-    },{
-      "name": "fnlbyhash",
-      "type": "fnlbyhash",
-      "ricardian_contract": "Call finalize via a hash."
-    },{
-      "name": "notify",
-      "type": "notify",
-      "ricardian_contract": "Dummy function to notify users of various things."
-    },{
-      "name": "procrewards",
-      "type": "procrewards",
-      "ricardian_contract": "Process rewards from finalized proposals."
-    },{
-      "name": "rewardclmall",
-      "type": "rewardclmall",
-      "ricardian_contract": "Claim editor and curator IQ rewards by user."
-    },{
-      "name": "rewardclmid",
-      "type": "rewardclmid",
-      "ricardian_contract": "Claim editor and curator IQ rewards by reward id."
-    },{
-      "name": "propose",
-      "type": "propose",
-      "ricardian_contract": "Propose and edit (uses Brainpower)."
-    },{
-      "name": "oldvotepurge",
-      "type": "oldvotepurge",
-      "ricardian_contract": "Purge old votes to free up RAM."
-    },{
-      "name": "votebyhash",
-      "type": "votebyhash",
-      "ricardian_contract": "Vote on a proposal (identified by an IPFS hash) using Brainpower."
-    },{
-      "name": "logpropres",
-      "type": "logpropres",
-      "ricardian_contract": "Log proposal results."
-    }],
-  "tables": [{
-      "name": "wikistbl",
-      "type": "wiki",
-      "index_type": "i64",
-      "key_names" : ["id"],
-      "key_types" : ["uint64"]
-    },{
-      "name": "propstbl",
-      "type": "editproposal",
-      "index_type": "i64",
-      "key_names" : ["id"],
-      "key_types" : ["uint64"]
-    },{
-      "name": "staketbl",
-      "type": "stake",
-      "index_type": "i64",
-      "key_names" : ["user"],
-      "key_types" : ["account_name"]
-    },{
-      "name": "rewardstbl",
-      "type": "rewardhistory",
-      "index_type": "i64",
-      "key_names" : ["id"],
-      "key_types" : ["uint64"]
-    },{
-      "name": "perrwdstbl",
-      "type": "periodreward",
-      "index_type": "i64",
-      "key_names" : ["period"],
-      "key_types" : ["uint64"]
-    },{
-      "name": "brainpwrtbl",
-      "type": "brainpower",
-      "index_type": "i64",
-      "key_names" : ["user"],
-      "key_types" : ["account_name"]
-    },{
-      "name": "brainptable",
-      "type": "brainpower2",
-      "index_type": "i64",
-      "key_names" : ["user"],
-      "key_types" : ["account_name"]
-    },{
-      "name": "votestbl",
-      "type": "vote",
-      "index_type": "i64",
-      "key_names" : ["id"],
-      "key_types" : ["uint64"]
-    },{
-      "name": "periodreward",
-      "type": "periodreward",
-      "index_type": "i64",
-      "key_names" : ["period"],
-      "key_types" : ["uint64"]
-    }],
-  "clauses": []
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Wed Dec 12 14:50:03 2018",
+    "version": "eosio::abi/1.1",
+    "structs": [
+        {
+            "name": "brainclmid",
+            "base": "",
+            "fields": [
+                {
+                    "name": "stakeid",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "brainmeart",
+            "base": "",
+            "fields": [
+                {
+                    "name": "staker",
+                    "type": "name"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "brainpower",
+            "base": "",
+            "fields": [
+                {
+                    "name": "user",
+                    "type": "name"
+                },
+                {
+                    "name": "power",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "editproposal",
+            "base": "",
+            "fields": [
+                {
+                    "name": "id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "proposed_article_hash",
+                    "type": "ipfshash_t"
+                },
+                {
+                    "name": "old_article_hash",
+                    "type": "ipfshash_t"
+                },
+                {
+                    "name": "proposer",
+                    "type": "name"
+                },
+                {
+                    "name": "tier",
+                    "type": "uint32"
+                },
+                {
+                    "name": "starttime",
+                    "type": "uint32"
+                },
+                {
+                    "name": "endtime",
+                    "type": "uint32"
+                },
+                {
+                    "name": "finalized_time",
+                    "type": "uint32"
+                },
+                {
+                    "name": "status",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "finalize",
+            "base": "",
+            "fields": [
+                {
+                    "name": "proposal_id",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "fnlbyhash",
+            "base": "",
+            "fields": [
+                {
+                    "name": "proposal_hash",
+                    "type": "ipfshash_t"
+                }
+            ]
+        },
+        {
+            "name": "logpropres",
+            "base": "",
+            "fields": [
+                {
+                    "name": "proposal",
+                    "type": "ipfshash_t"
+                },
+                {
+                    "name": "approved",
+                    "type": "bool"
+                },
+                {
+                    "name": "yes_votes",
+                    "type": "uint64"
+                },
+                {
+                    "name": "no_votes",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "notify",
+            "base": "",
+            "fields": [
+                {
+                    "name": "to",
+                    "type": "name"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "oldvotepurge",
+            "base": "",
+            "fields": [
+                {
+                    "name": "proposed_article_hash",
+                    "type": "ipfshash_t"
+                },
+                {
+                    "name": "loop_limit",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "periodreward",
+            "base": "",
+            "fields": [
+                {
+                    "name": "period",
+                    "type": "uint64"
+                },
+                {
+                    "name": "curation_sum",
+                    "type": "uint64"
+                },
+                {
+                    "name": "editor_sum",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "procrewards",
+            "base": "",
+            "fields": [
+                {
+                    "name": "reward_period",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "propose",
+            "base": "",
+            "fields": [
+                {
+                    "name": "proposer",
+                    "type": "name"
+                },
+                {
+                    "name": "proposed_article_hash",
+                    "type": "ipfshash_t"
+                },
+                {
+                    "name": "old_article_hash",
+                    "type": "ipfshash_t"
+                }
+            ]
+        },
+        {
+            "name": "rewardclmall",
+            "base": "",
+            "fields": [
+                {
+                    "name": "user",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "rewardclmid",
+            "base": "",
+            "fields": [
+                {
+                    "name": "reward_id",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "rewardhistory",
+            "base": "",
+            "fields": [
+                {
+                    "name": "id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "user",
+                    "type": "name"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint64"
+                },
+                {
+                    "name": "approval_vote_sum",
+                    "type": "uint64"
+                },
+                {
+                    "name": "proposal_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "proposed_article_hash",
+                    "type": "ipfshash_t"
+                },
+                {
+                    "name": "proposal_finalize_time",
+                    "type": "uint32"
+                },
+                {
+                    "name": "proposal_finalize_period",
+                    "type": "uint32"
+                },
+                {
+                    "name": "proposalresult",
+                    "type": "bool"
+                },
+                {
+                    "name": "is_editor",
+                    "type": "bool"
+                },
+                {
+                    "name": "is_tie",
+                    "type": "bool"
+                }
+            ]
+        },
+        {
+            "name": "stake",
+            "base": "",
+            "fields": [
+                {
+                    "name": "id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "user",
+                    "type": "name"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint64"
+                },
+                {
+                    "name": "timestamp",
+                    "type": "uint32"
+                },
+                {
+                    "name": "completion_time",
+                    "type": "uint32"
+                },
+                {
+                    "name": "autorenew",
+                    "type": "bool"
+                }
+            ]
+        },
+        {
+            "name": "updatewiki",
+            "base": "",
+            "fields": [
+                {
+                    "name": "current_hash",
+                    "type": "ipfshash_t"
+                }
+            ]
+        },
+        {
+            "name": "vote",
+            "base": "",
+            "fields": [
+                {
+                    "name": "id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "proposal_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "proposed_article_hash",
+                    "type": "ipfshash_t"
+                },
+                {
+                    "name": "approve",
+                    "type": "bool"
+                },
+                {
+                    "name": "is_editor",
+                    "type": "bool"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint64"
+                },
+                {
+                    "name": "voter",
+                    "type": "name"
+                },
+                {
+                    "name": "timestamp",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "votebyhash",
+            "base": "",
+            "fields": [
+                {
+                    "name": "voter",
+                    "type": "name"
+                },
+                {
+                    "name": "proposed_article_hash",
+                    "type": "ipfshash_t"
+                },
+                {
+                    "name": "approve",
+                    "type": "bool"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "wiki",
+            "base": "",
+            "fields": [
+                {
+                    "name": "id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "hash",
+                    "type": "ipfshash_t"
+                },
+                {
+                    "name": "parent_hash",
+                    "type": "ipfshash_t"
+                }
+            ]
+        }
+    ],
+    "types": [
+        {
+            "new_type_name": "ipfshash_t",
+            "type": "string"
+        }
+    ],
+    "actions": [
+        {
+            "name": "brainclmid",
+            "type": "brainclmid",
+            "ricardian_contract": "Claim back IQ that was staked for Brainpower. Must happen after the 21 day staking period."
+        },
+        {
+            "name": "brainmeart",
+            "type": "brainmeart",
+            "ricardian_contract": "Stake IQ (only callable by eparticlectr)."
+        },
+        {
+            "name": "finalize",
+            "type": "finalize",
+            "ricardian_contract": "Finalize a proposal and calculate rewards & slashings."
+        },
+        {
+            "name": "fnlbyhash",
+            "type": "fnlbyhash",
+            "ricardian_contract": "Call finalize via a hash."
+        },
+        {
+            "name": "logpropres",
+            "type": "logpropres",
+            "ricardian_contract": "Log proposal results."
+        },
+        {
+            "name": "notify",
+            "type": "notify",
+            "ricardian_contract": "Dummy function to notify users of various things."
+        },
+        {
+            "name": "oldvotepurge",
+            "type": "oldvotepurge",
+            "ricardian_contract": "Purge old votes to free up RAM."
+        },
+        {
+            "name": "procrewards",
+            "type": "procrewards",
+            "ricardian_contract": "Process rewards from finalized proposals."
+        },
+        {
+            "name": "propose",
+            "type": "propose",
+            "ricardian_contract": "Propose and edit (uses Brainpower)."
+        },
+        {
+            "name": "rewardclmall",
+            "type": "rewardclmall",
+            "ricardian_contract": "Claim editor and curator IQ rewards by user."
+        },
+        {
+            "name": "rewardclmid",
+            "type": "rewardclmid",
+            "ricardian_contract": "Claim editor and curator IQ rewards by reward id."
+        },
+        {
+            "name": "updatewiki",
+            "type": "updatewiki",
+            "ricardian_contract": "Manually update the wiki table. Will be removed later."
+        },
+        {
+            "name": "votebyhash",
+            "type": "votebyhash",
+            "ricardian_contract": "Vote on a proposal (identified by an IPFS hash) using Brainpower."
+        }
+    ],
+    "tables": [
+        {
+            "name": "brainpwrtbl",
+            "type": "brainpower",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "periodreward",
+            "type": "periodreward",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "propstbl",
+            "type": "editproposal",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "rewardstbl",
+            "type": "rewardhistory",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "staketbl",
+            "type": "stake",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "votestbl",
+            "type": "vote",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "wikistbl",
+            "type": "wiki",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        }
+    ],
+    "ricardian_clauses": [],
+    "variants": [],
+    "abi_extensions": []
 }

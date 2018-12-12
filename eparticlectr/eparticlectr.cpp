@@ -30,8 +30,9 @@
 #include <typeinfo>
 
 // Redeem IQ, with a specific stake specified
+[[eosio::action]]
 void eparticlectr::brainclmid( uint64_t stakeid ) {
-    
+
     // Get the stakes
     staketbl staketable(_self, _self.value);
     auto stake_it = staketable.find(stakeid);
@@ -49,7 +50,7 @@ void eparticlectr::brainclmid( uint64_t stakeid ) {
     std::string tempmemo = n.to_string();
     asset iqAssetPack = asset(int64_t(stake_it->amount * IQ_PRECISION_MULTIPLIER), IQSYMBOL);
     action(
-        permission_level{ _self, name("active") }, 
+        permission_level{ _self, name("active") },
         name("everipediaiq"), name("transfer"),
         std::make_tuple(_self, name("iqsafesendiq"), iqAssetPack, tempmemo)
     ).send();
@@ -61,6 +62,7 @@ void eparticlectr::brainclmid( uint64_t stakeid ) {
 
 // Stake IQ in exchange for brainpower
 // Note that the "amount" parameter is in full precision. Dividing it by IQ_PRECISION_MULTIPLIER would give the "clean" amount with a decimal.
+[[eosio::action]]
 void eparticlectr::brainmeart( name staker, uint64_t amount ) {
     // The token contract has eosio.code permission for the article contract
     require_auth(_self);
@@ -96,6 +98,7 @@ void eparticlectr::brainmeart( name staker, uint64_t amount ) {
 }
 
 // Place a vote using the IPFS hash
+[[eosio::action]]
 void eparticlectr::votebyhash ( name voter, ipfshash_t& proposed_article_hash, bool approve, uint64_t amount ) {
     require_auth(voter);
 
@@ -195,6 +198,7 @@ void eparticlectr::votebyhash ( name voter, ipfshash_t& proposed_article_hash, b
     }
 }
 
+[[eosio::action]]
 void eparticlectr::updatewiki( ipfshash_t& current_hash ){
     // Manually update the wikistbl. This will be removed later.
     require_auth(ARTICLE_CONTRACT_ACCTNAME);
@@ -213,6 +217,7 @@ void eparticlectr::updatewiki( ipfshash_t& current_hash ){
 }
 
 // Propose an edit for an article
+[[eosio::action]]
 void eparticlectr::propose( name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ) {
     require_auth(proposer);
 
@@ -232,7 +237,7 @@ void eparticlectr::propose( name proposer, ipfshash_t& proposed_article_hash, ip
 
     // Store the proposal
     proptable.emplace( _self, [&]( auto& a ) {
-        a.id = proptable.available_primary_key(); 
+        a.id = proptable.available_primary_key();
         a.proposed_article_hash = proposed_article_hash;
         a.old_article_hash = old_article_hash;
         a.proposer = proposer;
@@ -245,6 +250,7 @@ void eparticlectr::propose( name proposer, ipfshash_t& proposed_article_hash, ip
     eparticlectr::votebyhash( proposer, proposed_article_hash, true, EDIT_PROPOSE_BRAINPOWER );
 }
 
+[[eosio::action]]
 void eparticlectr::fnlbyhash( ipfshash_t& proposal_hash ) {
     // Add article to database, or update
     propstbl proptable( _self, _self.value );
@@ -255,6 +261,7 @@ void eparticlectr::fnlbyhash( ipfshash_t& proposal_hash ) {
     eparticlectr::finalize(prop_it->id);
 }
 
+[[eosio::action]]
 void eparticlectr::finalize( uint64_t proposal_id ) {
     // Verify proposal exists
     propstbl proptable( _self, _self.value );
@@ -435,6 +442,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
 
 }
 
+[[eosio::action]]
 void eparticlectr::procrewards(uint64_t reward_period) {
     // This function needs to be universally callable. A cron job will be api calling this every REWARD_INTERVAL seconds.
 
@@ -475,6 +483,7 @@ void eparticlectr::procrewards(uint64_t reward_period) {
     });
 }
 
+[[eosio::action]]
 void eparticlectr::rewardclmall ( name user ) {
     require_auth( user );
 
@@ -511,12 +520,13 @@ void eparticlectr::rewardclmall ( name user ) {
 
 }
 
+[[eosio::action]]
 void eparticlectr::rewardclmid ( uint64_t reward_id ) {
     // prep tables
     perrwdstbl perrewards( _self, _self.value );
     rewardstbl rewardstable( _self, _self.value );
 
-    // check if user rewards exist 
+    // check if user rewards exist
     auto reward_it = rewardstable.find( reward_id );
     eosio_assert( reward_it != rewardstable.end(), "reward doesn't exist in database");
 
@@ -547,6 +557,7 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
     reward_it = rewardstable.erase( reward_it );
 }
 
+[[eosio::action]]
 void eparticlectr::oldvotepurge( ipfshash_t& proposed_article_hash, uint32_t loop_limit ) {
     // Get the proposal object
     propstbl proptable( _self, _self.value );
@@ -568,12 +579,14 @@ void eparticlectr::oldvotepurge( ipfshash_t& proposed_article_hash, uint32_t loo
     }
 }
 
+[[eosio::action]]
 void eparticlectr::notify( name to, std::string memo ){
     require_auth( _self );
     eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
     require_recipient( to );
 }
 
+[[eosio::action]]
 void eparticlectr::logpropres( ipfshash_t& proposal, bool approved, uint64_t yes_votes, uint64_t no_votes ) {
     require_auth( _self );
 }

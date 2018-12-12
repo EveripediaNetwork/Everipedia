@@ -5,6 +5,7 @@
 
 #include "everipediaiq.hpp"
 
+[[eosio::action]]
 void everipediaiq::create( name issuer,
                     asset        maximum_supply )
 {
@@ -26,7 +27,7 @@ void everipediaiq::create( name issuer,
     });
 }
 
-
+[[eosio::action]]
 void everipediaiq::issue( name to, asset quantity, string memo )
 {
     auto sym = quantity.symbol;
@@ -60,6 +61,7 @@ void everipediaiq::issue( name to, asset quantity, string memo )
     }
 }
 
+[[eosio::action]]
 void everipediaiq::transfer( name from,
                       name to,
                       asset        quantity,
@@ -84,54 +86,32 @@ void everipediaiq::transfer( name from,
     add_balance( to, quantity, from );
 }
 
-void everipediaiq::paytxfee( name from, asset fee, string memo )
-{
-    require_auth( from );
-    eosio_assert( from != FEE_CONTRACT_ACCTNAME, "cannot pay fee to self" );
-
-    accounts from_acnts( _self, from.value );
-    const auto& from_act = from_acnts.get( fee.symbol.code().raw(), "insufficient funds for fee" );
-    eosio_assert( from_act.balance.amount >= fee.amount, "insufficient funds for fee" );
-    
-    auto sym = fee.symbol.code();
-    stats statstable( _self, sym.raw() );
-    const auto& st = statstable.get( sym.raw() );
-
-    eosio_assert( fee.is_valid(), "invalid fee" );
-    eosio_assert( fee.amount > 0, "must transfer positive fee" );
-    eosio_assert( fee.symbol == st.supply.symbol, "symbol precision mismatch" );
-    eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
-
-    require_recipient( from );
-
-    add_balance( FEE_CONTRACT_ACCTNAME, fee, _self );
-    sub_balance( from, fee );
-}
-
+[[eosio::action]]
 void everipediaiq::burn( name from, asset quantity, string memo )
 {
      require_auth( from );
      auto sym = quantity.symbol;
      eosio_assert( sym.is_valid(), "invalid symbol name" );
      eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
-    
+
      auto sym_name = sym.code().raw();
      stats statstable( _self, sym_name );
      auto existing = statstable.find( sym_name );
      eosio_assert( existing != statstable.end(), "token with symbol does not exist" );
      const auto& st = *existing;
-    
+
      eosio_assert( quantity.is_valid(), "invalid quantity" );
      eosio_assert( quantity.amount > 0, "must burn positive quantity" );
      eosio_assert( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
-    
+
      statstable.modify( st, same_payer, [&]( auto& s ) {
         s.supply -= quantity;
      });
-    
+
      sub_balance( from, quantity );
 }
 
+[[eosio::action]]
 void everipediaiq::sub_balance( name owner, asset value ) {
    accounts from_acnts( _self, owner.value );
 
@@ -148,6 +128,7 @@ void everipediaiq::sub_balance( name owner, asset value ) {
    }
 }
 
+[[eosio::action]]
 void everipediaiq::add_balance( name owner, asset value, name ram_payer )
 {
    accounts to_acnts( _self, owner.value );
@@ -163,6 +144,7 @@ void everipediaiq::add_balance( name owner, asset value, name ram_payer )
    }
 }
 
+[[eosio::action]]
 void everipediaiq::brainmeiq( name staker, int64_t amount) {
     require_auth(staker);
 
@@ -179,4 +161,4 @@ void everipediaiq::brainmeiq( name staker, int64_t amount) {
 }
 
 
-EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(paytxfee)(transfer)(brainmeiq) )
+EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(transfer)(brainmeiq) )

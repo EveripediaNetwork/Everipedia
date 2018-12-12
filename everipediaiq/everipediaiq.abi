@@ -1,113 +1,167 @@
 {
-   "version": "eosio::abi/1.0",
-   "types": [{
-      "new_type_name": "account_name",
-      "type": "name"
-   }],
-  "structs": [{
-      "name": "transfer",
-      "base": "",
-      "fields": [
-        {"name":"from", "type":"account_name"},
-        {"name":"to", "type":"account_name"},
-        {"name":"quantity", "type":"asset"},
-        {"name":"memo", "type":"string"}
-      ]
-    },{
-        "name": "burn",
-        "base": "",
-        "fields": [
-          {"name":"from", "type":"account_name"},
-          {"name":"quantity", "type":"asset"},
-          {"name":"memo", "type":"string"}
-        ]
-    },{
-        "name": "paytxfee",
-        "base": "",
-        "fields": [
-          {"name":"from", "type":"account_name"},
-          {"name":"quantity", "type":"asset"},
-          {"name":"memo", "type":"string"}
-        ]
-    },{
-     "name": "create",
-     "base": "",
-     "fields": [
-        {"name":"issuer", "type":"account_name"},
-        {"name":"maximum_supply", "type":"asset"}
-     ]
-    },{
-     "name": "issue",
-     "base": "",
-     "fields": [
-        {"name":"to", "type":"account_name"},
-        {"name":"quantity", "type":"asset"},
-        {"name":"memo", "type":"string"}
-     ]
-  },{
-      "name": "brainmeiq",
-      "base": "",
-      "fields": [
-        {"name":"staker", "type":"account_name"},
-        {"name":"amount", "type":"int64"}
-      ]
-  },{
-      "name": "account",
-      "base": "",
-      "fields": [
-        {"name":"balance", "type":"asset"}
-      ]
-    },{
-      "name": "currency_stats",
-      "base": "",
-      "fields": [
-        {"name":"supply", "type":"asset"},
-        {"name":"max_supply", "type":"asset"},
-        {"name":"issuer", "type":"account_name"}
-      ]
-    }
-  ],
-  "actions": [{
-      "name": "transfer",
-      "type": "transfer",
-      "ricardian_contract": "Everipedia has been paying the RAM costs for stakings, votes, and proposals. To help mitigate this, we are introducing a 0.1% transfer fee ( x0.001 ) for all IQ movements outside of the article and token contracts. This will help to reduce speculation and fund the continued use of RAM, as well as introduce some deflation to counteract the inflation introduced by the edit rewards. This is modeled in the same way as the EOS RAM trading fee reward which is taken out of direct circulation."
-    },{
-      "name": "paytxfee",
-      "type": "paytxfee",
-      "ricardian_contract": "Pay the transfer fee (currently 0.1%)."
-    },{
-      "name": "burn",
-      "type": "burn",
-      "ricardian_contract": "Burn IQ tokens and take them out of circulation."
-    },{
-      "name": "issue",
-      "type": "issue",
-      "ricardian_contract": "Issue IQ tokens."
-    },{
-      "name": "brainmeiq",
-      "type": "brainmeiq",
-      "ricardian_contract": "Stake IQ for Brainpower"
-    }, {
-      "name": "create",
-      "type": "create",
-      "ricardian_contract": "Create a token."
-    }
-
-  ],
-  "tables": [{
-      "name": "accounts",
-      "type": "account",
-      "index_type": "i64",
-      "key_names" : ["currency"],
-      "key_types" : ["uint64"]
-    },{
-      "name": "stat",
-      "type": "currency_stats",
-      "index_type": "i64",
-      "key_names" : ["currency"],
-      "key_types" : ["uint64"]
-    }
-  ],
-  "ricardian_clauses": [],
-  "abi_extensions": []
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Wed Dec 12 14:50:07 2018",
+    "version": "eosio::abi/1.1",
+    "structs": [
+        {
+            "name": "account",
+            "base": "",
+            "fields": [
+                {
+                    "name": "balance",
+                    "type": "asset"
+                }
+            ]
+        },
+        {
+            "name": "brainmeiq",
+            "base": "",
+            "fields": [
+                {
+                    "name": "staker",
+                    "type": "name"
+                },
+                {
+                    "name": "amount",
+                    "type": "int64"
+                }
+            ]
+        },
+        {
+            "name": "burn",
+            "base": "",
+            "fields": [
+                {
+                    "name": "from",
+                    "type": "name"
+                },
+                {
+                    "name": "quantity",
+                    "type": "asset"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "create",
+            "base": "",
+            "fields": [
+                {
+                    "name": "issuer",
+                    "type": "name"
+                },
+                {
+                    "name": "maximum_supply",
+                    "type": "asset"
+                }
+            ]
+        },
+        {
+            "name": "currency_stats",
+            "base": "",
+            "fields": [
+                {
+                    "name": "supply",
+                    "type": "asset"
+                },
+                {
+                    "name": "max_supply",
+                    "type": "asset"
+                },
+                {
+                    "name": "issuer",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "issue",
+            "base": "",
+            "fields": [
+                {
+                    "name": "to",
+                    "type": "name"
+                },
+                {
+                    "name": "quantity",
+                    "type": "asset"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "transfer",
+            "base": "",
+            "fields": [
+                {
+                    "name": "from",
+                    "type": "name"
+                },
+                {
+                    "name": "to",
+                    "type": "name"
+                },
+                {
+                    "name": "quantity",
+                    "type": "asset"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                }
+            ]
+        }
+    ],
+    "types": [],
+    "actions": [
+        {
+            "name": "brainmeiq",
+            "type": "brainmeiq",
+            "ricardian_contract": "Stake IQ for Brainpower."
+        },
+        {
+            "name": "burn",
+            "type": "burn",
+            "ricardian_contract": "Burn IQ tokens and take them out of circulation."
+        },
+        {
+            "name": "create",
+            "type": "create",
+            "ricardian_contract": "Create a token."
+        },
+        {
+            "name": "issue",
+            "type": "issue",
+            "ricardian_contract": "Issue IQ tokens."
+        },
+        {
+            "name": "transfer",
+            "type": "transfer",
+            "ricardian_contract": "Transfer the IQ token."
+        }
+    ],
+    "tables": [
+        {
+            "name": "accounts",
+            "type": "account",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "stat",
+            "type": "currency_stats",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        }
+    ],
+    "ricardian_clauses": [],
+    "variants": [],
+    "abi_extensions": []
 }

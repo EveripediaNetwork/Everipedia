@@ -39,8 +39,8 @@ const uint32_t REWARD_INTERVAL = 1800; // 30 min
 const uint32_t DEFAULT_VOTING_TIME = 21600; // 6 hours
 const uint64_t IQ_PRECISION_MULTIPLIER = 1000;
 const float TIER_ONE_THRESHOLD = 0.5f;
-uint64_t PERIOD_CURATION_REWARD = 100000; // 100 IQ per period 
-uint64_t PERIOD_EDITOR_REWARD = 400000; // 400 IQ per period 
+uint64_t PERIOD_CURATION_REWARD = 100000; // 100 IQ per period
+uint64_t PERIOD_EDITOR_REWARD = 400000; // 400 IQ per period
 
 class [[eosio::contract("eparticlectr")]] eparticlectr : public contract {
     using contract::contract;
@@ -63,7 +63,7 @@ private:
     // DATABASE SCHEMAS
     // Wiki articles
     // @abi table
-    struct wiki {
+    struct [[eosio::table]] wiki {
           uint64_t id;
           ipfshash_t hash; // IPFS hash of the current consensus article version
           ipfshash_t parent_hash; // IPFS hash of the parent article version
@@ -75,7 +75,7 @@ private:
 
     // Internal struct for stakes within brainpower
     // @abi table
-    struct stake {
+    struct [[eosio::table]] stake {
         uint64_t id;
         name user;
         uint64_t amount;
@@ -89,7 +89,7 @@ private:
 
     // Voting tally
     // @abi table
-    struct vote {
+    struct [[eosio::table]] vote {
           uint64_t id;
           uint64_t proposal_id;
           ipfshash_t proposed_article_hash; // IPFS hash of the proposed new version
@@ -107,7 +107,7 @@ private:
 
     // Brainpower balances
     // @abi table
-    struct brainpower {
+    struct [[eosio::table]] brainpower {
         name user;
         uint64_t power = 0; // TODO: need to fix this later
 
@@ -132,10 +132,9 @@ private:
         }
     };
 
-
     // Edit Proposals
     // @abi table
-    struct editproposal {
+    struct [[eosio::table]] editproposal {
           uint64_t id;
           ipfshash_t proposed_article_hash; // IPFS hash of the proposed new version
           ipfshash_t old_article_hash; // IPFS hash of the old version
@@ -153,11 +152,10 @@ private:
 
     };
 
-
     // Internal struct for history of success rewards and reject slashes
     // slashes will be done immediately at finalize(). Rewards will be done at 30min periods
     // @abi table
-    struct rewardhistory {
+    struct [[eosio::table]] rewardhistory {
         uint64_t id;
         name user;
         uint64_t amount; // slash or reward amount
@@ -176,7 +174,7 @@ private:
         uint64_t get_finalize_period()const { return proposal_finalize_period; }
     };
 
-    struct periodreward {
+    struct [[eosio::table]] periodreward {
         uint64_t period;
       	uint64_t curation_sum;
       	uint64_t editor_sum;
@@ -249,37 +247,50 @@ public:
     //  ==================================================
     // ABI Functions
 
+    [[eosio::action]]
     void brainclmid( uint64_t stakeid );
 
+    [[eosio::action]]
     void brainmeart( name staker,
                   uint64_t amount );
 
+    [[eosio::action]]
     void notify( name to,
                   std::string memo );
 
+    [[eosio::action]]
     void finalize( uint64_t proposal_id );
 
+    [[eosio::action]]
     void fnlbyhash( ipfshash_t& proposal_hash );
 
+    [[eosio::action]]
     void oldvotepurge( ipfshash_t& proposed_article_hash,
                        uint32_t loop_limit);
 
+    [[eosio::action]]
     void procrewards( uint64_t reward_period );
 
+    [[eosio::action]]
     void propose( name proposer,
                   ipfshash_t& proposed_article_hash,
                   ipfshash_t& old_article_hash );
 
+    [[eosio::action]]
     void updatewiki( ipfshash_t& current_hash );
 
+    [[eosio::action]]
     void votebyhash ( name voter,
                       ipfshash_t& proposed_article_hash,
                       bool approve,
                       uint64_t amount );
 
+    [[eosio::action]]
     void rewardclmall ( name user );
 
+    [[eosio::action]]
     void rewardclmid ( uint64_t reward_id );
 
-    void logpropres( ipfshash_t& proposal, bool approved, uint64_t yes_votes, uint64_t no_votes ); 
+    [[eosio::action]]
+    void logpropres( ipfshash_t& proposal, bool approved, uint64_t yes_votes, uint64_t no_votes );
 };

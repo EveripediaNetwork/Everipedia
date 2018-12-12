@@ -10,14 +10,14 @@ fi
 
 cd eparticlectr
 echo "Building eparticlectr..."
-eosio-cpp eparticlectr.cpp -o eparticlectr.wasm
+/usr/local/bin/eosio-cpp -abigen eparticlectr.cpp -o eparticlectr.wasm -I eparticlectr.clauses.md -I eparticlectr.contracts.md
 
 cd ../everipediaiq
 echo "Building everipediaiq..."
-eosio-cpp everipediaiq.cpp -o everipediaiq.wasm
+/usr/local/bin/eosio-cpp -abigen everipediaiq.cpp -o everipediaiq.wasm -I everipediaiq.clauses.md -I everipediaiq.contracts.md
 
 cd ../iqsafesendiq
 echo "Building iqsafesendiq..."
-eosio-cpp iqsafesendiq.cpp -o iqsafesendiq.wasm
+/usr/local/bin/eosio-cpp iqsafesendiq.cpp -o iqsafesendiq.wasm
 
 cd ..

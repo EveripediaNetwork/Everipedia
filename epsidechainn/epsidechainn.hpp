@@ -41,35 +41,35 @@ public:
 
     // IQ transfer struct
     // Needed to pass to stake function when IQ is received by the contract
-    struct transfer_t {
+    struct [[eosio::table]] transfer_t {
         account_name from;
         account_name to;
         asset quantity;
         std::string memo;
     };
 
-    struct unstake_t {
+    struct [[eosio::table]] unstake_t {
         account_name unstaker;
         asset quantity;
     };
 
-    struct renew_t {
+    struct [[eosio::table]] renew_t {
         account_name renewer;
     };
 
     // ===============================================================
     // Table structs
-    
+
     // Staked tokens to move to the sidechain
     // @abi table
-    struct stake {
+    struct [[eosio::table]] stake {
         asset balance;
         uint32_t last_renewed;
         uint32_t unlock_time;
 
         auto primary_key()const { return balance.symbol.name(); }
     };
-    
+
     // stake table
     // @abi table
     typedef eosio::multi_index<N(staketbl), stake > staketbl;
@@ -79,14 +79,18 @@ public:
     //  ==================================================
     // User Actions
 
+    [[eosio::action]]
     void stake( const transfer_t& t );
 
+    [[eosio::action]]
     void renew( const renew_t& t );
 
+    [[eosio::action]]
     void unstake ( const unstake_t& t );
-    
+
     //  ==================================================
     // Logging Actions
 
+    [[eosio::action]]
     void brainissue( account_name user, uint64_t brainpower );
 };
