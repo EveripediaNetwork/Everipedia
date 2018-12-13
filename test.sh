@@ -1,11 +1,22 @@
+#!/bin/bash
+shopt -s expand_aliases
+
 trap ctrl_c INT
 function ctrl_c {
     exit 11;
 }
 
-BOOTSTRAP=0 # 1 if chain bootstrapping (bios, system contract, etc.) is needed, else 0
+BOOTSTRAP=1 # 1 if chain bootstrapping (bios, system contract, etc.) is needed, else 0
+RECOMPILE_AND_RESET_EOSIO_CONTRACTS=0
 BUILD=0
 HELP=0
+EOSIO_BUILD_ROOT=/home/travis/Programs/eoscontracts/eosio.contracts/build/contracts # ~/eosio.contracts/
+NODEOS_HOST="127.0.0.1"
+NODEOS_PROTOCOL="http"
+NODEOS_PORT="8989"
+NODEOS_LOCATION="${NODEOS_PROTOCOL}://${NODEOS_HOST}:${NODEOS_PORT}"
+
+alias cleos="cleos --url=${NODEOS_LOCATION}"
 
 #######################################
 ## HELPERS
@@ -14,16 +25,16 @@ function balance {
     cleos get table everipediaiq $1 accounts | jq ".rows[0].balance" | tr -d '"' | awk '{print $1}'
 }
 
-assert ()                 
-{                         
-                          
+assert ()
+{
+
     if [ $1 -eq 0 ]; then
         FAIL_LINE=$( caller | awk '{print $1}')
         echo "Assertion failed. Line $FAIL_LINE:"
         head -n $FAIL_LINE $BASH_SOURCE | tail -n 1
         exit 99
     fi
-} 
+}
 
 ipfsgen () {
     echo "Qm$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 44 | head -n 1)"
@@ -72,6 +83,9 @@ if [ $BOOTSTRAP -eq 1 ]; then
     # Create BIOS accounts
     rm ~/eosio-wallet/default.wallet
     cleos wallet create --to-console
+
+    # EOSIO system-related keys
+    echo "---SYSTEM KEYS---"
     cleos wallet import --private-key 5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3
     cleos wallet import --private-key 5JgqWJYVBcRhviWZB3TU1tN9ui6bGpQgrXVtYZtTG2d3yXrDtYX
     cleos wallet import --private-key 5JjjgrrdwijEUU2iifKF94yKduoqfAij4SKk6X5Q3HfgHMS4Ur6
@@ -82,6 +96,9 @@ if [ $BOOTSTRAP -eq 1 ]; then
     cleos wallet import --private-key 5JbMN6pH5LLRT16HBKDhtFeKZqe7BEtLBpbBk5D7xSZZqngrV8o
     cleos wallet import --private-key 5JUoVWoLLV3Sj7jUKmfE8Qdt7Eo7dUd4PGZ2snZ81xqgnZzGKdC
     cleos wallet import --private-key 5Ju1ree2memrtnq8bdbhNwuowehZwZvEujVUxDhBqmyTYRvctaF
+
+    # Create system accounts
+    echo "---SYSTEM ACCOUNTS---"
     cleos create account eosio eosio.bpay EOS7gFoz5EB6tM2HxdV9oBjHowtFipigMVtrSZxrJV3X6Ph4jdPg3
     cleos create account eosio eosio.msig EOS6QRncHGrDCPKRzPYSiWZaAw7QchdKCMLWgyjLd1s2v8tiYmb45
     cleos create account eosio eosio.names EOS7ygRX6zD1sx8c55WxiQZLfoitYk2u8aHrzUxu6vfWn9a51iDJt
@@ -91,23 +108,41 @@ if [ $BOOTSTRAP -eq 1 ]; then
     cleos create account eosio eosio.stake EOS5an8bvYFHZBmiCAzAtVSiEiixbJhLY8Uy5Z7cpf3S9UoqA3bJb
     cleos create account eosio eosio.token EOS7JPVyejkbQHzE9Z4HwewNzGss11GB21NPkwTX2MQFmruYFqGXm
     cleos create account eosio eosio.vpay EOS6szGbnziz224T1JGoUUFu2LynVG72f8D3UVAS25QgwawdH983U
-    
-    # Bootstrap new chain
-    cleos set contract eosio.token ~/eosio.contracts/build/eosio.token/
-    cleos set contract eosio.msig ~/eosio.contracts/build/eosio.msig/ 
+
+    if [ $RECOMPILE_EOSIO_CONTRACTS -eq 1 ]; then
+        # Compile the contracts manually due to an error in the build.sh script in eosio.contracts
+        cd "${EOSIO_BUILD_ROOT}/eosio.token"
+        eosio-cpp -I ./include -o ./eosio.token.wasm ./src/eosio.token.cpp --abigen
+        cd "${EOSIO_BUILD_ROOT}/eosio.msig"
+        eosio-cpp -I ./include -o ./eosio.msig.wasm ./src/eosio.msig.cpp --abigen
+        cd "${EOSIO_BUILD_ROOT}/eosio.bios"
+        eosio-cpp -I ./include -o ./eosio.bios.wasm ./src/eosio.bios.cpp --abigen
+        cd "${EOSIO_BUILD_ROOT}/eosio.system"
+        eosio-cpp -I ./include -I "${EOSIO_BUILD_ROOT}/eosio.token/include" -o ./eosio.system.wasm ./src/eosio.system.cpp --abigen
+        cd "${EOSIO_BUILD_ROOT}/eosio.wrap"
+        eosio-cpp -I ./include -o ./eosio.wrap.wasm ./src/eosio.wrap.cpp --abigen
+    fi
+
+    # Bootstrap new system contracts
+    echo "---SYSTEM CONTRACTS---"
+    cleos set contract eosio.token $EOSIO_BUILD_ROOT/eosio.token/
+    cleos set contract eosio.msig $EOSIO_BUILD_ROOT/eosio.msig/
     cleos push action eosio.token create '[ "eosio", "10000000000.0000 EOS" ]' -p eosio.token
+    cleos push action eosio.token create '[ "eosio", "10000000000.0000 SYS" ]' -p eosio.token
+    echo "      EOS TOKEN CREATED"
     cleos push action eosio.token issue '[ "eosio", "1000000000.0000 EOS", "memo" ]' -p eosio
-    cleos set contract eosio ~/eosio.contracts/build/eosio.bios/
-    cleos set contract eosio ~/eosio.contracts/build/eosio.system/
+    cleos push action eosio.token issue '[ "eosio", "1000000000.0000 SYS", "memo" ]' -p eosio
+    echo "      EOS TOKEN ISSUED"
+    cleos set contract eosio $EOSIO_BUILD_ROOT/eosio.bios/
+    echo "      BIOS SET"
+    cleos set contract eosio $EOSIO_BUILD_ROOT/eosio.system/
+    echo "      SYSTEM SET"
     cleos push action eosio setpriv '["eosio.msig", 1]' -p eosio@active
-    
-    # Deploy eosio.wrap
-    cleos wallet import --private-key 5J3JRDhf4JNhzzjEZAsQEgtVuqvsPPdZv4Tm6SjMRx1ZqToaray
-    cleos system newaccount eosio eosio.wrap EOS7LpGN1Qz5AbCJmsHzhG7sWEGd9mwhTXWmrYXqxhTknY2fvHQ1A --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
-    cleos push action eosio setpriv '["eosio.wrap", 1]' -p eosio@active
-    cleos set contract eosio.wrap ~/eosio.contracts/build/eosio.wrap/
-    
-    # Import keys
+    cleos push action eosio init '[0, "4,EOS"]' -p eosio@active
+    cleos push action eosio init '[0, "4,SYS"]' -p eosio@active
+
+    # Import user keys
+    echo "---USER KEYS---"
     cleos wallet import --private-key 5JVvgRBGKXSzLYMHgyMFH5AHjDzrMbyEPRdj8J6EVrXJs8adFpK
     cleos wallet import --private-key 5KBhzoszXcrphWPsuyTxoKJTtMMcPhQYwfivXxma8dDeaLG7Hsq
     cleos wallet import --private-key 5J9UYL9VcDfykAB7mcx9nFfRKki5djG9AXGV6DJ8d5XPYDJDyUy
@@ -120,12 +155,11 @@ if [ $BOOTSTRAP -eq 1 ]; then
     cleos wallet import --private-key 5JU8qQMV3cD4HzA14meGEBWwWxNWAk9QAebSkQotv4wXHkKncNh
     cleos wallet import --private-key 5JJB2Ut8NLJXkADonL8GBH6q8vVZq9BK2zTLTrHh8bURFG2tQia
     cleos wallet import --private-key 5Jr6r8roVHE9NWUX1oag39pBxRwNeD2D6mgeityBbvorge8YA6n
-    
-    
-    ## Create testing accounts
+
+    # Create user accounts
+    echo "---USER ACCOUNTS---"
     cleos system newaccount eosio everipediaiq EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
     cleos system newaccount eosio eparticlectr EOS8dYVzNktdam3Vn31mSXcmbj7J7MzGNudqKb3MLW1wdxWJpEbrw --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
-    cleos system newaccount eosio epiqtokenfee EOS7mWN4AAmyPwY9ib1zYBKbwAteViwPQ4v9MtBWau4AKNZ4z2X4F --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
     cleos system newaccount eosio iqsafesendiq EOS7mJctpRnPPDhLHgnQVU3En7rvy3XHxrQPcsCqU8XZBV6tc7tMW --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
     cleos system newaccount eosio eptestusersa EOS6HfoynFKZ1Msq1bKNwtSTTpEu8NssYMcgsy6nHqhRp3mz7tNkB --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
     cleos system newaccount eosio eptestusersb EOS68s2PrHPDeGWTKczrNZCn4MDMgoW6SFHuTQhXYUNLT1hAmJei8 --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
@@ -134,6 +168,17 @@ if [ $BOOTSTRAP -eq 1 ]; then
     cleos system newaccount eosio eptestuserse EOS76Pcyw1Hd7hW8hkZdUE1DQ3UiRtjmAKQ3muKwidRqmaM8iNtDy --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
     cleos system newaccount eosio eptestusersf EOS7jnmGEK9i33y3N1aV29AYrFptyJ43L7pATBEuVq4fVXG1hzs3G --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
     cleos system newaccount eosio eptestusersg EOS7vr4QpGP7ixUSeumeEahHQ99YDE5jiBucf1B2zhuidHzeni1dD --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
+
+    # Deploy eosio.wrap
+    echo "---EOSIO WRAP---"
+    cleos wallet import --private-key 5J3JRDhf4JNhzzjEZAsQEgtVuqvsPPdZv4Tm6SjMRx1ZqToaray
+    cleos system newaccount eosio eosio.wrap EOS7LpGN1Qz5AbCJmsHzhG7sWEGd9mwhTXWmrYXqxhTknY2fvHQ1A --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
+    cleos push action eosio setpriv '["eosio.wrap", 1]' -p eosio@active
+    cleos set contract eosio.wrap $EOSIO_BUILD_ROOT/eosio.wrap/
+
+
+    exit 1
+
 
     # Transfer EOS to testing accounts
     cleos transfer eosio eptestusersa "1000 EOS"
@@ -150,9 +195,8 @@ if [ $BOOTSTRAP -eq 1 ]; then
     cleos set contract iqsafesendiq iqsafesendiq/
     cleos set account permission everipediaiq active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p everipediaiq
     cleos set account permission eparticlectr active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p eparticlectr
-    cleos set account permission epiqtokenfee active '{ "threshold": 1, "keys": [{ "key": "EOS7mWN4AAmyPwY9ib1zYBKbwAteViwPQ4v9MtBWau4AKNZ4z2X4F", "weight": 1 }], "accounts": [{ "permission": { "actor":"epiqtokenfee","permission":"eosio.code" }, "weight":1 }] }' owner -p epiqtokenfee
     cleos set account permission iqsafesendiq active '{ "threshold": 1, "keys": [{ "key": "EOS7mJctpRnPPDhLHgnQVU3En7rvy3XHxrQPcsCqU8XZBV6tc7tMW", "weight": 1 }], "accounts": [{ "permission": { "actor":"iqsafesendiq","permission":"eosio.code" }, "weight":1 }] }' owner -p iqsafesendiq
-    
+
     # Create and issue token
     cleos push action everipediaiq create "[\"everipediaiq\", \"100000000000.000 IQ\"]" -p everipediaiq@active
     cleos push action everipediaiq issue "[\"everipediaiq\", \"10000000000.000 IQ\", \"initial supply\"]" -p everipediaiq@active
@@ -469,7 +513,7 @@ assert $(bc <<< "$? == 1")
 
 # Procrewards
 echo "Sleeping until reward period ends..."
-sleep 5 
+sleep 5
 FINALIZE_PERIOD=$(cleos get table eparticlectr eparticlectr rewardstbl -l 500 | jq ".rows[-1].proposal_finalize_period")
 ONE_BACK_PERIOD=$(bc <<< "$FINALIZE_PERIOD - 1")
 
@@ -560,7 +604,7 @@ assert $(bc <<< "$NEW_BALANCE2 - $MID_BALANCE2 == 2.319")
 assert $(bc <<< "$NEW_BALANCE3 - $MID_BALANCE3 == 8.859")
 assert $(bc <<< "$NEW_BALANCE4 - $MID_BALANCE4 == 112.552")
 assert $(bc <<< "$NEW_BALANCE5 - $MID_BALANCE5 == 42.194")
-assert $(bc <<< "$NEW_BALANCE6 - $MID_BALANCE6 == 0.000")   
+assert $(bc <<< "$NEW_BALANCE6 - $MID_BALANCE6 == 0.000")
 assert $(bc <<< "$NEW_BALANCE7 - $MID_BALANCE7 == 33.755")
 
 echo "Next 3 claims should fail"
@@ -608,7 +652,7 @@ cleos push action eparticlectr brainclmid "[\"$STAKE_ID2\"]" -p $STAKE_USER2
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr brainclmid "[\"$STAKE_ID3\"]" -p $STAKE_USER3
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr brainclmid "[\"$STAKE_ID4\"]" -p eptestuserse 
+cleos push action eparticlectr brainclmid "[\"$STAKE_ID4\"]" -p eptestuserse
 assert $(bc <<< "$? == 0")
 
 echo "The following claim should fail"
