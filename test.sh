@@ -9,9 +9,9 @@ function ctrl_c {
     exit 11;
 }
 
-BOOTSTRAP=0 # 1 if chain bootstrapping (bios, system contract, etc.) is needed, else 0
+BOOTSTRAP=1 # 1 if chain bootstrapping (bios, system contract, etc.) is needed, else 0
 RECOMPILE_AND_RESET_EOSIO_CONTRACTS=0
-BUILD=0
+BUILD=1
 HELP=0
 EOSIO_BUILD_ROOT=/home/travis/Programs/eoscontracts/eosio.contracts/build/contracts # ~/eosio.contracts/
 NODEOS_HOST="127.0.0.1"
@@ -386,7 +386,6 @@ cleos push action everipediaiq brainmeiq '["eptestusersg", -1000]' -p eptestuser
 assert $(bc <<< "$? == 1")
 cleos push action everipediaiq brainmeiq '["eptestusersg", 1000.324]' -p eptestusersg
 assert $(bc <<< "$? == 1")
-echo -e "Below should pass"
 
 # Proposals
 echo -e "${CYAN}-----------------------TEST PROPOSALS-----------------------${NC}"
@@ -500,7 +499,7 @@ echo -e "${CYAN}-----------------------EARLY FINALIZE SHOULD FAIL---------------
 cleos push action eparticlectr fnlbyhash "[ \"$IPFS3\" ]" -p eptestuserse
 assert $(bc <<< "$? == 1")
 
-echo -e "   ${CYAN}WAITING FOR VOTING PERIOD TO END${NC}"
+echo -e "${CYAN}WAITING FOR VOTING PERIOD TO END...${NC}"
 sleep 4 # wait for test voting period to end
 
 # Bad vote
@@ -527,7 +526,7 @@ assert $(bc <<< "$? == 1")
 # Slash checks
 echo -e "${CYAN}-----------------------NEED TO TEST SLASHES-----------------------${NC}"
 
-echo -e "   ${CYAN}WAITING FOR REWARDS PERIOD TO END${NC}"
+echo -e "${CYAN}WAITING FOR REWARDS PERIOD TO END...${NC}"
 sleep 5
 
 # Procrewards
@@ -590,6 +589,7 @@ assert $(bc <<< "$MID_BALANCE5 - $OLD_BALANCE5 == 2.530")
 assert $(bc <<< "$MID_BALANCE6 - $OLD_BALANCE6 == 1.476")
 assert $(bc <<< "$MID_BALANCE7 - $OLD_BALANCE7 == 2.531")
 
+echo -e "${CYAN}-----------------------TESTING CLAIMALLS-----------------------${NC}"
 cleos push action eparticlectr rewardclmall '["eptestusersa"]' -p eptestusersa
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr rewardclmall '["eptestusersb"]' -p eptestusersb
@@ -627,7 +627,7 @@ assert $(bc <<< "$NEW_BALANCE5 - $MID_BALANCE5 == 42.194")
 assert $(bc <<< "$NEW_BALANCE6 - $MID_BALANCE6 == 0.000")
 assert $(bc <<< "$NEW_BALANCE7 - $MID_BALANCE7 == 33.755")
 
-echo -e "Next 3 claims should fail"
+echo -e "${CYAN}-----------------------NEXT THREE CLAIMS SHOULD FAIL-----------------------${NC}"
 cleos push action eparticlectr rewardclmall '["eptestusersf"]' -p eptestusersf
 assert $(bc <<< "$? != 0")
 cleos push action --force-unique eparticlectr rewardclmid "[\"$REWARD_ID3\"]" -p eptestusersf
@@ -635,7 +635,7 @@ assert $(bc <<< "$? != 0")
 cleos push action eparticlectr rewardclmid '[764333]' -p eptestusersf
 assert $(bc <<< "$? != 0")
 
-echo -e "Below should pass"
+echo -e "${CYAN}-----------------------VOTE PURGES BELOW SHOULD PASS-----------------------${NC}"
 echo $IPFS1
 cleos push action eparticlectr oldvotepurge "[\"$IPFS1\", 100]" -p eptestusersa
 assert $(bc <<< "$? == 0")
@@ -646,13 +646,13 @@ assert $(bc <<< "$? == 0")
 cleos push action eparticlectr oldvotepurge "[\"$IPFS3\", 5]" -p eptestusersa
 assert $(bc <<< "$? == 0")
 
-echo -e "Next 2 vote purges should fail"
+echo -e "${CYAN}-----------------------NEXT TWO VOTE PURGES SHOULD FAIL-----------------------${NC}"
 cleos push action eparticlectr oldvotepurge "[\"$IPFS1\", 100]" -p eptestusersa
 assert $(bc <<< "$? == 1")
 cleos push action eparticlectr oldvotepurge '["gumdrop", 100]' -p eptestusersa
 assert $(bc <<< "$? == 1")
 
-echo -e "Below should pass"
+echo -e "${CYAN}-----------------------BELOW CLAIMS SHOULD PASS-----------------------${NC}"
 STAKE1=$(cleos get table eparticlectr eparticlectr staketbl -l 500 | jq ".rows[-1]")
 STAKE_USER1=$(echo $STAKE1 | jq ".user" | tr -d '"')
 STAKE_ID1=$(echo $STAKE1 | jq ".id" | tr -d '"')
@@ -675,8 +675,8 @@ assert $(bc <<< "$? == 0")
 cleos push action eparticlectr brainclmid "[\"$STAKE_ID4\"]" -p eptestuserse
 assert $(bc <<< "$? == 0")
 
-echo -e "The following claim should fail"
+echo -e "${CYAN}-----------------------THIS CLAIM SHOULD FAIL-----------------------${NC}"
 cleos push action eparticlectr brainclmid "[\"$STAKE_ID1\"]" -p eptestusersf
 assert $(bc <<< "$? == 1")
 
-echo -e "Testing successfully complete"
+echo -e "${CYAN}-----------------------COMPLETE-----------------------${NC}"
