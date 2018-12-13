@@ -1,12 +1,15 @@
 #!/bin/bash
 shopt -s expand_aliases
 
+CYAN='\033[1;36m'
+NC='\033[0m'
+
 trap ctrl_c INT
 function ctrl_c {
     exit 11;
 }
 
-BOOTSTRAP=1 # 1 if chain bootstrapping (bios, system contract, etc.) is needed, else 0
+BOOTSTRAP=0 # 1 if chain bootstrapping (bios, system contract, etc.) is needed, else 0
 RECOMPILE_AND_RESET_EOSIO_CONTRACTS=0
 BUILD=0
 HELP=0
@@ -30,21 +33,21 @@ assert ()
 
     if [ $1 -eq 0 ]; then
         FAIL_LINE=$( caller | awk '{print $1}')
-        echo "Assertion failed. Line $FAIL_LINE:"
+        echo -e "Assertion failed. Line $FAIL_LINE:"
         head -n $FAIL_LINE $BASH_SOURCE | tail -n 1
         exit 99
     fi
 }
 
 ipfsgen () {
-    echo "Qm$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 44 | head -n 1)"
+    echo -e "Qm$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 44 | head -n 1)"
 }
 
 #################################
 
 # Parse args
 OPTIONS=$(getopt -o bsh --long build,bootstrap,help: -n test.sh -- "$@")
-if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
+if [ $? != 0 ] ; then echo -e "Failed parsing options." >&2 ; exit 1 ; fi
 eval set -- "$OPTIONS"
 while true; do
   case "$1" in
@@ -57,14 +60,14 @@ while true; do
 done
 
 if [ $HELP -eq 1 ]; then
-    echo "Usage ./test.sh [-b | --build][-s | --bootstrap][-h | --help]";
+    echo -e "Usage ./test.sh [-b | --build][-s | --bootstrap][-h | --help]";
     exit 0
 fi
 
 # Don't allow tests on mainnet
 CHAIN_ID=$(cleos get info | jq ".chain_id" | tr -d '"')
 if [ $CHAIN_ID = "aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906" ]; then
-    >&2 echo "Cannot run test on mainnet"
+    >&2 echo -e "Cannot run test on mainnet"
     exit 1
 fi
 
@@ -85,7 +88,7 @@ if [ $BOOTSTRAP -eq 1 ]; then
     cleos wallet create --to-console
 
     # EOSIO system-related keys
-    echo "---SYSTEM KEYS---"
+    echo -e "${CYAN}-----------------------SYSTEM KEYS-----------------------${NC}"
     cleos wallet import --private-key 5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3
     cleos wallet import --private-key 5JgqWJYVBcRhviWZB3TU1tN9ui6bGpQgrXVtYZtTG2d3yXrDtYX
     cleos wallet import --private-key 5JjjgrrdwijEUU2iifKF94yKduoqfAij4SKk6X5Q3HfgHMS4Ur6
@@ -98,7 +101,7 @@ if [ $BOOTSTRAP -eq 1 ]; then
     cleos wallet import --private-key 5Ju1ree2memrtnq8bdbhNwuowehZwZvEujVUxDhBqmyTYRvctaF
 
     # Create system accounts
-    echo "---SYSTEM ACCOUNTS---"
+    echo -e "${CYAN}-----------------------SYSTEM ACCOUNTS-----------------------${NC}"
     cleos create account eosio eosio.bpay EOS7gFoz5EB6tM2HxdV9oBjHowtFipigMVtrSZxrJV3X6Ph4jdPg3
     cleos create account eosio eosio.msig EOS6QRncHGrDCPKRzPYSiWZaAw7QchdKCMLWgyjLd1s2v8tiYmb45
     cleos create account eosio eosio.names EOS7ygRX6zD1sx8c55WxiQZLfoitYk2u8aHrzUxu6vfWn9a51iDJt
@@ -111,6 +114,7 @@ if [ $BOOTSTRAP -eq 1 ]; then
 
     if [ $RECOMPILE_EOSIO_CONTRACTS -eq 1 ]; then
         # Compile the contracts manually due to an error in the build.sh script in eosio.contracts
+        echo -e "${CYAN}-----------------------RECOMPILING CONTRACTS-----------------------${NC}"
         cd "${EOSIO_BUILD_ROOT}/eosio.token"
         eosio-cpp -I ./include -o ./eosio.token.wasm ./src/eosio.token.cpp --abigen
         cd "${EOSIO_BUILD_ROOT}/eosio.msig"
@@ -124,25 +128,25 @@ if [ $BOOTSTRAP -eq 1 ]; then
     fi
 
     # Bootstrap new system contracts
-    echo "---SYSTEM CONTRACTS---"
+    echo -e "${CYAN}-----------------------SYSTEM CONTRACTS-----------------------${NC}"
     cleos set contract eosio.token $EOSIO_BUILD_ROOT/eosio.token/
     cleos set contract eosio.msig $EOSIO_BUILD_ROOT/eosio.msig/
     cleos push action eosio.token create '[ "eosio", "10000000000.0000 EOS" ]' -p eosio.token
     cleos push action eosio.token create '[ "eosio", "10000000000.0000 SYS" ]' -p eosio.token
-    echo "      EOS TOKEN CREATED"
+    echo -e "      EOS TOKEN CREATED"
     cleos push action eosio.token issue '[ "eosio", "1000000000.0000 EOS", "memo" ]' -p eosio
     cleos push action eosio.token issue '[ "eosio", "1000000000.0000 SYS", "memo" ]' -p eosio
-    echo "      EOS TOKEN ISSUED"
+    echo -e "      EOS TOKEN ISSUED"
     cleos set contract eosio $EOSIO_BUILD_ROOT/eosio.bios/
-    echo "      BIOS SET"
+    echo -e "      BIOS SET"
     cleos set contract eosio $EOSIO_BUILD_ROOT/eosio.system/
-    echo "      SYSTEM SET"
+    echo -e "      SYSTEM SET"
     cleos push action eosio setpriv '["eosio.msig", 1]' -p eosio@active
     cleos push action eosio init '[0, "4,EOS"]' -p eosio@active
     cleos push action eosio init '[0, "4,SYS"]' -p eosio@active
 
     # Import user keys
-    echo "---USER KEYS---"
+    echo -e "${CYAN}-----------------------USER KEYS-----------------------${NC}"
     cleos wallet import --private-key 5JVvgRBGKXSzLYMHgyMFH5AHjDzrMbyEPRdj8J6EVrXJs8adFpK
     cleos wallet import --private-key 5KBhzoszXcrphWPsuyTxoKJTtMMcPhQYwfivXxma8dDeaLG7Hsq
     cleos wallet import --private-key 5J9UYL9VcDfykAB7mcx9nFfRKki5djG9AXGV6DJ8d5XPYDJDyUy
@@ -157,7 +161,7 @@ if [ $BOOTSTRAP -eq 1 ]; then
     cleos wallet import --private-key 5Jr6r8roVHE9NWUX1oag39pBxRwNeD2D6mgeityBbvorge8YA6n
 
     # Create user accounts
-    echo "---USER ACCOUNTS---"
+    echo -e "${CYAN}-----------------------USER ACCOUNTS-----------------------${NC}"
     cleos system newaccount eosio everipediaiq EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
     cleos system newaccount eosio eparticlectr EOS8dYVzNktdam3Vn31mSXcmbj7J7MzGNudqKb3MLW1wdxWJpEbrw --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
     cleos system newaccount eosio iqsafesendiq EOS7mJctpRnPPDhLHgnQVU3En7rvy3XHxrQPcsCqU8XZBV6tc7tMW --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
@@ -170,17 +174,14 @@ if [ $BOOTSTRAP -eq 1 ]; then
     cleos system newaccount eosio eptestusersg EOS7vr4QpGP7ixUSeumeEahHQ99YDE5jiBucf1B2zhuidHzeni1dD --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
 
     # Deploy eosio.wrap
-    echo "---EOSIO WRAP---"
+    echo -e "${CYAN}-----------------------EOSIO WRAP-----------------------${NC}"
     cleos wallet import --private-key 5J3JRDhf4JNhzzjEZAsQEgtVuqvsPPdZv4Tm6SjMRx1ZqToaray
     cleos system newaccount eosio eosio.wrap EOS7LpGN1Qz5AbCJmsHzhG7sWEGd9mwhTXWmrYXqxhTknY2fvHQ1A --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
     cleos push action eosio setpriv '["eosio.wrap", 1]' -p eosio@active
     cleos set contract eosio.wrap $EOSIO_BUILD_ROOT/eosio.wrap/
 
-
-    exit 1
-
-
     # Transfer EOS to testing accounts
+    echo -e "${CYAN}-----------------------TRANSFERRING IQ-----------------------${NC}"
     cleos transfer eosio eptestusersa "1000 EOS"
     cleos transfer eosio eptestusersb "1000 EOS"
     cleos transfer eosio eptestusersc "1000 EOS"
@@ -190,6 +191,7 @@ if [ $BOOTSTRAP -eq 1 ]; then
     cleos transfer eosio eptestusersg "1000 EOS"
 
     ## Deploy contracts
+    echo -e "${CYAN}-----------------------DEPLOYING EVERIPEDIA CONTRACTS-----------------------${NC}"
     cleos set contract everipediaiq everipediaiq/
     cleos set contract eparticlectr eparticlectr/
     cleos set contract iqsafesendiq iqsafesendiq/
@@ -198,12 +200,13 @@ if [ $BOOTSTRAP -eq 1 ]; then
     cleos set account permission iqsafesendiq active '{ "threshold": 1, "keys": [{ "key": "EOS7mJctpRnPPDhLHgnQVU3En7rvy3XHxrQPcsCqU8XZBV6tc7tMW", "weight": 1 }], "accounts": [{ "permission": { "actor":"iqsafesendiq","permission":"eosio.code" }, "weight":1 }] }' owner -p iqsafesendiq
 
     # Create and issue token
+    echo -e "${CYAN}-----------------------CREATING IQ TOKEN-----------------------${NC}"
     cleos push action everipediaiq create "[\"everipediaiq\", \"100000000000.000 IQ\"]" -p everipediaiq@active
     cleos push action everipediaiq issue "[\"everipediaiq\", \"10000000000.000 IQ\", \"initial supply\"]" -p everipediaiq@active
 fi
 
-
 ## Deploy contracts
+echo -e "${CYAN}-----------------------DEPLOYING EVERIPEDIA CONTRACTS AGAIN-----------------------${NC}"
 cleos set contract everipediaiq everipediaiq/
 cleos set contract eparticlectr eparticlectr/
 cleos set contract iqsafesendiq iqsafesendiq/
@@ -219,6 +222,8 @@ OLD_BALANCE7=$(balance eptestusersg)
 OLD_FEE_BALANCE=$(balance epiqtokenfee)
 OLD_SUPPLY=$(cleos get table everipediaiq IQ stat | jq ".rows[0].supply" | tr -d '"' | awk '{print $1}')
 
+# Test IQ transfers
+echo -e "${CYAN}-----------------------MOVING TOKENS FROM THE CONTRACT TO SOME USERS, UNSAFELY-----------------------${NC}"
 cleos push action everipediaiq transfer '["everipediaiq", "eptestusersa", "10000.000 IQ", "test"]' -p everipediaiq
 assert $(bc <<< "$? == 0")
 cleos push action everipediaiq transfer '["everipediaiq", "eptestusersb", "10000.000 IQ", "test"]' -p everipediaiq
@@ -233,7 +238,6 @@ cleos push action everipediaiq transfer '["everipediaiq", "eptestusersf", "10000
 assert $(bc <<< "$? == 0")
 cleos push action everipediaiq transfer '["everipediaiq", "eptestusersg", "10000.000 IQ", "test"]' -p everipediaiq
 assert $(bc <<< "$? == 0")
-
 
 NEW_BALANCE1=$(balance eptestusersa)
 NEW_BALANCE2=$(balance eptestusersb)
@@ -251,7 +255,6 @@ assert $(bc <<< "$NEW_BALANCE5 - $OLD_BALANCE5 == 10000")
 assert $(bc <<< "$NEW_BALANCE6 - $OLD_BALANCE6 == 10000")
 assert $(bc <<< "$NEW_BALANCE7 - $OLD_BALANCE7 == 10000")
 
-
 # Standard transfers
 OLD_BALANCE1=$(balance eptestusersa)
 OLD_BALANCE2=$(balance eptestusersb)
@@ -261,6 +264,8 @@ OLD_BALANCE5=$(balance eptestuserse)
 OLD_BALANCE6=$(balance eptestusersf)
 OLD_BALANCE7=$(balance eptestusersg)
 
+# Standard transfers
+echo -e "${CYAN}-----------------------MOVING TOKENS FROM ONE USER TO THE NEXT, UNSAFELY-----------------------${NC}"
 cleos push action everipediaiq transfer '["eptestusersa", "eptestusersb", "1000.000 IQ", "test"]' -p eptestusersa
 assert $(bc <<< "$? == 0")
 cleos push action everipediaiq transfer '["eptestusersa", "eptestusersc", "1000.000 IQ", "test"]' -p eptestusersa
@@ -275,6 +280,7 @@ cleos push action everipediaiq transfer '["eptestusersa", "eptestusersg", "1000.
 assert $(bc <<< "$? == 0")
 
 # Safe transfers
+echo -e "${CYAN}-----------------------MOVING TOKENS FROM ONE USER TO THE NEXT, SAFELY-----------------------${NC}"
 cleos push action everipediaiq transfer '["eptestusersa", "iqsafesendiq", "1000.000 IQ", "eptestuserse", "test"]' -p eptestusersa
 assert $(bc <<< "$? == 0")
 cleos push action everipediaiq transfer '["eptestusersa", "iqsafesendiq", "1000.000 IQ", "eptestusersc", "test"]' -p eptestusersa
@@ -299,7 +305,7 @@ assert $(bc <<< "$NEW_BALANCE7 - $OLD_BALANCE7 == 1000")
 assert $(bc <<< "$SAFESEND_BALANCE == 0")
 
 # Failed transfers
-echo "Next 4 transfers should fail"
+echo -e "${CYAN}-----------------------NEXT THREE TRANSFERS SHOULD FAIL-----------------------${NC}"
 cleos push action everipediaiq transfer '["eptestusersa", "eptestusersb", "10000000.000 IQ", "test"]' -p eptestusersa
 assert $(bc <<< "$? == 1")
 cleos push action everipediaiq transfer '["eptestusersa", "eptestusersb", "0.000 IQ", "test"]' -p eptestusersa
@@ -308,6 +314,7 @@ cleos push action everipediaiq transfer '["eptestusersa", "eptestusersb", "-100.
 assert $(bc <<< "$? == 1")
 
 # Burns
+echo -e "${CYAN}-----------------------TESTING BURNS-----------------------${NC}"
 OLD_SUPPLY=$(cleos get table everipediaiq IQ stat | jq ".rows[0].supply" | tr -d '"' | awk '{print $1}')
 OLD_BALANCE6=$(balance eptestusersf)
 OLD_BALANCE7=$(balance eptestusersg)
@@ -326,33 +333,36 @@ assert $(bc <<< "$OLD_BALANCE7 - $NEW_BALANCE7 == 1000")
 assert $(bc <<< "$OLD_SUPPLY - $NEW_SUPPLY == 2000")
 
 # Failed burns
+echo -e "${CYAN}-----------------------FAILED BURNS-----------------------${NC}"
 cleos push action everipediaiq burn '["eptestusersg", "1000.000 IQ", "test"]' -p eptestusersf
 assert $(bc <<< "$? == 1")
 cleos push action everipediaiq burn '["eptestusersf", "10000000.000 IQ", "test"]' -p eptestusersf
 assert $(bc <<< "$? == 1")
 
 # Buy IQ from DEX
-echo "Below should pass"
-cleos push action everipediaiq paytxfee '["everipediaiq", "200000.000 IQ", "test"]' -p everipediaiq
-
-OLD_BALANCE1=$(balance eptestusersa)
-OLD_BALANCE2=$(balance eptestusersb)
-OLD_BALANCE3=$(balance eptestusersc)
-
-echo "Current Fee Balance: $OLD_FEE_BALANCE"
-cleos transfer eptestusersa epiqtokenfee "10 EOS"
-assert $(bc <<< "$? == 0")
-cleos transfer eptestusersb epiqtokenfee "1 EOS"
-assert $(bc <<< "$? == 0")
-cleos transfer eptestusersb epiqtokenfee "200 EOS"
-assert $(bc <<< "$? == 0")
-
-NEW_BALANCE1=$(balance eptestusersa)
-NEW_BALANCE2=$(balance eptestusersb)
-NEW_BALANCE3=$(balance eptestusersc)
+# echo -e "Below should pass"
+# cleos push action everipediaiq paytxfee '["everipediaiq", "200000.000 IQ", "test"]' -p everipediaiq
+#
+# OLD_BALANCE1=$(balance eptestusersa)
+# OLD_BALANCE2=$(balance eptestusersb)
+# OLD_BALANCE3=$(balance eptestusersc)
+#
+# echo -e "Current Fee Balance: $OLD_FEE_BALANCE"
+# cleos transfer eptestusersa epiqtokenfee "10 EOS"
+# assert $(bc <<< "$? == 0")
+# cleos transfer eptestusersb epiqtokenfee "1 EOS"
+# assert $(bc <<< "$? == 0")
+# cleos transfer eptestusersb epiqtokenfee "200 EOS"
+# assert $(bc <<< "$? == 0")
+#
+# NEW_BALANCE1=$(balance eptestusersa)
+# NEW_BALANCE2=$(balance eptestusersb)
+# NEW_BALANCE3=$(balance eptestusersc)
 
 
 # Stake tokens
+echo -e "${CYAN}-----------------------STAKE TOKENS-----------------------${NC}"
+sleep 1
 cleos push action everipediaiq brainmeiq '["eptestusersa", 2000]' -p eptestusersa
 assert $(bc <<< "$? == 0")
 cleos push action everipediaiq brainmeiq '["eptestusersb", 2000]' -p eptestusersb
@@ -369,16 +379,17 @@ cleos push action everipediaiq brainmeiq '["eptestusersg", 2000]' -p eptestusers
 assert $(bc <<< "$? == 0")
 
 # Failed stakes
-echo "Next 3 stakes should fail"
+echo -e "${CYAN}-----------------------NEXT THREE STAKE ATTEMPTS SHOULD FAIL-----------------------${NC}"
 cleos push action everipediaiq brainmeiq '["eptestusersg", 0]' -p eptestusersg
 assert $(bc <<< "$? == 1")
 cleos push action everipediaiq brainmeiq '["eptestusersg", -1000]' -p eptestusersg
 assert $(bc <<< "$? == 1")
 cleos push action everipediaiq brainmeiq '["eptestusersg", 1000.324]' -p eptestusersg
 assert $(bc <<< "$? == 1")
-echo "Below should pass"
+echo -e "Below should pass"
 
 # Proposals
+echo -e "${CYAN}-----------------------TEST PROPOSALS-----------------------${NC}"
 IPFS1=$(ipfsgen)
 IPFS2=$(ipfsgen)
 IPFS3=$(ipfsgen)
@@ -404,15 +415,15 @@ cleos push action eparticlectr propose "[ \"eptestuserse\", \"$IPFS7\", \"\", \"
 assert $(bc <<< "$? == 0")
 
 # Failed proposals
-echo "Next 3 proposals should fail"
+echo -e "${CYAN}-----------------------NEXT THREE PROPOSALS SHOULD FAIL-----------------------${NC}"
 cleos push action eparticlectr propose "[ \"eptestuserse\", \"$IPFS1\" \"\", \"\"]" -p eptestuserse
 assert $(bc <<< "$? == 1")
-echo "Below should pass"
 
 # Votes
 sleep 1
 
 # Win
+echo -e "${CYAN}-----------------------SETTING WINNING VOTES-----------------------${NC}"
 cleos push action eparticlectr votebyhash "[ \"eptestusersb\", \"$IPFS1\", 1, 50 ]" -p eptestusersb
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr votebyhash "[ \"eptestusersc\", \"$IPFS1\", 1, 100 ]" -p eptestusersc
@@ -427,6 +438,7 @@ cleos push action eparticlectr votebyhash "[ \"eptestusersg\", \"$IPFS1\", 0, 80
 assert $(bc <<< "$? == 0")
 
 # Lose
+echo -e "${CYAN}-----------------------SETTING LOSING VOTES-----------------------${NC}"
 cleos push action eparticlectr votebyhash "[ \"eptestusersb\", \"$IPFS2\", 1, 5 ]" -p eptestusersb
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr votebyhash "[ \"eptestusersc\", \"$IPFS2\", 0, 100 ]" -p eptestusersc
@@ -441,6 +453,7 @@ cleos push action eparticlectr votebyhash "[ \"eptestusersg\", \"$IPFS2\", 0, 80
 assert $(bc <<< "$? == 0")
 
 # Tie (net votes dont't sum to 0 because proposer auto-votes 50 in favor)
+echo -e "${CYAN}-----------------------SETTING TIE VOTES-----------------------${NC}"
 cleos push action eparticlectr votebyhash "[ \"eptestusersb\", \"$IPFS3\", 1, 15 ]" -p eptestusersb
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr votebyhash "[ \"eptestusersc\", \"$IPFS3\", 0, 150 ]" -p eptestusersc
@@ -454,7 +467,8 @@ assert $(bc <<< "$? == 0")
 cleos push action eparticlectr votebyhash "[ \"eptestusersg\", \"$IPFS3\", 1, 60 ]" -p eptestusersg
 assert $(bc <<< "$? == 0")
 
-# Unananimous win
+# Unanimous win
+echo -e "${CYAN}-----------------------UNANIMOUS VOTES-----------------------${NC}"
 cleos push action eparticlectr votebyhash "[ \"eptestusersb\", \"$IPFS4\", 1, 5 ]" -p eptestusersb
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr votebyhash "[ \"eptestusersc\", \"$IPFS4\", 1, 10 ]" -p eptestusersc
@@ -469,11 +483,12 @@ cleos push action eparticlectr votebyhash "[ \"eptestusersg\", \"$IPFS4\", 1, 60
 assert $(bc <<< "$? == 0")
 
 # Flip vote loss
+echo -e "${CYAN}-----------------------FLIP LOSING VOTES-----------------------${NC}"
 cleos push action eparticlectr votebyhash "[ \"eptestuserse\", \"$IPFS5\", 0, 60 ]" -p eptestuserse
 assert $(bc <<< "$? == 0")
 
 # Bad votes
-echo "Next 2 votes should fail"
+echo -e "${CYAN}-----------------------NEXT TWO VOTE ATTEMPTS SHOULD FAIL-----------------------${NC}"
 cleos push action eparticlectr votebyhash "[ \"eptestusersg\", \"$IPFS4\", 1, 50000 ]" -p eptestusersg
 assert $(bc <<< "$? == 1")
 cleos push action eparticlectr votebyhash "[ \"eptestusersc\", \"$IPFS4\", 1, 500 ]" -p eptestusersg
@@ -481,19 +496,19 @@ assert $(bc <<< "$? == 1")
 
 
 # Finalize
-echo "Early finalize should fail"
+echo -e "${CYAN}-----------------------EARLY FINALIZE SHOULD FAIL-----------------------${NC}"
 cleos push action eparticlectr fnlbyhash "[ \"$IPFS3\" ]" -p eptestuserse
 assert $(bc <<< "$? == 1")
 
-echo "Sleeping until voting period ends..."
+echo -e "   ${CYAN}WAITING FOR VOTING PERIOD TO END${NC}"
 sleep 4 # wait for test voting period to end
 
 # Bad vote
-echo "Late vote should fail"
+echo -e "${CYAN}-----------------------LATE VOTE SHOULD FAIL-----------------------${NC}"
 cleos push action eparticlectr votebyhash "[ \"eptestusersc\", \"$IPFS4\", 1, 500 ]" -p eptestusersc
 assert $(bc <<< "$? == 1")
 
-echo "Below should pass"
+echo -e "${CYAN}-----------------------FINALIZES-----------------------${NC}"
 cleos push action eparticlectr fnlbyhash "[ \"$IPFS1\" ]" -p eptestusersa
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr fnlbyhash "[ \"$IPFS2\" ]" -p eptestusersg
@@ -505,19 +520,23 @@ assert $(bc <<< "$? == 0")
 cleos push action eparticlectr fnlbyhash "[ \"$IPFS5\" ]" -p eptestusersa
 assert $(bc <<< "$? == 0")
 
-echo "Next finalize should fail"
+echo -e "${CYAN}-----------------------FINALIZE FAIL (ALREADY FINALIZED)-----------------------${NC}"
 cleos push action --force-unique eparticlectr fnlbyhash "[ \"$IPFS3\" ]" -p eptestuserse
 assert $(bc <<< "$? == 1")
 
 # Slash checks
+echo -e "${CYAN}-----------------------NEED TO TEST SLASHES-----------------------${NC}"
+
+echo -e "   ${CYAN}WAITING FOR REWARDS PERIOD TO END${NC}"
+sleep 5
 
 # Procrewards
-echo "Sleeping until reward period ends..."
-sleep 5
+echo -e "${CYAN}-----------------------EARLY FINALIZE SHOULD FAIL-----------------------${NC}"
+
 FINALIZE_PERIOD=$(cleos get table eparticlectr eparticlectr rewardstbl -l 500 | jq ".rows[-1].proposal_finalize_period")
 ONE_BACK_PERIOD=$(bc <<< "$FINALIZE_PERIOD - 1")
 
-echo "Below should pass"
+echo -e "${CYAN}-----------------------PROCESS REWARDS-----------------------${NC}"
 cleos push action eparticlectr procrewards "[\"$FINALIZE_PERIOD\"]" -p eptestusersa
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr procrewards "[\"$ONE_BACK_PERIOD\"]" -p eptestusersa
@@ -525,8 +544,8 @@ cleos push action eparticlectr procrewards "[\"$ONE_BACK_PERIOD\"]" -p eptestuse
 CURATION_REWARD_SUM=$(cleos get table eparticlectr eparticlectr periodreward -l 500 | jq ".rows[-1].curation_sum")
 EDITOR_REWARD_SUM=$(cleos get table eparticlectr eparticlectr periodreward -l 500 | jq ".rows[-1].editor_sum")
 
-echo $CURATION_REWARD_SUM
-echo $EDITOR_REWARD_SUM
+echo -e "   ${CYAN}CURATION REWARD SUM: ${CURATION_REWARD_SUM}${NC}"
+echo -e "   ${CYAN}EDITOR REWARD SUM: ${EDITOR_REWARD_SUM}${NC}"
 
 assert $(bc <<< "$CURATION_REWARD_SUM == 2370")
 assert $(bc <<< "$EDITOR_REWARD_SUM == 960")
@@ -545,6 +564,7 @@ REWARD_ID2=$(bc <<< "$REWARD_ID1 - 1")
 REWARD_ID3=$(bc <<< "$REWARD_ID1 - 2")
 REWARD_ID4=$(bc <<< "$REWARD_ID1 - 3")
 
+echo -e "${CYAN}-----------------------CLAIM REWARDS-----------------------${NC}"
 cleos push action eparticlectr rewardclmid "[\"$REWARD_ID1\"]" -p eptestuserse
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr rewardclmid "[\"$REWARD_ID2\"]" -p eptestusersg
@@ -607,7 +627,7 @@ assert $(bc <<< "$NEW_BALANCE5 - $MID_BALANCE5 == 42.194")
 assert $(bc <<< "$NEW_BALANCE6 - $MID_BALANCE6 == 0.000")
 assert $(bc <<< "$NEW_BALANCE7 - $MID_BALANCE7 == 33.755")
 
-echo "Next 3 claims should fail"
+echo -e "Next 3 claims should fail"
 cleos push action eparticlectr rewardclmall '["eptestusersf"]' -p eptestusersf
 assert $(bc <<< "$? != 0")
 cleos push action --force-unique eparticlectr rewardclmid "[\"$REWARD_ID3\"]" -p eptestusersf
@@ -615,7 +635,7 @@ assert $(bc <<< "$? != 0")
 cleos push action eparticlectr rewardclmid '[764333]' -p eptestusersf
 assert $(bc <<< "$? != 0")
 
-echo "Below should pass"
+echo -e "Below should pass"
 echo $IPFS1
 cleos push action eparticlectr oldvotepurge "[\"$IPFS1\", 100]" -p eptestusersa
 assert $(bc <<< "$? == 0")
@@ -626,13 +646,13 @@ assert $(bc <<< "$? == 0")
 cleos push action eparticlectr oldvotepurge "[\"$IPFS3\", 5]" -p eptestusersa
 assert $(bc <<< "$? == 0")
 
-echo "Next 2 vote purges should fail"
+echo -e "Next 2 vote purges should fail"
 cleos push action eparticlectr oldvotepurge "[\"$IPFS1\", 100]" -p eptestusersa
 assert $(bc <<< "$? == 1")
 cleos push action eparticlectr oldvotepurge '["gumdrop", 100]' -p eptestusersa
 assert $(bc <<< "$? == 1")
 
-echo "Below should pass"
+echo -e "Below should pass"
 STAKE1=$(cleos get table eparticlectr eparticlectr staketbl -l 500 | jq ".rows[-1]")
 STAKE_USER1=$(echo $STAKE1 | jq ".user" | tr -d '"')
 STAKE_ID1=$(echo $STAKE1 | jq ".id" | tr -d '"')
@@ -655,8 +675,8 @@ assert $(bc <<< "$? == 0")
 cleos push action eparticlectr brainclmid "[\"$STAKE_ID4\"]" -p eptestuserse
 assert $(bc <<< "$? == 0")
 
-echo "The following claim should fail"
+echo -e "The following claim should fail"
 cleos push action eparticlectr brainclmid "[\"$STAKE_ID1\"]" -p eptestusersf
 assert $(bc <<< "$? == 1")
 
-echo "Testing successfully complete"
+echo -e "Testing successfully complete"
