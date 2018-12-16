@@ -53,7 +53,7 @@ public:
     eosio::symbol IQSYMBOL = symbol(symbol_code("IQ"), 3);
 
     static fixed_bytes<32> ipfs_to_fixed_bytes32(const ipfshash_t& input) {
-        return sha256(input.c_str(), input.length());
+        return sha256(input.c_str(), input.size());
     }
 
 private:
