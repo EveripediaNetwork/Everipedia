@@ -1,5 +1,5 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Thu Dec 13 15:49:45 2018",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Wed Jan  2 15:45:26 2019",
     "version": "eosio::abi/1.1",
     "structs": [
         {
@@ -9,20 +9,6 @@
                 {
                     "name": "balance",
                     "type": "asset"
-                }
-            ]
-        },
-        {
-            "name": "brainmeiq",
-            "base": "",
-            "fields": [
-                {
-                    "name": "staker",
-                    "type": "name"
-                },
-                {
-                    "name": "amount",
-                    "type": "int64"
                 }
             ]
         },
@@ -77,6 +63,46 @@
             ]
         },
         {
+            "name": "epartpropose",
+            "base": "",
+            "fields": [
+                {
+                    "name": "proposer",
+                    "type": "name"
+                },
+                {
+                    "name": "proposed_article_hash",
+                    "type": "ipfshash_t"
+                },
+                {
+                    "name": "old_article_hash",
+                    "type": "ipfshash_t"
+                }
+            ]
+        },
+        {
+            "name": "epartvote",
+            "base": "",
+            "fields": [
+                {
+                    "name": "voter",
+                    "type": "name"
+                },
+                {
+                    "name": "proposed_article_hash",
+                    "type": "ipfshash_t"
+                },
+                {
+                    "name": "approve",
+                    "type": "bool"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
             "name": "issue",
             "base": "",
             "fields": [
@@ -117,13 +143,13 @@
             ]
         }
     ],
-    "types": [],
-    "actions": [
+    "types": [
         {
-            "name": "brainmeiq",
-            "type": "brainmeiq",
-            "ricardian_contract": "Stake IQ for Brainpower."
-        },
+            "new_type_name": "ipfshash_t",
+            "type": "string"
+        }
+    ],
+    "actions": [
         {
             "name": "burn",
             "type": "burn",
@@ -133,6 +159,16 @@
             "name": "create",
             "type": "create",
             "ricardian_contract": "Create a token."
+        },
+        {
+            "name": "epartpropose",
+            "type": "epartpropose",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "epartvote",
+            "type": "epartvote",
+            "ricardian_contract": ""
         },
         {
             "name": "issue",

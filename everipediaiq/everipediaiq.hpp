@@ -12,8 +12,13 @@
 using namespace eosio;
 using std::string;
 
+const uint64_t EDIT_PROPOSE_IQ = 50000; // 50 IQ
+
 class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
   using contract::contract;
+
+  private:
+    using ipfshash_t = std::string;
 
   public:
 
@@ -36,9 +41,15 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
                     string       memo );
 
      [[eosio::action]]
-     void brainmeiq( name staker,
-                   int64_t amount );
+     void epartvote( name voter, 
+                     ipfshash_t& proposed_article_hash, 
+                     bool approve,
+                     uint64_t amount );
 
+     [[eosio::action]]
+     void epartpropose( name proposer, 
+                        ipfshash_t& proposed_article_hash, 
+                        ipfshash_t& old_article_hash );
 
      inline asset get_supply( symbol_code sym )const;
 
@@ -50,7 +61,7 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
      const name FEE_CONTRACT_ACCTNAME = name("epiqtokenfee");
      const name GOVERNANCE_CONTRACT_ACCTNAME = name("epgovernance");
      const name SAFESEND_CONTRACT_ACCTNAME = name("iqsafesendiq");
-     eosio::symbol IQSYMBOL = symbol(symbol_code("IQ"), 3);
+     const eosio::symbol IQSYMBOL = symbol(symbol_code("IQ"), 3);
      const int64_t IQ_PRECISION_MULTIPLIER = 1000;
 
      struct [[eosio::table]] account {

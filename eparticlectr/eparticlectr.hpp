@@ -34,7 +34,7 @@ const name ARTICLE_CONTRACT_ACCTNAME = name("eparticlectr");
 const name TOKEN_CONTRACT_ACCTNAME = name("everipediaiq");
 const uint64_t IQ_TO_BRAINPOWER_RATIO = 1;
 const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
-const uint64_t EDIT_PROPOSE_BRAINPOWER = 50;
+const uint64_t EDIT_PROPOSE_IQ = 50000; // 50 IQ
 const uint32_t REWARD_INTERVAL = 1800; // 30 min
 const uint32_t DEFAULT_VOTING_TIME = 43200; // 12 hours
 const uint64_t IQ_PRECISION_MULTIPLIER = 1000;
@@ -249,10 +249,6 @@ public:
 
     [[eosio::action]]
     void brainclmid( uint64_t stakeid );
-
-    [[eosio::action]]
-    void brainmeart( name staker,
-                  uint64_t amount );
 
     [[eosio::action]]
     void notify( name to,

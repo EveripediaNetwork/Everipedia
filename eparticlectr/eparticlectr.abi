@@ -1,5 +1,5 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Thu Dec 13 15:49:41 2018",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Wed Jan  2 15:45:23 2019",
     "version": "eosio::abi/1.1",
     "structs": [
         {
@@ -8,20 +8,6 @@
             "fields": [
                 {
                     "name": "stakeid",
-                    "type": "uint64"
-                }
-            ]
-        },
-        {
-            "name": "brainmeart",
-            "base": "",
-            "fields": [
-                {
-                    "name": "staker",
-                    "type": "name"
-                },
-                {
-                    "name": "amount",
                     "type": "uint64"
                 }
             ]
@@ -398,11 +384,6 @@
             "name": "brainclmid",
             "type": "brainclmid",
             "ricardian_contract": "Claim back IQ that was staked for Brainpower. Must happen after the 21 day staking period."
-        },
-        {
-            "name": "brainmeart",
-            "type": "brainmeart",
-            "ricardian_contract": "Stake IQ (only callable by eparticlectr)."
         },
         {
             "name": "finalize",

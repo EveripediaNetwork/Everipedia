@@ -145,20 +145,46 @@ void everipediaiq::add_balance( name owner, asset value, name ram_payer )
 }
 
 [[eosio::action]]
-void everipediaiq::brainmeiq( name staker, int64_t amount) {
-    require_auth(staker);
+void everipediaiq::epartpropose( name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ) {
+    require_auth(proposer);
+
+    // Transfer the IQ to the eparticlectr contract for staking
+    asset iqAssetPack = asset(EDIT_PROPOSE_IQ, IQSYMBOL);
+    action(
+        permission_level{ proposer , name("active") }, 
+        name("everipediaiq"), name("transfer"),
+        std::make_tuple( proposer, name("eparticlectr"), iqAssetPack, "stake for vote")
+    ).send();
+
+    // Make the proposal to the article contract
+    action(
+        permission_level{ name("eparticlectr"), name("active") }, 
+        name("eparticlectr"), name("votebyhash"),
+        std::make_tuple( proposer, proposed_article_hash, old_article_hash )
+    ).send();
+}
+
+[[eosio::action]]
+void everipediaiq::epartvote( name voter, ipfshash_t& proposed_article_hash, bool approve, uint64_t amount ) {
+    require_auth(voter);
 
     eosio_assert(amount > 0, "must transfer a positive amount");
 
     // Transfer the IQ to the eparticlectr contract for staking
     asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
-    everipediaiq::transfer(staker, name("eparticlectr"), iqAssetPack, "stake for brainpower");
+    action(
+        permission_level{ voter , name("active") }, 
+        name("everipediaiq"), name("transfer"),
+        std::make_tuple( voter, name("eparticlectr"), iqAssetPack, "stake for vote")
+    ).send();
 
-    // Finish the brainpower issuance by calling the eparticlectr contract
-    eosio::action theAction = action(permission_level{ name("eparticlectr"), name("active") }, name("eparticlectr"), name("brainmeart"),
-                                  std::make_tuple(staker, amount));
-    theAction.send();
+    // Create the vote in the eparticlectr contract
+    action(
+        permission_level{ name("eparticlectr"), name("active") }, 
+        name("eparticlectr"), name("votebyhash"),
+        std::make_tuple( voter, proposed_article_hash, approve, amount )
+    ).send();
 }
 
 
-EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(transfer)(brainmeiq) )
+EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(transfer)(epartvote)(epartpropose) )
