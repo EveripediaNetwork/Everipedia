@@ -12,8 +12,6 @@ Call finalize via a hash.
 Dummy function to notify users of various things.
 <h1 class="contract">procrewards</h1>
 Process rewards from finalized proposals.
-<h1 class="contract">rewardclmall</h1>
-Claim editor and curator IQ rewards by user.
 <h1 class="contract">rewardclmid</h1>
 Claim editor and curator IQ rewards by reward id.
 <h1 class="contract">propose</h1>

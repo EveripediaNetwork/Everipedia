@@ -284,9 +284,6 @@ public:
                       std::string memo );
 
     [[eosio::action]]
-    void rewardclmall ( name user );
-
-    [[eosio::action]]
     void rewardclmid ( uint64_t reward_id );
 
     [[eosio::action]]

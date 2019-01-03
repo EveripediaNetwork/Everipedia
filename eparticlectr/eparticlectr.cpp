@@ -426,43 +426,6 @@ void eparticlectr::procrewards(uint64_t reward_period) {
 }
 
 [[eosio::action]]
-void eparticlectr::rewardclmall ( name user ) {
-    require_auth( user );
-
-    // prep tables
-    perrwdstbl perrewards( _self, _self.value );
-    rewardstbl rewardstable( _self, _self.value );
-
-    // check if user rewards exist
-    auto useridx = rewardstable.get_index<name("byuser")>();
-    auto reward_it = useridx.find( user.value );
-    eosio_assert( reward_it != useridx.end(), "no rewards found for user");
-
-    // calculate total reward across periods
-    int64_t reward_amount = 0;
-    while (reward_it != useridx.end() && reward_it->user == user) {
-        auto period_it = perrewards.find( reward_it->proposal_finalize_period );
-        eosio_assert(period_it != perrewards.end(), "Must call procrewards for this period first");
-
-        // calculate editor and curation rewards
-        reward_amount += reward_it->amount * PERIOD_CURATION_REWARD / period_it->curation_sum;
-        if (reward_it->is_editor && reward_it->proposalresult)
-            reward_amount += reward_it->approval_vote_sum * PERIOD_EDITOR_REWARD / period_it->editor_sum;
-
-        reward_it = useridx.erase( reward_it );
-    }
-
-    eosio_assert(reward_amount > 0, "No unclaimed rewards");
-    asset quantity = asset(reward_amount, IQSYMBOL);
-    action(
-        permission_level { TOKEN_CONTRACT_ACCTNAME, name("active") },
-        TOKEN_CONTRACT_ACCTNAME, name("issue"),
-        std::make_tuple( user, quantity, std::string("IQ reward") )
-    ).send();
-
-}
-
-[[eosio::action]]
 void eparticlectr::rewardclmid ( uint64_t reward_id ) {
     // prep tables
     perrwdstbl perrewards( _self, _self.value );
@@ -476,26 +439,33 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
     auto period_it = perrewards.find( reward_it->proposal_finalize_period );
     eosio_assert(period_it != perrewards.end(), "Must call procrewards for this period first");
 
-    // Sum curation + editor reward
-    int64_t reward_amount = 0;
-    reward_amount += reward_it->amount * PERIOD_CURATION_REWARD / period_it->curation_sum;
-    if (reward_it->is_editor && reward_it->proposalresult)
-        reward_amount += reward_it->approval_vote_sum * PERIOD_EDITOR_REWARD / period_it->editor_sum;
-
-    // Minimum reward of 0.001 IQ to prevent unclaimable rewards
-    if (reward_amount == 0)
-        reward_amount = 1;
-
-    // Sanity check
-    eosio_assert(reward_amount <= PERIOD_CURATION_REWARD + PERIOD_EDITOR_REWARD, "System logic error. Too much IQ calculated for reward.");
-
-    asset quantity = asset(reward_amount, IQSYMBOL);
+    // Send curation reward
+    int64_t curation_reward = reward_it->amount * PERIOD_CURATION_REWARD / period_it->curation_sum;
+    eosio_assert(curation_reward <= PERIOD_CURATION_REWARD, "System logic error. Too much IQ calculated for curation reward.");
+    if (curation_reward == 0) // Minimum reward of 0.001 IQ to prevent unclaimable rewards
+        curation_reward = 1;
+    asset curation_quantity = asset(curation_reward, IQSYMBOL);
     action(
-        permission_level { TOKEN_CONTRACT_ACCTNAME, name("active") },
-        TOKEN_CONTRACT_ACCTNAME, name("issue"),
-        std::make_tuple( reward_it->user, quantity, std::string("IQ reward") )
+        permission_level { name("everipediaiq"), name("active") },
+        name("everipediaiq"), name("issue"),
+        std::make_tuple( reward_it->user, curation_quantity, std::string("Curation IQ reward") )
     ).send();
 
+    // Send editor reward
+    if (reward_it->is_editor && reward_it->proposalresult) {
+        int64_t editor_reward = reward_it->approval_vote_sum * PERIOD_EDITOR_REWARD / period_it->editor_sum;
+        if (editor_reward == 0) // Minimum reward of 0.001 IQ to prevent unclaimable rewards
+            editor_reward = 1;
+        eosio_assert(editor_reward <= PERIOD_EDITOR_REWARD, "System logic error. Too much IQ calculated for editor reward.");
+        asset editor_quantity = asset(editor_reward, IQSYMBOL);
+        action(
+            permission_level { name("everipediaiq"), name("active") },
+            name("everipediaiq"), name("issue"),
+            std::make_tuple( reward_it->user, editor_quantity, std::string("Editor IQ reward") )
+        ).send();
+    }
+
+    // delete reward after claiming
     reward_it = rewardstable.erase( reward_it );
 }
 
@@ -533,4 +503,4 @@ void eparticlectr::logpropres( ipfshash_t& proposal, bool approved, uint64_t yes
     require_auth( _self );
 }
 
-EOSIO_DISPATCH( eparticlectr, (brainclmid)(notify)(finalize)(fnlbyhash)(oldvotepurge)(procrewards)(propose)(rewardclmid)(rewardclmall)(updatewiki)(votebyhash)(logpropres) )
+EOSIO_DISPATCH( eparticlectr, (brainclmid)(notify)(finalize)(fnlbyhash)(oldvotepurge)(procrewards)(propose)(rewardclmid)(updatewiki)(votebyhash)(logpropres) )

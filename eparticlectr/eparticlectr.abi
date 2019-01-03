@@ -1,5 +1,5 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Wed Jan  2 16:04:59 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Thu Jan  3 12:03:20 2019",
     "version": "eosio::abi/1.1",
     "structs": [
         {
@@ -185,16 +185,6 @@
                 {
                     "name": "memo",
                     "type": "string"
-                }
-            ]
-        },
-        {
-            "name": "rewardclmall",
-            "base": "",
-            "fields": [
-                {
-                    "name": "user",
-                    "type": "name"
                 }
             ]
         },
@@ -427,11 +417,6 @@
             "name": "propose",
             "type": "propose",
             "ricardian_contract": "Propose and edit (uses Brainpower)."
-        },
-        {
-            "name": "rewardclmall",
-            "type": "rewardclmall",
-            "ricardian_contract": "Claim editor and curator IQ rewards by user."
         },
         {
             "name": "rewardclmid",
