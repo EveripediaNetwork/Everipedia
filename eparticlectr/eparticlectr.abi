@@ -1,5 +1,5 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Thu Jan  3 12:03:20 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Thu Jan  3 14:34:02 2019",
     "version": "eosio::abi/1.1",
     "structs": [
         {
@@ -107,20 +107,6 @@
                 {
                     "name": "no_votes",
                     "type": "uint64"
-                }
-            ]
-        },
-        {
-            "name": "notify",
-            "base": "",
-            "fields": [
-                {
-                    "name": "to",
-                    "type": "name"
-                },
-                {
-                    "name": "memo",
-                    "type": "string"
                 }
             ]
         },
@@ -249,6 +235,24 @@
             ]
         },
         {
+            "name": "slashnotify",
+            "base": "",
+            "fields": [
+                {
+                    "name": "slashee",
+                    "type": "name"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint64"
+                },
+                {
+                    "name": "seconds",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
             "name": "stake",
             "base": "",
             "fields": [
@@ -323,6 +327,10 @@
                 {
                     "name": "timestamp",
                     "type": "uint32"
+                },
+                {
+                    "name": "stake_id",
+                    "type": "uint64"
                 }
             ]
         },
@@ -399,11 +407,6 @@
             "ricardian_contract": "Log proposal results."
         },
         {
-            "name": "notify",
-            "type": "notify",
-            "ricardian_contract": "Dummy function to notify users of various things."
-        },
-        {
             "name": "oldvotepurge",
             "type": "oldvotepurge",
             "ricardian_contract": "Purge old votes to free up RAM."
@@ -422,6 +425,11 @@
             "name": "rewardclmid",
             "type": "rewardclmid",
             "ricardian_contract": "Claim editor and curator IQ rewards by reward id."
+        },
+        {
+            "name": "slashnotify",
+            "type": "slashnotify",
+            "ricardian_contract": ""
         },
         {
             "name": "updatewiki",

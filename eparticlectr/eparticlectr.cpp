@@ -81,8 +81,9 @@ void eparticlectr::votebyhash ( name voter, ipfshash_t& proposed_article_hash, b
 
     // Create the stake object
     staketbl staketblobj(_self, _self.value);
+    uint64_t stake_id = staketblobj.available_primary_key();
     staketblobj.emplace( _self, [&]( auto& s ) {
-        s.id = staketblobj.available_primary_key();
+        s.id = stake_id;
         s.user = voter;
         s.amount = amount;
         s.timestamp = now();
@@ -91,70 +92,17 @@ void eparticlectr::votebyhash ( name voter, ipfshash_t& proposed_article_hash, b
 
     // Store vote in DB
     votestbl votetbl( _self, _self.value );
-    auto voteidx = votetbl.get_index<name("byhash")>();
-    auto vote_it = voteidx.find(eparticlectr::ipfs_to_fixed_bytes32(proposed_article_hash));
-
-    if(vote_it == voteidx.end()){
-        // First vote for proposal
-        votetbl.emplace( _self, [&]( auto& a ) {
-             a.id = votetbl.available_primary_key();
-             a.proposal_id = proposal_id;
-             a.proposed_article_hash = proposed_article_hash;
-             a.approve = approve;
-             a.is_editor = voterIsProposer;
-             a.amount = amount;
-             a.voter = voter;
-             a.timestamp = now();
-        });
-    }
-    else{
-        while(vote_it != voteidx.end() && vote_it->proposal_id == proposal_id) {
-            if(vote_it->voter == voter){
-                if(vote_it->approve == approve){
-                    // Strengthen existing vote
-                    voteidx.modify( vote_it, _self, [&]( auto& a ) {
-                        a.amount += amount;
-                        a.timestamp = now();
-                    });
-                    break;
-                }
-                else {
-                    if(vote_it->amount >= amount){
-                        // Weakening existing vote
-                        voteidx.modify( vote_it, _self, [&]( auto& a ) {
-                            a.amount = vote_it->amount - amount;
-                            a.timestamp = now();
-                        });
-                        break;
-                    }
-                    else{
-                        // Switch votes
-                        voteidx.modify( vote_it, _self, [&]( auto& a ) {
-                            a.amount = amount - vote_it->amount;
-                            a.approve = approve;
-                            a.timestamp = now();
-                        });
-                        break;
-                    }
-                }
-
-            }
-            vote_it++;
-        }
-        if(vote_it == voteidx.end() || vote_it->proposal_id != proposal_id){
-            // Brand new vote
-            votetbl.emplace( _self, [&]( auto& a ) {
-                 a.id = votetbl.available_primary_key();
-                 a.proposal_id = proposal_id;
-                 a.proposed_article_hash = proposed_article_hash;
-                 a.approve = approve;
-                 a.is_editor = voterIsProposer;
-                 a.amount = amount;
-                 a.voter = voter;
-                 a.timestamp = now();
-            });
-        }
-    }
+    votetbl.emplace( _self, [&]( auto& a ) {
+         a.id = votetbl.available_primary_key();
+         a.proposal_id = proposal_id;
+         a.proposed_article_hash = proposed_article_hash;
+         a.approve = approve;
+         a.is_editor = voterIsProposer;
+         a.amount = amount;
+         a.voter = voter;
+         a.timestamp = now();
+         a.stake_id = stake_id;
+    });
 }
 
 [[eosio::action]]
@@ -277,74 +225,30 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     // Mark proposal as accepted or rejected. Ties are rejected
     uint64_t currentInterval = now() / REWARD_INTERVAL;
     proptable.modify( prop_it, same_payer, [&]( auto& a ) {
-        if (for_votes > against_votes){
-            a.status =  ProposalStatus::accepted;
-        }
-        else{
+        if (for_votes > against_votes) 
+            a.status = ProposalStatus::accepted;
+        else 
             a.status =  ProposalStatus::rejected;
-        }
         a.finalized_time = now();
     });
 
     rewardstbl rewardstable( _self, _self.value );
 
     while(vote_it->proposal_id == proposal_id && vote_it != voteidx.end() && istie == 0) {
+        uint32_t extraSecsSlash = uint32_t((float)STAKING_DURATION * slash_ratio);
+        // Slash losers
         if (vote_it->approve != approved) {
-            // Slash losers
-            uint64_t slashRemaining = vote_it->amount;
-            uint32_t extraTimeInt = uint32_t((float)STAKING_DURATION * slash_ratio);
-
-            std::string slashString = std::to_string(slashRemaining) + " IQ slashed " + std::to_string(extraTimeInt) + " seconds on proposal " + vote_it->proposed_article_hash ;
-
-            // Get the stakes
             staketbl staketable(_self, _self.value);
-            auto stakeidx = staketable.get_index<name("byuser")>();
-            auto stake_it = stakeidx.find(vote_it->voter.value);
+            auto stake_it = staketable.find(vote_it->stake_id);
+            staketable.modify( stake_it, same_payer, [&]( auto& a ) {
+                a.completion_time += extraSecsSlash;
+                a.timestamp = now();
+            });
 
-
-
-            while(stake_it->user == vote_it->voter && stake_it != stakeidx.end()) {
-                if(stake_it->amount <= slashRemaining){
-                    stakeidx.modify( stake_it, same_payer, [&]( auto& a ) {
-                        a.completion_time += extraTimeInt;
-                        a.timestamp = now();
-                        slashRemaining -= stake_it->amount;
-                    });
-	                  if (slashRemaining == 0){
-                        break;
-                    }
-
-                }
-                else{
-                    // The slash amount does not fill a full stake, so the stake needs to be split
-                    uint64_t newAmount = stake_it->amount - slashRemaining;
-                    uint32_t oldTimestamp = stake_it->timestamp;
-                    uint32_t oldCompletionTime = stake_it->completion_time;
-
-                    stakeidx.modify( stake_it, same_payer, [&]( auto& a ) {
-                        a.completion_time += extraTimeInt;
-                        a.amount = slashRemaining;
-                    });
-                    if (newAmount > 0){
-                      staketable.emplace( _self,  [&]( auto& a ) {
-                          a.id = staketable.available_primary_key();
-                          a.user = vote_it->voter;
-                          a.amount = newAmount;
-                          a.timestamp = oldTimestamp;
-                          a.completion_time = oldCompletionTime;
-                      });
-                    }
-                    break;
-                }
-                stake_it++;
-            }
-            // Notify that a slash has occurred
-            SEND_INLINE_ACTION( *this, notify, {_self, name("active")}, {vote_it->voter, slashString} );
-
+            SEND_INLINE_ACTION( *this, slashnotify, {_self, name("active")}, {vote_it->voter, vote_it->amount, extraSecsSlash } );
         }
+        // Reward the winners
         else{
-            // TODO: Reward the winners
-
             rewardstable.emplace( _self,  [&]( auto& a ) {
                 a.id = rewardstable.available_primary_key();
                 a.user = vote_it->voter;
@@ -492,10 +396,9 @@ void eparticlectr::oldvotepurge( ipfshash_t& proposed_article_hash, uint32_t loo
 }
 
 [[eosio::action]]
-void eparticlectr::notify( name to, std::string memo ){
+void eparticlectr::slashnotify( name slashee, uint64_t amount, uint32_t seconds ){
     require_auth( _self );
-    eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
-    require_recipient( to );
+    require_recipient( slashee );
 }
 
 [[eosio::action]]
@@ -503,4 +406,4 @@ void eparticlectr::logpropres( ipfshash_t& proposal, bool approved, uint64_t yes
     require_auth( _self );
 }
 
-EOSIO_DISPATCH( eparticlectr, (brainclmid)(notify)(finalize)(fnlbyhash)(oldvotepurge)(procrewards)(propose)(rewardclmid)(updatewiki)(votebyhash)(logpropres) )
+EOSIO_DISPATCH( eparticlectr, (brainclmid)(slashnotify)(finalize)(fnlbyhash)(oldvotepurge)(procrewards)(propose)(rewardclmid)(updatewiki)(votebyhash)(logpropres) )
