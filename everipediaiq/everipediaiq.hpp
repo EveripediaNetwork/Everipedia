@@ -44,12 +44,14 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
      void epartvote( name voter, 
                      ipfshash_t& proposed_article_hash, 
                      bool approve,
-                     uint64_t amount );
+                     uint64_t amount,
+                     std::string memo );
 
      [[eosio::action]]
      void epartpropose( name proposer, 
                         ipfshash_t& proposed_article_hash, 
-                        ipfshash_t& old_article_hash );
+                        ipfshash_t& old_article_hash,
+                        std::string memo );
 
      inline asset get_supply( symbol_code sym )const;
 

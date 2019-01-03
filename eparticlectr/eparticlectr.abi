@@ -1,5 +1,5 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Wed Jan  2 15:45:23 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Wed Jan  2 16:04:59 2019",
     "version": "eosio::abi/1.1",
     "structs": [
         {
@@ -181,6 +181,10 @@
                 {
                     "name": "old_article_hash",
                     "type": "ipfshash_t"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
                 }
             ]
         },
@@ -351,6 +355,10 @@
                 {
                     "name": "amount",
                     "type": "uint64"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
                 }
             ]
         },

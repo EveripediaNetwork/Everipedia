@@ -64,7 +64,7 @@ void eparticlectr::brainclmid( uint64_t stakeid ) {
 // Place a vote using the IPFS hash
 // Users have to trigger this action through the everipediaiq::epartvote action
 [[eosio::action]]
-void eparticlectr::votebyhash ( name voter, ipfshash_t& proposed_article_hash, bool approve, uint64_t amount ) {
+void eparticlectr::votebyhash ( name voter, ipfshash_t& proposed_article_hash, bool approve, uint64_t amount, std::string memo ) {
     require_auth( _self );
 
     // Check if article exists
@@ -177,7 +177,7 @@ void eparticlectr::updatewiki( ipfshash_t& current_hash ){
 // Logic for proposing an edit for an article
 // Users have to trigger this action through the everipediaiq::epartpropose action
 [[eosio::action]]
-void eparticlectr::propose( name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ) {
+void eparticlectr::propose( name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash, std::string memo ) {
     require_auth( _self );
 
     // Check for a duplicate proposal

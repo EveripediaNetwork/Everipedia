@@ -270,7 +270,8 @@ public:
     [[eosio::action]]
     void propose( name proposer,
                   ipfshash_t& proposed_article_hash,
-                  ipfshash_t& old_article_hash );
+                  ipfshash_t& old_article_hash,
+                  std::string memo );
 
     [[eosio::action]]
     void updatewiki( ipfshash_t& current_hash );
@@ -279,7 +280,8 @@ public:
     void votebyhash ( name voter,
                       ipfshash_t& proposed_article_hash,
                       bool approve,
-                      uint64_t amount );
+                      uint64_t amount,
+                      std::string memo );
 
     [[eosio::action]]
     void rewardclmall ( name user );

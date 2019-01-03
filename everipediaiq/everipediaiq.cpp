@@ -145,7 +145,7 @@ void everipediaiq::add_balance( name owner, asset value, name ram_payer )
 }
 
 [[eosio::action]]
-void everipediaiq::epartpropose( name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash ) {
+void everipediaiq::epartpropose( name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash, std::string memo ) {
     require_auth(proposer);
 
     // Transfer the IQ to the eparticlectr contract for staking
@@ -160,12 +160,12 @@ void everipediaiq::epartpropose( name proposer, ipfshash_t& proposed_article_has
     action(
         permission_level{ name("eparticlectr"), name("active") }, 
         name("eparticlectr"), name("votebyhash"),
-        std::make_tuple( proposer, proposed_article_hash, old_article_hash )
+        std::make_tuple( proposer, proposed_article_hash, old_article_hash, memo )
     ).send();
 }
 
 [[eosio::action]]
-void everipediaiq::epartvote( name voter, ipfshash_t& proposed_article_hash, bool approve, uint64_t amount ) {
+void everipediaiq::epartvote( name voter, ipfshash_t& proposed_article_hash, bool approve, uint64_t amount, std::string memo ) {
     require_auth(voter);
 
     eosio_assert(amount > 0, "must transfer a positive amount");
@@ -182,7 +182,7 @@ void everipediaiq::epartvote( name voter, ipfshash_t& proposed_article_hash, boo
     action(
         permission_level{ name("eparticlectr"), name("active") }, 
         name("eparticlectr"), name("votebyhash"),
-        std::make_tuple( voter, proposed_article_hash, approve, amount )
+        std::make_tuple( voter, proposed_article_hash, approve, amount, memo )
     ).send();
 }
 

@@ -1,5 +1,5 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Wed Jan  2 15:45:26 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Wed Jan  2 16:05:02 2019",
     "version": "eosio::abi/1.1",
     "structs": [
         {
@@ -77,6 +77,10 @@
                 {
                     "name": "old_article_hash",
                     "type": "ipfshash_t"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
                 }
             ]
         },
@@ -99,6 +103,10 @@
                 {
                     "name": "amount",
                     "type": "uint64"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
                 }
             ]
         },
@@ -163,12 +171,12 @@
         {
             "name": "epartpropose",
             "type": "epartpropose",
-            "ricardian_contract": ""
+            "ricardian_contract": "User-facing action for creating a proposal."
         },
         {
             "name": "epartvote",
             "type": "epartvote",
-            "ricardian_contract": ""
+            "ricardian_contract": "User-facing action for voting on a proposal"
         },
         {
             "name": "issue",
