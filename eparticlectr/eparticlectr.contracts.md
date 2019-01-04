@@ -6,10 +6,8 @@ Claim back IQ that was staked for Brainpower. Must happen after the 21 day staki
 Stake IQ (only callable by eparticlectr).
 <h1 class="contract">finalize</h1>
 Finalize a proposal and calculate rewards & slashings.
-<h1 class="contract">fnlbyhash</h1>
-Call finalize via a hash.
-<h1 class="contract">notify</h1>
-Dummy function to notify users of various things.
+<h1 class="contract">slashnotify</h1>
+Logging action to notify users of slashes.
 <h1 class="contract">procrewards</h1>
 Process rewards from finalized proposals.
 <h1 class="contract">rewardclmid</h1>

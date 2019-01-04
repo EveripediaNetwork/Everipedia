@@ -1,5 +1,5 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Thu Jan  3 14:34:02 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Fri Jan  4 13:13:34 2019",
     "version": "eosio::abi/1.1",
     "structs": [
         {
@@ -13,20 +13,6 @@
             ]
         },
         {
-            "name": "brainpower",
-            "base": "",
-            "fields": [
-                {
-                    "name": "user",
-                    "type": "name"
-                },
-                {
-                    "name": "power",
-                    "type": "uint64"
-                }
-            ]
-        },
-        {
             "name": "editproposal",
             "base": "",
             "fields": [
@@ -35,20 +21,28 @@
                     "type": "uint64"
                 },
                 {
-                    "name": "proposed_article_hash",
-                    "type": "ipfshash_t"
-                },
-                {
-                    "name": "old_article_hash",
-                    "type": "ipfshash_t"
+                    "name": "wiki_id",
+                    "type": "int64"
                 },
                 {
                     "name": "proposer",
                     "type": "name"
                 },
                 {
-                    "name": "tier",
-                    "type": "uint32"
+                    "name": "title",
+                    "type": "string"
+                },
+                {
+                    "name": "ipfs_hash",
+                    "type": "ipfshash_t"
+                },
+                {
+                    "name": "group_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "lang_code",
+                    "type": "string"
                 },
                 {
                     "name": "starttime",
@@ -59,12 +53,8 @@
                     "type": "uint32"
                 },
                 {
-                    "name": "finalized_time",
-                    "type": "uint32"
-                },
-                {
-                    "name": "status",
-                    "type": "uint32"
+                    "name": "memo",
+                    "type": "string"
                 }
             ]
         },
@@ -75,16 +65,6 @@
                 {
                     "name": "proposal_id",
                     "type": "uint64"
-                }
-            ]
-        },
-        {
-            "name": "fnlbyhash",
-            "base": "",
-            "fields": [
-                {
-                    "name": "proposal_hash",
-                    "type": "ipfshash_t"
                 }
             ]
         },
@@ -115,8 +95,8 @@
             "base": "",
             "fields": [
                 {
-                    "name": "proposed_article_hash",
-                    "type": "ipfshash_t"
+                    "name": "proposal_id",
+                    "type": "uint64"
                 },
                 {
                     "name": "loop_limit",
@@ -161,12 +141,20 @@
                     "type": "name"
                 },
                 {
-                    "name": "proposed_article_hash",
+                    "name": "wiki_id",
+                    "type": "int64"
+                },
+                {
+                    "name": "title",
+                    "type": "string"
+                },
+                {
+                    "name": "ipfs_hash",
                     "type": "ipfshash_t"
                 },
                 {
-                    "name": "old_article_hash",
-                    "type": "ipfshash_t"
+                    "name": "comment",
+                    "type": "string"
                 },
                 {
                     "name": "memo",
@@ -207,10 +195,6 @@
                 {
                     "name": "proposal_id",
                     "type": "uint64"
-                },
-                {
-                    "name": "proposed_article_hash",
-                    "type": "ipfshash_t"
                 },
                 {
                     "name": "proposal_finalize_time",
@@ -275,10 +259,6 @@
                 {
                     "name": "completion_time",
                     "type": "uint32"
-                },
-                {
-                    "name": "autorenew",
-                    "type": "bool"
                 }
             ]
         },
@@ -287,7 +267,23 @@
             "base": "",
             "fields": [
                 {
-                    "name": "current_hash",
+                    "name": "id",
+                    "type": "int64"
+                },
+                {
+                    "name": "title",
+                    "type": "string"
+                },
+                {
+                    "name": "group_id",
+                    "type": "int64"
+                },
+                {
+                    "name": "lang_code",
+                    "type": "string"
+                },
+                {
+                    "name": "ipfs_hash",
                     "type": "ipfshash_t"
                 }
             ]
@@ -305,7 +301,7 @@
                     "type": "uint64"
                 },
                 {
-                    "name": "proposed_article_hash",
+                    "name": "ipfs_hash",
                     "type": "ipfshash_t"
                 },
                 {
@@ -335,32 +331,6 @@
             ]
         },
         {
-            "name": "votebyhash",
-            "base": "",
-            "fields": [
-                {
-                    "name": "voter",
-                    "type": "name"
-                },
-                {
-                    "name": "proposed_article_hash",
-                    "type": "ipfshash_t"
-                },
-                {
-                    "name": "approve",
-                    "type": "bool"
-                },
-                {
-                    "name": "amount",
-                    "type": "uint64"
-                },
-                {
-                    "name": "memo",
-                    "type": "string"
-                }
-            ]
-        },
-        {
             "name": "wiki",
             "base": "",
             "fields": [
@@ -369,11 +339,19 @@
                     "type": "uint64"
                 },
                 {
-                    "name": "hash",
-                    "type": "ipfshash_t"
+                    "name": "title",
+                    "type": "string"
                 },
                 {
-                    "name": "parent_hash",
+                    "name": "group_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "lang_code",
+                    "type": "string"
+                },
+                {
+                    "name": "ipfs_hash",
                     "type": "ipfshash_t"
                 }
             ]
@@ -395,11 +373,6 @@
             "name": "finalize",
             "type": "finalize",
             "ricardian_contract": "Finalize a proposal and calculate rewards & slashings."
-        },
-        {
-            "name": "fnlbyhash",
-            "type": "fnlbyhash",
-            "ricardian_contract": "Call finalize via a hash."
         },
         {
             "name": "logpropres",
@@ -429,7 +402,7 @@
         {
             "name": "slashnotify",
             "type": "slashnotify",
-            "ricardian_contract": ""
+            "ricardian_contract": "Logging action to notify users of slashes."
         },
         {
             "name": "updatewiki",
@@ -437,19 +410,12 @@
             "ricardian_contract": "Manually update the wiki table. Will be removed later."
         },
         {
-            "name": "votebyhash",
-            "type": "votebyhash",
-            "ricardian_contract": "Vote on a proposal (identified by an IPFS hash) using Brainpower."
+            "name": "vote",
+            "type": "vote",
+            "ricardian_contract": ""
         }
     ],
     "tables": [
-        {
-            "name": "brainpwrtbl",
-            "type": "brainpower",
-            "index_type": "i64",
-            "key_names": [],
-            "key_types": []
-        },
         {
             "name": "periodreward",
             "type": "periodreward",

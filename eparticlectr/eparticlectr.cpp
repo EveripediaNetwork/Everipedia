@@ -25,9 +25,7 @@
 // # MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 // # MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 
-#include <eosiolib/asset.hpp>
 #include "eparticlectr.hpp"
-#include <typeinfo>
 
 // Redeem IQ, with a specific stake specified
 [[eosio::action]]
@@ -64,15 +62,13 @@ void eparticlectr::brainclmid( uint64_t stakeid ) {
 // Place a vote using the IPFS hash
 // Users have to trigger this action through the everipediaiq::epartvote action
 [[eosio::action]]
-void eparticlectr::votebyhash ( name voter, ipfshash_t& proposed_article_hash, bool approve, uint64_t amount, std::string memo ) {
+void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string memo ) {
     require_auth( _self );
 
-    // Check if article exists
+    // Check if proposal exists
     propstbl proptable( _self, _self.value );
-    auto prop_idx = proptable.get_index<name("byhash")>();
-    auto prop_it = prop_idx.find(eparticlectr::ipfs_to_fixed_bytes32(proposed_article_hash));
-    eosio_assert( prop_it != prop_idx.end(), "Proposal not found" );
-    uint64_t proposal_id = prop_it->id;
+    auto prop_it = proptable.find( proposal_id );
+    eosio_assert( prop_it != proptable.end(), "Proposal not found" );
 
     bool voterIsProposer = (voter == prop_it->proposer);
 
@@ -95,7 +91,6 @@ void eparticlectr::votebyhash ( name voter, ipfshash_t& proposed_article_hash, b
     votetbl.emplace( _self, [&]( auto& a ) {
          a.id = votetbl.available_primary_key();
          a.proposal_id = proposal_id;
-         a.proposed_article_hash = proposed_article_hash;
          a.approve = approve;
          a.is_editor = voterIsProposer;
          a.amount = amount;
@@ -105,62 +100,74 @@ void eparticlectr::votebyhash ( name voter, ipfshash_t& proposed_article_hash, b
     });
 }
 
+// Manually update the wikistbl. This will be removed later.
 [[eosio::action]]
-void eparticlectr::updatewiki( ipfshash_t& current_hash ){
-    // Manually update the wikistbl. This will be removed later.
-    require_auth(ARTICLE_CONTRACT_ACCTNAME);
+void eparticlectr::updatewiki( int64_t id, std::string title, int64_t group_id, std::string lang_code, const ipfshash_t ipfs_hash ){
+    require_auth( _self );
+
+    // Argument checks
+    eosio_assert(id < 1e9, "Max manual id permitted is 1e9. Specify -1 for auto-generated ID");
+    eosio_assert(id > -2, "ID must be greater than -2. Specify -1 for auto-generated ID");
+    eosio_assert(lang_code.size() <= 7, "lang_code must be less than 7 bytes");
 
     wikistbl wikitbl( _self, _self.value );
-    auto wikiidx = wikitbl.get_index<name("byhash")>();
-    auto wiki_it = wikiidx.find(eparticlectr::ipfs_to_fixed_bytes32(current_hash));
-    eosio_assert(wiki_it == wikiidx.end(), "wiki already exists in database");
+    bool modify = false;
+    if (id >= 0) {
+        auto wiki_it = wikitbl.find( id );
+        if (wiki_it != wikitbl.end()) {
+            wikitbl.modify( wiki_it, _self, [&]( auto& a ) {
+                a.title = title;
+                a.group_id = group_id;
+                a.lang_code = lang_code;
+                a.ipfs_hash = ipfs_hash;
+            });
+            return;
+        }
+    }
 
     wikitbl.emplace( _self,  [&]( auto& a ) {
-        a.id = wikitbl.available_primary_key();
-        a.hash = current_hash;
-        a.parent_hash = "";
+        if (id == -1)
+            id = wikitbl.available_primary_key();
+        a.id = id;
+        a.title = title;
+        a.group_id = group_id;
+        a.lang_code = lang_code;
+        a.ipfs_hash = ipfs_hash;
     });
 }
 
 // Logic for proposing an edit for an article
 // Users have to trigger this action through the everipediaiq::epartpropose action
 [[eosio::action]]
-void eparticlectr::propose( name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash, std::string memo ) {
+void eparticlectr::propose( name proposer, int64_t wiki_id, std::string title, ipfshash_t ipfs_hash, std::string comment, std::string memo ) {
     require_auth( _self );
 
-    // Check for a duplicate proposal
-    propstbl proptable( _self, _self.value );
-    auto propidx = proptable.get_index<name("byhash")>();
-    auto prop_it = propidx.find(eparticlectr::ipfs_to_fixed_bytes32(proposed_article_hash));
-    eosio_assert(prop_it == propidx.end(), "Proposal already exists");
+    // Argument checks
+    eosio_assert( title.size() < 32, "title must be less than 32 bytes");
+    eosio_assert( comment.size() < 256, "comment must be less than 256 bytes");
+    eosio_assert( memo.size() < 32, "memo must be less than 32 bytes");
+    eosio_assert(wiki_id < 1e9, "Max manual id permitted is 1e9. Specify -1 for auto-generated ID");
+    eosio_assert(wiki_id > -2, "ID must be greater than -2. Specify -1 for auto-generated ID");
 
     // Store the proposal
+    propstbl proptable( _self, _self.value );
     proptable.emplace( _self, [&]( auto& a ) {
         a.id = proptable.available_primary_key();
-        a.proposed_article_hash = proposed_article_hash;
-        a.old_article_hash = old_article_hash;
+        a.wiki_id = wiki_id;
+        a.title = title;
+        a.ipfs_hash = ipfs_hash;
         a.proposer = proposer;
         a.starttime = now();
         a.endtime = now() + DEFAULT_VOTING_TIME;
-        a.status = ProposalStatus::pending;
+        a.memo = memo;
     });
 
     // Place the default vote
     action(
         permission_level { _self , name("active") },
-        _self, name("votebyhash"),
-        std::make_tuple( proposer, proposed_article_hash, true, EDIT_PROPOSE_IQ )
+        _self, name("vote"),
+        std::make_tuple( proposer, ipfs_hash, true, EDIT_PROPOSE_IQ )
     ).send();
-}
-
-[[eosio::action]]
-void eparticlectr::fnlbyhash( ipfshash_t& proposal_hash ) {
-    // Add article to database, or update
-    propstbl proptable( _self, _self.value );
-    auto propidx = proptable.get_index<name("byhash")>();
-    auto prop_it = propidx.find(eparticlectr::ipfs_to_fixed_bytes32(proposal_hash));
-    eosio_assert( prop_it != propidx.end(), "Proposal not found" );
-    eparticlectr::finalize(prop_it->id);
 }
 
 [[eosio::action]]
@@ -170,16 +177,13 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     auto prop_it = proptable.find( proposal_id );
     eosio_assert( prop_it != proptable.end(), "Proposal not found" );
 
-    // Verify proposal has not been finalized already
-    eosio_assert( prop_it->finalized_time == 0, "Proposal already finalized");
-
     // Verify voting period is complete
     eosio_assert( now() > prop_it->endtime, "Voting period is not over yet");
 
     // Retrieve votes from DB
     votestbl votetbl( _self, _self.value );
-    auto voteidx = votetbl.get_index<name("byhash")>();
-    auto vote_it = voteidx.find(eparticlectr::ipfs_to_fixed_bytes32(prop_it->proposed_article_hash));
+    auto voteidx = votetbl.get_index<name("byproposal")>();
+    auto vote_it = voteidx.find(proposal_id);
     eosio_assert( vote_it != voteidx.end(), "No votes found for proposal");
 
     // Tally votes
@@ -194,7 +198,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     }
 
     // Determine slashing conditions
-    vote_it = voteidx.find(eparticlectr::ipfs_to_fixed_bytes32(prop_it->proposed_article_hash));
+    vote_it = voteidx.find(proposal_id);
     bool approved = 0;
     bool istie = 0;
     float totalVotes = for_votes + against_votes;
@@ -219,21 +223,12 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     action(
         permission_level { _self , name("active") },
         _self, name("logpropres"),
-        std::make_tuple( prop_it->proposed_article_hash, approved, for_votes, against_votes )
+        std::make_tuple( prop_it->ipfs_hash, approved, for_votes, against_votes )
     ).send();
-
-    // Mark proposal as accepted or rejected. Ties are rejected
-    uint64_t currentInterval = now() / REWARD_INTERVAL;
-    proptable.modify( prop_it, same_payer, [&]( auto& a ) {
-        if (for_votes > against_votes) 
-            a.status = ProposalStatus::accepted;
-        else 
-            a.status =  ProposalStatus::rejected;
-        a.finalized_time = now();
-    });
 
     rewardstbl rewardstable( _self, _self.value );
 
+    // Slash / reward votes
     while(vote_it->proposal_id == proposal_id && vote_it != voteidx.end() && istie == 0) {
         uint32_t extraSecsSlash = uint32_t((float)STAKING_DURATION * slash_ratio);
         // Slash losers
@@ -255,7 +250,6 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
                 a.amount = vote_it->amount;
                 a.approval_vote_sum = for_votes;
                 a.proposal_id = proposal_id;
-                a.proposed_article_hash = vote_it->proposed_article_hash;
                 a.proposal_finalize_time = now();
                 a.proposal_finalize_period = uint32_t(now() / REWARD_INTERVAL);
                 a.proposalresult = approved;
@@ -266,32 +260,13 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
         vote_it++;
     }
 
-    if (approved){
-        // Add article to database, or update
-        wikistbl wikitbl( _self, _self.value );
-        auto wikiidx = wikitbl.get_index<name("byhash")>();
-        auto wiki_it = wikiidx.find(eparticlectr::ipfs_to_fixed_bytes32(prop_it->old_article_hash));
-
-        if (wiki_it == wikiidx.end()){
-            wikitbl.emplace( _self,  [&]( auto& a ) {
-                a.id = wikitbl.available_primary_key();
-                a.hash = prop_it->proposed_article_hash;
-                a.parent_hash = prop_it->old_article_hash;
-            });
-        }
-        else{
-            wikiidx.modify( wiki_it, same_payer, [&]( auto& a ) {
-                a.hash = prop_it->proposed_article_hash;
-                a.parent_hash = prop_it->old_article_hash;
-            });
-        }
-    }
-
+    if (approved)
+        updatewiki(prop_it->id, prop_it->title, prop_it->group_id, prop_it->lang_code, prop_it->ipfs_hash);
 }
 
+// This function needs to be universally callable. A cron job will be calling this regularly
 [[eosio::action]]
 void eparticlectr::procrewards(uint64_t reward_period) {
-    // This function needs to be universally callable. A cron job will be api calling this every REWARD_INTERVAL seconds.
 
     uint64_t currentInterval = now() / REWARD_INTERVAL;
 
@@ -374,22 +349,21 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
 }
 
 [[eosio::action]]
-void eparticlectr::oldvotepurge( ipfshash_t& proposed_article_hash, uint32_t loop_limit ) {
+void eparticlectr::oldvotepurge( uint64_t proposal_id, uint32_t loop_limit ) {
     // Get the proposal object
     propstbl proptable( _self, _self.value );
-    auto propidx = proptable.get_index<name("byhash")>();
-    auto prop_it = propidx.find(eparticlectr::ipfs_to_fixed_bytes32(proposed_article_hash));
-    eosio_assert( prop_it->status != 0, "Proposal not finalized yet!");
+    auto prop_it = proptable.find(proposal_id);
+    eosio_assert( prop_it == proptable.end(), "Proposal not finalized yet!");
 
     // Retrieve votes from DB
     votestbl votetbl( _self, _self.value );
-    auto voteidx = votetbl.get_index<name("byhash")>();
-    auto vote_it = voteidx.find(eparticlectr::ipfs_to_fixed_bytes32(proposed_article_hash));
+    auto voteidx = votetbl.get_index<name("byproposal")>();
+    auto vote_it = voteidx.find(proposal_id);
     eosio_assert( vote_it != voteidx.end(), "No votes found for proposal!");
 
     // Free up RAM
     uint32_t count = 0;
-    while(vote_it->proposed_article_hash == proposed_article_hash && count < loop_limit && vote_it != voteidx.end()) {
+    while(vote_it->proposal_id == proposal_id && count < loop_limit && vote_it != voteidx.end()) {
         vote_it = voteidx.erase(vote_it);
         count++;
     }
@@ -406,4 +380,4 @@ void eparticlectr::logpropres( ipfshash_t& proposal, bool approved, uint64_t yes
     require_auth( _self );
 }
 
-EOSIO_DISPATCH( eparticlectr, (brainclmid)(slashnotify)(finalize)(fnlbyhash)(oldvotepurge)(procrewards)(propose)(rewardclmid)(updatewiki)(votebyhash)(logpropres) )
+EOSIO_DISPATCH( eparticlectr, (brainclmid)(slashnotify)(finalize)(oldvotepurge)(procrewards)(propose)(rewardclmid)(updatewiki)(vote)(logpropres) )
