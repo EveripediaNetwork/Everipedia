@@ -1,5 +1,5 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Wed Jan  2 16:05:02 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Fri Jan  4 16:09:33 2019",
     "version": "eosio::abi/1.1",
     "structs": [
         {
@@ -71,12 +71,28 @@
                     "type": "name"
                 },
                 {
-                    "name": "proposed_article_hash",
+                    "name": "wiki_id",
+                    "type": "int64"
+                },
+                {
+                    "name": "title",
+                    "type": "string"
+                },
+                {
+                    "name": "ipfs_hash",
                     "type": "ipfshash_t"
                 },
                 {
-                    "name": "old_article_hash",
-                    "type": "ipfshash_t"
+                    "name": "lang_code",
+                    "type": "string"
+                },
+                {
+                    "name": "group_id",
+                    "type": "int64"
+                },
+                {
+                    "name": "comment",
+                    "type": "string"
                 },
                 {
                     "name": "memo",
@@ -93,8 +109,8 @@
                     "type": "name"
                 },
                 {
-                    "name": "proposed_article_hash",
-                    "type": "ipfshash_t"
+                    "name": "proposal_id",
+                    "type": "uint64"
                 },
                 {
                     "name": "approve",

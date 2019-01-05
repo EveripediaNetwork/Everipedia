@@ -145,27 +145,27 @@ void everipediaiq::add_balance( name owner, asset value, name ram_payer )
 }
 
 [[eosio::action]]
-void everipediaiq::epartpropose( name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash, std::string memo ) {
+void everipediaiq::epartpropose( name proposer, int64_t wiki_id, std::string title, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo) { 
     require_auth(proposer);
 
     // Transfer the IQ to the eparticlectr contract for staking
-    asset iqAssetPack = asset(EDIT_PROPOSE_IQ, IQSYMBOL);
+    asset iqAssetPack = asset(EDIT_PROPOSE_IQ * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
     action(
         permission_level{ proposer , name("active") }, 
         name("everipediaiq"), name("transfer"),
-        std::make_tuple( proposer, name("eparticlectr"), iqAssetPack, "stake for vote")
+        std::make_tuple( proposer, name("eparticlectr"), iqAssetPack, std::string("stake for vote"))
     ).send();
 
     // Make the proposal to the article contract
     action(
         permission_level{ name("eparticlectr"), name("active") }, 
-        name("eparticlectr"), name("votebyhash"),
-        std::make_tuple( proposer, proposed_article_hash, old_article_hash, memo )
+        name("eparticlectr"), name("propose"),
+        std::make_tuple( proposer, wiki_id, title, ipfs_hash, lang_code, group_id, comment, memo )
     ).send();
 }
 
 [[eosio::action]]
-void everipediaiq::epartvote( name voter, ipfshash_t& proposed_article_hash, bool approve, uint64_t amount, std::string memo ) {
+void everipediaiq::epartvote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string memo ) {
     require_auth(voter);
 
     eosio_assert(amount > 0, "must transfer a positive amount");
@@ -182,7 +182,7 @@ void everipediaiq::epartvote( name voter, ipfshash_t& proposed_article_hash, boo
     action(
         permission_level{ name("eparticlectr"), name("active") }, 
         name("eparticlectr"), name("votebyhash"),
-        std::make_tuple( voter, proposed_article_hash, approve, amount, memo )
+        std::make_tuple( voter, proposal_id, approve, amount, memo )
     ).send();
 }
 

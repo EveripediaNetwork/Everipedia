@@ -35,7 +35,7 @@ const name ARTICLE_CONTRACT_ACCTNAME = name("eparticlectr");
 const name TOKEN_CONTRACT_ACCTNAME = name("everipediaiq");
 const uint64_t IQ_TO_BRAINPOWER_RATIO = 1;
 const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
-const uint64_t EDIT_PROPOSE_IQ = 50000; // 50 IQ
+const uint64_t EDIT_PROPOSE_IQ = 50; // 50 IQ
 const uint32_t REWARD_INTERVAL = 1800; // 30 min
 const uint32_t DEFAULT_VOTING_TIME = 43200; // 12 hours
 const uint64_t IQ_PRECISION_MULTIPLIER = 1000;
@@ -89,7 +89,7 @@ private:
 
     // Voting tally
     // @abi table
-    struct [[eosio::table]] vote {
+    struct [[eosio::table]] vote_t {
           uint64_t id;
           uint64_t proposal_id;
           ipfshash_t ipfs_hash; // IPFS hash of the proposed new version
@@ -173,8 +173,8 @@ private:
     // votes table
     // indexed by proposal
     // @abi table
-    typedef eosio::multi_index<name("votestbl"), vote,
-        indexed_by< name("byproposal"), const_mem_fun< vote, uint64_t, &vote::get_proposal_id >>
+    typedef eosio::multi_index<name("votestbl"), vote_t,
+        indexed_by< name("byproposal"), const_mem_fun< vote_t, uint64_t, &vote_t::get_proposal_id >>
     > votestbl; // EOS table for the votes
 
     // edit proposals table
@@ -226,6 +226,8 @@ public:
                   int64_t wiki_id, 
                   std::string title, 
                   ipfshash_t ipfs_hash, 
+                  std::string lang_code,
+                  int64_t group_id,
                   std::string comment, 
                   std::string memo );
 

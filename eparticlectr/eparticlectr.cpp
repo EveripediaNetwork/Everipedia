@@ -63,41 +63,41 @@ void eparticlectr::brainclmid( uint64_t stakeid ) {
 // Users have to trigger this action through the everipediaiq::epartvote action
 [[eosio::action]]
 void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string memo ) {
-    require_auth( _self );
+    //require_auth( _self );
 
-    // Check if proposal exists
-    propstbl proptable( _self, _self.value );
-    auto prop_it = proptable.find( proposal_id );
-    eosio_assert( prop_it != proptable.end(), "Proposal not found" );
+    //// Check if proposal exists
+    //propstbl proptable( _self, _self.value );
+    //auto prop_it = proptable.find( proposal_id );
+    //eosio_assert( prop_it != proptable.end(), "Proposal not found" );
 
-    bool voterIsProposer = (voter == prop_it->proposer);
+    //bool voterIsProposer = (voter == prop_it->proposer);
 
-    // Verify voting is still in progress
-    eosio_assert( now() < prop_it->endtime, "Voting period is over");
+    //// Verify voting is still in progress
+    //eosio_assert( now() < prop_it->endtime, "Voting period is over");
 
-    // Create the stake object
-    staketbl staketblobj(_self, _self.value);
-    uint64_t stake_id = staketblobj.available_primary_key();
-    staketblobj.emplace( _self, [&]( auto& s ) {
-        s.id = stake_id;
-        s.user = voter;
-        s.amount = amount;
-        s.timestamp = now();
-        s.completion_time = now() + STAKING_DURATION;
-    });
+    //// Create the stake object
+    //staketbl staketblobj(_self, _self.value);
+    //uint64_t stake_id = staketblobj.available_primary_key();
+    //staketblobj.emplace( _self, [&]( auto& s ) {
+    //    s.id = stake_id;
+    //    s.user = voter;
+    //    s.amount = amount;
+    //    s.timestamp = now();
+    //    s.completion_time = now() + STAKING_DURATION;
+    //});
 
-    // Store vote in DB
-    votestbl votetbl( _self, _self.value );
-    votetbl.emplace( _self, [&]( auto& a ) {
-         a.id = votetbl.available_primary_key();
-         a.proposal_id = proposal_id;
-         a.approve = approve;
-         a.is_editor = voterIsProposer;
-         a.amount = amount;
-         a.voter = voter;
-         a.timestamp = now();
-         a.stake_id = stake_id;
-    });
+    //// Store vote in DB
+    //votestbl votetbl( _self, _self.value );
+    //votetbl.emplace( _self, [&]( auto& a ) {
+    //     a.id = votetbl.available_primary_key();
+    //     a.proposal_id = proposal_id;
+    //     a.approve = approve;
+    //     a.is_editor = voterIsProposer;
+    //     a.amount = amount;
+    //     a.voter = voter;
+    //     a.timestamp = now();
+    //     a.stake_id = stake_id;
+    //});
 }
 
 // Manually update the wikistbl. This will be removed later.
@@ -139,7 +139,7 @@ void eparticlectr::updatewiki( int64_t id, std::string title, int64_t group_id, 
 // Logic for proposing an edit for an article
 // Users have to trigger this action through the everipediaiq::epartpropose action
 [[eosio::action]]
-void eparticlectr::propose( name proposer, int64_t wiki_id, std::string title, ipfshash_t ipfs_hash, std::string comment, std::string memo ) {
+void eparticlectr::propose( name proposer, int64_t wiki_id, std::string title, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo ) {
     require_auth( _self );
 
     // Argument checks
@@ -151,10 +151,13 @@ void eparticlectr::propose( name proposer, int64_t wiki_id, std::string title, i
 
     // Store the proposal
     propstbl proptable( _self, _self.value );
+    uint64_t proposal_id = proptable.available_primary_key();
     proptable.emplace( _self, [&]( auto& a ) {
-        a.id = proptable.available_primary_key();
+        a.id = proposal_id;
         a.wiki_id = wiki_id;
         a.title = title;
+        a.group_id = group_id;
+        a.lang_code = lang_code;
         a.ipfs_hash = ipfs_hash;
         a.proposer = proposer;
         a.starttime = now();
@@ -166,7 +169,7 @@ void eparticlectr::propose( name proposer, int64_t wiki_id, std::string title, i
     action(
         permission_level { _self , name("active") },
         _self, name("vote"),
-        std::make_tuple( proposer, ipfs_hash, true, EDIT_PROPOSE_IQ )
+        std::make_tuple( proposer, proposal_id, true, EDIT_PROPOSE_IQ, std::string("editor initial vote") )
     ).send();
 }
 

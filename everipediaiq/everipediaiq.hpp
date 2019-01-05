@@ -12,7 +12,7 @@
 using namespace eosio;
 using std::string;
 
-const uint64_t EDIT_PROPOSE_IQ = 50000; // 50 IQ
+const uint64_t EDIT_PROPOSE_IQ = 50; // 50 IQ
 
 class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
   using contract::contract;
@@ -42,15 +42,19 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
 
      [[eosio::action]]
      void epartvote( name voter, 
-                     ipfshash_t& proposed_article_hash, 
+                     uint64_t proposal_id,
                      bool approve,
                      uint64_t amount,
                      std::string memo );
 
      [[eosio::action]]
      void epartpropose( name proposer, 
-                        ipfshash_t& proposed_article_hash, 
-                        ipfshash_t& old_article_hash,
+                        int64_t wiki_id,
+                        std::string title,
+                        ipfshash_t ipfs_hash,
+                        std::string lang_code,
+                        int64_t group_id,
+                        std::string comment,
                         std::string memo );
 
      inline asset get_supply( symbol_code sym )const;

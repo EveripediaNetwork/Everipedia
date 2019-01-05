@@ -16,7 +16,7 @@ Claim editor and curator IQ rewards by reward id.
 Propose and edit (uses Brainpower).
 <h1 class="contract">oldvotepurge</h1>
 Purge old votes to free up RAM.
-<h1 class="contract">votebyhash</h1>
+<h1 class="contract">vote</h1>
 Vote on a proposal (identified by an IPFS hash) using Brainpower.
 <h1 class="contract">logpropres</h1>
 Log proposal results.

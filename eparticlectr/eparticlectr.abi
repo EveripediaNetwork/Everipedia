@@ -1,5 +1,5 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Fri Jan  4 13:13:34 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Fri Jan  4 16:09:30 2019",
     "version": "eosio::abi/1.1",
     "structs": [
         {
@@ -153,6 +153,14 @@
                     "type": "ipfshash_t"
                 },
                 {
+                    "name": "lang_code",
+                    "type": "string"
+                },
+                {
+                    "name": "group_id",
+                    "type": "int64"
+                },
+                {
                     "name": "comment",
                     "type": "string"
                 },
@@ -293,6 +301,32 @@
             "base": "",
             "fields": [
                 {
+                    "name": "voter",
+                    "type": "name"
+                },
+                {
+                    "name": "proposal_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "approve",
+                    "type": "bool"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint64"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "vote_t",
+            "base": "",
+            "fields": [
+                {
                     "name": "id",
                     "type": "uint64"
                 },
@@ -412,7 +446,7 @@
         {
             "name": "vote",
             "type": "vote",
-            "ricardian_contract": ""
+            "ricardian_contract": "Vote on a proposal (identified by an IPFS hash) using Brainpower."
         }
     ],
     "tables": [
@@ -446,7 +480,7 @@
         },
         {
             "name": "votestbl",
-            "type": "vote",
+            "type": "vote_t",
             "index_type": "i64",
             "key_names": [],
             "key_types": []
