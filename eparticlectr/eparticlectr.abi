@@ -1,5 +1,5 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Fri Jan  4 16:09:30 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Fri Jan  4 16:37:37 2019",
     "version": "eosio::abi/1.1",
     "structs": [
         {
@@ -38,7 +38,7 @@
                 },
                 {
                     "name": "group_id",
-                    "type": "uint64"
+                    "type": "int64"
                 },
                 {
                     "name": "lang_code",

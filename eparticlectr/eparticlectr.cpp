@@ -100,7 +100,7 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
     //});
 }
 
-// Manually update the wikistbl. This will be removed later.
+// Add a wiki to the wiki table
 [[eosio::action]]
 void eparticlectr::updatewiki( int64_t id, std::string title, int64_t group_id, std::string lang_code, const ipfshash_t ipfs_hash ){
     require_auth( _self );
@@ -117,6 +117,8 @@ void eparticlectr::updatewiki( int64_t id, std::string title, int64_t group_id, 
         if (wiki_it != wikitbl.end()) {
             wikitbl.modify( wiki_it, _self, [&]( auto& a ) {
                 a.title = title;
+                if (group_id == -1)
+                    group_id = id;
                 a.group_id = group_id;
                 a.lang_code = lang_code;
                 a.ipfs_hash = ipfs_hash;
@@ -130,6 +132,8 @@ void eparticlectr::updatewiki( int64_t id, std::string title, int64_t group_id, 
             id = wikitbl.available_primary_key();
         a.id = id;
         a.title = title;
+        if (group_id == -1)
+            group_id = id;
         a.group_id = group_id;
         a.lang_code = lang_code;
         a.ipfs_hash = ipfs_hash;

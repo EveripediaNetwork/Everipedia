@@ -114,7 +114,7 @@ private:
         name proposer; // account name of the proposer
         std::string title; // article title. 32-byte limit
         ipfshash_t ipfs_hash; // IPFS hash of the proposed new version
-        uint64_t group_id;
+        int64_t group_id;
         std::string lang_code; // ISO 639-1 language code. 7-byte limit
         uint32_t starttime; // UNIX timestamp of beginning of voting period
         uint32_t endtime; // UNIX timestamp of end of voting period
