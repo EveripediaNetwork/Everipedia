@@ -1,5 +1,4 @@
 #!/bin/bash
-shopt -s expand_aliases
 
 CYAN='\033[1;36m'
 NC='\033[0m'
@@ -9,14 +8,14 @@ function ctrl_c {
     exit 11;
 }
 
-BOOTSTRAP=1 # 1 if chain bootstrapping (bios, system contract, etc.) is needed, else 0
+BOOTSTRAP=0 # 1 if chain bootstrapping (bios, system contract, etc.) is needed, else 0
 RECOMPILE_AND_RESET_EOSIO_CONTRACTS=0
-BUILD=1
+BUILD=0
 HELP=0
-EOSIO_BUILD_ROOT=/home/travis/Programs/eoscontracts/eosio.contracts/build/contracts # ~/eosio.contracts/
+EOSIO_CONTRACTS_ROOT=/home/kedar/eosio.contracts/build/
 NODEOS_HOST="127.0.0.1"
 NODEOS_PROTOCOL="http"
-NODEOS_PORT="8989"
+NODEOS_PORT="8888"
 NODEOS_LOCATION="${NODEOS_PROTOCOL}://${NODEOS_HOST}:${NODEOS_PORT}"
 
 alias cleos="cleos --url=${NODEOS_LOCATION}"
@@ -74,11 +73,11 @@ fi
 # Build
 if [ $BUILD -eq 1 ]; then
     sed -i -e 's/REWARD_INTERVAL = 1800/REWARD_INTERVAL = 5/g' eparticlectr/eparticlectr.hpp
-    sed -i -e 's/DEFAULT_VOTING_TIME = 21600/DEFAULT_VOTING_TIME = 3/g' eparticlectr/eparticlectr.hpp
+    sed -i -e 's/DEFAULT_VOTING_TIME = 43200/DEFAULT_VOTING_TIME = 3/g' eparticlectr/eparticlectr.hpp
     sed -i -e 's/STAKING_DURATION = 21 \* 86400/STAKING_DURATION = 5/g' eparticlectr/eparticlectr.hpp
     ./build.sh
     sed -i -e 's/REWARD_INTERVAL = 5/REWARD_INTERVAL = 1800/g' eparticlectr/eparticlectr.hpp
-    sed -i -e 's/DEFAULT_VOTING_TIME = 3/DEFAULT_VOTING_TIME = 21600/g' eparticlectr/eparticlectr.hpp
+    sed -i -e 's/DEFAULT_VOTING_TIME = 3/DEFAULT_VOTING_TIME = 43200/g' eparticlectr/eparticlectr.hpp
     sed -i -e 's/STAKING_DURATION = 5/STAKING_DURATION = 21 \* 86400/g' eparticlectr/eparticlectr.hpp
 fi
 
@@ -115,31 +114,31 @@ if [ $BOOTSTRAP -eq 1 ]; then
     if [ $RECOMPILE_EOSIO_CONTRACTS -eq 1 ]; then
         # Compile the contracts manually due to an error in the build.sh script in eosio.contracts
         echo -e "${CYAN}-----------------------RECOMPILING CONTRACTS-----------------------${NC}"
-        cd "${EOSIO_BUILD_ROOT}/eosio.token"
+        cd "${EOSIO_CONTRACTS_ROOT}/eosio.token"
         eosio-cpp -I ./include -o ./eosio.token.wasm ./src/eosio.token.cpp --abigen
-        cd "${EOSIO_BUILD_ROOT}/eosio.msig"
+        cd "${EOSIO_CONTRACTS_ROOT}/eosio.msig"
         eosio-cpp -I ./include -o ./eosio.msig.wasm ./src/eosio.msig.cpp --abigen
-        cd "${EOSIO_BUILD_ROOT}/eosio.bios"
+        cd "${EOSIO_CONTRACTS_ROOT}/eosio.bios"
         eosio-cpp -I ./include -o ./eosio.bios.wasm ./src/eosio.bios.cpp --abigen
-        cd "${EOSIO_BUILD_ROOT}/eosio.system"
-        eosio-cpp -I ./include -I "${EOSIO_BUILD_ROOT}/eosio.token/include" -o ./eosio.system.wasm ./src/eosio.system.cpp --abigen
-        cd "${EOSIO_BUILD_ROOT}/eosio.wrap"
+        cd "${EOSIO_CONTRACTS_ROOT}/eosio.system"
+        eosio-cpp -I ./include -I "${EOSIO_CONTRACTS_ROOT}/eosio.token/include" -o ./eosio.system.wasm ./src/eosio.system.cpp --abigen
+        cd "${EOSIO_CONTRACTS_ROOT}/eosio.wrap"
         eosio-cpp -I ./include -o ./eosio.wrap.wasm ./src/eosio.wrap.cpp --abigen
     fi
 
     # Bootstrap new system contracts
     echo -e "${CYAN}-----------------------SYSTEM CONTRACTS-----------------------${NC}"
-    cleos set contract eosio.token $EOSIO_BUILD_ROOT/eosio.token/
-    cleos set contract eosio.msig $EOSIO_BUILD_ROOT/eosio.msig/
+    cleos set contract eosio.token $EOSIO_CONTRACTS_ROOT/eosio.token/
+    cleos set contract eosio.msig $EOSIO_CONTRACTS_ROOT/eosio.msig/
     cleos push action eosio.token create '[ "eosio", "10000000000.0000 EOS" ]' -p eosio.token
     cleos push action eosio.token create '[ "eosio", "10000000000.0000 SYS" ]' -p eosio.token
     echo -e "      EOS TOKEN CREATED"
     cleos push action eosio.token issue '[ "eosio", "1000000000.0000 EOS", "memo" ]' -p eosio
     cleos push action eosio.token issue '[ "eosio", "1000000000.0000 SYS", "memo" ]' -p eosio
     echo -e "      EOS TOKEN ISSUED"
-    cleos set contract eosio $EOSIO_BUILD_ROOT/eosio.bios/
+    cleos set contract eosio $EOSIO_CONTRACTS_ROOT/eosio.bios/
     echo -e "      BIOS SET"
-    cleos set contract eosio $EOSIO_BUILD_ROOT/eosio.system/
+    cleos set contract eosio $EOSIO_CONTRACTS_ROOT/eosio.system/
     echo -e "      SYSTEM SET"
     cleos push action eosio setpriv '["eosio.msig", 1]' -p eosio@active
     cleos push action eosio init '[0, "4,EOS"]' -p eosio@active
@@ -178,7 +177,7 @@ if [ $BOOTSTRAP -eq 1 ]; then
     cleos wallet import --private-key 5J3JRDhf4JNhzzjEZAsQEgtVuqvsPPdZv4Tm6SjMRx1ZqToaray
     cleos system newaccount eosio eosio.wrap EOS7LpGN1Qz5AbCJmsHzhG7sWEGd9mwhTXWmrYXqxhTknY2fvHQ1A --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
     cleos push action eosio setpriv '["eosio.wrap", 1]' -p eosio@active
-    cleos set contract eosio.wrap $EOSIO_BUILD_ROOT/eosio.wrap/
+    cleos set contract eosio.wrap $EOSIO_CONTRACTS_ROOT/eosio.wrap/
 
     # Transfer EOS to testing accounts
     echo -e "${CYAN}-----------------------TRANSFERRING IQ-----------------------${NC}"
@@ -359,34 +358,6 @@ assert $(bc <<< "$? == 1")
 # NEW_BALANCE2=$(balance eptestusersb)
 # NEW_BALANCE3=$(balance eptestusersc)
 
-
-# Stake tokens
-echo -e "${CYAN}-----------------------STAKE TOKENS-----------------------${NC}"
-sleep 1
-cleos push action everipediaiq brainmeiq '["eptestusersa", 2000]' -p eptestusersa
-assert $(bc <<< "$? == 0")
-cleos push action everipediaiq brainmeiq '["eptestusersb", 2000]' -p eptestusersb
-assert $(bc <<< "$? == 0")
-cleos push action everipediaiq brainmeiq '["eptestusersc", 2000]' -p eptestusersc
-assert $(bc <<< "$? == 0")
-cleos push action everipediaiq brainmeiq '["eptestusersd", 2000]' -p eptestusersd
-assert $(bc <<< "$? == 0")
-cleos push action everipediaiq brainmeiq '["eptestuserse", 2000]' -p eptestuserse
-assert $(bc <<< "$? == 0")
-cleos push action everipediaiq brainmeiq '["eptestusersf", 2000]' -p eptestusersf
-assert $(bc <<< "$? == 0")
-cleos push action everipediaiq brainmeiq '["eptestusersg", 2000]' -p eptestusersg
-assert $(bc <<< "$? == 0")
-
-# Failed stakes
-echo -e "${CYAN}-----------------------NEXT THREE STAKE ATTEMPTS SHOULD FAIL-----------------------${NC}"
-cleos push action everipediaiq brainmeiq '["eptestusersg", 0]' -p eptestusersg
-assert $(bc <<< "$? == 1")
-cleos push action everipediaiq brainmeiq '["eptestusersg", -1000]' -p eptestusersg
-assert $(bc <<< "$? == 1")
-cleos push action everipediaiq brainmeiq '["eptestusersg", 1000.324]' -p eptestusersg
-assert $(bc <<< "$? == 1")
-
 # Proposals
 echo -e "${CYAN}-----------------------TEST PROPOSALS-----------------------${NC}"
 IPFS1=$(ipfsgen)
@@ -398,24 +369,24 @@ IPFS6=$(ipfsgen)
 IPFS7=$(ipfsgen)
 IPFS8=$(ipfsgen)
 
-cleos push action eparticlectr propose "[ \"eptestusersa\", \"$IPFS1\", \"\", \"\" ]" -p eptestusersa
+cleos push action everipediaiq epartpropose "[ \"eptestusersa\", -1, \"Jeremy Lin\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersa
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr propose "[ \"eptestusersb\", \"$IPFS2\" , \"\", \"\"]" -p eptestusersb
+cleos push action everipediaiq epartpropose "[ \"eptestusersb\", -1, \"Monty Python\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersb
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr propose "[ \"eptestusersc\", \"$IPFS3\", \"\", \"\"]" -p eptestusersc
+cleos push action everipediaiq epartpropose "[ \"eptestusersc\", -1, \"Seedy McDouglas\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersc
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr propose "[ \"eptestusersd\", \"$IPFS4\", \"\", \"\"]" -p eptestusersd
+cleos push action everipediaiq epartpropose "[ \"eptestusersd\", -1, \"Genevieve Le Menage\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersd
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr propose "[ \"eptestuserse\", \"$IPFS5\", \"\", \"\"]" -p eptestuserse
+cleos push action everipediaiq epartpropose "[ \"eptestuserse\", -1, \"Grandpa Rick\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestuserse
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr propose "[ \"eptestuserse\", \"$IPFS6\", \"$IPFS7\", \"\"]" -p eptestuserse
-assert $(bc <<< "$? == 0")
-cleos push action eparticlectr propose "[ \"eptestuserse\", \"$IPFS7\", \"\", \"$IPFS8\" ]" -p eptestuserse
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", -1, \"7 Dwarfs of Christmas\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersf
 assert $(bc <<< "$? == 0")
 
 # Failed proposals
 echo -e "${CYAN}-----------------------NEXT THREE PROPOSALS SHOULD FAIL-----------------------${NC}"
-cleos push action eparticlectr propose "[ \"eptestuserse\", \"$IPFS1\" \"\", \"\"]" -p eptestuserse
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", -1, \"7 Dwarfs of Christmas have too long a title mate\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersf
+assert $(bc <<< "$? == 1")
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", 100000000000, \"7 Dwarfs of Christmas\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersf
 assert $(bc <<< "$? == 1")
 
 # Votes
