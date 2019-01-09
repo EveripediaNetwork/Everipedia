@@ -1,5 +1,5 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Fri Jan  4 16:37:37 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Tue Jan  8 16:46:05 2019",
     "version": "eosio::abi/1.1",
     "structs": [
         {
@@ -69,12 +69,66 @@
             ]
         },
         {
+            "name": "logpropinfo",
+            "base": "",
+            "fields": [
+                {
+                    "name": "proposal_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "proposer",
+                    "type": "name"
+                },
+                {
+                    "name": "wiki_id",
+                    "type": "int64"
+                },
+                {
+                    "name": "title",
+                    "type": "string"
+                },
+                {
+                    "name": "ipfs_hash",
+                    "type": "ipfshash_t"
+                },
+                {
+                    "name": "lang_code",
+                    "type": "string"
+                },
+                {
+                    "name": "group_id",
+                    "type": "int64"
+                },
+                {
+                    "name": "comment",
+                    "type": "string"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                },
+                {
+                    "name": "starttime",
+                    "type": "uint32"
+                },
+                {
+                    "name": "endtime",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
             "name": "logpropres",
             "base": "",
             "fields": [
                 {
-                    "name": "proposal",
-                    "type": "ipfshash_t"
+                    "name": "proposal_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "wiki_id",
+                    "type": "int64"
                 },
                 {
                     "name": "approved",
@@ -271,32 +325,6 @@
             ]
         },
         {
-            "name": "updatewiki",
-            "base": "",
-            "fields": [
-                {
-                    "name": "id",
-                    "type": "int64"
-                },
-                {
-                    "name": "title",
-                    "type": "string"
-                },
-                {
-                    "name": "group_id",
-                    "type": "int64"
-                },
-                {
-                    "name": "lang_code",
-                    "type": "string"
-                },
-                {
-                    "name": "ipfs_hash",
-                    "type": "ipfshash_t"
-                }
-            ]
-        },
-        {
             "name": "vote",
             "base": "",
             "fields": [
@@ -409,6 +437,11 @@
             "ricardian_contract": "Finalize a proposal and calculate rewards & slashings."
         },
         {
+            "name": "logpropinfo",
+            "type": "logpropinfo",
+            "ricardian_contract": "Log proposal information."
+        },
+        {
             "name": "logpropres",
             "type": "logpropres",
             "ricardian_contract": "Log proposal results."
@@ -437,11 +470,6 @@
             "name": "slashnotify",
             "type": "slashnotify",
             "ricardian_contract": "Logging action to notify users of slashes."
-        },
-        {
-            "name": "updatewiki",
-            "type": "updatewiki",
-            "ricardian_contract": "Manually update the wiki table. Will be removed later."
         },
         {
             "name": "vote",

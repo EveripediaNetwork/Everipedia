@@ -175,13 +175,13 @@ void everipediaiq::epartvote( name voter, uint64_t proposal_id, bool approve, ui
     action(
         permission_level{ voter , name("active") }, 
         name("everipediaiq"), name("transfer"),
-        std::make_tuple( voter, name("eparticlectr"), iqAssetPack, "stake for vote")
+        std::make_tuple( voter, name("eparticlectr"), iqAssetPack, std::string("stake for vote"))
     ).send();
 
     // Create the vote in the eparticlectr contract
     action(
         permission_level{ name("eparticlectr"), name("active") }, 
-        name("eparticlectr"), name("votebyhash"),
+        name("eparticlectr"), name("vote"),
         std::make_tuple( voter, proposal_id, approve, amount, memo )
     ).send();
 }

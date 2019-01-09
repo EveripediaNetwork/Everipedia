@@ -1,5 +1,3 @@
-<h1 class="contract">updatewiki</h1>
-Manually update the wiki table. Will be removed later.
 <h1 class="contract">brainclmid</h1>
 Claim back IQ that was staked for Brainpower. Must happen after the 21 day staking period.
 <h1 class="contract">brainmeart</h1>
@@ -20,3 +18,5 @@ Purge old votes to free up RAM.
 Vote on a proposal (identified by an IPFS hash) using Brainpower.
 <h1 class="contract">logpropres</h1>
 Log proposal results.
+<h1 class="contract">logpropinfo</h1>
+Log proposal information.

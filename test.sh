@@ -371,103 +371,118 @@ IPFS8=$(ipfsgen)
 
 cleos push action everipediaiq epartpropose "[ \"eptestusersa\", -1, \"Jeremy Lin\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersa
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartpropose "[ \"eptestusersb\", -1, \"Monty Python\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersb
+cleos push action everipediaiq epartpropose "[ \"eptestusersb\", -1, \"Monty Python\", \"$IPFS2\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersb
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartpropose "[ \"eptestusersc\", -1, \"Seedy McDouglas\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersc
+cleos push action everipediaiq epartpropose "[ \"eptestusersc\", -1, \"Seedy McDouglas\", \"$IPFS3\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersc
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartpropose "[ \"eptestusersd\", -1, \"Genevieve Le Menage\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersd
+cleos push action everipediaiq epartpropose "[ \"eptestusersd\", -1, \"Genevieve Le Menage\", \"$IPFS4\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersd
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartpropose "[ \"eptestuserse\", -1, \"Grandpa Rick\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestuserse
+cleos push action everipediaiq epartpropose "[ \"eptestuserse\", 7, \"Grandpa Rick\", \"$IPFS5\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestuserse
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartpropose "[ \"eptestusersf\", -1, \"7 Dwarfs of Christmas\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersf
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", 100038, \"7 Dwarfs of Christmas\", \"$IPFS6\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersf
 assert $(bc <<< "$? == 0")
 
 # Failed proposals
-echo -e "${CYAN}-----------------------NEXT THREE PROPOSALS SHOULD FAIL-----------------------${NC}"
+echo -e "${CYAN}-----------------------NEXT FIVE PROPOSALS SHOULD FAIL-----------------------${NC}"
 cleos push action everipediaiq epartpropose "[ \"eptestusersf\", -1, \"7 Dwarfs of Christmas have too long a title mate\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersf
 assert $(bc <<< "$? == 1")
-cleos push action everipediaiq epartpropose "[ \"eptestusersf\", 100000000000, \"7 Dwarfs of Christmas\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersf
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", 100000000000, \"7 Dwarfs of Christmas\", \"$IPFS1\", \"en\", -1, \"specifying a manual ID over 1e9\", \"memoing\" ]" -p eptestusersf
+assert $(bc <<< "$? == 1")
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", -200, \"7 Dwarfs of Christmas\", \"$IPFS1\", \"en\", -1, \"specifying a manual ID below -1\", \"memoing\" ]" -p eptestusersf
+assert $(bc <<< "$? == 1")
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", -200, \"7 Dwarfs of Christmas\", \"$IPFS1\", \"zh-Hans 02\", -1, \"too long a lang code\", \"memoing\" ]" -p eptestusersf
+assert $(bc <<< "$? == 1")
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", -200, \"7 Dwarfs of Christmas\", \"$IPFS2 $IPFS1\", \"zh\", -1, \"too long an IPFS string\", \"memoing\" ]" -p eptestusersf
 assert $(bc <<< "$? == 1")
 
-# Votes
+echo -e "${CYAN}Wait for proposals to be mined...${NC}"
 sleep 1
+
+# Votes
+PROPS=$(cleos get table eparticlectr eparticlectr propstbl -r | jq ".rows")
+PROPID6=$(echo $PROPS | jq ".[0].id")
+PROPID5=$(echo $PROPS | jq ".[1].id")
+PROPID4=$(echo $PROPS | jq ".[2].id")
+PROPID3=$(echo $PROPS | jq ".[3].id")
+PROPID2=$(echo $PROPS | jq ".[4].id")
+PROPID1=$(echo $PROPS | jq ".[5].id")
 
 # Win
 echo -e "${CYAN}-----------------------SETTING WINNING VOTES-----------------------${NC}"
-cleos push action eparticlectr votebyhash "[ \"eptestusersb\", \"$IPFS1\", 1, 50 ]" -p eptestusersb
+cleos push action everipediaiq epartvote "[ \"eptestusersb\", $PROPID1, 1, 50, \"votememo\"]" -p eptestusersb
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr votebyhash "[ \"eptestusersc\", \"$IPFS1\", 1, 100 ]" -p eptestusersc
+cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID1, 1, 100, \"votememo\"]" -p eptestusersc
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr votebyhash "[ \"eptestusersd\", \"$IPFS1\", 0, 50 ]" -p eptestusersd
+cleos push action everipediaiq epartvote "[ \"eptestusersd\", $PROPID1, 0, 50, \"votememo\"]" -p eptestusersd
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr votebyhash "[ \"eptestuserse\", \"$IPFS1\", 1, 500 ]" -p eptestuserse
+cleos push action everipediaiq epartvote "[ \"eptestuserse\", $PROPID1, 1, 500, \"votememo\"]" -p eptestuserse
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr votebyhash "[ \"eptestusersf\", \"$IPFS1\", 0, 350 ]" -p eptestusersf
+cleos push action everipediaiq epartvote "[ \"eptestusersf\", $PROPID1, 0, 350, \"votememo\"]" -p eptestusersf
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr votebyhash "[ \"eptestusersg\", \"$IPFS1\", 0, 80 ]" -p eptestusersg
+cleos push action everipediaiq epartvote "[ \"eptestusersg\", $PROPID1, 0, 80, \"votememo\"]" -p eptestusersg
 assert $(bc <<< "$? == 0")
 
 # Lose
 echo -e "${CYAN}-----------------------SETTING LOSING VOTES-----------------------${NC}"
-cleos push action eparticlectr votebyhash "[ \"eptestusersb\", \"$IPFS2\", 1, 5 ]" -p eptestusersb
+cleos push action everipediaiq epartvote "[ \"eptestusersb\", $PROPID2, 1, 5, \"votememo\"]" -p eptestusersb
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr votebyhash "[ \"eptestusersc\", \"$IPFS2\", 0, 100 ]" -p eptestusersc
+cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID2, 0, 100, \"votememo\"]" -p eptestusersc
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr votebyhash "[ \"eptestusersd\", \"$IPFS2\", 1, 500 ]" -p eptestusersd
+cleos push action everipediaiq epartvote "[ \"eptestusersd\", $PROPID2, 1, 500, \"votememo\"]" -p eptestusersd
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr votebyhash "[ \"eptestuserse\", \"$IPFS2\", 0, 500 ]" -p eptestuserse
+cleos push action everipediaiq epartvote "[ \"eptestuserse\", $PROPID2, 0, 500, \"votememo\"]" -p eptestuserse
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr votebyhash "[ \"eptestusersf\", \"$IPFS2\", 1, 35 ]" -p eptestusersf
+cleos push action everipediaiq epartvote "[ \"eptestusersf\", $PROPID2, 1, 35, \"votememo\"]" -p eptestusersf
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr votebyhash "[ \"eptestusersg\", \"$IPFS2\", 0, 800 ]" -p eptestusersg
+cleos push action everipediaiq epartvote "[ \"eptestusersg\", $PROPID2, 0, 800, \"votememo\"]" -p eptestusersg
 assert $(bc <<< "$? == 0")
 
 # Tie (net votes dont't sum to 0 because proposer auto-votes 50 in favor)
 echo -e "${CYAN}-----------------------SETTING TIE VOTES-----------------------${NC}"
-cleos push action eparticlectr votebyhash "[ \"eptestusersb\", \"$IPFS3\", 1, 15 ]" -p eptestusersb
+cleos push action everipediaiq epartvote "[ \"eptestusersb\", $PROPID3, 1, 15, \"votememo\"]" -p eptestusersb
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr votebyhash "[ \"eptestusersc\", \"$IPFS3\", 0, 150 ]" -p eptestusersc
+cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID3, 0, 150, \"votememo\"]" -p eptestusersc
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr votebyhash "[ \"eptestusersd\", \"$IPFS3\", 1, 490 ]" -p eptestusersd
+cleos push action everipediaiq epartvote "[ \"eptestusersd\", $PROPID3, 1, 490, \"votememo\"]" -p eptestusersd
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr votebyhash "[ \"eptestuserse\", \"$IPFS3\", 0, 500 ]" -p eptestuserse
+cleos push action everipediaiq epartvote "[ \"eptestuserse\", $PROPID3, 0, 500, \"votememo\"]" -p eptestuserse
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr votebyhash "[ \"eptestusersf\", \"$IPFS3\", 1, 35 ]" -p eptestusersf
+cleos push action everipediaiq epartvote "[ \"eptestusersf\", $PROPID3, 1, 35, \"votememo\"]" -p eptestusersf
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr votebyhash "[ \"eptestusersg\", \"$IPFS3\", 1, 60 ]" -p eptestusersg
+cleos push action everipediaiq epartvote "[ \"eptestusersg\", $PROPID3, 1, 60, \"votememo\"]" -p eptestusersg
 assert $(bc <<< "$? == 0")
 
 # Unanimous win
 echo -e "${CYAN}-----------------------UNANIMOUS VOTES-----------------------${NC}"
-cleos push action eparticlectr votebyhash "[ \"eptestusersb\", \"$IPFS4\", 1, 5 ]" -p eptestusersb
+cleos push action everipediaiq epartvote "[ \"eptestusersb\", $PROPID4, 1, 5, \"votememo\"]" -p eptestusersb
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr votebyhash "[ \"eptestusersc\", \"$IPFS4\", 1, 10 ]" -p eptestusersc
+cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID4, 1, 10, \"votememo\"]" -p eptestusersc
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr votebyhash "[ \"eptestusersd\", \"$IPFS4\", 1, 50 ]" -p eptestusersd
+cleos push action everipediaiq epartvote "[ \"eptestusersd\", $PROPID4, 1, 50, \"votememo\"]" -p eptestusersd
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr votebyhash "[ \"eptestuserse\", \"$IPFS4\", 1, 50 ]" -p eptestuserse
+cleos push action everipediaiq epartvote "[ \"eptestuserse\", $PROPID4, 1, 50, \"votememo\"]" -p eptestuserse
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr votebyhash "[ \"eptestusersf\", \"$IPFS4\", 1, 35 ]" -p eptestusersf
+cleos push action everipediaiq epartvote "[ \"eptestusersf\", $PROPID4, 1, 35, \"votememo\"]" -p eptestusersf
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr votebyhash "[ \"eptestusersg\", \"$IPFS4\", 1, 60 ]" -p eptestusersg
+cleos push action everipediaiq epartvote "[ \"eptestusersg\", $PROPID4, 1, 60, \"votememo\"]" -p eptestusersg
 assert $(bc <<< "$? == 0")
 
 # Flip vote loss
 echo -e "${CYAN}-----------------------FLIP LOSING VOTES-----------------------${NC}"
-cleos push action eparticlectr votebyhash "[ \"eptestuserse\", \"$IPFS5\", 0, 60 ]" -p eptestuserse
+cleos push action everipediaiq epartvote "[ \"eptestuserse\", $PROPID5, 0, 60, \"votememo\"]" -p eptestuserse
 assert $(bc <<< "$? == 0")
 
 # Bad votes
 echo -e "${CYAN}-----------------------NEXT TWO VOTE ATTEMPTS SHOULD FAIL-----------------------${NC}"
-cleos push action eparticlectr votebyhash "[ \"eptestusersg\", \"$IPFS4\", 1, 50000 ]" -p eptestusersg
+cleos push action everipediaiq epartvote "[ \"eptestusersg\", $PROPID4, 1, 500000000, \"votememo\"]" -p eptestusersg
 assert $(bc <<< "$? == 1")
-cleos push action eparticlectr votebyhash "[ \"eptestusersc\", \"$IPFS4\", 1, 500 ]" -p eptestusersg
+cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID4, 1, 500, \"votememo\"]" -p eptestusersg
 assert $(bc <<< "$? == 1")
 
 
 # Finalize
 echo -e "${CYAN}-----------------------EARLY FINALIZE SHOULD FAIL-----------------------${NC}"
-cleos push action eparticlectr fnlbyhash "[ \"$IPFS3\" ]" -p eptestuserse
+cleos push action eparticlectr finalize "[ $PROPID4 ]" -p eptestuserse
 assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}WAITING FOR VOTING PERIOD TO END...${NC}"
@@ -475,41 +490,52 @@ sleep 4 # wait for test voting period to end
 
 # Bad vote
 echo -e "${CYAN}-----------------------LATE VOTE SHOULD FAIL-----------------------${NC}"
-cleos push action eparticlectr votebyhash "[ \"eptestusersc\", \"$IPFS4\", 1, 500 ]" -p eptestusersc
+cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID4, 1, 500, \"votememo\" ]" -p eptestusersc
 assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}-----------------------FINALIZES-----------------------${NC}"
-cleos push action eparticlectr fnlbyhash "[ \"$IPFS1\" ]" -p eptestusersa
+echo $PROPID1
+echo $PROPID2
+echo $PROPID3
+echo $PROPID4
+echo $PROPID5
+echo $PROPID6
+cleos push action eparticlectr finalize "[ $PROPID1 ]" -p eptestusersa
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr fnlbyhash "[ \"$IPFS2\" ]" -p eptestusersg
+cleos push action eparticlectr finalize "[ $PROPID2 ]" -p eptestusersg
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr fnlbyhash "[ \"$IPFS3\" ]" -p eptestuserse
+cleos push action eparticlectr finalize "[ $PROPID3 ]" -p eptestuserse
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr fnlbyhash "[ \"$IPFS4\" ]" -p eptestusersb
+cleos push action eparticlectr finalize "[ $PROPID4 ]" -p eptestusersb
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr fnlbyhash "[ \"$IPFS5\" ]" -p eptestusersa
+cleos push action eparticlectr finalize "[ $PROPID5 ]" -p eptestusersa
 assert $(bc <<< "$? == 0")
 
 echo -e "${CYAN}-----------------------FINALIZE FAIL (ALREADY FINALIZED)-----------------------${NC}"
-cleos push action --force-unique eparticlectr fnlbyhash "[ \"$IPFS3\" ]" -p eptestuserse
+cleos push action --force-unique eparticlectr finalize "[ $PROPID3 ]" -p eptestuserse
+assert $(bc <<< "$? == 1")
+
+# Procrewards
+echo -e "${CYAN}-----------------------EARLY PROCREWARDS SHOULD FAIL-----------------------${NC}"
+
+FINALIZE_PERIOD=$(cleos get table eparticlectr eparticlectr rewardstbl -r | jq ".rows[0].proposal_finalize_period")
+ONE_BACK_PERIOD=$(bc <<< "$FINALIZE_PERIOD - 1")
+ONE_FORWARD_PERIOD=$(bc <<< "$FINALIZE_PERIOD + 1")
+
+cleos push action eparticlectr procrewards "[$ONE_FORWARD_PERIOD]" -p eptestusersa
 assert $(bc <<< "$? == 1")
 
 # Slash checks
-echo -e "${CYAN}-----------------------NEED TO TEST SLASHES-----------------------${NC}"
+echo -e "${CYAN}-----------------------TODO: TEST SLASHES-----------------------${NC}"
 
 echo -e "${CYAN}WAITING FOR REWARDS PERIOD TO END...${NC}"
 sleep 5
 
-# Procrewards
-echo -e "${CYAN}-----------------------EARLY FINALIZE SHOULD FAIL-----------------------${NC}"
-
-FINALIZE_PERIOD=$(cleos get table eparticlectr eparticlectr rewardstbl -l 500 | jq ".rows[-1].proposal_finalize_period")
-ONE_BACK_PERIOD=$(bc <<< "$FINALIZE_PERIOD - 1")
 
 echo -e "${CYAN}-----------------------PROCESS REWARDS-----------------------${NC}"
-cleos push action eparticlectr procrewards "[\"$FINALIZE_PERIOD\"]" -p eptestusersa
+cleos push action eparticlectr procrewards "[$FINALIZE_PERIOD]" -p eptestusersa
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr procrewards "[\"$ONE_BACK_PERIOD\"]" -p eptestusersa
+cleos push action eparticlectr procrewards "[$ONE_BACK_PERIOD]" -p eptestusersa
 
 CURATION_REWARD_SUM=$(cleos get table eparticlectr eparticlectr periodreward -l 500 | jq ".rows[-1].curation_sum")
 EDITOR_REWARD_SUM=$(cleos get table eparticlectr eparticlectr periodreward -l 500 | jq ".rows[-1].editor_sum")
