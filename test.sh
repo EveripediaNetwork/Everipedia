@@ -467,8 +467,8 @@ assert $(bc <<< "$? == 0")
 cleos push action everipediaiq epartvote "[ \"eptestusersg\", $PROPID4, 1, 60, \"votememo\"]" -p eptestusersg
 assert $(bc <<< "$? == 0")
 
-# Flip vote loss
-echo -e "${CYAN}-----------------------FLIP LOSING VOTES-----------------------${NC}"
+# User votes against himself
+echo -e "${CYAN}-----------------------USER VOTES AGAINST HIMSELF-----------------------${NC}"
 cleos push action everipediaiq epartvote "[ \"eptestuserse\", $PROPID5, 0, 60, \"votememo\"]" -p eptestuserse
 assert $(bc <<< "$? == 0")
 
@@ -537,28 +537,26 @@ cleos push action eparticlectr procrewards "[$FINALIZE_PERIOD]" -p eptestusersa
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr procrewards "[$ONE_BACK_PERIOD]" -p eptestusersa
 
-CURATION_REWARD_SUM=$(cleos get table eparticlectr eparticlectr periodreward -l 500 | jq ".rows[-1].curation_sum")
-EDITOR_REWARD_SUM=$(cleos get table eparticlectr eparticlectr periodreward -l 500 | jq ".rows[-1].editor_sum")
+CURATION_REWARD_SUM=$(cleos get table eparticlectr eparticlectr periodreward -r | jq ".rows[0].curation_sum")
+EDITOR_REWARD_SUM=$(cleos get table eparticlectr eparticlectr periodreward -r | jq ".rows[0].editor_sum")
 
 echo -e "   ${CYAN}CURATION REWARD SUM: ${CURATION_REWARD_SUM}${NC}"
 echo -e "   ${CYAN}EDITOR REWARD SUM: ${EDITOR_REWARD_SUM}${NC}"
 
-assert $(bc <<< "$CURATION_REWARD_SUM == 2370")
-assert $(bc <<< "$EDITOR_REWARD_SUM == 960")
+assert $(bc <<< "$CURATION_REWARD_SUM == 2420")
+assert $(bc <<< "$EDITOR_REWARD_SUM == 480")
 
 # Claim rewards
-OLD_BALANCE1=$(balance eptestusersa)
-OLD_BALANCE2=$(balance eptestusersb)
-OLD_BALANCE3=$(balance eptestusersc)
 OLD_BALANCE4=$(balance eptestusersd)
 OLD_BALANCE5=$(balance eptestuserse)
 OLD_BALANCE6=$(balance eptestusersf)
 OLD_BALANCE7=$(balance eptestusersg)
 
-REWARD_ID1=$(cleos get table eparticlectr eparticlectr rewardstbl -l 500 | jq ".rows[-1].id")
+REWARD_ID1=$(cleos get table eparticlectr eparticlectr rewardstbl -r | jq ".rows[0].id")
 REWARD_ID2=$(bc <<< "$REWARD_ID1 - 1")
 REWARD_ID3=$(bc <<< "$REWARD_ID1 - 2")
 REWARD_ID4=$(bc <<< "$REWARD_ID1 - 3")
+REWARD_ID5=$(bc <<< "$REWARD_ID1 - 7") # this one has edit points
 
 echo -e "${CYAN}-----------------------CLAIM REWARDS-----------------------${NC}"
 cleos push action eparticlectr rewardclmid "[\"$REWARD_ID1\"]" -p eptestuserse
@@ -569,78 +567,44 @@ cleos push action eparticlectr rewardclmid "[\"$REWARD_ID3\"]" -p eptestusersf
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr rewardclmid "[\"$REWARD_ID4\"]" -p eptestuserse
 assert $(bc <<< "$? == 0")
-
-MID_BALANCE1=$(balance eptestusersa)
-MID_BALANCE2=$(balance eptestusersb)
-MID_BALANCE3=$(balance eptestusersc)
-MID_BALANCE4=$(balance eptestusersd)
-MID_BALANCE5=$(balance eptestuserse)
-MID_BALANCE6=$(balance eptestusersf)
-MID_BALANCE7=$(balance eptestusersg)
-
-bc <<< "$MID_BALANCE5 - $OLD_BALANCE5"
-bc <<< "$MID_BALANCE6 - $OLD_BALANCE6"
-bc <<< "$MID_BALANCE7 - $OLD_BALANCE7"
-
-assert $(bc <<< "$MID_BALANCE5 - $OLD_BALANCE5 == 2.530")
-assert $(bc <<< "$MID_BALANCE6 - $OLD_BALANCE6 == 1.476")
-assert $(bc <<< "$MID_BALANCE7 - $OLD_BALANCE7 == 2.531")
-
-echo -e "${CYAN}-----------------------TESTING CLAIMALLS-----------------------${NC}"
-cleos push action eparticlectr rewardclmall '["eptestusersa"]' -p eptestusersa
-assert $(bc <<< "$? == 0")
-cleos push action eparticlectr rewardclmall '["eptestusersb"]' -p eptestusersb
-assert $(bc <<< "$? == 0")
-cleos push action eparticlectr rewardclmall '["eptestusersc"]' -p eptestusersc
-assert $(bc <<< "$? == 0")
-cleos push action eparticlectr rewardclmall '["eptestusersd"]' -p eptestusersd
-assert $(bc <<< "$? == 0")
-cleos push action eparticlectr rewardclmall '["eptestuserse"]' -p eptestuserse
-assert $(bc <<< "$? == 0")
-cleos push action eparticlectr rewardclmall '["eptestusersg"]' -p eptestusersg
+cleos push action eparticlectr rewardclmid "[\"$REWARD_ID5\"]" -p eptestusersd
 assert $(bc <<< "$? == 0")
 
-NEW_BALANCE1=$(balance eptestusersa)
-NEW_BALANCE2=$(balance eptestusersb)
-NEW_BALANCE3=$(balance eptestusersc)
 NEW_BALANCE4=$(balance eptestusersd)
 NEW_BALANCE5=$(balance eptestuserse)
 NEW_BALANCE6=$(balance eptestusersf)
 NEW_BALANCE7=$(balance eptestusersg)
 
-bc <<< "$NEW_BALANCE1 -$MID_BALANCE1"
-bc <<< "$NEW_BALANCE2 -$MID_BALANCE2"
-bc <<< "$NEW_BALANCE3 -$MID_BALANCE3"
-bc <<< "$NEW_BALANCE4 -$MID_BALANCE4"
-bc <<< "$NEW_BALANCE5 -$MID_BALANCE5"
-bc <<< "$NEW_BALANCE6 -$MID_BALANCE6"
-bc <<< "$NEW_BALANCE7 -$MID_BALANCE7"
+DIFF4=$(bc <<< "$NEW_BALANCE4 - $OLD_BALANCE4")
+DIFF5=$(bc <<< "$NEW_BALANCE5 - $OLD_BALANCE5")
+DIFF6=$(bc <<< "$NEW_BALANCE6 - $OLD_BALANCE6")
+DIFF7=$(bc <<< "$NEW_BALANCE7 - $OLD_BALANCE7")
 
-assert $(bc <<< "$NEW_BALANCE1 - $MID_BALANCE1 == 293.775")
-assert $(bc <<< "$NEW_BALANCE2 - $MID_BALANCE2 == 2.319")
-assert $(bc <<< "$NEW_BALANCE3 - $MID_BALANCE3 == 8.859")
-assert $(bc <<< "$NEW_BALANCE4 - $MID_BALANCE4 == 112.552")
-assert $(bc <<< "$NEW_BALANCE5 - $MID_BALANCE5 == 42.194")
-assert $(bc <<< "$NEW_BALANCE6 - $MID_BALANCE6 == 0.000")
-assert $(bc <<< "$NEW_BALANCE7 - $MID_BALANCE7 == 33.755")
+echo -e "${CYAN}REWARDS:${NC}"
+echo -e "${CYAN}    eptestusersd: $DIFF4${NC}"
+echo -e "${CYAN}    eptestuserse: $DIFF5${NC}"
+echo -e "${CYAN}    eptestusersf: $DIFF6${NC}"
+echo -e "${CYAN}    eptestusersg: $DIFF7${NC}"
 
-echo -e "${CYAN}-----------------------NEXT THREE CLAIMS SHOULD FAIL-----------------------${NC}"
-cleos push action eparticlectr rewardclmall '["eptestusersf"]' -p eptestusersf
-assert $(bc <<< "$? != 0")
+assert $(bc <<< "$DIFF4 == 218.732")
+assert $(bc <<< "$DIFF5 == 4.545")
+assert $(bc <<< "$DIFF6 == 1.446")
+assert $(bc <<< "$DIFF7 == 2.479")
+
+echo -e "${CYAN}-----------------------NEXT TWO CLAIMS SHOULD FAIL-----------------------${NC}"
 cleos push action --force-unique eparticlectr rewardclmid "[\"$REWARD_ID3\"]" -p eptestusersf
 assert $(bc <<< "$? != 0")
-cleos push action eparticlectr rewardclmid '[764333]' -p eptestusersf
+cleos push action --force-unique eparticlectr rewardclmid "[3249293423]" -p eptestusersf
 assert $(bc <<< "$? != 0")
 
 echo -e "${CYAN}-----------------------VOTE PURGES BELOW SHOULD PASS-----------------------${NC}"
-echo $IPFS1
-cleos push action eparticlectr oldvotepurge "[\"$IPFS1\", 100]" -p eptestusersa
+cleos push action eparticlectr oldvotepurge "[$PROPID1, 100]" -p eptestusersa
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr oldvotepurge "[\"$IPFS2\", 100]" -p eptestusersa
+cleos push action eparticlectr oldvotepurge "[$PROPID2, 100]" -p eptestusersa
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr oldvotepurge "[\"$IPFS3\", 2]" -p eptestusersa
+cleos push action eparticlectr oldvotepurge "[$PROPID3, 2]" -p eptestusersa
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr oldvotepurge "[\"$IPFS3\", 5]" -p eptestusersa
+cleos push action eparticlectr oldvotepurge "[$PROPID4, 5]" -p eptestusersa
 assert $(bc <<< "$? == 0")
 
 echo -e "${CYAN}-----------------------NEXT TWO VOTE PURGES SHOULD FAIL-----------------------${NC}"
@@ -650,30 +614,22 @@ cleos push action eparticlectr oldvotepurge '["gumdrop", 100]' -p eptestusersa
 assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}-----------------------BELOW CLAIMS SHOULD PASS-----------------------${NC}"
-STAKE1=$(cleos get table eparticlectr eparticlectr staketbl -l 500 | jq ".rows[-1]")
-STAKE_USER1=$(echo $STAKE1 | jq ".user" | tr -d '"')
-STAKE_ID1=$(echo $STAKE1 | jq ".id" | tr -d '"')
-STAKE2=$(cleos get table eparticlectr eparticlectr staketbl -l 500 | jq ".rows[-2]")
-STAKE_USER2=$(echo $STAKE2 | jq ".user" | tr -d '"')
-STAKE_ID2=$(echo $STAKE2 | jq ".id" | tr -d '"')
-STAKE3=$(cleos get table eparticlectr eparticlectr staketbl -l 500 | jq ".rows[-3]")
-STAKE_USER3=$(echo $STAKE3 | jq ".user" | tr -d '"')
-STAKE_ID3=$(echo $STAKE3 | jq ".id" | tr -d '"')
-STAKE4=$(cleos get table eparticlectr eparticlectr staketbl -l 500 | jq ".rows[-4]")
-STAKE_USER4=$(echo $STAKE4 | jq ".user" | tr -d '"')
-STAKE_ID4=$(echo $STAKE4 | jq ".id" | tr -d '"')
+STAKE_ID1=$(cleos get table eparticlectr eparticlectr staketbl -r | jq ".rows[0].id")
+STAKE_ID2=$(bc <<< "$STAKE_ID1 - 1")
+STAKE_ID3=$(bc <<< "$STAKE_ID1 - 2")
+STAKE_ID4=$(bc <<< "$STAKE_ID1 - 3")
 
-cleos push action eparticlectr brainclmid "[\"$STAKE_ID1\"]" -p $STAKE_USER1
+cleos push action eparticlectr brainclmid "[$STAKE_ID1]" -p eptestusersa
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr brainclmid "[\"$STAKE_ID2\"]" -p $STAKE_USER2
+cleos push action eparticlectr brainclmid "[$STAKE_ID2]" -p eptestusersg
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr brainclmid "[\"$STAKE_ID3\"]" -p $STAKE_USER3
+cleos push action eparticlectr brainclmid "[$STAKE_ID3]" -p eptestusersb
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr brainclmid "[\"$STAKE_ID4\"]" -p eptestuserse
+cleos push action eparticlectr brainclmid "[$STAKE_ID4]" -p eptestuserse
 assert $(bc <<< "$? == 0")
 
 echo -e "${CYAN}-----------------------THIS CLAIM SHOULD FAIL-----------------------${NC}"
-cleos push action eparticlectr brainclmid "[\"$STAKE_ID1\"]" -p eptestusersf
+cleos push action eparticlectr brainclmid "[$STAKE_ID1]" -p eptestusersf
 assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}-----------------------COMPLETE-----------------------${NC}"

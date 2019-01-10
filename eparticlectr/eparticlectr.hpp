@@ -121,7 +121,7 @@ private:
         uint64_t id;
         name user;
         uint64_t amount; // slash or reward amount
-        uint64_t approval_vote_sum; // sum of all "for" votes for this proposal
+        uint64_t edit_points; // sum of all "for" votes for this proposal
         uint64_t proposal_id; // id of the proposal that this person voted on
         uint32_t proposal_finalize_time; // when finalize() was called
         uint32_t proposal_finalize_period; // truncate to the nearest period

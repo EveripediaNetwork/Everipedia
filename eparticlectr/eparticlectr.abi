@@ -1,5 +1,5 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Tue Jan  8 16:46:05 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Wed Jan  9 18:23:04 2019",
     "version": "eosio::abi/1.1",
     "structs": [
         {
@@ -251,7 +251,7 @@
                     "type": "uint64"
                 },
                 {
-                    "name": "approval_vote_sum",
+                    "name": "edit_points",
                     "type": "uint64"
                 },
                 {

@@ -70,8 +70,6 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
     auto prop_it = proptable.find( proposal_id );
     eosio_assert( prop_it != proptable.end(), "Proposal not found" );
 
-    bool voterIsProposer = (voter == prop_it->proposer);
-
     // Verify voting is still in progress
     eosio_assert( now() < prop_it->endtime, "Voting period is over");
 
@@ -86,8 +84,11 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
         s.completion_time = now() + STAKING_DURATION;
     });
 
-    // Store vote in DB
+    // mark if this is the initial editor vote
     votestbl votetbl( _self, proposal_id );
+    bool voterIsProposer = (votetbl.begin() == votetbl.end()); 
+   
+    // Store vote in DB
     votetbl.emplace( _self, [&]( auto& a ) {
          a.id = votetbl.available_primary_key();
          a.proposal_id = proposal_id;
@@ -223,7 +224,10 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
                 a.id = rewardstable.available_primary_key();
                 a.user = vote_it->voter;
                 a.amount = vote_it->amount;
-                a.approval_vote_sum = yes_votes;
+                if (approved && vote_it->is_editor)
+                    a.edit_points = (yes_votes - no_votes);
+                else
+                    a.edit_points = 0;
                 a.proposal_id = proposal_id;
                 a.proposal_finalize_time = now();
                 a.proposal_finalize_period = uint32_t(now() / REWARD_INTERVAL);
@@ -310,7 +314,7 @@ void eparticlectr::procrewards(uint64_t reward_period) {
         curationRewardSum += rewards_it->amount;
 
         if (rewards_it->is_editor && rewards_it->proposalresult == 1){
-            editorRewardSum += rewards_it->approval_vote_sum;
+            editorRewardSum += rewards_it->edit_points;
         }
         rewards_it++;
     }
@@ -351,7 +355,7 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
 
     // Send editor reward
     if (reward_it->is_editor && reward_it->proposalresult) {
-        int64_t editor_reward = reward_it->approval_vote_sum * PERIOD_EDITOR_REWARD / period_it->editor_sum;
+        int64_t editor_reward = reward_it->edit_points * PERIOD_EDITOR_REWARD / period_it->editor_sum;
         if (editor_reward == 0) // Minimum reward of 0.001 IQ to prevent unclaimable rewards
             editor_reward = 1;
         eosio_assert(editor_reward <= PERIOD_EDITOR_REWARD, "System logic error. Too much IQ calculated for editor reward.");

@@ -14,9 +14,7 @@ void safetransfer (const transfer_args& transfer) {
     if (transfer.to != name("iqsafesendiq"))
         eosio_exit(0);
 
-    print("forward to:", transfer.memo, ":");
     name to = name(transfer.memo);
-    print("forward to:", to);
     action(
         permission_level{ name("iqsafesendiq"), name("active") },
         name("everipediaiq"), name("transfer"),
