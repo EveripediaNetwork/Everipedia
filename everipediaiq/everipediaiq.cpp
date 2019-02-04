@@ -111,7 +111,6 @@ void everipediaiq::burn( name from, asset quantity, string memo )
      sub_balance( from, quantity );
 }
 
-[[eosio::action]]
 void everipediaiq::sub_balance( name owner, asset value ) {
    accounts from_acnts( _self, owner.value );
 
@@ -128,7 +127,6 @@ void everipediaiq::sub_balance( name owner, asset value ) {
    }
 }
 
-[[eosio::action]]
 void everipediaiq::add_balance( name owner, asset value, name ram_payer )
 {
    accounts to_acnts( _self, owner.value );
