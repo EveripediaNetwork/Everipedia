@@ -1,17 +1,7 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Mon Feb  4 15:58:52 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Mon Feb  4 20:21:30 2019",
     "version": "eosio::abi/1.1",
     "structs": [
-        {
-            "name": "account",
-            "base": "",
-            "fields": [
-                {
-                    "name": "balance",
-                    "type": "asset"
-                }
-            ]
-        },
         {
             "name": "burn",
             "base": "",
@@ -41,24 +31,6 @@
                 {
                     "name": "maximum_supply",
                     "type": "asset"
-                }
-            ]
-        },
-        {
-            "name": "currency_stats",
-            "base": "",
-            "fields": [
-                {
-                    "name": "supply",
-                    "type": "asset"
-                },
-                {
-                    "name": "max_supply",
-                    "type": "asset"
-                },
-                {
-                    "name": "issuer",
-                    "type": "name"
                 }
             ]
         },
@@ -209,22 +181,7 @@
             "ricardian_contract": "Transfer the IQ token."
         }
     ],
-    "tables": [
-        {
-            "name": "accounts",
-            "type": "account",
-            "index_type": "i64",
-            "key_names": [],
-            "key_types": []
-        },
-        {
-            "name": "stat",
-            "type": "currency_stats",
-            "index_type": "i64",
-            "key_names": [],
-            "key_types": []
-        }
-    ],
+    "tables": [],
     "ricardian_clauses": [],
     "variants": [],
     "abi_extensions": []

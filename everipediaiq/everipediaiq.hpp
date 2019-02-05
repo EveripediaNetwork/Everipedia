@@ -14,7 +14,7 @@ using std::string;
 
 const uint64_t EDIT_PROPOSE_IQ = 50; // 50 IQ
 
-class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
+class everipediaiq : public contract {
   using contract::contract;
 
   private:
@@ -63,7 +63,7 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
      inline asset get_balance( name owner, symbol_code sym )const;
 
   private:
-     const name ARTICLE_CONTRACT = name("eparticlectr");
+     const name ARTICLE_CONTRACT = name("eparticlenew");
      const eosio::symbol IQSYMBOL = symbol(symbol_code("IQ"), 3);
      const int64_t IQ_PRECISION_MULTIPLIER = 1000;
 

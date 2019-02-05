@@ -1,5 +1,5 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Mon Feb  4 15:58:49 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Mon Feb  4 20:21:27 2019",
     "version": "eosio::abi/1.1",
     "structs": [
         {
@@ -9,52 +9,6 @@
                 {
                     "name": "stakeid",
                     "type": "uint64"
-                }
-            ]
-        },
-        {
-            "name": "editproposal",
-            "base": "",
-            "fields": [
-                {
-                    "name": "id",
-                    "type": "uint64"
-                },
-                {
-                    "name": "wiki_id",
-                    "type": "int64"
-                },
-                {
-                    "name": "proposer",
-                    "type": "name"
-                },
-                {
-                    "name": "title",
-                    "type": "string"
-                },
-                {
-                    "name": "ipfs_hash",
-                    "type": "ipfshash_t"
-                },
-                {
-                    "name": "group_id",
-                    "type": "int64"
-                },
-                {
-                    "name": "lang_code",
-                    "type": "string"
-                },
-                {
-                    "name": "starttime",
-                    "type": "uint32"
-                },
-                {
-                    "name": "endtime",
-                    "type": "uint32"
-                },
-                {
-                    "name": "memo",
-                    "type": "string"
                 }
             ]
         },
@@ -159,24 +113,6 @@
             ]
         },
         {
-            "name": "periodreward",
-            "base": "",
-            "fields": [
-                {
-                    "name": "period",
-                    "type": "uint64"
-                },
-                {
-                    "name": "curation_sum",
-                    "type": "uint64"
-                },
-                {
-                    "name": "editor_sum",
-                    "type": "uint64"
-                }
-            ]
-        },
-        {
             "name": "procrewards",
             "base": "",
             "fields": [
@@ -235,56 +171,6 @@
             ]
         },
         {
-            "name": "rewardhistory",
-            "base": "",
-            "fields": [
-                {
-                    "name": "id",
-                    "type": "uint64"
-                },
-                {
-                    "name": "user",
-                    "type": "name"
-                },
-                {
-                    "name": "amount",
-                    "type": "uint64"
-                },
-                {
-                    "name": "edit_points",
-                    "type": "uint64"
-                },
-                {
-                    "name": "proposal_id",
-                    "type": "uint64"
-                },
-                {
-                    "name": "proposal_finalize_time",
-                    "type": "uint32"
-                },
-                {
-                    "name": "proposal_finalize_period",
-                    "type": "uint32"
-                },
-                {
-                    "name": "proposalresult",
-                    "type": "bool"
-                },
-                {
-                    "name": "is_editor",
-                    "type": "bool"
-                },
-                {
-                    "name": "is_tie",
-                    "type": "bool"
-                },
-                {
-                    "name": "memo",
-                    "type": "string"
-                }
-            ]
-        },
-        {
             "name": "slashnotify",
             "base": "",
             "fields": [
@@ -303,32 +189,6 @@
                 {
                     "name": "memo",
                     "type": "string"
-                }
-            ]
-        },
-        {
-            "name": "stake",
-            "base": "",
-            "fields": [
-                {
-                    "name": "id",
-                    "type": "uint64"
-                },
-                {
-                    "name": "user",
-                    "type": "name"
-                },
-                {
-                    "name": "amount",
-                    "type": "uint64"
-                },
-                {
-                    "name": "timestamp",
-                    "type": "uint32"
-                },
-                {
-                    "name": "completion_time",
-                    "type": "uint32"
                 }
             ]
         },
@@ -359,78 +219,6 @@
                 {
                     "name": "memo",
                     "type": "string"
-                }
-            ]
-        },
-        {
-            "name": "vote_t",
-            "base": "",
-            "fields": [
-                {
-                    "name": "id",
-                    "type": "uint64"
-                },
-                {
-                    "name": "proposal_id",
-                    "type": "uint64"
-                },
-                {
-                    "name": "ipfs_hash",
-                    "type": "ipfshash_t"
-                },
-                {
-                    "name": "approve",
-                    "type": "bool"
-                },
-                {
-                    "name": "is_editor",
-                    "type": "bool"
-                },
-                {
-                    "name": "amount",
-                    "type": "uint64"
-                },
-                {
-                    "name": "voter",
-                    "type": "name"
-                },
-                {
-                    "name": "timestamp",
-                    "type": "uint32"
-                },
-                {
-                    "name": "stake_id",
-                    "type": "uint64"
-                },
-                {
-                    "name": "memo",
-                    "type": "string"
-                }
-            ]
-        },
-        {
-            "name": "wiki",
-            "base": "",
-            "fields": [
-                {
-                    "name": "id",
-                    "type": "uint64"
-                },
-                {
-                    "name": "title",
-                    "type": "string"
-                },
-                {
-                    "name": "group_id",
-                    "type": "uint64"
-                },
-                {
-                    "name": "lang_code",
-                    "type": "string"
-                },
-                {
-                    "name": "ipfs_hash",
-                    "type": "ipfshash_t"
                 }
             ]
         }
@@ -493,50 +281,7 @@
             "ricardian_contract": "Vote on a proposal (identified by an IPFS hash) using Brainpower."
         }
     ],
-    "tables": [
-        {
-            "name": "perrwdstbl2",
-            "type": "periodreward",
-            "index_type": "i64",
-            "key_names": [],
-            "key_types": []
-        },
-        {
-            "name": "propstbl2",
-            "type": "editproposal",
-            "index_type": "i64",
-            "key_names": [],
-            "key_types": []
-        },
-        {
-            "name": "rewardstbl2",
-            "type": "rewardhistory",
-            "index_type": "i64",
-            "key_names": [],
-            "key_types": []
-        },
-        {
-            "name": "staketbl2",
-            "type": "stake",
-            "index_type": "i64",
-            "key_names": [],
-            "key_types": []
-        },
-        {
-            "name": "votestbl2",
-            "type": "vote_t",
-            "index_type": "i64",
-            "key_names": [],
-            "key_types": []
-        },
-        {
-            "name": "wikistbl2",
-            "type": "wiki",
-            "index_type": "i64",
-            "key_names": [],
-            "key_types": []
-        }
-    ],
+    "tables": [],
     "ricardian_clauses": [],
     "variants": [],
     "abi_extensions": []

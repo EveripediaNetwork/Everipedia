@@ -31,7 +31,7 @@
 
 using namespace eosio;
 
-const name TOKEN_CONTRACT = name("everipediaiq");
+const name TOKEN_CONTRACT = name("everipediatk");
 const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
 const uint64_t EDIT_PROPOSE_IQ = 50; // 50 IQ
 const uint32_t REWARD_INTERVAL = 1800; // 30 min
@@ -41,7 +41,7 @@ const float TIER_ONE_THRESHOLD = 0.5f;
 uint64_t PERIOD_CURATION_REWARD = 100000; // 100 IQ per period
 uint64_t PERIOD_EDITOR_REWARD = 400000; // 400 IQ per period
 
-class [[eosio::contract("eparticlectr")]] eparticlectr : public contract {
+class eparticlectr : public contract {
     using contract::contract;
 
 private:
