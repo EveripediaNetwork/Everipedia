@@ -63,11 +63,7 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
      inline asset get_balance( name owner, symbol_code sym )const;
 
   private:
-     const name TOKEN_CONTRACT_ACCTNAME = name("everipediaiq");
-     const name ARTICLE_CONTRACT_ACCTNAME = name("eparticlectr");
-     const name FEE_CONTRACT_ACCTNAME = name("epiqtokenfee");
-     const name GOVERNANCE_CONTRACT_ACCTNAME = name("epgovernance");
-     const name SAFESEND_CONTRACT_ACCTNAME = name("iqsafesendiq");
+     const name ARTICLE_CONTRACT = name("eparticlectr");
      const eosio::symbol IQSYMBOL = symbol(symbol_code("IQ"), 3);
      const int64_t IQ_PRECISION_MULTIPLIER = 1000;
 

@@ -49,7 +49,7 @@ void eparticlectr::brainclmid( uint64_t stakeid ) {
     asset iqAssetPack = asset(int64_t(stake_it->amount * IQ_PRECISION_MULTIPLIER), IQSYMBOL);
     action(
         permission_level{ _self, name("active") },
-        name("everipediaiq"), name("transfer"),
+        TOKEN_CONTRACT, name("transfer"),
         std::make_tuple(_self, name("iqsafesendiq"), iqAssetPack, tempmemo)
     ).send();
 
@@ -355,8 +355,8 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
     asset curation_quantity = asset(curation_reward, IQSYMBOL);
     std::string memo = std::string("Curation IQ reward:" + reward_it->memo);
     action(
-        permission_level { name("everipediaiq"), name("active") },
-        name("everipediaiq"), name("issue"),
+        permission_level { TOKEN_CONTRACT, name("active") },
+        TOKEN_CONTRACT, name("issue"),
         std::make_tuple( reward_it->user, curation_quantity, memo )
     ).send();
 
@@ -369,8 +369,8 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
         asset editor_quantity = asset(editor_reward, IQSYMBOL);
         std::string memo = std::string("Editor IQ reward:" + reward_it->memo);
         action(
-            permission_level { name("everipediaiq"), name("active") },
-            name("everipediaiq"), name("issue"),
+            permission_level { TOKEN_CONTRACT, name("active") },
+            TOKEN_CONTRACT, name("issue"),
             std::make_tuple( reward_it->user, editor_quantity, memo )
         ).send();
     }

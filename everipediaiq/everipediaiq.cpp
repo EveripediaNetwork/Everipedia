@@ -150,14 +150,14 @@ void everipediaiq::epartpropose( name proposer, int64_t wiki_id, std::string tit
     asset iqAssetPack = asset(EDIT_PROPOSE_IQ * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
     action(
         permission_level{ proposer , name("active") }, 
-        name("everipediaiq"), name("transfer"),
-        std::make_tuple( proposer, name("eparticlectr"), iqAssetPack, std::string("stake for vote"))
+        _self , name("transfer"),
+        std::make_tuple( proposer, ARTICLE_CONTRACT, iqAssetPack, std::string("stake for vote"))
     ).send();
 
     // Make the proposal to the article contract
     action(
-        permission_level{ name("eparticlectr"), name("active") }, 
-        name("eparticlectr"), name("propose"),
+        permission_level{ ARTICLE_CONTRACT, name("active") }, 
+        ARTICLE_CONTRACT, name("propose"),
         std::make_tuple( proposer, wiki_id, title, ipfs_hash, lang_code, group_id, comment, memo )
     ).send();
 }
@@ -172,14 +172,14 @@ void everipediaiq::epartvote( name voter, uint64_t proposal_id, bool approve, ui
     asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
     action(
         permission_level{ voter , name("active") }, 
-        name("everipediaiq"), name("transfer"),
-        std::make_tuple( voter, name("eparticlectr"), iqAssetPack, std::string("stake for vote"))
+        _self , name("transfer"),
+        std::make_tuple( voter, ARTICLE_CONTRACT, iqAssetPack, std::string("stake for vote"))
     ).send();
 
     // Create the vote in the eparticlectr contract
     action(
-        permission_level{ name("eparticlectr"), name("active") }, 
-        name("eparticlectr"), name("vote"),
+        permission_level{ ARTICLE_CONTRACT, name("active") }, 
+        ARTICLE_CONTRACT, name("vote"),
         std::make_tuple( voter, proposal_id, approve, amount, comment, memo )
     ).send();
 }

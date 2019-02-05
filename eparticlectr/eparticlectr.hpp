@@ -31,8 +31,7 @@
 
 using namespace eosio;
 
-const name ARTICLE_CONTRACT_ACCTNAME = name("eparticlectr");
-const name TOKEN_CONTRACT_ACCTNAME = name("everipediaiq");
+const name TOKEN_CONTRACT = name("everipediaiq");
 const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
 const uint64_t EDIT_PROPOSE_IQ = 50; // 50 IQ
 const uint32_t REWARD_INTERVAL = 1800; // 30 min
