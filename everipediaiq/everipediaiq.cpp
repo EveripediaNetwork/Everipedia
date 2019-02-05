@@ -163,7 +163,7 @@ void everipediaiq::epartpropose( name proposer, int64_t wiki_id, std::string tit
 }
 
 [[eosio::action]]
-void everipediaiq::epartvote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string memo ) {
+void everipediaiq::epartvote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string comment, std::string memo ) {
     require_auth(voter);
 
     eosio_assert(amount > 0, "must transfer a positive amount");
@@ -180,7 +180,7 @@ void everipediaiq::epartvote( name voter, uint64_t proposal_id, bool approve, ui
     action(
         permission_level{ name("eparticlectr"), name("active") }, 
         name("eparticlectr"), name("vote"),
-        std::make_tuple( voter, proposal_id, approve, amount, memo )
+        std::make_tuple( voter, proposal_id, approve, amount, comment, memo )
     ).send();
 }
 

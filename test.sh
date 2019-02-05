@@ -399,7 +399,7 @@ echo -e "${CYAN}Wait for proposals to be mined...${NC}"
 sleep 1
 
 # Votes
-PROPS=$(cleos get table eparticlectr eparticlectr propstbl -r | jq ".rows")
+PROPS=$(cleos get table eparticlectr eparticlectr propstbl2 -r | jq ".rows")
 PROPID6=$(echo $PROPS | jq ".[0].id")
 PROPID5=$(echo $PROPS | jq ".[1].id")
 PROPID4=$(echo $PROPS | jq ".[2].id")
@@ -409,74 +409,74 @@ PROPID1=$(echo $PROPS | jq ".[5].id")
 
 # Win
 echo -e "${CYAN}-----------------------SETTING WINNING VOTES-----------------------${NC}"
-cleos push action everipediaiq epartvote "[ \"eptestusersb\", $PROPID1, 1, 50, \"votememo\"]" -p eptestusersb
+cleos push action everipediaiq epartvote "[ \"eptestusersb\", $PROPID1, 1, 50, \"vote comment\", \"votememo\"]" -p eptestusersb
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID1, 1, 100, \"votememo\"]" -p eptestusersc
+cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID1, 1, 100,\"vote comment\",  \"votememo\"]" -p eptestusersc
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartvote "[ \"eptestusersd\", $PROPID1, 0, 50, \"votememo\"]" -p eptestusersd
+cleos push action everipediaiq epartvote "[ \"eptestusersd\", $PROPID1, 0, 50, \"vote comment\", \"votememo\"]" -p eptestusersd
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartvote "[ \"eptestuserse\", $PROPID1, 1, 500, \"votememo\"]" -p eptestuserse
+cleos push action everipediaiq epartvote "[ \"eptestuserse\", $PROPID1, 1, 500,\"vote comment\",  \"votememo\"]" -p eptestuserse
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartvote "[ \"eptestusersf\", $PROPID1, 0, 350, \"votememo\"]" -p eptestusersf
+cleos push action everipediaiq epartvote "[ \"eptestusersf\", $PROPID1, 0, 350,\"vote comment\",  \"votememo\"]" -p eptestusersf
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartvote "[ \"eptestusersg\", $PROPID1, 0, 80, \"votememo\"]" -p eptestusersg
+cleos push action everipediaiq epartvote "[ \"eptestusersg\", $PROPID1, 0, 80, \"vote comment\", \"votememo\"]" -p eptestusersg
 assert $(bc <<< "$? == 0")
 
 # Lose
 echo -e "${CYAN}-----------------------SETTING LOSING VOTES-----------------------${NC}"
-cleos push action everipediaiq epartvote "[ \"eptestusersb\", $PROPID2, 1, 5, \"votememo\"]" -p eptestusersb
+cleos push action everipediaiq epartvote "[ \"eptestusersb\", $PROPID2, 1, 5, \"vote comment\", \"votememo\"]" -p eptestusersb
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID2, 0, 100, \"votememo\"]" -p eptestusersc
+cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID2, 0, 100, \"vote comment\", \"votememo\"]" -p eptestusersc
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartvote "[ \"eptestusersd\", $PROPID2, 1, 500, \"votememo\"]" -p eptestusersd
+cleos push action everipediaiq epartvote "[ \"eptestusersd\", $PROPID2, 1, 500, \"vote comment\", \"votememo\"]" -p eptestusersd
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartvote "[ \"eptestuserse\", $PROPID2, 0, 500, \"votememo\"]" -p eptestuserse
+cleos push action everipediaiq epartvote "[ \"eptestuserse\", $PROPID2, 0, 500, \"vote comment\", \"votememo\"]" -p eptestuserse
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartvote "[ \"eptestusersf\", $PROPID2, 1, 35, \"votememo\"]" -p eptestusersf
+cleos push action everipediaiq epartvote "[ \"eptestusersf\", $PROPID2, 1, 35, \"vote comment\", \"votememo\"]" -p eptestusersf
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartvote "[ \"eptestusersg\", $PROPID2, 0, 800, \"votememo\"]" -p eptestusersg
+cleos push action everipediaiq epartvote "[ \"eptestusersg\", $PROPID2, 0, 800, \"vote comment\", \"votememo\"]" -p eptestusersg
 assert $(bc <<< "$? == 0")
 
 # Tie (net votes dont't sum to 0 because proposer auto-votes 50 in favor)
 echo -e "${CYAN}-----------------------SETTING TIE VOTES-----------------------${NC}"
-cleos push action everipediaiq epartvote "[ \"eptestusersb\", $PROPID3, 1, 15, \"votememo\"]" -p eptestusersb
+cleos push action everipediaiq epartvote "[ \"eptestusersb\", $PROPID3, 1, 15, \"vote comment\", \"votememo\"]" -p eptestusersb
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID3, 0, 150, \"votememo\"]" -p eptestusersc
+cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID3, 0, 150,\"vote comment\", \"votememo\"]" -p eptestusersc
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartvote "[ \"eptestusersd\", $PROPID3, 1, 490, \"votememo\"]" -p eptestusersd
+cleos push action everipediaiq epartvote "[ \"eptestusersd\", $PROPID3, 1, 490,\"vote comment\", \"votememo\"]" -p eptestusersd
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartvote "[ \"eptestuserse\", $PROPID3, 0, 500, \"votememo\"]" -p eptestuserse
+cleos push action everipediaiq epartvote "[ \"eptestuserse\", $PROPID3, 0, 500,\"vote comment\", \"votememo\"]" -p eptestuserse
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartvote "[ \"eptestusersf\", $PROPID3, 1, 35, \"votememo\"]" -p eptestusersf
+cleos push action everipediaiq epartvote "[ \"eptestusersf\", $PROPID3, 1, 35, \"vote comment\", \"votememo\"]" -p eptestusersf
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartvote "[ \"eptestusersg\", $PROPID3, 1, 60, \"votememo\"]" -p eptestusersg
+cleos push action everipediaiq epartvote "[ \"eptestusersg\", $PROPID3, 1, 60, \"vote comment\", \"votememo\"]" -p eptestusersg
 assert $(bc <<< "$? == 0")
 
 # Unanimous win
 echo -e "${CYAN}-----------------------UNANIMOUS VOTES-----------------------${NC}"
-cleos push action everipediaiq epartvote "[ \"eptestusersb\", $PROPID4, 1, 5, \"votememo\"]" -p eptestusersb
+cleos push action everipediaiq epartvote "[ \"eptestusersb\", $PROPID4, 1, 5, \"vote comment\", \"votememo\"]" -p eptestusersb
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID4, 1, 10, \"votememo\"]" -p eptestusersc
+cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID4, 1, 10,\"vote comment\", \"votememo\"]" -p eptestusersc
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartvote "[ \"eptestusersd\", $PROPID4, 1, 50, \"votememo\"]" -p eptestusersd
+cleos push action everipediaiq epartvote "[ \"eptestusersd\", $PROPID4, 1, 50,\"vote comment\", \"votememo\"]" -p eptestusersd
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartvote "[ \"eptestuserse\", $PROPID4, 1, 50, \"votememo\"]" -p eptestuserse
+cleos push action everipediaiq epartvote "[ \"eptestuserse\", $PROPID4, 1, 50,\"vote comment\", \"votememo\"]" -p eptestuserse
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartvote "[ \"eptestusersf\", $PROPID4, 1, 35, \"votememo\"]" -p eptestusersf
+cleos push action everipediaiq epartvote "[ \"eptestusersf\", $PROPID4, 1, 35,\"vote comment\", \"votememo\"]" -p eptestusersf
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartvote "[ \"eptestusersg\", $PROPID4, 1, 60, \"votememo\"]" -p eptestusersg
+cleos push action everipediaiq epartvote "[ \"eptestusersg\", $PROPID4, 1, 60,\"vote comment\", \"votememo\"]" -p eptestusersg
 assert $(bc <<< "$? == 0")
 
 # User votes against himself
 echo -e "${CYAN}-----------------------USER VOTES AGAINST HIMSELF-----------------------${NC}"
-cleos push action everipediaiq epartvote "[ \"eptestuserse\", $PROPID5, 0, 60, \"votememo\"]" -p eptestuserse
+cleos push action everipediaiq epartvote "[ \"eptestuserse\", $PROPID5, 0, 60, \"vote comment\", \"votememo\"]" -p eptestuserse
 assert $(bc <<< "$? == 0")
 
 # Bad votes
 echo -e "${CYAN}-----------------------NEXT TWO VOTE ATTEMPTS SHOULD FAIL-----------------------${NC}"
-cleos push action everipediaiq epartvote "[ \"eptestusersg\", $PROPID4, 1, 500000000, \"votememo\"]" -p eptestusersg
+cleos push action everipediaiq epartvote "[ \"eptestusersg\", $PROPID4, 1, 500000000, \"vote comment\", \"votememo\"]" -p eptestusersg
 assert $(bc <<< "$? == 1")
-cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID4, 1, 500, \"votememo\"]" -p eptestusersg
+cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID4, 1, 500, \"vote comment\", \"votememo\"]" -p eptestusersg
 assert $(bc <<< "$? == 1")
 
 
@@ -518,7 +518,7 @@ assert $(bc <<< "$? == 1")
 # Procrewards
 echo -e "${CYAN}-----------------------EARLY PROCREWARDS SHOULD FAIL-----------------------${NC}"
 
-FINALIZE_PERIOD=$(cleos get table eparticlectr eparticlectr rewardstbl -r | jq ".rows[0].proposal_finalize_period")
+FINALIZE_PERIOD=$(cleos get table eparticlectr eparticlectr rewardstbl2 -r | jq ".rows[0].proposal_finalize_period")
 ONE_BACK_PERIOD=$(bc <<< "$FINALIZE_PERIOD - 1")
 ONE_FORWARD_PERIOD=$(bc <<< "$FINALIZE_PERIOD + 1")
 
@@ -537,8 +537,8 @@ cleos push action eparticlectr procrewards "[$FINALIZE_PERIOD]" -p eptestusersa
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr procrewards "[$ONE_BACK_PERIOD]" -p eptestusersa
 
-CURATION_REWARD_SUM=$(cleos get table eparticlectr eparticlectr periodreward -r | jq ".rows[0].curation_sum")
-EDITOR_REWARD_SUM=$(cleos get table eparticlectr eparticlectr periodreward -r | jq ".rows[0].editor_sum")
+CURATION_REWARD_SUM=$(cleos get table eparticlectr eparticlectr perrwdstbl2 -r | jq ".rows[0].curation_sum")
+EDITOR_REWARD_SUM=$(cleos get table eparticlectr eparticlectr perrwdstbl2 -r | jq ".rows[0].editor_sum")
 
 echo -e "   ${CYAN}CURATION REWARD SUM: ${CURATION_REWARD_SUM}${NC}"
 echo -e "   ${CYAN}EDITOR REWARD SUM: ${EDITOR_REWARD_SUM}${NC}"
@@ -552,7 +552,7 @@ OLD_BALANCE5=$(balance eptestuserse)
 OLD_BALANCE6=$(balance eptestusersf)
 OLD_BALANCE7=$(balance eptestusersg)
 
-REWARD_ID1=$(cleos get table eparticlectr eparticlectr rewardstbl -r | jq ".rows[0].id")
+REWARD_ID1=$(cleos get table eparticlectr eparticlectr rewardstbl2 -r | jq ".rows[0].id")
 REWARD_ID2=$(bc <<< "$REWARD_ID1 - 1")
 REWARD_ID3=$(bc <<< "$REWARD_ID1 - 2")
 REWARD_ID4=$(bc <<< "$REWARD_ID1 - 3")
@@ -614,7 +614,7 @@ cleos push action eparticlectr oldvotepurge '["gumdrop", 100]' -p eptestusersa
 assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}-----------------------BELOW CLAIMS SHOULD PASS-----------------------${NC}"
-STAKE_ID1=$(cleos get table eparticlectr eparticlectr staketbl -r | jq ".rows[0].id")
+STAKE_ID1=$(cleos get table eparticlectr eparticlectr staketbl2 -r | jq ".rows[0].id")
 STAKE_ID2=$(bc <<< "$STAKE_ID1 - 1")
 STAKE_ID3=$(bc <<< "$STAKE_ID1 - 2")
 STAKE_ID4=$(bc <<< "$STAKE_ID1 - 3")

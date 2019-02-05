@@ -1,5 +1,5 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Wed Jan  9 18:23:04 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Mon Feb  4 15:58:49 2019",
     "version": "eosio::abi/1.1",
     "structs": [
         {
@@ -277,6 +277,10 @@
                 {
                     "name": "is_tie",
                     "type": "bool"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
                 }
             ]
         },
@@ -295,6 +299,10 @@
                 {
                     "name": "seconds",
                     "type": "uint32"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
                 }
             ]
         },
@@ -345,6 +353,10 @@
                     "type": "uint64"
                 },
                 {
+                    "name": "comment",
+                    "type": "string"
+                },
+                {
                     "name": "memo",
                     "type": "string"
                 }
@@ -389,6 +401,10 @@
                 {
                     "name": "stake_id",
                     "type": "uint64"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
                 }
             ]
         },
@@ -479,42 +495,42 @@
     ],
     "tables": [
         {
-            "name": "periodreward",
+            "name": "perrwdstbl2",
             "type": "periodreward",
             "index_type": "i64",
             "key_names": [],
             "key_types": []
         },
         {
-            "name": "propstbl",
+            "name": "propstbl2",
             "type": "editproposal",
             "index_type": "i64",
             "key_names": [],
             "key_types": []
         },
         {
-            "name": "rewardstbl",
+            "name": "rewardstbl2",
             "type": "rewardhistory",
             "index_type": "i64",
             "key_names": [],
             "key_types": []
         },
         {
-            "name": "staketbl",
+            "name": "staketbl2",
             "type": "stake",
             "index_type": "i64",
             "key_names": [],
             "key_types": []
         },
         {
-            "name": "votestbl",
+            "name": "votestbl2",
             "type": "vote_t",
             "index_type": "i64",
             "key_names": [],
             "key_types": []
         },
         {
-            "name": "wikistbl",
+            "name": "wikistbl2",
             "type": "wiki",
             "index_type": "i64",
             "key_names": [],

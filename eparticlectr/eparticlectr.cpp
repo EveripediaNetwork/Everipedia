@@ -62,8 +62,12 @@ void eparticlectr::brainclmid( uint64_t stakeid ) {
 // Place a vote using the IPFS hash
 // Users have to trigger this action through the everipediaiq::epartvote action
 [[eosio::action]]
-void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string memo ) {
+void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string comment, std::string memo ) {
     require_auth( _self );
+
+    // validate inputs
+    eosio_assert(comment.size() < 256, "Comment must be less than 256 bytes");
+    eosio_assert(memo.size() < 32, "Memo must be less than 32 bytes");
 
     // Check if proposal exists
     propstbl proptable( _self, _self.value );
@@ -98,6 +102,7 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
          a.voter = voter;
          a.timestamp = now();
          a.stake_id = stake_id;
+         a.memo = memo;
     });
 }
 
@@ -114,8 +119,8 @@ void eparticlectr::propose( name proposer, int64_t wiki_id, std::string title, i
     eosio_assert( lang_code.size() >= 2, "lang_code must be atleast 2 characters");
     eosio_assert( comment.size() < 256, "comment must be less than 256 bytes");
     eosio_assert( memo.size() < 32, "memo must be less than 32 bytes");
-    eosio_assert(wiki_id < 1e9, "Max manual id permitted is 1e9. Specify -1 for auto-generated ID");
-    eosio_assert(wiki_id > -2, "ID must be greater than -2. Specify -1 for auto-generated ID");
+    eosio_assert( wiki_id < 1e9, "Max manual id permitted is 1e9. Specify -1 for auto-generated ID");
+    eosio_assert( wiki_id > -2, "ID must be greater than -2. Specify -1 for auto-generated ID");
 
     // Store the proposal
     propstbl proptable( _self, _self.value );
@@ -146,7 +151,7 @@ void eparticlectr::propose( name proposer, int64_t wiki_id, std::string title, i
     action(
         permission_level { _self , name("active") },
         _self, name("vote"),
-        std::make_tuple( proposer, proposal_id, true, EDIT_PROPOSE_IQ, std::string("editor initial vote") )
+        std::make_tuple( proposer, proposal_id, true, EDIT_PROPOSE_IQ, std::string("editor initial vote"), memo )
     ).send();
 }
 
@@ -215,7 +220,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
             action( 
                 permission_level { _self, name("active") },
                 _self, name("slashnotify"),
-                std::make_tuple( vote_it->voter, vote_it->amount, extraSecsSlash )
+                std::make_tuple( vote_it->voter, vote_it->amount, extraSecsSlash, vote_it->memo )
             ).send();
         }
         // Reward the winners
@@ -234,6 +239,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
                 a.proposalresult = approved;
                 a.is_editor = vote_it->is_editor;
                 a.is_tie = istie;
+                a.memo = vote_it->memo;
             });
         }
         vote_it++;
@@ -347,10 +353,11 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
     if (curation_reward == 0) // Minimum reward of 0.001 IQ to prevent unclaimable rewards
         curation_reward = 1;
     asset curation_quantity = asset(curation_reward, IQSYMBOL);
+    std::string memo = std::string("Curation IQ reward:" + reward_it->memo);
     action(
         permission_level { name("everipediaiq"), name("active") },
         name("everipediaiq"), name("issue"),
-        std::make_tuple( reward_it->user, curation_quantity, std::string("Curation IQ reward") )
+        std::make_tuple( reward_it->user, curation_quantity, memo )
     ).send();
 
     // Send editor reward
@@ -360,10 +367,11 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
             editor_reward = 1;
         eosio_assert(editor_reward <= PERIOD_EDITOR_REWARD, "System logic error. Too much IQ calculated for editor reward.");
         asset editor_quantity = asset(editor_reward, IQSYMBOL);
+        std::string memo = std::string("Editor IQ reward:" + reward_it->memo);
         action(
             permission_level { name("everipediaiq"), name("active") },
             name("everipediaiq"), name("issue"),
-            std::make_tuple( reward_it->user, editor_quantity, std::string("Editor IQ reward") )
+            std::make_tuple( reward_it->user, editor_quantity, memo )
         ).send();
     }
 
@@ -392,7 +400,7 @@ void eparticlectr::oldvotepurge( uint64_t proposal_id, uint32_t loop_limit ) {
 }
 
 [[eosio::action]]
-void eparticlectr::slashnotify( name slashee, uint64_t amount, uint32_t seconds ){
+void eparticlectr::slashnotify( name slashee, uint64_t amount, uint32_t seconds, std::string memo ){
     require_auth( _self );
 }
 

@@ -45,6 +45,7 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
                      uint64_t proposal_id,
                      bool approve,
                      uint64_t amount,
+                     std::string comment, 
                      std::string memo );
 
      [[eosio::action]]
