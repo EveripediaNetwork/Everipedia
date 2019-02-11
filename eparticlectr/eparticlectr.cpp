@@ -228,7 +228,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
             rewardstable.emplace( _self,  [&]( auto& a ) {
                 a.id = rewardstable.available_primary_key();
                 a.user = vote_it->voter;
-                a.amount = vote_it->amount;
+                a.vote_points = vote_it->amount;
                 if (approved && vote_it->is_editor)
                     a.edit_points = (yes_votes - no_votes);
                 else
@@ -305,8 +305,8 @@ void eparticlectr::procrewards(uint64_t reward_period) {
     // get all the rewards in that period
     rewardstbl rewardstable( _self, _self.value );
     auto rewardsidx = rewardstable.get_index<name("byfinalper")>();
-    auto rewards_it = rewardsidx.find(reward_period);
-    eosio_assert( rewards_it != rewardsidx.end(), "No rewards found in this period!");
+    auto reward_it = rewardsidx.find(reward_period);
+    eosio_assert( reward_it != rewardsidx.end(), "No rewards found in this period!");
 
     // no duplicate calculations
     perrwdstbl perrewards( _self, _self.value );
@@ -316,13 +316,13 @@ void eparticlectr::procrewards(uint64_t reward_period) {
     // Calculate the total rewards amount in a period
     uint64_t curationRewardSum = 0;
     uint64_t editorRewardSum = 0;
-    while(rewards_it != rewardsidx.end() && rewards_it->proposal_finalize_period == reward_period ) {
-        curationRewardSum += rewards_it->amount;
+    while(reward_it != rewardsidx.end() && reward_it->proposal_finalize_period == reward_period ) {
+        curationRewardSum += reward_it->vote_points;
 
-        if (rewards_it->is_editor && rewards_it->proposalresult == 1){
-            editorRewardSum += rewards_it->edit_points;
+        if (reward_it->is_editor && reward_it->proposalresult == 1){
+            editorRewardSum += reward_it->edit_points;
         }
-        rewards_it++;
+        reward_it++;
     }
 
     // Store the reward sums for the period
@@ -348,7 +348,7 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
     eosio_assert(period_it != perrewards.end(), "Must call procrewards for this period first");
 
     // Send curation reward
-    int64_t curation_reward = reward_it->amount * PERIOD_CURATION_REWARD / period_it->curation_sum;
+    int64_t curation_reward = reward_it->vote_points * PERIOD_CURATION_REWARD / period_it->curation_sum;
     eosio_assert(curation_reward <= PERIOD_CURATION_REWARD, "System logic error. Too much IQ calculated for curation reward.");
     if (curation_reward == 0) // Minimum reward of 0.001 IQ to prevent unclaimable rewards
         curation_reward = 1;
