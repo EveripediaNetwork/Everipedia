@@ -41,7 +41,7 @@ const float TIER_ONE_THRESHOLD = 0.5f;
 uint64_t PERIOD_CURATION_REWARD = 100000; // 100 IQ per period
 uint64_t PERIOD_EDITOR_REWARD = 400000; // 400 IQ per period
 
-class eparticlectr : public contract {
+class [[eosio::contract("eparticlectr")]] eparticlectr : public contract {
     using contract::contract;
 
 private:
@@ -120,7 +120,7 @@ private:
     struct [[eosio::table]] rewardhistory {
         uint64_t id;
         name user;
-        uint64_t amount; // slash or reward amount
+        uint64_t vote_points; // reward amount
         uint64_t edit_points; // sum of all "for" votes for this proposal
         uint64_t proposal_id; // id of the proposal that this person voted on
         uint32_t proposal_finalize_time; // when finalize() was called

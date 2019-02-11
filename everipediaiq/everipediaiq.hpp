@@ -14,7 +14,7 @@ using std::string;
 
 const uint64_t EDIT_PROPOSE_IQ = 50; // 50 IQ
 
-class everipediaiq : public contract {
+class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
   using contract::contract;
 
   private:
