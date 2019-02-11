@@ -43,14 +43,12 @@ void eparticlectr::brainclmid( uint64_t stakeid ) {
     require_recipient(stake_it->user);
 
     // Transfer back the IQ
-    // use the safesend temporarily until RAM stealing exploit is fixed
-    auto n = name{stake_it->user};
-    std::string tempmemo = n.to_string();
     asset iqAssetPack = asset(int64_t(stake_it->amount * IQ_PRECISION_MULTIPLIER), IQSYMBOL);
+    std::string memo = std::string("return stake #") + std::to_string(stake_it->id);
     action(
         permission_level{ _self, name("active") },
         TOKEN_CONTRACT, name("transfer"),
-        std::make_tuple(_self, name("iqsafesendiq"), iqAssetPack, tempmemo)
+        std::make_tuple(_self, stake_it->user, iqAssetPack, memo)
     ).send();
 
     // Delete the stake.
