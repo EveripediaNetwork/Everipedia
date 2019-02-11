@@ -163,7 +163,6 @@ if [ $BOOTSTRAP -eq 1 ]; then
     echo -e "${CYAN}-----------------------USER ACCOUNTS-----------------------${NC}"
     cleos system newaccount eosio everipediaiq EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
     cleos system newaccount eosio eparticlectr EOS8dYVzNktdam3Vn31mSXcmbj7J7MzGNudqKb3MLW1wdxWJpEbrw --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
-    cleos system newaccount eosio iqsafesendiq EOS7mJctpRnPPDhLHgnQVU3En7rvy3XHxrQPcsCqU8XZBV6tc7tMW --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
     cleos system newaccount eosio eptestusersa EOS6HfoynFKZ1Msq1bKNwtSTTpEu8NssYMcgsy6nHqhRp3mz7tNkB --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
     cleos system newaccount eosio eptestusersb EOS68s2PrHPDeGWTKczrNZCn4MDMgoW6SFHuTQhXYUNLT1hAmJei8 --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
     cleos system newaccount eosio eptestusersc EOS7LpZDPKwWWXgJnNYnX6LCBgNqCEqugW9oUQr7XqcSfz7aSFk8o --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
@@ -193,10 +192,8 @@ if [ $BOOTSTRAP -eq 1 ]; then
     echo -e "${CYAN}-----------------------DEPLOYING EVERIPEDIA CONTRACTS-----------------------${NC}"
     cleos set contract everipediaiq everipediaiq/
     cleos set contract eparticlectr eparticlectr/
-    cleos set contract iqsafesendiq iqsafesendiq/
     cleos set account permission everipediaiq active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p everipediaiq
     cleos set account permission eparticlectr active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p eparticlectr
-    cleos set account permission iqsafesendiq active '{ "threshold": 1, "keys": [{ "key": "EOS7mJctpRnPPDhLHgnQVU3En7rvy3XHxrQPcsCqU8XZBV6tc7tMW", "weight": 1 }], "accounts": [{ "permission": { "actor":"iqsafesendiq","permission":"eosio.code" }, "weight":1 }] }' owner -p iqsafesendiq
 
     # Create and issue token
     echo -e "${CYAN}-----------------------CREATING IQ TOKEN-----------------------${NC}"
@@ -208,7 +205,6 @@ fi
 echo -e "${CYAN}-----------------------DEPLOYING EVERIPEDIA CONTRACTS AGAIN-----------------------${NC}"
 cleos set contract everipediaiq everipediaiq/
 cleos set contract eparticlectr eparticlectr/
-cleos set contract iqsafesendiq iqsafesendiq/
 
 # No transfer fees for privileged accounts
 OLD_BALANCE1=$(balance eptestusersa)
@@ -278,13 +274,6 @@ assert $(bc <<< "$? == 0")
 cleos push action everipediaiq transfer '["eptestusersa", "eptestusersg", "1000.000 IQ", "test"]' -p eptestusersa
 assert $(bc <<< "$? == 0")
 
-# Safe transfers
-echo -e "${CYAN}-----------------------MOVING TOKENS FROM ONE USER TO THE NEXT, SAFELY-----------------------${NC}"
-cleos push action everipediaiq transfer '["eptestusersa", "iqsafesendiq", "1000.000 IQ", "eptestuserse", "test"]' -p eptestusersa
-assert $(bc <<< "$? == 0")
-cleos push action everipediaiq transfer '["eptestusersa", "iqsafesendiq", "1000.000 IQ", "eptestusersc", "test"]' -p eptestusersa
-assert $(bc <<< "$? == 0")
-
 NEW_BALANCE1=$(balance eptestusersa)
 NEW_BALANCE2=$(balance eptestusersb)
 NEW_BALANCE3=$(balance eptestusersc)
@@ -292,16 +281,16 @@ NEW_BALANCE4=$(balance eptestusersd)
 NEW_BALANCE5=$(balance eptestuserse)
 NEW_BALANCE6=$(balance eptestusersf)
 NEW_BALANCE7=$(balance eptestusersg)
-SAFESEND_BALANCE=$(balance iqsafesendiq)
 
-assert $(bc <<< "$OLD_BALANCE1 - $NEW_BALANCE1 == 8000")
+echo $OLD_BALANCE1
+echo $NEW_BALANCE1
+assert $(bc <<< "$OLD_BALANCE1 - $NEW_BALANCE1 == 6000")
 assert $(bc <<< "$NEW_BALANCE2 - $OLD_BALANCE2 == 1000")
-assert $(bc <<< "$NEW_BALANCE3 - $OLD_BALANCE3 == 2000")
+assert $(bc <<< "$NEW_BALANCE3 - $OLD_BALANCE3 == 1000")
 assert $(bc <<< "$NEW_BALANCE4 - $OLD_BALANCE4 == 1000")
-assert $(bc <<< "$NEW_BALANCE5 - $OLD_BALANCE5 == 2000")
+assert $(bc <<< "$NEW_BALANCE5 - $OLD_BALANCE5 == 1000")
 assert $(bc <<< "$NEW_BALANCE6 - $OLD_BALANCE6 == 1000")
 assert $(bc <<< "$NEW_BALANCE7 - $OLD_BALANCE7 == 1000")
-assert $(bc <<< "$SAFESEND_BALANCE == 0")
 
 # Failed transfers
 echo -e "${CYAN}-----------------------NEXT THREE TRANSFERS SHOULD FAIL-----------------------${NC}"

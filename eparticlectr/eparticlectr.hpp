@@ -34,8 +34,8 @@ using namespace eosio;
 const name TOKEN_CONTRACT = name("everipediatk");
 const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
 const uint64_t EDIT_PROPOSE_IQ = 50; // 50 IQ
-const uint32_t REWARD_INTERVAL = 1800; // 30 min
-const uint32_t DEFAULT_VOTING_TIME = 43200; // 12 hours
+const uint32_t REWARD_INTERVAL = 5; // 30 min
+const uint32_t DEFAULT_VOTING_TIME = 3; // 12 hours
 const uint64_t IQ_PRECISION_MULTIPLIER = 1000;
 const float TIER_ONE_THRESHOLD = 0.5f;
 uint64_t PERIOD_CURATION_REWARD = 100000; // 100 IQ per period

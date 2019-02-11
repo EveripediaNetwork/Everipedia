@@ -53,11 +53,8 @@ void everipediaiq::issue( name to, asset quantity, string memo )
 
     add_balance( st.issuer, quantity, st.issuer );
 
-    // use the safesend temporarily until RAM stealing exploit is fixed
-    auto n = name{to};
-    std::string tempmemo = n.to_string();
     if( to != st.issuer ) {
-       SEND_INLINE_ACTION( *this, transfer, {st.issuer, name("active")}, {st.issuer, name("iqsafesendiq"), quantity, tempmemo} );
+       SEND_INLINE_ACTION( *this, transfer, {st.issuer, name("active")}, {st.issuer, to, quantity, memo} );
     }
 }
 
