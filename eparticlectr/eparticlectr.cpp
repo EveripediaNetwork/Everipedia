@@ -39,9 +39,6 @@ void eparticlectr::brainclmid( uint64_t stakeid ) {
     // See if the stake is complete
     eosio_assert( now() > stake_it->completion_time, "Staking period not over yet");
 
-    // Inform the user
-    require_recipient(stake_it->user);
-
     // Transfer back the IQ
     asset iqAssetPack = asset(int64_t(stake_it->amount * IQ_PRECISION_MULTIPLIER), IQSYMBOL);
     std::string memo = std::string("return stake #") + std::to_string(stake_it->id);
