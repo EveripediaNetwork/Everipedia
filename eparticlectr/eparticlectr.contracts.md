@@ -10,12 +10,12 @@ Logging action to notify users of slashes.
 Process rewards from finalized proposals.
 <h1 class="contract">rewardclmid</h1>
 Claim editor and curator IQ rewards by reward id.
-<h1 class="contract">propose</h1>
-Propose and edit (uses Brainpower).
+<h1 class="contract">propose2</h1>
+Propose an edit (uses IQ, only callable by everipediaiq::epartpropose).
 <h1 class="contract">oldvotepurge</h1>
 Purge old votes to free up RAM.
 <h1 class="contract">vote</h1>
-Vote on a proposal (identified by an IPFS hash) using Brainpower.
+Vote on a proposal (uses IQ, only callable by everipediaiq::epartvote).
 <h1 class="contract">logpropres</h1>
 Log proposal results.
 <h1 class="contract">logpropinfo</h1>

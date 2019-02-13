@@ -1,5 +1,5 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Mon Feb 11 13:24:48 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Tue Feb 12 18:36:29 2019",
     "version": "eosio::abi/1.1",
     "structs": [
         {
@@ -82,7 +82,7 @@
                 },
                 {
                     "name": "wiki_id",
-                    "type": "int64"
+                    "type": "uint64"
                 },
                 {
                     "name": "title",
@@ -98,7 +98,7 @@
                 },
                 {
                     "name": "group_id",
-                    "type": "int64"
+                    "type": "uint64"
                 },
                 {
                     "name": "comment",
@@ -125,10 +125,6 @@
                 {
                     "name": "proposal_id",
                     "type": "uint64"
-                },
-                {
-                    "name": "wiki_id",
-                    "type": "int64"
                 },
                 {
                     "name": "approved",
@@ -187,7 +183,7 @@
             ]
         },
         {
-            "name": "propose",
+            "name": "propose2",
             "base": "",
             "fields": [
                 {
@@ -473,9 +469,9 @@
             "ricardian_contract": "Process rewards from finalized proposals."
         },
         {
-            "name": "propose",
-            "type": "propose",
-            "ricardian_contract": "Propose and edit (uses Brainpower)."
+            "name": "propose2",
+            "type": "propose2",
+            "ricardian_contract": "Propose an edit (uses IQ, only callable by everipediaiq::epartpropose)."
         },
         {
             "name": "rewardclmid",
@@ -490,7 +486,7 @@
         {
             "name": "vote",
             "type": "vote",
-            "ricardian_contract": "Vote on a proposal (identified by an IPFS hash) using Brainpower."
+            "ricardian_contract": "Vote on a proposal (uses IQ, only callable by everipediaiq::epartvote)."
         }
     ],
     "tables": [

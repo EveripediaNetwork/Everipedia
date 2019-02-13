@@ -154,7 +154,7 @@ void everipediaiq::epartpropose( name proposer, int64_t wiki_id, std::string tit
     // Make the proposal to the article contract
     action(
         permission_level{ ARTICLE_CONTRACT, name("active") }, 
-        ARTICLE_CONTRACT, name("propose"),
+        ARTICLE_CONTRACT, name("propose2"),
         std::make_tuple( proposer, wiki_id, title, ipfs_hash, lang_code, group_id, comment, memo )
     ).send();
 }
