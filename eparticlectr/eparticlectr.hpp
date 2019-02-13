@@ -31,11 +31,11 @@
 
 using namespace eosio;
 
-const name TOKEN_CONTRACT = name("everipediatk");
+const name TOKEN_CONTRACT = name("everipediaiq");
 const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
 const uint64_t EDIT_PROPOSE_IQ = 50; // 50 IQ
-const uint32_t REWARD_INTERVAL = 5; // 30 min
-const uint32_t DEFAULT_VOTING_TIME = 3; // 12 hours
+const uint32_t REWARD_INTERVAL = 1800; // 30 min
+const uint32_t DEFAULT_VOTING_TIME = 43200; // 12 hours
 const uint64_t IQ_PRECISION_MULTIPLIER = 1000;
 const float TIER_ONE_THRESHOLD = 0.5f;
 uint64_t PERIOD_CURATION_REWARD = 100000; // 100 IQ per period
@@ -203,7 +203,7 @@ public:
     void procrewards( uint64_t reward_period );
 
     [[eosio::action]]
-    void propose( name proposer, 
+    void propose2( name proposer, 
                   int64_t wiki_id, 
                   std::string title, 
                   ipfshash_t ipfs_hash, 
@@ -225,7 +225,6 @@ public:
 
     [[eosio::action]]
     void logpropres( uint64_t proposal_id, 
-                     int64_t wiki_id, 
                      bool approved, 
                      uint64_t yes_votes, 
                      uint64_t no_votes );
@@ -233,11 +232,11 @@ public:
     [[eosio::action]]
     void logpropinfo( uint64_t proposal_id,
                       name proposer, 
-                      int64_t wiki_id, 
+                      uint64_t wiki_id, 
                       std::string title, 
                       ipfshash_t ipfs_hash, 
                       std::string lang_code,
-                      int64_t group_id,
+                      uint64_t group_id,
                       std::string comment, 
                       std::string memo,
                       uint32_t starttime, 

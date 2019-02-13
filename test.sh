@@ -479,7 +479,7 @@ sleep 4 # wait for test voting period to end
 
 # Bad vote
 echo -e "${CYAN}-----------------------LATE VOTE SHOULD FAIL-----------------------${NC}"
-cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID4, 1, 500, \"votememo\" ]" -p eptestusersc
+cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID4, 1, 500, \"votecomment\", \"votememo\" ]" -p eptestusersc
 assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}-----------------------FINALIZES-----------------------${NC}"

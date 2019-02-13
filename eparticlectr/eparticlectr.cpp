@@ -107,7 +107,7 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
 // Logic for proposing an edit for an article
 // Users have to trigger this action through the everipediaiq::epartpropose action
 [[eosio::action]]
-void eparticlectr::propose( name proposer, int64_t wiki_id, std::string title, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo ) {
+void eparticlectr::propose2( name proposer, int64_t wiki_id, std::string title, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo ) {
     require_auth( _self );
 
     // Argument checks
@@ -120,11 +120,30 @@ void eparticlectr::propose( name proposer, int64_t wiki_id, std::string title, i
     eosio_assert( wiki_id < 1e9, "Max manual id permitted is 1e9. Specify -1 for auto-generated ID");
     eosio_assert( wiki_id > -2, "ID must be greater than -2. Specify -1 for auto-generated ID");
 
-    // Store the proposal
+    // Calculate proposal parameters
     propstbl proptable( _self, _self.value );
     uint64_t proposal_id = proptable.available_primary_key();
     uint32_t starttime = now();
     uint32_t endtime = now() + DEFAULT_VOTING_TIME;
+
+    // Accounting for new wikis
+    wikistbl wikitbl( _self, _self.value );
+    if (wiki_id == -1) {
+        wiki_id = wikitbl.available_primary_key();
+        if (wiki_id < 1e9) wiki_id = 1e9; // Wiki IDs 0 - 1e9 are reserved for existing wikis
+
+        // Open an entry in the wiki table for new wikis
+        wikitbl.emplace( _self,  [&]( auto& a ) {
+            a.id = wiki_id;
+            a.title = title;
+            a.lang_code = lang_code;
+            a.group_id = group_id;
+        });
+    }
+    if (group_id == -1)
+        group_id = wiki_id;
+
+    // Store the proposal
     proptable.emplace( _self, [&]( auto& a ) {
         a.id = proposal_id;
         a.wiki_id = wiki_id;
@@ -138,7 +157,6 @@ void eparticlectr::propose( name proposer, int64_t wiki_id, std::string title, i
         a.memo = memo;
     });
 
-    // Log the proposal info (the ID can't be determined without this)
     action(
         permission_level { _self, name("active") },
         _self, name("logpropinfo"),
@@ -245,46 +263,24 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
 
 
     // Insert wiki into DB
-    uint64_t group_id = prop_it->group_id;
-    uint64_t wiki_id = prop_it->wiki_id;
     if (approved) {
         wikistbl wikitbl( _self, _self.value );
-        bool placed = false;
-        if (wiki_id >= 0) {
-            auto wiki_it = wikitbl.find( wiki_id );
-            if (wiki_it != wikitbl.end()) {
-                wikitbl.modify( wiki_it, _self, [&]( auto& a ) {
-                    a.title = prop_it->title;
-                    if (group_id == -1)
-                        group_id = wiki_id;
-                    a.group_id = group_id;
-                    a.lang_code = prop_it->lang_code;
-                    a.ipfs_hash = prop_it->ipfs_hash;
-                });
-                placed = true;
-            }
-        }
+        auto wiki_it = wikitbl.find( prop_it->wiki_id );
+        eosio_assert(wiki_it != wikitbl.end(), "PROTOCOL ERROR: An ID should already exist for this wiki");
 
-        if (!placed) {
-            wikitbl.emplace( _self,  [&]( auto& a ) {
-                if (wiki_id == -1)
-                    wiki_id = wikitbl.available_primary_key();
-                a.id = wiki_id;
-                a.title = prop_it->title;
-                if (group_id == -1)
-                    group_id = wiki_id;
-                a.group_id = group_id;
-                a.lang_code = prop_it->lang_code;
-                a.ipfs_hash = prop_it->ipfs_hash;
-            });
-        }
+        wikitbl.modify( wiki_it, _self, [&]( auto& a ) {
+            a.title = prop_it->title;
+            a.group_id = prop_it->group_id;
+            a.lang_code = prop_it->lang_code;
+            a.ipfs_hash = prop_it->ipfs_hash;
+        });
     }
 
     // Log proposal result and new wiki id
     action(
         permission_level { _self, name("active") },
         _self, name("logpropres"),
-        std::make_tuple( prop_it->id, wiki_id, approved, yes_votes, no_votes )
+        std::make_tuple( prop_it->id, approved, yes_votes, no_votes )
     ).send();
 
     // delete proposal
@@ -403,13 +399,13 @@ void eparticlectr::slashnotify( name slashee, uint64_t amount, uint32_t seconds,
 }
 
 [[eosio::action]]
-void eparticlectr::logpropres( uint64_t proposal_id, int64_t wiki_id, bool approved, uint64_t yes_votes, uint64_t no_votes ) {
+void eparticlectr::logpropres( uint64_t proposal_id, bool approved, uint64_t yes_votes, uint64_t no_votes ) {
     require_auth( _self );
 }
 
 [[eosio::action]]
-void eparticlectr::logpropinfo( uint64_t proposal_id, name proposer, int64_t wiki_id, std::string title, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo, uint32_t starttime, uint32_t endtime) {
+void eparticlectr::logpropinfo( uint64_t proposal_id, name proposer, uint64_t wiki_id, std::string title, ipfshash_t ipfs_hash, std::string lang_code, uint64_t group_id, std::string comment, std::string memo, uint32_t starttime, uint32_t endtime) {
     require_auth( _self );
 }
 
-EOSIO_DISPATCH( eparticlectr, (brainclmid)(slashnotify)(finalize)(oldvotepurge)(procrewards)(propose)(rewardclmid)(vote)(logpropres)(logpropinfo) )
+EOSIO_DISPATCH( eparticlectr, (brainclmid)(slashnotify)(finalize)(oldvotepurge)(procrewards)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo) )
