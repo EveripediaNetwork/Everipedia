@@ -61,8 +61,8 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
     require_auth( _self );
 
     // validate inputs
-    eosio_assert(comment.size() < 256, "Comment must be less than 256 bytes");
-    eosio_assert(memo.size() < 32, "Memo must be less than 32 bytes");
+    eosio_assert(comment.size() < MAX_COMMENT_SIZE, "Comment must be less than 256 bytes");
+    eosio_assert(memo.size() < MAX_MEMO_SIZE, "Memo must be less than 32 bytes");
 
     // Check if proposal exists
     propstbl proptable( _self, _self.value );
@@ -104,47 +104,58 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
 // Logic for proposing an edit for an article
 // Users have to trigger this action through the everipediaiq::epartpropose action
 [[eosio::action]]
-void eparticlectr::propose2( name proposer, int64_t wiki_id, std::string title, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo ) {
+void eparticlectr::propose2( name proposer, int64_t wiki_id, std::string slug, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo ) {
     require_auth( _self );
 
-    // Argument checks
-    eosio_assert( title.size() < 32, "title must be less than 32 bytes");
-    eosio_assert( ipfs_hash.size() < 100, "IPFS hash is unreasonably long. 100 char limit.");
-    eosio_assert( lang_code.size() < 8, "lang_code must be less than 8 characters");
-    eosio_assert( lang_code.size() >= 2, "lang_code must be atleast 2 characters");
-    eosio_assert( comment.size() < 256, "comment must be less than 256 bytes");
-    eosio_assert( memo.size() < 32, "memo must be less than 32 bytes");
-    eosio_assert( wiki_id < 1e9, "Max manual id permitted is 1e9. Specify -1 for auto-generated ID");
-    eosio_assert( wiki_id > -2, "ID must be greater than -2. Specify -1 for auto-generated ID");
-
-    // Calculate proposal parameters
-    propstbl proptable( _self, _self.value );
-    uint64_t proposal_id = proptable.available_primary_key();
-    uint32_t starttime = now();
-    uint32_t endtime = now() + DEFAULT_VOTING_TIME;
-
-    // Accounting for new wikis
+    // Table definitions
     wikistbl wikitbl( _self, _self.value );
-    if (wiki_id == -1) {
-        wiki_id = wikitbl.available_primary_key();
-        if (wiki_id < 1e9) wiki_id = 1e9; // Wiki IDs 0 - 1e9 are reserved for existing wikis
+    propstbl proptable( _self, _self.value );
 
-        // Open an entry in the wiki table for new wikis
+    // Argument checks
+    eosio_assert( slug.size() <= MAX_SLUG_SIZE, "slug must be max 256 bytes");
+    eosio_assert( ipfs_hash.size() < MAX_IPFS_SIZE, "IPFS hash is unreasonably long. 100 char limit.");
+    eosio_assert( lang_code.size() <= MAX_LANG_CODE_SIZE, "lang_code must be max 7 bytes");
+    eosio_assert( lang_code.size() >= MIN_LANG_CODE_SIZE, "lang_code must be atleast 2 characters");
+    eosio_assert( comment.size() < MAX_COMMENT_SIZE, "comment must be less than 256 bytes");
+    eosio_assert( memo.size() < MAX_MEMO_SIZE, "memo must be less than 32 bytes");
+    eosio_assert( wiki_id >= -1, "wiki_id must be positive, or -1 for an auto-generated ID");
+    eosio_assert( wiki_id < (int64_t)wikitbl.available_primary_key(), "invalid wiki_id. too large. Specify -1 for an auto-generated ID, or the ID of an existing wiki to update a wiki" );
+    eosio_assert( group_id >= -1, "group_id must be greater than -2. Specify -1 for auto-generated ID");
+    eosio_assert( wiki_id == -1 || group_id > -1, "group_id cannot be auto-generated for an existing wiki");
+
+    // check for duplicate slug + lang
+    auto sluglang_idx = wikitbl.get_index<name("uniqsluglang")>();
+    auto existing_wiki_it = sluglang_idx.find(sha256_slug_lang(slug, lang_code));
+    print(wiki_id, "-", existing_wiki_it->id);
+    eosio_assert(
+        existing_wiki_it == sluglang_idx.end() || existing_wiki_it->id == wiki_id,
+        "Composite of slug + lang_code must be unique"
+    );
+
+    // Place new wikis into the table
+    bool new_wiki = (wiki_id == -1);
+    if (new_wiki) wiki_id = wikitbl.available_primary_key(); // Generate new ID for new wikis
+    if (group_id == -1) group_id = wiki_id; // Autoset group ID if needed
+    if (new_wiki) {
         wikitbl.emplace( _self,  [&]( auto& a ) {
             a.id = wiki_id;
-            a.title = title;
+            a.slug = slug;
             a.lang_code = lang_code;
             a.group_id = group_id;
         });
     }
-    if (group_id == -1)
-        group_id = wiki_id;
+
+
+    // Calculate proposal parameters
+    uint64_t proposal_id = proptable.available_primary_key();
+    uint32_t starttime = now();
+    uint32_t endtime = now() + DEFAULT_VOTING_TIME;
 
     // Store the proposal
     proptable.emplace( _self, [&]( auto& a ) {
         a.id = proposal_id;
         a.wiki_id = wiki_id;
-        a.title = title;
+        a.slug = slug;
         a.group_id = group_id;
         a.lang_code = lang_code;
         a.ipfs_hash = ipfs_hash;
@@ -157,7 +168,7 @@ void eparticlectr::propose2( name proposer, int64_t wiki_id, std::string title, 
     action(
         permission_level { _self, name("active") },
         _self, name("logpropinfo"),
-        std::make_tuple( proposal_id, proposer, wiki_id, title, ipfs_hash, lang_code, group_id, comment, memo, starttime, endtime )
+        std::make_tuple( proposal_id, proposer, wiki_id, slug, ipfs_hash, lang_code, group_id, comment, memo, starttime, endtime )
     ).send();
 
     // Place the default vote
@@ -266,7 +277,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
         eosio_assert(wiki_it != wikitbl.end(), "PROTOCOL ERROR: An ID should already exist for this wiki");
 
         wikitbl.modify( wiki_it, _self, [&]( auto& a ) {
-            a.title = prop_it->title;
+            a.slug = prop_it->slug;
             a.group_id = prop_it->group_id;
             a.lang_code = prop_it->lang_code;
             a.ipfs_hash = prop_it->ipfs_hash;
@@ -401,7 +412,7 @@ void eparticlectr::logpropres( uint64_t proposal_id, bool approved, uint64_t yes
 }
 
 [[eosio::action]]
-void eparticlectr::logpropinfo( uint64_t proposal_id, name proposer, uint64_t wiki_id, std::string title, ipfshash_t ipfs_hash, std::string lang_code, uint64_t group_id, std::string comment, std::string memo, uint32_t starttime, uint32_t endtime) {
+void eparticlectr::logpropinfo( uint64_t proposal_id, name proposer, uint64_t wiki_id, std::string slug, ipfshash_t ipfs_hash, std::string lang_code, uint64_t group_id, std::string comment, std::string memo, uint32_t starttime, uint32_t endtime) {
     require_auth( _self );
 }
 

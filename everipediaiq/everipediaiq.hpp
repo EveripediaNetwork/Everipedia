@@ -51,7 +51,7 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
      [[eosio::action]]
      void epartpropose( name proposer, 
                         int64_t wiki_id,
-                        std::string title,
+                        std::string slug,
                         ipfshash_t ipfs_hash,
                         std::string lang_code,
                         int64_t group_id,

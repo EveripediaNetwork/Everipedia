@@ -42,6 +42,10 @@ ipfsgen () {
     echo -e "Qm$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 44 | head -n 1)"
 }
 
+titlegen () {
+    cat /dev/urandom | tr -dc 'a-z\-' | fold -w 15 | head -n 1
+}
+
 #################################
 
 # Parse args
@@ -358,30 +362,46 @@ IPFS6=$(ipfsgen)
 IPFS7=$(ipfsgen)
 IPFS8=$(ipfsgen)
 
-cleos push action everipediaiq epartpropose "[ \"eptestusersa\", -1, \"Jeremy Lin\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersa
+SLUG1=$(titlegen)
+SLUG2=$(titlegen)
+SLUG3=$(titlegen)
+SLUG4=$(titlegen)
+SLUG5=$(titlegen)
+SLUG6=$(titlegen)
+SLUG7=$(titlegen)
+SLUG8=$(titlegen)
+
+cleos push action everipediaiq epartpropose "[ \"eptestusersa\", -1, \"$SLUG1\", \"$IPFS1\", \"en\", -1, \"new wiki\", \"memoing\" ]" -p eptestusersa
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartpropose "[ \"eptestusersb\", -1, \"Monty Python\", \"$IPFS2\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersb
+cleos push action everipediaiq epartpropose "[ \"eptestusersb\", -1, \"$SLUG2\", \"$IPFS2\", \"kr\", -1, \"new wiki\", \"memoing\" ]" -p eptestusersb
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartpropose "[ \"eptestusersc\", -1, \"Seedy McDouglas\", \"$IPFS3\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersc
+cleos push action everipediaiq epartpropose "[ \"eptestusersc\", -1, \"$SLUG3\", \"$IPFS3\", \"zh-Hans\", -1, \"new wiki\", \"memoing\" ]" -p eptestusersc
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartpropose "[ \"eptestusersd\", -1, \"Genevieve Le Menage\", \"$IPFS4\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersd
+cleos push action everipediaiq epartpropose "[ \"eptestusersd\", -1, \"$SLUG4\", \"$IPFS4\", \"en\", 2, \"new wiki. existing group\", \"memoing\" ]" -p eptestusersd
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartpropose "[ \"eptestuserse\", 7, \"Grandpa Rick\", \"$IPFS5\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestuserse
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", 0, \"$SLUG1\", \"$IPFS1\", \"kr\", 0, \"update lang code\", \"memoing\" ]" -p eptestusersf
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartpropose "[ \"eptestusersf\", 100038, \"7 Dwarfs of Christmas\", \"$IPFS6\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersf
+EXISTING_WIKI_ID=$(cleos get table eparticlectr eparticlectr wikistbl2 -r | jq ".rows[] | select(.slug == \"$SLUG2\") | .id")
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", $EXISTING_WIKI_ID, \"$SLUG2\", \"$IPFS5\", \"kr\", $EXISTING_WIKI_ID, \"update hash\", \"memoing\" ]" -p eptestusersf
 assert $(bc <<< "$? == 0")
 
 # Failed proposals
-echo -e "${CYAN}-----------------------NEXT FIVE PROPOSALS SHOULD FAIL-----------------------${NC}"
-cleos push action everipediaiq epartpropose "[ \"eptestusersf\", -1, \"7 Dwarfs of Christmas have too long a title mate\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersf
+echo -e "${CYAN}-----------------------NEXT EIGHT PROPOSALS SHOULD FAIL-----------------------${NC}"
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", -1, \"7-Dwarfs-of Christmas-have-too-long-a-title-matesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersf
 assert $(bc <<< "$? == 1")
-cleos push action everipediaiq epartpropose "[ \"eptestusersf\", 100000000000, \"7 Dwarfs of Christmas\", \"$IPFS1\", \"en\", -1, \"specifying a manual ID over 1e9\", \"memoing\" ]" -p eptestusersf
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", 100000000000, \"$SLUG8\", \"$IPFS1\", \"en\", -1, \"specifying too high an ID\", \"memoing\" ]" -p eptestusersf
 assert $(bc <<< "$? == 1")
-cleos push action everipediaiq epartpropose "[ \"eptestusersf\", -200, \"7 Dwarfs of Christmas\", \"$IPFS1\", \"en\", -1, \"specifying a manual ID below -1\", \"memoing\" ]" -p eptestusersf
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", -200, \"$SLUG8\", \"$IPFS1\", \"en\", -1, \"specifying a wiki ID below -1\", \"memoing\" ]" -p eptestusersf
 assert $(bc <<< "$? == 1")
-cleos push action everipediaiq epartpropose "[ \"eptestusersf\", -200, \"7 Dwarfs of Christmas\", \"$IPFS1\", \"zh-Hans 02\", -1, \"too long a lang code\", \"memoing\" ]" -p eptestusersf
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", -1, \"$SLUG8\", \"$IPFS1\", \"en\", -2, \"specifying a group ID below -1\", \"memoing\" ]" -p eptestusersf
 assert $(bc <<< "$? == 1")
-cleos push action everipediaiq epartpropose "[ \"eptestusersf\", -200, \"7 Dwarfs of Christmas\", \"$IPFS2 $IPFS1\", \"zh\", -1, \"too long an IPFS string\", \"memoing\" ]" -p eptestusersf
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", 5, \"$SLUG8\", \"$IPFS1\", \"zh-Hans 02\", -1, \"too long a lang code\", \"memoing\" ]" -p eptestusersf
+assert $(bc <<< "$? == 1")
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", -200, \"$SLUG8\", \"$IPFS2 $IPFS1\", \"zh\", -1, \"too long an IPFS string\", \"memoing\" ]" -p eptestusersf
+assert $(bc <<< "$? == 1")
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", -1, \"$SLUG2\", \"$IPFS6\", \"kr\", -1, \"duplicate slug + lang\", \"memoing\" ]" -p eptestusersf
+assert $(bc <<< "$? == 1")
+cleos push action everipediaiq epartpropose "[ \"eptestuserse\", 100038, \"$SLUG8\", \"$IPFS6\", \"en\", 100038, \"wrong authorization\", \"memoing\" ]" -p eptestusersf
 assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}Wait for proposals to be mined...${NC}"
