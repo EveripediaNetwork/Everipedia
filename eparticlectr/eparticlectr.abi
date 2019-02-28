@@ -1,5 +1,5 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Tue Feb 26 20:36:00 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Wed Feb 27 17:30:42 2019",
     "version": "eosio::abi/1.1",
     "structs": [
         {
@@ -55,6 +55,10 @@
                 {
                     "name": "memo",
                     "type": "string"
+                },
+                {
+                    "name": "finalized",
+                    "type": "bool"
                 }
             ]
         },

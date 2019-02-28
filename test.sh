@@ -503,12 +503,6 @@ cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID4, 1, 500, 
 assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}-----------------------FINALIZES-----------------------${NC}"
-echo $PROPID1
-echo $PROPID2
-echo $PROPID3
-echo $PROPID4
-echo $PROPID5
-echo $PROPID6
 cleos push action eparticlectr finalize "[ $PROPID1 ]" -p eptestusersa
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr finalize "[ $PROPID2 ]" -p eptestusersg
@@ -518,6 +512,8 @@ assert $(bc <<< "$? == 0")
 cleos push action eparticlectr finalize "[ $PROPID4 ]" -p eptestusersb
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr finalize "[ $PROPID5 ]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr finalize "[ $PROPID6 ]" -p eptestusersc
 assert $(bc <<< "$? == 0")
 
 echo -e "${CYAN}-----------------------FINALIZE FAIL (ALREADY FINALIZED)-----------------------${NC}"
@@ -544,7 +540,6 @@ sleep 5
 echo -e "${CYAN}-----------------------PROCESS REWARDS-----------------------${NC}"
 cleos push action eparticlectr procrewards "[$FINALIZE_PERIOD]" -p eptestusersa
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr procrewards "[$ONE_BACK_PERIOD]" -p eptestusersa
 
 CURATION_REWARD_SUM=$(cleos get table eparticlectr eparticlectr perrwdstbl2 -r | jq ".rows[0].curation_sum")
 EDITOR_REWARD_SUM=$(cleos get table eparticlectr eparticlectr perrwdstbl2 -r | jq ".rows[0].editor_sum")
@@ -552,8 +547,8 @@ EDITOR_REWARD_SUM=$(cleos get table eparticlectr eparticlectr perrwdstbl2 -r | j
 echo -e "   ${CYAN}CURATION REWARD SUM: ${CURATION_REWARD_SUM}${NC}"
 echo -e "   ${CYAN}EDITOR REWARD SUM: ${EDITOR_REWARD_SUM}${NC}"
 
-assert $(bc <<< "$CURATION_REWARD_SUM == 2420")
-assert $(bc <<< "$EDITOR_REWARD_SUM == 480")
+assert $(bc <<< "$CURATION_REWARD_SUM == 2470")
+assert $(bc <<< "$EDITOR_REWARD_SUM == 530")
 
 # Claim rewards
 OLD_BALANCE4=$(balance eptestusersd)
@@ -562,10 +557,10 @@ OLD_BALANCE6=$(balance eptestusersf)
 OLD_BALANCE7=$(balance eptestusersg)
 
 REWARD_ID1=$(cleos get table eparticlectr eparticlectr rewardstbl2 -r | jq ".rows[0].id")
-REWARD_ID2=$(bc <<< "$REWARD_ID1 - 1")
-REWARD_ID3=$(bc <<< "$REWARD_ID1 - 2")
-REWARD_ID4=$(bc <<< "$REWARD_ID1 - 3")
-REWARD_ID5=$(bc <<< "$REWARD_ID1 - 7") # this one has edit points
+REWARD_ID2=$(bc <<< "$REWARD_ID1 - 2")
+REWARD_ID3=$(bc <<< "$REWARD_ID1 - 3")
+REWARD_ID4=$(bc <<< "$REWARD_ID1 - 4")
+REWARD_ID5=$(bc <<< "$REWARD_ID1 - 8") # this one has edit points
 
 echo -e "${CYAN}-----------------------CLAIM REWARDS-----------------------${NC}"
 cleos push action eparticlectr rewardclmid "[\"$REWARD_ID1\"]" -p eptestuserse
@@ -595,10 +590,10 @@ echo -e "${CYAN}    eptestuserse: $DIFF5${NC}"
 echo -e "${CYAN}    eptestusersf: $DIFF6${NC}"
 echo -e "${CYAN}    eptestusersg: $DIFF7${NC}"
 
-assert $(bc <<< "$DIFF4 == 218.732")
-assert $(bc <<< "$DIFF5 == 4.545")
-assert $(bc <<< "$DIFF6 == 1.446")
-assert $(bc <<< "$DIFF7 == 2.479")
+assert $(bc <<< "$DIFF4 == 198.250")
+assert $(bc <<< "$DIFF5 == 2.024")
+assert $(bc <<< "$DIFF6 == 41.176")
+assert $(bc <<< "$DIFF7 == 2.429")
 
 echo -e "${CYAN}-----------------------NEXT TWO CLAIMS SHOULD FAIL-----------------------${NC}"
 cleos push action --force-unique eparticlectr rewardclmid "[\"$REWARD_ID3\"]" -p eptestusersf
@@ -616,10 +611,13 @@ assert $(bc <<< "$? == 0")
 cleos push action eparticlectr oldvotepurge "[$PROPID4, 5]" -p eptestusersa
 assert $(bc <<< "$? == 0")
 
-echo -e "${CYAN}-----------------------NEXT TWO VOTE PURGES SHOULD FAIL-----------------------${NC}"
+echo -e "${CYAN}-----------------------NEXT THREE VOTE PURGES SHOULD FAIL-----------------------${NC}"
 cleos push action eparticlectr oldvotepurge "[\"$IPFS1\", 100]" -p eptestusersa
 assert $(bc <<< "$? == 1")
 cleos push action eparticlectr oldvotepurge '["gumdrop", 100]' -p eptestusersa
+assert $(bc <<< "$? == 1")
+# Cannot delete newest proposal
+cleos push action eparticlectr oldvotepurge "[$PROPID6, 100]" -p eptestusersa
 assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}-----------------------BELOW CLAIMS SHOULD PASS-----------------------${NC}"
@@ -640,5 +638,11 @@ assert $(bc <<< "$? == 0")
 echo -e "${CYAN}-----------------------THIS CLAIM SHOULD FAIL-----------------------${NC}"
 cleos push action eparticlectr brainclmid "[$STAKE_ID1]" -p eptestusersf
 assert $(bc <<< "$? == 1")
+
+echo -e "${CYAN}-----------------------MAKE ANOTHER PROPOSAL THEN DELETE THE PREVIOUS ONE-----------------------${NC}"
+cleos push action everipediaiq epartpropose "[ \"eptestusersa\", -1, \"$SLUG8\", \"$IPFS4\", \"en\", -1, \"new wiki\", \"memoing\" ]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr oldvotepurge "[$PROPID6, 100]" -p eptestusersa
+assert $(bc <<< "$? == 0")
 
 echo -e "${CYAN}-----------------------COMPLETE-----------------------${NC}"

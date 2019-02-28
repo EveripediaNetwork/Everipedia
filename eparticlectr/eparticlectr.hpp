@@ -131,6 +131,7 @@ public:
         uint32_t starttime; // UNIX timestamp of beginning of voting period
         uint32_t endtime; // UNIX timestamp of end of voting period
         std::string memo; // optional memo to pass thru logging actions. primarily used by proxy contracts to identify sub-permisisons responsible for an edit. Size limit is MAX_MEMO_SIZE
+        bool finalized; 
 
         uint64_t primary_key () const { return id; }
     };

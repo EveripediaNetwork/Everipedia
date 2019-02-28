@@ -126,7 +126,6 @@ void eparticlectr::propose2( name proposer, int64_t wiki_id, std::string slug, i
     // check for duplicate slug + lang
     auto sluglang_idx = wikitbl.get_index<name("uniqsluglang")>();
     auto existing_wiki_it = sluglang_idx.find(sha256_slug_lang(slug, lang_code));
-    print(wiki_id, "-", existing_wiki_it->id);
     eosio_assert(
         existing_wiki_it == sluglang_idx.end() || existing_wiki_it->id == wiki_id,
         "Composite of slug + lang_code must be unique"
@@ -152,17 +151,18 @@ void eparticlectr::propose2( name proposer, int64_t wiki_id, std::string slug, i
     uint32_t endtime = now() + DEFAULT_VOTING_TIME;
 
     // Store the proposal
-    proptable.emplace( _self, [&]( auto& a ) {
-        a.id = proposal_id;
-        a.wiki_id = wiki_id;
-        a.slug = slug;
-        a.group_id = group_id;
-        a.lang_code = lang_code;
-        a.ipfs_hash = ipfs_hash;
-        a.proposer = proposer;
-        a.starttime = starttime;
-        a.endtime = endtime;
-        a.memo = memo;
+    proptable.emplace( _self, [&]( auto& p ) {
+        p.id = proposal_id;
+        p.wiki_id = wiki_id;
+        p.slug = slug;
+        p.group_id = group_id;
+        p.lang_code = lang_code;
+        p.ipfs_hash = ipfs_hash;
+        p.proposer = proposer;
+        p.starttime = starttime;
+        p.endtime = endtime;
+        p.memo = memo;
+        p.finalized = false;
     });
 
     action(
@@ -291,8 +291,14 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
         std::make_tuple( prop_it->id, approved, yes_votes, no_votes )
     ).send();
 
-    // delete proposal
-    proptable.erase( prop_it );
+    // delete proposal if it's not the most current one
+    // deleting the most current proposal screws up the ID auto-increment
+    if (prop_it->id == proptable.available_primary_key() - 1)
+        proptable.modify( prop_it, same_payer, [&]( auto& p ) {
+            p.finalized = true;
+        });
+    else
+        proptable.erase( prop_it );
 }
 
 // This function needs to be universally callable. A cron job will be calling this regularly
@@ -386,7 +392,15 @@ void eparticlectr::oldvotepurge( uint64_t proposal_id, uint32_t loop_limit ) {
     // Get the proposal object
     propstbl proptable( _self, _self.value );
     auto prop_it = proptable.find(proposal_id);
-    eosio_assert( prop_it == proptable.end(), "Proposal not finalized yet!");
+    eosio_assert( prop_it == proptable.end() || prop_it->finalized, "Proposal not finalized yet!");
+
+    // If it is an undeleted proposal, make sure it's no longer the most current proposal
+    // so the auto-increment doesn't get screwed up
+    // If it isn't delete it
+    if ( prop_it != proptable.end() ) {
+        eosio_assert( prop_it->id != proptable.available_primary_key() - 1, "Cannot delete most recent proposal" );
+        proptable.erase( prop_it );
+    }
 
     // Retrieve votes from DB
     votestbl votetbl( _self, proposal_id );
