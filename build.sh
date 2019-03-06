@@ -16,4 +16,8 @@ cd ../everipediaiq
 echo "Building everipediaiq..."
 /usr/local/bin/eosio-cpp -abigen everipediaiq.cpp -o everipediaiq.wasm -I everipediaiq.clauses.md -I everipediaiq.contracts.md
 
+cd ../iqutxo
+echo "Building iqutxo..."
+/usr/local/bin/eosio-cpp -abigen iqutxo.cpp -o iqutxo.wasm 
+
 cd ..

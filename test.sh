@@ -150,23 +150,22 @@ if [ $BOOTSTRAP -eq 1 ]; then
 
     # Import user keys
     echo -e "${CYAN}-----------------------USER KEYS-----------------------${NC}"
-    cleos wallet import --private-key 5JVvgRBGKXSzLYMHgyMFH5AHjDzrMbyEPRdj8J6EVrXJs8adFpK
-    cleos wallet import --private-key 5KBhzoszXcrphWPsuyTxoKJTtMMcPhQYwfivXxma8dDeaLG7Hsq
-    cleos wallet import --private-key 5J9UYL9VcDfykAB7mcx9nFfRKki5djG9AXGV6DJ8d5XPYDJDyUy
-    cleos wallet import --private-key 5HtnwWCbMpR1ATYoXY4xb1E4HAU9mzGvDrawyK5May68cYrJR7r
-    cleos wallet import --private-key 5Jjx6z5SJ7WhVU2bgG2si6Y1up1JTXHj7qhC9kKUXPXb1K1Xnj6
-    cleos wallet import --private-key 5HyQUNxE9T83RLiS9HdZeJck5WRqNSSzVztZ3JwYvkYPrG8Ca1U
-    cleos wallet import --private-key 5KZC9soBHR4AF1kt93pCNfjSLPJN9y51AKR4r4vvPsiPvFdLG3t
-    cleos wallet import --private-key 5K9dtgQXBCggrMugEAxsBfcUZ8mmnbDpiZZYt7RvoxwChqiFdS1
-    cleos wallet import --private-key 5JU8qQMV3cD4HzA14meGEBWwWxNWAk9QAebSkQotv4wXHkKncNh
-    cleos wallet import --private-key 5JU8qQMV3cD4HzA14meGEBWwWxNWAk9QAebSkQotv4wXHkKncNh
-    cleos wallet import --private-key 5JJB2Ut8NLJXkADonL8GBH6q8vVZq9BK2zTLTrHh8bURFG2tQia
-    cleos wallet import --private-key 5Jr6r8roVHE9NWUX1oag39pBxRwNeD2D6mgeityBbvorge8YA6n
+    cleos wallet import --private-key 5JVvgRBGKXSzLYMHgyMFH5AHjDzrMbyEPRdj8J6EVrXJs8adFpK # everipediaiq
+    cleos wallet import --private-key 5KBhzoszXcrphWPsuyTxoKJTtMMcPhQYwfivXxma8dDeaLG7Hsq # eparticlectr
+    cleos wallet import --private-key 5J9UYL9VcDfykAB7mcx9nFfRKki5djG9AXGV6DJ8d5XPYDJDyUy # eptestusersa
+    cleos wallet import --private-key 5HtnwWCbMpR1ATYoXY4xb1E4HAU9mzGvDrawyK5May68cYrJR7r # eptestusersb
+    cleos wallet import --private-key 5Jjx6z5SJ7WhVU2bgG2si6Y1up1JTXHj7qhC9kKUXPXb1K1Xnj6 # eptestusersc
+    cleos wallet import --private-key 5HyQUNxE9T83RLiS9HdZeJck5WRqNSSzVztZ3JwYvkYPrG8Ca1U # eptestusersd
+    cleos wallet import --private-key 5KZC9soBHR4AF1kt93pCNfjSLPJN9y51AKR4r4vvPsiPvFdLG3t # eptestuserse
+    cleos wallet import --private-key 5K9dtgQXBCggrMugEAxsBfcUZ8mmnbDpiZZYt7RvoxwChqiFdS1 # eptestusersf
+    cleos wallet import --private-key 5JU8qQMV3cD4HzA14meGEBWwWxNWAk9QAebSkQotv4wXHkKncNh # eptestusersg
+    cleos wallet import --private-key 5Hs2n2AHvWaUFjXWarmexxA6EULosaVneSeoAu1JHfMJRNugDx5 # iqutxoiqutxo
 
     # Create user accounts
     echo -e "${CYAN}-----------------------USER ACCOUNTS-----------------------${NC}"
     cleos system newaccount eosio everipediaiq EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
     cleos system newaccount eosio eparticlectr EOS8dYVzNktdam3Vn31mSXcmbj7J7MzGNudqKb3MLW1wdxWJpEbrw --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
+    cleos system newaccount eosio iqutxoiqutxo EOS59w4biA5MRe6q746frzQDTvDJQpsfj9Nd6howM4FX7vLhiz4qz --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
     cleos system newaccount eosio eptestusersa EOS6HfoynFKZ1Msq1bKNwtSTTpEu8NssYMcgsy6nHqhRp3mz7tNkB --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
     cleos system newaccount eosio eptestusersb EOS68s2PrHPDeGWTKczrNZCn4MDMgoW6SFHuTQhXYUNLT1hAmJei8 --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
     cleos system newaccount eosio eptestusersc EOS7LpZDPKwWWXgJnNYnX6LCBgNqCEqugW9oUQr7XqcSfz7aSFk8o --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
@@ -196,6 +195,7 @@ if [ $BOOTSTRAP -eq 1 ]; then
     echo -e "${CYAN}-----------------------DEPLOYING EVERIPEDIA CONTRACTS-----------------------${NC}"
     cleos set contract everipediaiq everipediaiq/
     cleos set contract eparticlectr eparticlectr/
+    cleos set contract iqutxoiqutxo iqutxo/
     cleos set account permission everipediaiq active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p everipediaiq
     cleos set account permission eparticlectr active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p eparticlectr
 
@@ -203,12 +203,14 @@ if [ $BOOTSTRAP -eq 1 ]; then
     echo -e "${CYAN}-----------------------CREATING IQ TOKEN-----------------------${NC}"
     cleos push action everipediaiq create "[\"everipediaiq\", \"100000000000.000 IQ\"]" -p everipediaiq@active
     cleos push action everipediaiq issue "[\"everipediaiq\", \"10000000000.000 IQ\", \"initial supply\"]" -p everipediaiq@active
+    cleos push action iqutxoiqutxo create "[\"iqutxoiqutxo\", \"1000000000.000 IQUTXO\"]" -p iqutxoiqutxo@active
 fi
 
 ## Deploy contracts
 echo -e "${CYAN}-----------------------DEPLOYING EVERIPEDIA CONTRACTS AGAIN-----------------------${NC}"
 cleos set contract everipediaiq everipediaiq/
 cleos set contract eparticlectr eparticlectr/
+cleos set contract iqutxoiqutxo iqutxo/
 
 # No transfer fees for privileged accounts
 OLD_BALANCE1=$(balance eptestusersa)
@@ -222,7 +224,7 @@ OLD_FEE_BALANCE=$(balance epiqtokenfee)
 OLD_SUPPLY=$(cleos get table everipediaiq IQ stat | jq ".rows[0].supply" | tr -d '"' | awk '{print $1}')
 
 # Test IQ transfers
-echo -e "${CYAN}-----------------------MOVING TOKENS FROM THE CONTRACT TO SOME USERS, UNSAFELY-----------------------${NC}"
+echo -e "${CYAN}-----------------------MOVING TOKENS FROM THE CONTRACT TO SOME USERS -----------------------${NC}"
 cleos push action everipediaiq transfer '["everipediaiq", "eptestusersa", "10000.000 IQ", "test"]' -p everipediaiq
 assert $(bc <<< "$? == 0")
 cleos push action everipediaiq transfer '["everipediaiq", "eptestusersb", "10000.000 IQ", "test"]' -p everipediaiq
@@ -286,8 +288,6 @@ NEW_BALANCE5=$(balance eptestuserse)
 NEW_BALANCE6=$(balance eptestusersf)
 NEW_BALANCE7=$(balance eptestusersg)
 
-echo $OLD_BALANCE1
-echo $NEW_BALANCE1
 assert $(bc <<< "$OLD_BALANCE1 - $NEW_BALANCE1 == 6000")
 assert $(bc <<< "$NEW_BALANCE2 - $OLD_BALANCE2 == 1000")
 assert $(bc <<< "$NEW_BALANCE3 - $OLD_BALANCE3 == 1000")
@@ -303,6 +303,46 @@ assert $(bc <<< "$? == 1")
 cleos push action everipediaiq transfer '["eptestusersa", "eptestusersb", "0.000 IQ", "test"]' -p eptestusersa
 assert $(bc <<< "$? == 1")
 cleos push action everipediaiq transfer '["eptestusersa", "eptestusersb", "-100.000 IQ", "test"]' -p eptestusersa
+assert $(bc <<< "$? == 1")
+
+echo -e "${CYAN}-----------------------TRANSFER AND ISSUE UTXO-----------------------${NC}"
+cleos push action everipediaiq transfer '["everipediaiq", "iqutxoiqutxo", "1000000.000 IQ", "test"]' -p everipediaiq
+assert $(bc <<< "$? == 0")
+# private key: 5KQRA6BBHEHSbmvio3S9oFfVERvv79XXppmYExMouSBqPkZTD79
+cleos push action iqutxoiqutxo issue '["EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr", "10000000.000 IQUTXO", "issue UTXO"]' -p iqutxoiqutxo
+assert $(bc <<< "$? == 0")
+
+echo -e "${CYAN}-----------------------UTXO TRANSFERS-----------------------${NC}"
+LAST_NONCE1=$(cleos get table iqutxoiqutxo iqutxoiqutxo accounts | jq '.rows[] | select(.publickey == "EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr") | .last_nonce')
+LAST_NONCE2=$(cleos get table iqutxoiqutxo iqutxoiqutxo accounts | jq '.rows[] | select(.publickey == "EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt") | .last_nonce')
+if [ -z $LAST_NONCE1 ]; then LAST_NONCE1=0; fi
+if [ -z $LAST_NONCE2 ]; then LAST_NONCE2=0; fi
+NONCE1=$(echo "$LAST_NONCE1 + 1" | bc)
+NONCE2=$(echo "$LAST_NONCE1 + 2" | bc)
+NONCE3=$(echo "$LAST_NONCE2 + 1" | bc)
+NONCE4=$(echo "$LAST_NONCE1 + 3" | bc)
+NONCE5=$(echo "$LAST_NONCE1 + 4" | bc)
+SIG1=$(node iqutxo/js/sign.js EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt 2000000 10 $NONCE1 "test transfer" 5KQRA6BBHEHSbmvio3S9oFfVERvv79XXppmYExMouSBqPkZTD79)
+cleos push action iqutxoiqutxo transfer "[\"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt\", \"2000.000 IQUTXO\", \"0.010 IQUTXO\", $NONCE1, \"test transfer\", \"$SIG1\"]" -p eptestusersb
+assert $(bc <<< "$? == 0")
+SIG2=$(node iqutxo/js/sign.js EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr EOS7vr4QpGP7ixUSeumeEahHQ99YDE5jiBucf1B2zhuidHzeni1dD 100000 10 $NONCE2 "increment nonce + different relayer" 5KQRA6BBHEHSbmvio3S9oFfVERvv79XXppmYExMouSBqPkZTD79)
+cleos push action iqutxoiqutxo transfer "[\"EOS76Pcyw1Hd7hW8hkZdUE1DQ3UiRtjmAKQ3muKwidRqmaM8iNtDy\", \"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS7vr4QpGP7ixUSeumeEahHQ99YDE5jiBucf1B2zhuidHzeni1dD\", \"100.000 IQUTXO\", \"0.010 IQUTXO\", $NONCE2, \"increment nonce + different relayer\", \"$SIG2\"]" -p eptestusersc
+assert $(bc <<< "$? == 0")
+SIG3=$(node iqutxo/js/sign.js EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt EOS6HfoynFKZ1Msq1bKNwtSTTpEu8NssYMcgsy6nHqhRp3mz7tNkB 100000 10 $NONCE3 "test transfer" 5HyQUNxE9T83RLiS9HdZeJck5WRqNSSzVztZ3JwYvkYPrG8Ca1U)
+cleos push action iqutxoiqutxo transfer "[\"EOS76Pcyw1Hd7hW8hkZdUE1DQ3UiRtjmAKQ3muKwidRqmaM8iNtDy\", \"EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt\", \"EOS6HfoynFKZ1Msq1bKNwtSTTpEu8NssYMcgsy6nHqhRp3mz7tNkB\", \"100.000 IQUTXO\", \"0.010 IQUTXO\", $NONCE3, \"test transfer\", \"$SIG3\"]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+
+echo -e "${CYAN}-----------------------FAILED UTXO TRANSFERS-----------------------${NC}"
+SIG4=$(node iqutxo/js/sign.js EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt 2000000 10 $NONCE1 "nonce too small" 5KQRA6BBHEHSbmvio3S9oFfVERvv79XXppmYExMouSBqPkZTD79)
+cleos push action iqutxoiqutxo transfer "[\"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt\", \"2000.000 IQUTXO\", \"0.010 IQUTXO\", $NONCE1, \"nonce too small\", \"$SIG4\"]" -p eptestusersb
+assert $(bc <<< "$? == 1")
+BALANCE=$(cleos get table iqutxoiqutxo iqutxoiqutxo accounts | jq '.rows[] | select(.publickey == "EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr") | .balance' | tr -d '"' | awk '{print $1}')
+BALANCE_BITES=$(echo "scale=0;($BALANCE * 1000)/1" | bc)
+SIG5=$(node iqutxo/js/sign.js EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt $BALANCE_BITES 10 $NONCE4 "insufficient balance" 5KQRA6BBHEHSbmvio3S9oFfVERvv79XXppmYExMouSBqPkZTD79)
+cleos push action iqutxoiqutxo transfer "[\"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt\", \"$BALANCE IQUTXO\", \"0.010 IQUTXO\", $NONCE4, \"insufficient balance\", \"$SIG5\"]" -p eptestusersb
+assert $(bc <<< "$? == 1")
+SIG6=$(node iqutxo/js/sign.js EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt 20000 $BALANCE_BITES $NONCE4 "too high fee" 5KQRA6BBHEHSbmvio3S9oFfVERvv79XXppmYExMouSBqPkZTD79)
+cleos push action iqutxoiqutxo transfer "[\"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt\", \"20.000 IQUTXO\", \"$BALANCE IQUTXO\", $NONCE4, \"too high fee\", \"$SIG6\"]" -p eptestusersb
 assert $(bc <<< "$? == 1")
 
 # Burns
