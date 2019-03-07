@@ -306,9 +306,9 @@ assert $(bc <<< "$? == 1")
 cleos push action everipediaiq transfer '["eptestusersa", "eptestusersb", "-100.000 IQ", "test"]' -p eptestusersa
 assert $(bc <<< "$? == 1")
 
-#echo -e "${CYAN}-----------------------TRANSFER AND ISSUE UTXO-----------------------${NC}"
-#cleos push action everipediaiq transfer '["everipediaiq", "iqutxoiqutxo", "1000000.000 IQ", "EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr"]' -p everipediaiq
-#assert $(bc <<< "$? == 0")
+echo -e "${CYAN}-----------------------TRANSFER AND ISSUE UTXO-----------------------${NC}"
+cleos push action everipediaiq transfer '["everipediaiq", "iqutxoiqutxo", "1000000.000 IQ", "EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr"]' -p everipediaiq
+assert $(bc <<< "$? == 0")
 
 echo -e "${CYAN}-----------------------UTXO TRANSFERS-----------------------${NC}"
 LAST_NONCE1=$(cleos get table iqutxoiqutxo iqutxoiqutxo accounts | jq '.rows[] | select(.publickey == "EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr") | .last_nonce')
@@ -324,48 +324,47 @@ NONCE6=$(echo "$LAST_NONCE1 + 5" | bc)
 SIG1=$(node iqutxo/js/sign.js EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt 2000000 10 $NONCE1 "test transfer" 5KQRA6BBHEHSbmvio3S9oFfVERvv79XXppmYExMouSBqPkZTD79)
 cleos push action iqutxoiqutxo transfer "[\"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt\", \"2000.000 IQUTXO\", \"0.010 IQUTXO\", $NONCE1, \"test transfer\", \"$SIG1\"]" -p eptestusersb
 assert $(bc <<< "$? == 0")
-#SIG2=$(node iqutxo/js/sign.js EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr EOS7vr4QpGP7ixUSeumeEahHQ99YDE5jiBucf1B2zhuidHzeni1dD 100000 10 $NONCE2 "increment nonce + different relayer" 5KQRA6BBHEHSbmvio3S9oFfVERvv79XXppmYExMouSBqPkZTD79)
-#cleos push action iqutxoiqutxo transfer "[\"EOS76Pcyw1Hd7hW8hkZdUE1DQ3UiRtjmAKQ3muKwidRqmaM8iNtDy\", \"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS7vr4QpGP7ixUSeumeEahHQ99YDE5jiBucf1B2zhuidHzeni1dD\", \"100.000 IQUTXO\", \"0.010 IQUTXO\", $NONCE2, \"increment nonce + different relayer\", \"$SIG2\"]" -p eptestusersc
-#assert $(bc <<< "$? == 0")
-#SIG3=$(node iqutxo/js/sign.js EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt EOS6HfoynFKZ1Msq1bKNwtSTTpEu8NssYMcgsy6nHqhRp3mz7tNkB 100000 10 $NONCE3 "test transfer" 5HyQUNxE9T83RLiS9HdZeJck5WRqNSSzVztZ3JwYvkYPrG8Ca1U)
-#cleos push action iqutxoiqutxo transfer "[\"EOS76Pcyw1Hd7hW8hkZdUE1DQ3UiRtjmAKQ3muKwidRqmaM8iNtDy\", \"EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt\", \"EOS6HfoynFKZ1Msq1bKNwtSTTpEu8NssYMcgsy6nHqhRp3mz7tNkB\", \"100.000 IQUTXO\", \"0.010 IQUTXO\", $NONCE3, \"test transfer\", \"$SIG3\"]" -p eptestusersa
-#assert $(bc <<< "$? == 0")
+SIG2=$(node iqutxo/js/sign.js EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr EOS7vr4QpGP7ixUSeumeEahHQ99YDE5jiBucf1B2zhuidHzeni1dD 100000 10 $NONCE2 "increment nonce + different relayer" 5KQRA6BBHEHSbmvio3S9oFfVERvv79XXppmYExMouSBqPkZTD79)
+cleos push action iqutxoiqutxo transfer "[\"EOS76Pcyw1Hd7hW8hkZdUE1DQ3UiRtjmAKQ3muKwidRqmaM8iNtDy\", \"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS7vr4QpGP7ixUSeumeEahHQ99YDE5jiBucf1B2zhuidHzeni1dD\", \"100.000 IQUTXO\", \"0.010 IQUTXO\", $NONCE2, \"increment nonce + different relayer\", \"$SIG2\"]" -p eptestusersc
+assert $(bc <<< "$? == 0")
+SIG3=$(node iqutxo/js/sign.js EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt EOS6HfoynFKZ1Msq1bKNwtSTTpEu8NssYMcgsy6nHqhRp3mz7tNkB 100000 10 $NONCE3 "test transfer" 5HyQUNxE9T83RLiS9HdZeJck5WRqNSSzVztZ3JwYvkYPrG8Ca1U)
+cleos push action iqutxoiqutxo transfer "[\"EOS76Pcyw1Hd7hW8hkZdUE1DQ3UiRtjmAKQ3muKwidRqmaM8iNtDy\", \"EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt\", \"EOS6HfoynFKZ1Msq1bKNwtSTTpEu8NssYMcgsy6nHqhRp3mz7tNkB\", \"100.000 IQUTXO\", \"0.010 IQUTXO\", $NONCE3, \"test transfer\", \"$SIG3\"]" -p eptestusersa
+assert $(bc <<< "$? == 0")
 
-#echo -e "${CYAN}-----------------------FAILED UTXO TRANSFERS-----------------------${NC}"
-#SIG4=$(node iqutxo/js/sign.js EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt 2000000 10 $NONCE1 "nonce too small" 5KQRA6BBHEHSbmvio3S9oFfVERvv79XXppmYExMouSBqPkZTD79)
-#cleos push action iqutxoiqutxo transfer "[\"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt\", \"2000.000 IQUTXO\", \"0.010 IQUTXO\", $NONCE1, \"nonce too small\", \"$SIG4\"]" -p eptestusersb
-#assert $(bc <<< "$? == 1")
-#
-#BALANCE=$(cleos get table iqutxoiqutxo iqutxoiqutxo accounts | jq '.rows[] | select(.publickey == "EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr") | .balance' | tr -d '"' | awk '{print $1}')
-#BALANCE_BITES=$(echo "scale=0;($BALANCE * 1000)/1" | bc)
-#SIG5=$(node iqutxo/js/sign.js EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt $BALANCE_BITES 10 $NONCE4 "insufficient balance" 5KQRA6BBHEHSbmvio3S9oFfVERvv79XXppmYExMouSBqPkZTD79)
-#cleos push action iqutxoiqutxo transfer "[\"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt\", \"$BALANCE IQUTXO\", \"0.010 IQUTXO\", $NONCE4, \"insufficient balance\", \"$SIG5\"]" -p eptestusersb
-#assert $(bc <<< "$? == 1")
-#
-#SIG6=$(node iqutxo/js/sign.js EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt 20000 $BALANCE_BITES $NONCE4 "too high fee" 5KQRA6BBHEHSbmvio3S9oFfVERvv79XXppmYExMouSBqPkZTD79)
-#cleos push action iqutxoiqutxo transfer "[\"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt\", \"20.000 IQUTXO\", \"$BALANCE IQUTXO\", $NONCE4, \"too high fee\", \"$SIG6\"]" -p eptestusersb
-#assert $(bc <<< "$? == 1")
-#
-#echo -e "${CYAN}-----------------------UTXO WITHDRAWAL-----------------------${NC}"
-#SIG7=$(node iqutxo/js/sign.js EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr EOS1111111111111111111111111111111114T1Anm 20000 10 $NONCE5 "eptestusersa" 5KQRA6BBHEHSbmvio3S9oFfVERvv79XXppmYExMouSBqPkZTD79)
-#cleos push action iqutxoiqutxo transfer "[\"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS1111111111111111111111111111111114T1Anm\", \"20.000 IQUTXO\", \"0.010 IQUTXO\", $NONCE5, \"eptestusersa\", \"$SIG7\"]" -p eptestusersb
-#assert $(bc <<< "$? == 0")
-#
-#echo -e "${CYAN}-----------------------BAD UTXO WITHDRAWALS-----------------------${NC}"
-#SIG8=$(node iqutxo/js/sign.js EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr EOS1111111111111111111111111111111114T1Anm $BALANCE_BITES 10 $NONCE6 "eptestusersa" 5KQRA6BBHEHSbmvio3S9oFfVERvv79XXppmYExMouSBqPkZTD79)
-#cleos push action iqutxoiqutxo transfer "[\"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS1111111111111111111111111111111114T1Anm\", \"$BALANCE IQUTXO\", \"0.010 IQUTXO\", $NONCE6, \"eptestusersa\", \"$SIG8\"]" -p eptestusersb
-#assert $(bc <<< "$? == 1")
+echo -e "${CYAN}-----------------------FAILED UTXO TRANSFERS-----------------------${NC}"
+SIG4=$(node iqutxo/js/sign.js EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt 2000000 10 $NONCE1 "nonce too small" 5KQRA6BBHEHSbmvio3S9oFfVERvv79XXppmYExMouSBqPkZTD79)
+cleos push action iqutxoiqutxo transfer "[\"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt\", \"2000.000 IQUTXO\", \"0.010 IQUTXO\", $NONCE1, \"nonce too small\", \"$SIG4\"]" -p eptestusersb
+assert $(bc <<< "$? == 1")
+
+BALANCE=$(cleos get table iqutxoiqutxo iqutxoiqutxo accounts | jq '.rows[] | select(.publickey == "EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr") | .balance' | tr -d '"' | awk '{print $1}')
+BALANCE_BITES=$(echo "scale=0;($BALANCE * 1000)/1" | bc)
+SIG5=$(node iqutxo/js/sign.js EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt $BALANCE_BITES 10 $NONCE4 "insufficient balance" 5KQRA6BBHEHSbmvio3S9oFfVERvv79XXppmYExMouSBqPkZTD79)
+cleos push action iqutxoiqutxo transfer "[\"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt\", \"$BALANCE IQUTXO\", \"0.010 IQUTXO\", $NONCE4, \"insufficient balance\", \"$SIG5\"]" -p eptestusersb
+assert $(bc <<< "$? == 1")
+
+SIG6=$(node iqutxo/js/sign.js EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt 20000 $BALANCE_BITES $NONCE4 "too high fee" 5KQRA6BBHEHSbmvio3S9oFfVERvv79XXppmYExMouSBqPkZTD79)
+cleos push action iqutxoiqutxo transfer "[\"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS6KnJPV1mDuS8pYuLucaWzkwbWjGPeJsfQDpqc7NZ4F7zTQh4Wt\", \"20.000 IQUTXO\", \"$BALANCE IQUTXO\", $NONCE4, \"too high fee\", \"$SIG6\"]" -p eptestusersb
+assert $(bc <<< "$? == 1")
+
+echo -e "${CYAN}-----------------------UTXO WITHDRAWAL-----------------------${NC}"
+SIG7=$(node iqutxo/js/sign.js EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr EOS1111111111111111111111111111111114T1Anm 20000 10 $NONCE5 "eptestusersa" 5KQRA6BBHEHSbmvio3S9oFfVERvv79XXppmYExMouSBqPkZTD79)
+cleos push action iqutxoiqutxo transfer "[\"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS1111111111111111111111111111111114T1Anm\", \"20.000 IQUTXO\", \"0.010 IQUTXO\", $NONCE5, \"eptestusersa\", \"$SIG7\"]" -p eptestusersb
+assert $(bc <<< "$? == 0")
+
+echo -e "${CYAN}-----------------------BAD UTXO WITHDRAWALS-----------------------${NC}"
+SIG8=$(node iqutxo/js/sign.js EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr EOS1111111111111111111111111111111114T1Anm $BALANCE_BITES 10 $NONCE6 "eptestusersa" 5KQRA6BBHEHSbmvio3S9oFfVERvv79XXppmYExMouSBqPkZTD79)
+cleos push action iqutxoiqutxo transfer "[\"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS1111111111111111111111111111111114T1Anm\", \"$BALANCE IQUTXO\", \"0.010 IQUTXO\", $NONCE6, \"eptestusersa\", \"$SIG8\"]" -p eptestusersb
+assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}-----------------------CHECK RESERVE AND BALANCES-----------------------${NC}"
 SUM_BALANCES=$(cleos get table iqutxoiqutxo iqutxoiqutxo accounts | jq ".rows[].balance" | tr -d '"' | awk '{print $1}' | paste -sd+ | bc)
 SUPPLY=$(cleos get table iqutxoiqutxo 22333642392029443 stats | jq ".rows[0].supply" | tr -d '"' | awk '{print $1}')
 RESERVE=$(cleos get table everipediaiq iqutxoiqutxo accounts | jq ".rows[0].balance" | tr -d '"' | awk '{print $1}')
-echo "SUM_BALANCES: $SUM_BALANCES"
-echo "SUPPLY: $SUPPLY"
-echo "RESERVE: $RESERVE"
+echo -e "   ${CYAN}SUM_BALANCES: $SUM_BALANCES${NC}"
+echo -e "   ${CYAN}SUPPLY: $SUM_BALANCES${NC}"
+echo -e "   ${CYAN}RESERVE: $SUM_BALANCES${NC}"
 assert $(bc <<< "$SUM_BALANCES == $SUPPLY")
 assert $(bc <<< "$SUM_BALANCES == $RESERVE")
-exit
 
 # Burns
 echo -e "${CYAN}-----------------------TESTING BURNS-----------------------${NC}"
@@ -392,26 +391,6 @@ cleos push action everipediaiq burn '["eptestusersg", "1000.000 IQ", "test"]' -p
 assert $(bc <<< "$? == 1")
 cleos push action everipediaiq burn '["eptestusersf", "10000000.000 IQ", "test"]' -p eptestusersf
 assert $(bc <<< "$? == 1")
-
-# Buy IQ from DEX
-# echo -e "Below should pass"
-# cleos push action everipediaiq paytxfee '["everipediaiq", "200000.000 IQ", "test"]' -p everipediaiq
-#
-# OLD_BALANCE1=$(balance eptestusersa)
-# OLD_BALANCE2=$(balance eptestusersb)
-# OLD_BALANCE3=$(balance eptestusersc)
-#
-# echo -e "Current Fee Balance: $OLD_FEE_BALANCE"
-# cleos transfer eptestusersa epiqtokenfee "10 EOS"
-# assert $(bc <<< "$? == 0")
-# cleos transfer eptestusersb epiqtokenfee "1 EOS"
-# assert $(bc <<< "$? == 0")
-# cleos transfer eptestusersb epiqtokenfee "200 EOS"
-# assert $(bc <<< "$? == 0")
-#
-# NEW_BALANCE1=$(balance eptestusersa)
-# NEW_BALANCE2=$(balance eptestusersb)
-# NEW_BALANCE3=$(balance eptestusersc)
 
 # Proposals
 echo -e "${CYAN}-----------------------TEST PROPOSALS-----------------------${NC}"

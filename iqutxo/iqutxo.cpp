@@ -141,8 +141,12 @@ void iqutxo::transfer(
     // verify signature
     assert_recover_key(digest, sig, from);
     
+    // update last nonce
+    pk_index.modify(account_it, _self, [&]( auto& n ){
+        n.last_nonce = nonce;
+    });
+
     // always subtract the quantity from the sender
-    print(bytetohex((unsigned char *)from.data.data(), 33).c_str(), ";");
     sub_balance(from, quantity);
 
     // Create the public_key object for the WITHDRAW_ADDRESS
@@ -152,7 +156,6 @@ void iqutxo::transfer(
     // if the to address is the withdraw address, send an IQ transfer out
     // and update the circulating supply
     if (to == withdraw_key) {
-        print("Withdrawal;");
         asset iq_quantity = quantity;
         iq_quantity.symbol = IQ_SYMBOL;
         name withdraw_account = name(memo);
@@ -177,13 +180,7 @@ void iqutxo::transfer(
         sub_balance(from, fee);
         add_balance(relayer, fee);
     }
-    
-    // update last nonce
-    account_it = pk_index.find(public_key_to_fixed_bytes(from));
-    pk_index.modify(account_it, _self, [&]( auto& n ){
-        n.last_nonce = nonce;
-    });
-  
+
 }
 
 void iqutxo::sub_balance(public_key sender, asset value) {
@@ -196,7 +193,6 @@ void iqutxo::sub_balance(public_key sender, asset value) {
     if (from.balance.amount == value.amount) {
         from_acts.erase(from);
     } else {
-        print("subtracting balance ", value, ";");
         from_acts.modify(from, _self, [&]( auto& a ) {
             a.balance -= value;
         });
