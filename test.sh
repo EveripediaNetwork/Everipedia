@@ -306,11 +306,10 @@ cleos push action everipediaiq transfer '["eptestusersa", "eptestusersb", "-100.
 assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}-----------------------TRANSFER AND ISSUE UTXO-----------------------${NC}"
-cleos push action everipediaiq transfer '["everipediaiq", "iqutxoiqutxo", "1000000.000 IQ", "test"]' -p everipediaiq
+cleos push action everipediaiq transfer '["everipediaiq", "iqutxoiqutxo", "1000000.000 IQ", "EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr"]' -p everipediaiq
 assert $(bc <<< "$? == 0")
-# private key: 5KQRA6BBHEHSbmvio3S9oFfVERvv79XXppmYExMouSBqPkZTD79
-cleos push action iqutxoiqutxo issue '["EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr", "10000000.000 IQUTXO", "issue UTXO"]' -p iqutxoiqutxo
-assert $(bc <<< "$? == 0")
+
+exit
 
 echo -e "${CYAN}-----------------------UTXO TRANSFERS-----------------------${NC}"
 LAST_NONCE1=$(cleos get table iqutxoiqutxo iqutxoiqutxo accounts | jq '.rows[] | select(.publickey == "EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr") | .last_nonce')
