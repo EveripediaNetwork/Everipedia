@@ -87,14 +87,14 @@ void iqutxo::transfer(
             public_key relayer,
             public_key from,
             public_key to,
-            asset amount,
+            asset quantity,
             asset fee,
             uint64_t nonce,
             string memo,
             signature sig) {
 
     // get currency information
-    auto sym = amount.symbol.raw();
+    auto sym = quantity.symbol.raw();
     stats statstable(_self, sym);
     const auto& st = statstable.get(sym);
 
@@ -108,11 +108,13 @@ void iqutxo::transfer(
     
     // validate inputs
     eosio_assert(from != to, "cannot transfer to self");
-    eosio_assert(amount.is_valid(), "invalid quantity" );
+    eosio_assert(quantity.is_valid(), "invalid quantity" );
     eosio_assert(fee.is_valid(), "invalid quantity" );
-    eosio_assert(amount.amount > 0, "must transfer positive quantity");
+    eosio_assert(quantity.amount > 0, "must transfer positive quantity");
     eosio_assert(fee.amount >= 0, "fee must be non-negative");
-    eosio_assert(amount.symbol == st.supply.symbol, "symbol precision mismatch");
+    eosio_assert(quantity.amount <= account_it->balance.amount, "user has insufficient balance");
+    eosio_assert(quantity.amount + fee.amount <= account_it->balance.amount, "user has insufficient balance to cover fee");
+    eosio_assert(quantity.symbol == st.supply.symbol, "symbol precision mismatch");
     eosio_assert(fee.symbol == st.supply.symbol, "symbol precision mismatch");
     eosio_assert(memo.size() <= 163, "memo has more than 164 bytes");
     eosio_assert(nonce > last_nonce, "Nonce must be greater than last nonce. This transaction may already have been relayed.");
@@ -128,7 +130,7 @@ void iqutxo::transfer(
     rawtx[1] = length;
     memcpy(rawtx + 2, from.data.data(), 33);
     memcpy(rawtx + 35, to.data.data(), 33);
-    memcpy(rawtx + 68, (uint8_t *)&amount.amount, 8);
+    memcpy(rawtx + 68, (uint8_t *)&quantity.amount, 8);
     memcpy(rawtx + 76, (uint8_t *)&fee.amount, 8);
     memcpy(rawtx + 84, (uint8_t *)&nonce, 8);
     memcpy(rawtx + 92, memo.c_str(), memo.size());
@@ -139,9 +141,36 @@ void iqutxo::transfer(
     // verify signature
     assert_recover_key(digest, sig, from);
     
-    // update balances with main amount
-    sub_balance(from, amount);
-    add_balance(to, amount);
+    // always subtract the quantity from the sender
+    print(bytetohex((unsigned char *)from.data.data(), 33).c_str(), ";");
+    sub_balance(from, quantity);
+
+    // Create the public_key object for the WITHDRAW_ADDRESS
+    public_key withdraw_key = to;
+    memcpy(withdraw_key.data.data(), WITHDRAW_KEY_BYTES, 33);
+    
+    // if the to address is the withdraw address, send an IQ transfer out
+    // and update the circulating supply
+    if (to == withdraw_key) {
+        print("Withdrawal;");
+        asset iq_quantity = quantity;
+        iq_quantity.symbol = IQ_SYMBOL;
+        name withdraw_account = name(memo);
+        action(
+            permission_level{ _self , name("active") }, 
+            name("everipediaiq") , name("transfer"),
+            std::make_tuple( _self, withdraw_account, iq_quantity, std::string("withdraw IQ from UTXO"))
+        ).send();
+
+        stats statstable(_self, quantity.symbol.raw());
+        auto& supply_it = statstable.get(quantity.symbol.raw(), "IQUTXO symbol is missing. Create it first");
+        statstable.modify(supply_it, _self, [&](auto& s) {
+           s.supply -= quantity;
+        });
+    }
+    // add the balance if it's not a withdrawal
+    else
+        add_balance(to, quantity);
   
     // update balances with fees
     if (fee.amount > 0) {
@@ -167,6 +196,7 @@ void iqutxo::sub_balance(public_key sender, asset value) {
     if (from.balance.amount == value.amount) {
         from_acts.erase(from);
     } else {
+        print("subtracting balance ", value, ";");
         from_acts.modify(from, _self, [&]( auto& a ) {
             a.balance -= value;
         });
