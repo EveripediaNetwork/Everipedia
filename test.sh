@@ -355,6 +355,16 @@ echo -e "${CYAN}-----------------------BAD UTXO WITHDRAWALS---------------------
 SIG8=$(node iqutxo/js/sign.js EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr EOS1111111111111111111111111111111114T1Anm $BALANCE_BITES 10 $NONCE6 "eptestusersa" 5KQRA6BBHEHSbmvio3S9oFfVERvv79XXppmYExMouSBqPkZTD79)
 cleos push action iqutxoiqutxo transfer "[\"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS1111111111111111111111111111111114T1Anm\", \"$BALANCE IQUTXO\", \"0.010 IQUTXO\", $NONCE6, \"eptestusersa\", \"$SIG8\"]" -p eptestusersb
 assert $(bc <<< "$? == 1")
+# non-existent to account
+SIG9=$(node iqutxo/js/sign.js EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr EOS1111111111111111111111111111111114T1Anm 20000 10 $NONCE6 "tensmensdens" 5KQRA6BBHEHSbmvio3S9oFfVERvv79XXppmYExMouSBqPkZTD79)
+cleos push action iqutxoiqutxo transfer "[\"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS1111111111111111111111111111111114T1Anm\", \"20.000 IQUTXO\", \"0.010 IQUTXO\", $NONCE6, \"tensmensdens\", \"$SIG9\"]" -p eptestusersb
+assert $(bc <<< "$? == 1")
+# nonsensincally long memo
+SIG10=$(node iqutxo/js/sign.js EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr EOS1111111111111111111111111111111114T1Anm 20000 10 $NONCE6 "gumberbalderdash" 5KQRA6BBHEHSbmvio3S9oFfVERvv79XXppmYExMouSBqPkZTD79)
+cleos push action iqutxoiqutxo transfer "[\"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS1111111111111111111111111111111114T1Anm\", \"20.000 IQUTXO\", \"0.010 IQUTXO\", $NONCE6, \"gumberbalderdash\", \"$SIG10\"]" -p eptestusersb
+assert $(bc <<< "$? == 1")
+
+exit
 
 echo -e "${CYAN}-----------------------CHECK RESERVE AND BALANCES-----------------------${NC}"
 SUM_BALANCES=$(cleos get table iqutxoiqutxo iqutxoiqutxo accounts | jq ".rows[].balance" | tr -d '"' | awk '{print $1}' | paste -sd+ | bc)
