@@ -47,7 +47,7 @@ const uint64_t MAX_LANG_CODE_SIZE = 7;
 const uint64_t MIN_LANG_CODE_SIZE = 2;
 const uint64_t MAX_COMMENT_SIZE = 256;
 const uint64_t MAX_MEMO_SIZE = 32;
-const uint64_t MAX_IPFS_SIZE = 100;
+const uint64_t MAX_IPFS_SIZE = 60;
 const eosio::symbol IQSYMBOL = symbol(symbol_code("IQ"), 3);
 
 class [[eosio::contract("eparticlectr")]] eparticlectr : public contract {
@@ -122,7 +122,7 @@ public:
     // Edit Proposals
     struct [[eosio::table]] editproposal {
         uint64_t id;
-        int64_t wiki_id; // the ID of the wiki for the proposal
+        uint64_t wiki_id; // the ID of the wiki for the proposal
         name proposer; // account name of the proposer
         std::string slug; // article slug. Size limit is MAX_SLUG_SIZE
         ipfshash_t ipfs_hash; // IPFS hash of the proposed new version
@@ -227,7 +227,6 @@ public:
 
     [[eosio::action]]
     void propose2( name proposer, 
-                  int64_t wiki_id, 
                   std::string slug, 
                   ipfshash_t ipfs_hash, 
                   std::string lang_code,

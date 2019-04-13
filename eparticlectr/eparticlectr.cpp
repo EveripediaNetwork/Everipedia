@@ -104,7 +104,7 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
 // Logic for proposing an edit for an article
 // Users have to trigger this action through the everipediaiq::epartpropose action
 [[eosio::action]]
-void eparticlectr::propose2( name proposer, int64_t wiki_id, std::string slug, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo ) {
+void eparticlectr::propose2( name proposer, std::string slug, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo ) {
     require_auth( _self );
 
     // Table definitions
@@ -113,29 +113,27 @@ void eparticlectr::propose2( name proposer, int64_t wiki_id, std::string slug, i
 
     // Argument checks
     eosio_assert( slug.size() <= MAX_SLUG_SIZE, "slug must be max 256 bytes");
-    eosio_assert( ipfs_hash.size() < MAX_IPFS_SIZE, "IPFS hash is unreasonably long. 100 char limit.");
+    eosio_assert( ipfs_hash.size() < MAX_IPFS_SIZE, "IPFS hash is unreasonably long. 60 char limit.");
     eosio_assert( lang_code.size() <= MAX_LANG_CODE_SIZE, "lang_code must be max 7 bytes");
     eosio_assert( lang_code.size() >= MIN_LANG_CODE_SIZE, "lang_code must be atleast 2 characters");
     eosio_assert( comment.size() < MAX_COMMENT_SIZE, "comment must be less than 256 bytes");
     eosio_assert( memo.size() < MAX_MEMO_SIZE, "memo must be less than 32 bytes");
-    eosio_assert( wiki_id >= -1, "wiki_id must be positive, or -1 for an auto-generated ID");
-    eosio_assert( wiki_id < (int64_t)wikitbl.available_primary_key(), "invalid wiki_id. too large. Specify -1 for an auto-generated ID, or the ID of an existing wiki to update a wiki" );
     eosio_assert( group_id >= -1, "group_id must be greater than -2. Specify -1 for auto-generated ID");
-    eosio_assert( wiki_id == -1 || group_id > -1, "group_id cannot be auto-generated for an existing wiki");
 
-    // check for duplicate slug + lang
+    // check for duplicate slug + lang. grab id if it exists.
+    // otherwise set a new ID for the wiki
+    // group id matches wiki id if set to -1
     auto sluglang_idx = wikitbl.get_index<name("uniqsluglang")>();
     auto existing_wiki_it = sluglang_idx.find(sha256_slug_lang(slug, lang_code));
-    eosio_assert(
-        existing_wiki_it == sluglang_idx.end() || existing_wiki_it->id == wiki_id,
-        "Composite of slug + lang_code must be unique"
-    );
+    int64_t wiki_id;
+    if (existing_wiki_it != sluglang_idx.end())
+        wiki_id = existing_wiki_it->id;
+    else
+        wiki_id = wikitbl.available_primary_key(); 
+    if (group_id == -1) group_id = wiki_id; 
 
     // Place new wikis into the table
-    bool new_wiki = (wiki_id == -1);
-    if (new_wiki) wiki_id = wikitbl.available_primary_key(); // Generate new ID for new wikis
-    if (group_id == -1) group_id = wiki_id; // Autoset group ID if needed
-    if (new_wiki) {
+    if (existing_wiki_it == sluglang_idx.end()) {
         wikitbl.emplace( _self,  [&]( auto& a ) {
             a.id = wiki_id;
             a.slug = slug;
@@ -143,7 +141,6 @@ void eparticlectr::propose2( name proposer, int64_t wiki_id, std::string slug, i
             a.group_id = group_id;
         });
     }
-
 
     // Calculate proposal parameters
     uint64_t proposal_id = proptable.available_primary_key();

@@ -140,7 +140,7 @@ void everipediaiq::add_balance( name owner, asset value, name ram_payer )
 }
 
 [[eosio::action]]
-void everipediaiq::epartpropose( name proposer, int64_t wiki_id, std::string slug, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo) { 
+void everipediaiq::epartpropose( name proposer, std::string slug, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo) { 
     require_auth(proposer);
 
     // Transfer the IQ to the eparticlectr contract for staking
@@ -155,7 +155,7 @@ void everipediaiq::epartpropose( name proposer, int64_t wiki_id, std::string slu
     action(
         permission_level{ ARTICLE_CONTRACT, name("active") }, 
         ARTICLE_CONTRACT, name("propose2"),
-        std::make_tuple( proposer, wiki_id, slug, ipfs_hash, lang_code, group_id, comment, memo )
+        std::make_tuple( proposer, slug, ipfs_hash, lang_code, group_id, comment, memo )
     ).send();
 }
 

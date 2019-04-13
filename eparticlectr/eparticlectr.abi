@@ -1,5 +1,5 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Wed Feb 27 17:30:42 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Fri Apr 12 18:53:04 2019",
     "version": "eosio::abi/1.1",
     "structs": [
         {
@@ -22,7 +22,7 @@
                 },
                 {
                     "name": "wiki_id",
-                    "type": "int64"
+                    "type": "uint64"
                 },
                 {
                     "name": "proposer",
@@ -193,10 +193,6 @@
                 {
                     "name": "proposer",
                     "type": "name"
-                },
-                {
-                    "name": "wiki_id",
-                    "type": "int64"
                 },
                 {
                     "name": "slug",

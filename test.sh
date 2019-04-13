@@ -364,8 +364,6 @@ SIG10=$(node iqutxo/js/sign.js EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9
 cleos push action iqutxoiqutxo transfer "[\"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS7PoGq46ssqeGh8ZNScWQxqbwg5RNvLAwVw3i5dQcZ3a1h9nRyr\", \"EOS1111111111111111111111111111111114T1Anm\", \"20.000 IQUTXO\", \"0.010 IQUTXO\", $NONCE6, \"gumberbalderdash\", \"$SIG10\"]" -p eptestusersb
 assert $(bc <<< "$? == 1")
 
-exit
-
 echo -e "${CYAN}-----------------------CHECK RESERVE AND BALANCES-----------------------${NC}"
 SUM_BALANCES=$(cleos get table iqutxoiqutxo iqutxoiqutxo accounts | jq ".rows[].balance" | tr -d '"' | awk '{print $1}' | paste -sd+ | bc)
 SUPPLY=$(cleos get table iqutxoiqutxo 22333642392029443 stats | jq ".rows[0].supply" | tr -d '"' | awk '{print $1}')
@@ -422,37 +420,31 @@ SLUG6=$(titlegen)
 SLUG7=$(titlegen)
 SLUG8=$(titlegen)
 
-cleos push action everipediaiq epartpropose "[ \"eptestusersa\", -1, \"$SLUG1\", \"$IPFS1\", \"en\", -1, \"new wiki\", \"memoing\" ]" -p eptestusersa
+cleos push action everipediaiq epartpropose "[ \"eptestusersa\", \"$SLUG1\", \"$IPFS1\", \"en\", -1, \"new wiki\", \"memoing\" ]" -p eptestusersa
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartpropose "[ \"eptestusersb\", -1, \"$SLUG2\", \"$IPFS2\", \"kr\", -1, \"new wiki\", \"memoing\" ]" -p eptestusersb
+cleos push action everipediaiq epartpropose "[ \"eptestusersb\", \"$SLUG2\", \"$IPFS2\", \"kr\", -1, \"new wiki\", \"memoing\" ]" -p eptestusersb
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartpropose "[ \"eptestusersc\", -1, \"$SLUG3\", \"$IPFS3\", \"zh-Hans\", -1, \"new wiki\", \"memoing\" ]" -p eptestusersc
+cleos push action everipediaiq epartpropose "[ \"eptestusersc\", \"$SLUG3\", \"$IPFS3\", \"zh-Hans\", -1, \"new wiki\", \"memoing\" ]" -p eptestusersc
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartpropose "[ \"eptestusersd\", -1, \"$SLUG4\", \"$IPFS4\", \"en\", 2, \"new wiki. existing group\", \"memoing\" ]" -p eptestusersd
+cleos push action everipediaiq epartpropose "[ \"eptestusersd\", \"$SLUG4\", \"$IPFS4\", \"en\", 2, \"new wiki. existing group\", \"memoing\" ]" -p eptestusersd
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq epartpropose "[ \"eptestusersf\", 0, \"$SLUG1\", \"$IPFS1\", \"kr\", 0, \"update lang code\", \"memoing\" ]" -p eptestusersf
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"$SLUG1\", \"$IPFS1\", \"kr\", 0, \"update lang code\", \"memoing\" ]" -p eptestusersf
 assert $(bc <<< "$? == 0")
-EXISTING_WIKI_ID=$(cleos get table eparticlectr eparticlectr wikistbl2 -r | jq ".rows[] | select(.slug == \"$SLUG2\") | .id")
-cleos push action everipediaiq epartpropose "[ \"eptestusersf\", $EXISTING_WIKI_ID, \"$SLUG2\", \"$IPFS5\", \"kr\", $EXISTING_WIKI_ID, \"update hash\", \"memoing\" ]" -p eptestusersf
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"$SLUG2\", \"$IPFS5\", \"kr\", 5, \"update hash\", \"memoing\" ]" -p eptestusersf
 assert $(bc <<< "$? == 0")
 
 # Failed proposals
 echo -e "${CYAN}-----------------------NEXT EIGHT PROPOSALS SHOULD FAIL-----------------------${NC}"
-cleos push action everipediaiq epartpropose "[ \"eptestusersf\", -1, \"7-Dwarfs-of Christmas-have-too-long-a-title-matesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersf
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"7-Dwarfs-of Christmas-have-too-long-a-title-matesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersf
 assert $(bc <<< "$? == 1")
-cleos push action everipediaiq epartpropose "[ \"eptestusersf\", 100000000000, \"$SLUG8\", \"$IPFS1\", \"en\", -1, \"specifying too high an ID\", \"memoing\" ]" -p eptestusersf
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"$SLUG8\", \"$IPFS1\", \"en\", -2, \"specifying a group ID below -1\", \"memoing\" ]" -p eptestusersf
 assert $(bc <<< "$? == 1")
-cleos push action everipediaiq epartpropose "[ \"eptestusersf\", -200, \"$SLUG8\", \"$IPFS1\", \"en\", -1, \"specifying a wiki ID below -1\", \"memoing\" ]" -p eptestusersf
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"$SLUG8\", \"$IPFS1\", \"zh-Hans 02\", -1, \"too long a lang code\", \"memoing\" ]" -p eptestusersf
 assert $(bc <<< "$? == 1")
-cleos push action everipediaiq epartpropose "[ \"eptestusersf\", -1, \"$SLUG8\", \"$IPFS1\", \"en\", -2, \"specifying a group ID below -1\", \"memoing\" ]" -p eptestusersf
+echo "$IPFS2 $IPFS1"
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"$SLUG8\", \"$IPFS2 $IPFS1\", \"zh\", -1, \"too long an IPFS string\", \"memoing\" ]" -p eptestusersf
 assert $(bc <<< "$? == 1")
-cleos push action everipediaiq epartpropose "[ \"eptestusersf\", 5, \"$SLUG8\", \"$IPFS1\", \"zh-Hans 02\", -1, \"too long a lang code\", \"memoing\" ]" -p eptestusersf
-assert $(bc <<< "$? == 1")
-cleos push action everipediaiq epartpropose "[ \"eptestusersf\", -200, \"$SLUG8\", \"$IPFS2 $IPFS1\", \"zh\", -1, \"too long an IPFS string\", \"memoing\" ]" -p eptestusersf
-assert $(bc <<< "$? == 1")
-cleos push action everipediaiq epartpropose "[ \"eptestusersf\", -1, \"$SLUG2\", \"$IPFS6\", \"kr\", -1, \"duplicate slug + lang\", \"memoing\" ]" -p eptestusersf
-assert $(bc <<< "$? == 1")
-cleos push action everipediaiq epartpropose "[ \"eptestuserse\", 100038, \"$SLUG8\", \"$IPFS6\", \"en\", 100038, \"wrong authorization\", \"memoing\" ]" -p eptestusersf
+cleos push action everipediaiq epartpropose "[ \"eptestuserse\", \"$SLUG8\", \"$IPFS6\", \"en\", 100038, \"wrong authorization\", \"memoing\" ]" -p eptestusersf
 assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}Wait for proposals to be mined...${NC}"
@@ -691,7 +683,7 @@ cleos push action eparticlectr brainclmid "[$STAKE_ID1]" -p eptestusersf
 assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}-----------------------MAKE ANOTHER PROPOSAL THEN DELETE THE PREVIOUS ONE-----------------------${NC}"
-cleos push action everipediaiq epartpropose "[ \"eptestusersa\", -1, \"$SLUG8\", \"$IPFS4\", \"en\", -1, \"new wiki\", \"memoing\" ]" -p eptestusersa
+cleos push action everipediaiq epartpropose "[ \"eptestusersa\", \"$SLUG8\", \"$IPFS4\", \"en\", -1, \"new wiki\", \"memoing\" ]" -p eptestusersa
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr oldvotepurge "[$PROPID6, 100]" -p eptestusersa
 assert $(bc <<< "$? == 0")
