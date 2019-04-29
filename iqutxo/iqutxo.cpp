@@ -96,15 +96,14 @@ void iqutxo::transfer(
     // get currency information
     auto sym = quantity.symbol.raw();
     stats statstable(_self, sym);
-    const auto& st = statstable.get(sym);
+    const auto& st = statstable.get(sym, "Symbol in quantity does not exist. You must create it first. If it exists, make sure you're using the proper number of decimal places.");
 
     // get last nonce
     accounts accounts_table(_self, _self.value);
     auto pk_index = accounts_table.get_index<name("bypk")>();
     auto account_it = pk_index.find(public_key_to_fixed_bytes(from));
-    uint64_t last_nonce = 0;
-    if (account_it != pk_index.end())
-        last_nonce = account_it->last_nonce;
+    eosio_assert(account_it != pk_index.end(), "from key does not exist in table");
+    uint64_t last_nonce = account_it->last_nonce;
     
     // validate inputs
     eosio_assert(from != to, "cannot transfer to self");
