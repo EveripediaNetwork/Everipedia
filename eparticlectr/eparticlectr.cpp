@@ -112,8 +112,10 @@ void eparticlectr::propose2( name proposer, std::string slug, ipfshash_t ipfs_ha
     propstbl proptable( _self, _self.value );
 
     // Argument checks
+    eosio_assert( slug != "", "slug cannot be empty");
     eosio_assert( slug.size() <= MAX_SLUG_SIZE, "slug must be max 256 bytes");
-    eosio_assert( ipfs_hash.size() < MAX_IPFS_SIZE, "IPFS hash is unreasonably long. 60 char limit.");
+    eosio_assert( ipfs_hash.size() <= MAX_IPFS_SIZE, "IPFS hash is too long. MAX_IPFS_SIZE=46");
+    eosio_assert( ipfs_hash.size() >= MIN_IPFS_SIZE, "IPFS hash is too short. MIN_IPFS_SIZE=46");
     eosio_assert( lang_code.size() <= MAX_LANG_CODE_SIZE, "lang_code must be max 7 bytes");
     eosio_assert( lang_code.size() >= MIN_LANG_CODE_SIZE, "lang_code must be atleast 2 characters");
     eosio_assert( comment.size() < MAX_COMMENT_SIZE, "comment must be less than 256 bytes");

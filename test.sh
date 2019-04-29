@@ -434,17 +434,18 @@ cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"$SLUG2\", \"$
 assert $(bc <<< "$? == 0")
 
 # Failed proposals
-echo -e "${CYAN}-----------------------NEXT EIGHT PROPOSALS SHOULD FAIL-----------------------${NC}"
+echo -e "${CYAN}-----------------------NEXT SET OF PROPOSALS SHOULD FAIL-----------------------${NC}"
 cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"7-Dwarfs-of Christmas-have-too-long-a-title-matesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersf
 assert $(bc <<< "$? == 1")
 cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"$SLUG8\", \"$IPFS1\", \"en\", -2, \"specifying a group ID below -1\", \"memoing\" ]" -p eptestusersf
 assert $(bc <<< "$? == 1")
 cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"$SLUG8\", \"$IPFS1\", \"zh-Hans 02\", -1, \"too long a lang code\", \"memoing\" ]" -p eptestusersf
 assert $(bc <<< "$? == 1")
-echo "$IPFS2 $IPFS1"
 cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"$SLUG8\", \"$IPFS2 $IPFS1\", \"zh\", -1, \"too long an IPFS string\", \"memoing\" ]" -p eptestusersf
 assert $(bc <<< "$? == 1")
 cleos push action everipediaiq epartpropose "[ \"eptestuserse\", \"$SLUG8\", \"$IPFS6\", \"en\", 100038, \"wrong authorization\", \"memoing\" ]" -p eptestusersf
+assert $(bc <<< "$? == 1")
+cleos push action everipediaiq epartpropose "[ \"eptestuserse\", \"\", \"$IPFS6\", \"en\", 100038, \"empty slug\", \"memoing\" ]" -p eptestuserse
 assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}Wait for proposals to be mined...${NC}"

@@ -47,7 +47,8 @@ const uint64_t MAX_LANG_CODE_SIZE = 7;
 const uint64_t MIN_LANG_CODE_SIZE = 2;
 const uint64_t MAX_COMMENT_SIZE = 256;
 const uint64_t MAX_MEMO_SIZE = 32;
-const uint64_t MAX_IPFS_SIZE = 60;
+const uint64_t MAX_IPFS_SIZE = 50;
+const uint64_t MIN_IPFS_SIZE = 40;
 const eosio::symbol IQSYMBOL = symbol(symbol_code("IQ"), 3);
 
 class [[eosio::contract("eparticlectr")]] eparticlectr : public contract {
