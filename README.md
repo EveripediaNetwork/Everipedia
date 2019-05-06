@@ -6,3 +6,10 @@ The currently deployed tag is 1.0-final. Master branch contains breaking changes
 
 ## Brainpower
 Voting on article edit proposals will generates stakes of IQ tokens for a period of 21 days. Voting up or down article edit proposals stakes IQ for the amount of the vote. Proposing an edit stakes 50 IQ as an anti-spam measure.
+
+## Tests
+
+```
+cd test
+./test.sh
+```
