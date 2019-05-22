@@ -97,6 +97,8 @@ void eparticlectr::brainmeart( account_name staker, uint64_t amount ) {
 
 // Place a vote using the IPFS hash
 void eparticlectr::votebyhash ( account_name voter, ipfshash_t& proposed_article_hash, bool approve, uint64_t amount ) {
+    eosio_assert(false, "The contract is temporarily locked for the 2.0 upgrade");
+
     require_auth(voter);
 
     // Check if article exists
@@ -214,6 +216,8 @@ void eparticlectr::updatewiki( ipfshash_t& current_hash ){
 
 // Propose an edit for an article
 void eparticlectr::propose( account_name proposer, ipfshash_t& proposed_article_hash, ipfshash_t& old_article_hash, ipfshash_t& grandparent_hash ) {
+    eosio_assert(false, "The contract is temporarily locked for the 2.0 upgrade");
+
     require_auth(proposer);
 
     // Fetch the brainpower
