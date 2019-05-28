@@ -140,7 +140,7 @@ void everipediaiq::add_balance( name owner, asset value, name ram_payer )
 }
 
 [[eosio::action]]
-void everipediaiq::epartpropose( name proposer, std::string slug, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo, name permission = name("active")) { 
+void everipediaiq::epartpropose( name proposer, std::string slug, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo, name permission) { 
     require_auth(proposer);
 
     // Transfer the IQ to the eparticlectr contract for staking
@@ -160,7 +160,7 @@ void everipediaiq::epartpropose( name proposer, std::string slug, ipfshash_t ipf
 }
 
 [[eosio::action]]
-void everipediaiq::epartvote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string comment, std::string memo, name permission = name("active")) {
+void everipediaiq::epartvote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string comment, std::string memo, name permission) {
     require_auth(voter);
 
     eosio_assert(amount > 0, "must transfer a positive amount");
