@@ -166,11 +166,22 @@ public:
         uint64_t primary_key() const { return period; }
     };
 
+    struct [[eosio::table]] oldwiki {
+          uint64_t id;
+          ipfshash_t hash; // IPFS hash of the current consensus article version
+          ipfshash_t parent_hash; // IPFS hash of the parent article version
+
+          uint64_t primary_key () const { return id; }
+    };
+
     //  ==================================================
     //  ==================================================
     //  ==================================================
     // DATABASE TABLES
     // GUIDE: https://developers.eos.io/eosio-cpp/docs/db-api
+
+    // Legacy wikis
+    typedef eosio::multi_index<name("wikistbl"), oldwiki> oldwikistbl; 
 
     // wikis table
     // composite of slug + lang_code must be unique
