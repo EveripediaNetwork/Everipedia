@@ -46,7 +46,8 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
                      bool approve,
                      uint64_t amount,
                      std::string comment, 
-                     std::string memo );
+                     std::string memo,
+                     name permission );
 
      [[eosio::action]]
      void epartpropose( name proposer, 
@@ -55,7 +56,8 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
                         std::string lang_code,
                         int64_t group_id,
                         std::string comment,
-                        std::string memo );
+                        std::string memo, 
+                        name permission );
 
      inline asset get_supply( symbol_code sym )const;
 
