@@ -554,6 +554,13 @@ assert $(bc <<< "$? == 1")
 cleos push action eparticlectr oldvotepurge "[$PROPID6, 100]" -p eptestusersa
 assert $(bc <<< "$? == 1")
 
+echo -e "${CYAN}-----------------------WINNING EDIT STAKES SHOULD CHANGE COMPLETION TIME-----------------------${NC}"
+STAKE28=$(cleos get table eparticlectr eparticlectr staketbl2 -r -l 28 | jq ".rows[27]")
+TIMESTAMP=$(echo $STAKE28 | jq ".timestamp")
+COMPLETION_TIME=$(echo $STAKE28 | jq ".completion_time")
+assert $(bc <<< "$COMPLETION_TIME - $TIMESTAMP != 5")
+echo "Stake time changed properly"
+
 echo -e "${CYAN}-----------------------BELOW CLAIMS SHOULD PASS-----------------------${NC}"
 STAKE_ID1=$(cleos get table eparticlectr eparticlectr staketbl2 -r | jq ".rows[0].id")
 STAKE_ID2=$(bc <<< "$STAKE_ID1 - 1")

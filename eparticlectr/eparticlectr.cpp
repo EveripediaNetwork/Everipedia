@@ -227,17 +227,25 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     eosio_assert( slash_ratio >= 0.0f && slash_ratio <= 1.0f, "Slash ratio out of bounds");
 
     rewardstbl rewardstable( _self, _self.value );
+    staketbl staketable(_self, _self.value);
 
     // Slash / reward votes
     while(vote_it != votetbl.end() && istie == 0) {
         uint32_t extraSecsSlash = uint32_t((float)STAKING_DURATION * slash_ratio);
+        
+        // Refund winning editor stake immediately
+        if (approved && vote_it->is_editor) {
+            auto stake_it = staketable.find(vote_it->stake_id);
+            staketable.modify( stake_it, same_payer, [&]( auto& a ) {
+                a.completion_time = now();
+            });
+        }
+        
         // Slash losers
         if (vote_it->approve != approved) {
-            staketbl staketable(_self, _self.value);
             auto stake_it = staketable.find(vote_it->stake_id);
             staketable.modify( stake_it, same_payer, [&]( auto& a ) {
                 a.completion_time += extraSecsSlash;
-                a.timestamp = now();
             });
 
             action( 
