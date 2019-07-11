@@ -71,6 +71,7 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
 
     // Verify voting is still in progress
     eosio_assert( now() < prop_it->endtime, "Voting period is over");
+    eosio_assert( !prop_it->finalized, "Proposal is finalized");
 
     // Create the stake object
     staketbl staketblobj(_self, _self.value);
@@ -423,6 +424,23 @@ void eparticlectr::oldvotepurge( uint64_t proposal_id, uint32_t loop_limit ) {
 }
 
 [[eosio::action]]
+void eparticlectr::mkreferendum( uint64_t proposal_id ) {
+    propstbl proptable( _self, _self.value );
+
+    // Validate proposal
+    auto prop_it = proptable.find(proposal_id);
+    eosio_assert( prop_it != proptable.end(), "Proposal does not exist");
+    eosio_assert( !prop_it->finalized, "Proposal is finalized");
+    eosio_assert( prop_it->endtime - prop_it->starttime < REFERENDUM_DURATION_SECS, "Proposal has already been marked as a referendum");
+
+    require_auth(prop_it->proposer);
+
+    proptable.modify( prop_it, same_payer, [&]( auto& p ) {
+        p.endtime = now() + REFERENDUM_DURATION_SECS;
+    });
+}
+
+[[eosio::action]]
 void eparticlectr::slashnotify( name slashee, uint64_t amount, uint32_t seconds, std::string memo ){
     require_auth( _self );
 }
@@ -437,4 +455,4 @@ void eparticlectr::logpropinfo( uint64_t proposal_id, name proposer, uint64_t wi
     require_auth( _self );
 }
 
-EOSIO_DISPATCH( eparticlectr, (brainclmid)(slashnotify)(finalize)(oldvotepurge)(procrewards)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo) )
+EOSIO_DISPATCH( eparticlectr, (brainclmid)(slashnotify)(finalize)(oldvotepurge)(procrewards)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(mkreferendum) )

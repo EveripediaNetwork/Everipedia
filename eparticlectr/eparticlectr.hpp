@@ -49,6 +49,7 @@ const uint64_t MAX_COMMENT_SIZE = 256;
 const uint64_t MAX_MEMO_SIZE = 32;
 const uint64_t MAX_IPFS_SIZE = 46;
 const uint64_t MIN_IPFS_SIZE = 46;
+const uint64_t REFERENDUM_DURATION_SECS = 14*86400; // 14 days
 const eosio::symbol IQSYMBOL = symbol(symbol_code("IQ"), 3);
 
 class [[eosio::contract("eparticlectr")]] eparticlectr : public contract {
@@ -275,4 +276,7 @@ public:
                       std::string memo,
                       uint32_t starttime, 
                       uint32_t endtime );
+
+    [[eosio::action]]
+    void mkreferendum( uint64_t proposal_id );
 };

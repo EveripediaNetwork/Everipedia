@@ -580,10 +580,29 @@ echo -e "${CYAN}-----------------------THIS CLAIM SHOULD FAIL-------------------
 cleos push action eparticlectr brainclmid "[$STAKE_ID1]" -p eptestusersf
 assert $(bc <<< "$? == 1")
 
-echo -e "${CYAN}-----------------------MAKE ANOTHER PROPOSAL THEN DELETE THE PREVIOUS ONE-----------------------${NC}"
+echo -e "${CYAN}-----------------------MAKE MORE PROPOSALS THEN PURGE THE PREVIOUS ONE-----------------------${NC}"
 cleos push action everipediaiq epartpropose "[ \"eptestusersa\", \"$SLUG8\", \"$IPFS4\", \"en\", -1, \"new wiki\", \"memoing\", "active" ]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartpropose "[ \"eptestusersa\", \"$SLUG8\", \"$IPFS5\", \"en\", -1, \"new wiki\", \"memoing\", "active" ]" -p eptestusersa
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr oldvotepurge "[$PROPID6, 100]" -p eptestusersa
 assert $(bc <<< "$? == 0")
+
+echo -e "${CYAN}-----------------------MARK REFERENDUMS-----------------------${NC}"
+LAST_PROP_ID=$(cleos get table eparticlectr eparticlectr propstbl2 -r | jq ".rows[0].id")
+cleos push action eparticlectr mkreferendum "[$LAST_PROP_ID]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+REFERENDUM_END=$(cleos get table eparticlectr eparticlectr propstbl2 -r | jq ".rows[0].endtime")
+NOW=$(date +%s)
+assert $(bc <<< "$REFERENDUM_END > $NOW + 13*86400") # Referendum ends more than 13 days from now
+
+echo -e "${CYAN}-----------------------FAILED REFERENDUMS-----------------------${NC}"
+# Duplicate marking
+cleos push action --force-unique eparticlectr mkreferendum "[$LAST_PROP_ID]" -p eptestusersa
+assert $(bc <<< "$? == 1")
+BAD_PROP_ID=$(bc <<< "$LAST_PROP_ID - 1")
+# Invalid user marking
+cleos push action eparticlectr mkreferendum "[$BAD_PROP_ID]" -p eptestusersb
+assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}-----------------------COMPLETE-----------------------${NC}"
