@@ -1,5 +1,5 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Fri Apr 12 18:53:04 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Wed Jul 10 18:03:30 2019",
     "version": "eosio::abi/1.1",
     "structs": [
         {
@@ -145,6 +145,16 @@
             ]
         },
         {
+            "name": "mkreferendum",
+            "base": "",
+            "fields": [
+                {
+                    "name": "proposal_id",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
             "name": "oldvotepurge",
             "base": "",
             "fields": [
@@ -155,6 +165,24 @@
                 {
                     "name": "loop_limit",
                     "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "oldwiki",
+            "base": "",
+            "fields": [
+                {
+                    "name": "id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "hash",
+                    "type": "ipfshash_t"
+                },
+                {
+                    "name": "parent_hash",
+                    "type": "ipfshash_t"
                 }
             ]
         },
@@ -459,6 +487,11 @@
             "ricardian_contract": "Log proposal results."
         },
         {
+            "name": "mkreferendum",
+            "type": "mkreferendum",
+            "ricardian_contract": "Mark a proposal as a referendum"
+        },
+        {
             "name": "oldvotepurge",
             "type": "oldvotepurge",
             "ricardian_contract": "Purge old votes to free up RAM."
@@ -521,6 +554,13 @@
         {
             "name": "votestbl2",
             "type": "vote_t",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "wikistbl",
+            "type": "oldwiki",
             "index_type": "i64",
             "key_names": [],
             "key_types": []
