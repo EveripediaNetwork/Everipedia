@@ -1,5 +1,5 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Wed Jul 10 18:03:30 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Mon Jul 15 13:55:11 2019",
     "version": "eosio::abi/1.1",
     "structs": [
         {
@@ -200,16 +200,6 @@
                 },
                 {
                     "name": "editor_sum",
-                    "type": "uint64"
-                }
-            ]
-        },
-        {
-            "name": "procrewards",
-            "base": "",
-            "fields": [
-                {
-                    "name": "reward_period",
                     "type": "uint64"
                 }
             ]
@@ -495,11 +485,6 @@
             "name": "oldvotepurge",
             "type": "oldvotepurge",
             "ricardian_contract": "Purge old votes to free up RAM."
-        },
-        {
-            "name": "procrewards",
-            "type": "procrewards",
-            "ricardian_contract": "Process rewards from finalized proposals."
         },
         {
             "name": "propose2",

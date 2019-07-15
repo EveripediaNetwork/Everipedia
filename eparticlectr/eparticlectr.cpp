@@ -231,6 +231,8 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     staketbl staketable(_self, _self.value);
 
     // Slash / reward votes
+    // Tally vote points
+    uint64_t total_vote_points = 0;
     while(vote_it != votetbl.end() && istie == 0) {
         uint32_t extraSecsSlash = uint32_t((float)STAKING_DURATION * slash_ratio);
         
@@ -273,8 +275,28 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
                 a.is_tie = istie;
                 a.memo = vote_it->memo;
             });
+            total_vote_points += vote_it->amount;
         }
         vote_it++;
+    }
+
+    // Update rewards table
+    uint64_t current_period = now() / REWARD_INTERVAL;
+    perrwdstbl perrewards( _self, _self.value );
+    auto period_it = perrewards.find( current_period );
+    uint64_t edit_points = approved ? (yes_votes - no_votes) : 0;
+    if (period_it == perrewards.end()) {
+        perrewards.emplace( _self, [&]( auto& p ) {
+            p.period = current_period;
+            p.curation_sum = total_vote_points;
+            p.editor_sum = edit_points;
+        });
+    }
+    else {
+        perrewards.modify( period_it, same_payer, [&]( auto& p ) {
+            p.curation_sum += total_vote_points;
+            p.editor_sum += edit_points;
+        });
     }
 
 
@@ -309,45 +331,6 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
         proptable.erase( prop_it );
 }
 
-// This function needs to be universally callable. A cron job will be calling this regularly
-[[eosio::action]]
-void eparticlectr::procrewards(uint64_t reward_period) {
-
-    uint64_t currentInterval = now() / REWARD_INTERVAL;
-
-    // Make sure it is called AFTER the exiting reward period is done, so it isn't premature
-    eosio_assert( currentInterval > reward_period, "Reward period is not over yet");
-
-    // get all the rewards in that period
-    rewardstbl rewardstable( _self, _self.value );
-    auto rewardsidx = rewardstable.get_index<name("byfinalper")>();
-    auto reward_it = rewardsidx.find(reward_period);
-    eosio_assert( reward_it != rewardsidx.end(), "No rewards found in this period!");
-
-    // no duplicate calculations
-    perrwdstbl perrewards( _self, _self.value );
-    auto period_it = perrewards.find( reward_period );
-    eosio_assert( period_it == perrewards.end(), "Rewards have already been calculated for this period");
-
-    // Calculate the total rewards amount in a period
-    uint64_t curationRewardSum = 0;
-    uint64_t editorRewardSum = 0;
-    while(reward_it != rewardsidx.end() && reward_it->proposal_finalize_period == reward_period ) {
-        curationRewardSum += reward_it->vote_points;
-
-        if (reward_it->is_editor && reward_it->proposalresult == 1){
-            editorRewardSum += reward_it->edit_points;
-        }
-        reward_it++;
-    }
-
-    // Store the reward sums for the period
-    perrewards.emplace( _self, [&]( auto& p ) {
-	    p.period = reward_period;
-	    p.curation_sum = curationRewardSum;
-	    p.editor_sum = editorRewardSum;
-    });
-}
 
 [[eosio::action]]
 void eparticlectr::rewardclmid ( uint64_t reward_id ) {
@@ -359,9 +342,12 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
     auto reward_it = rewardstable.find( reward_id );
     eosio_assert( reward_it != rewardstable.end(), "reward doesn't exist in database");
 
-    // Make sure period has been processed before claiming
-    auto period_it = perrewards.find( reward_it->proposal_finalize_period );
-    eosio_assert(period_it != perrewards.end(), "Must call procrewards for this period first");
+    // Make sure period is complete before processing
+    uint64_t reward_period = reward_it->proposal_finalize_period;
+    uint64_t current_period = now() / REWARD_INTERVAL;
+    auto period_it = perrewards.find( reward_period );
+    eosio_assert(period_it != perrewards.end(), "PROTOCOL ERROR: This period should exist");
+    eosio_assert(current_period > reward_period, "Reward period must complete before claiming rewards");
 
     // Send curation reward
     int64_t curation_reward = reward_it->vote_points * PERIOD_CURATION_REWARD / period_it->curation_sum;
@@ -392,7 +378,7 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
     }
 
     // delete reward after claiming
-    reward_it = rewardstable.erase( reward_it );
+    rewardstable.erase( reward_it );
 }
 
 [[eosio::action]]
@@ -455,4 +441,4 @@ void eparticlectr::logpropinfo( uint64_t proposal_id, name proposer, uint64_t wi
     require_auth( _self );
 }
 
-EOSIO_DISPATCH( eparticlectr, (brainclmid)(slashnotify)(finalize)(oldvotepurge)(procrewards)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(mkreferendum) )
+EOSIO_DISPATCH( eparticlectr, (brainclmid)(slashnotify)(finalize)(oldvotepurge)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(mkreferendum) )

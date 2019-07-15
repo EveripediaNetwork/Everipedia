@@ -236,9 +236,6 @@ public:
                        uint32_t loop_limit);
 
     [[eosio::action]]
-    void procrewards( uint64_t reward_period );
-
-    [[eosio::action]]
     void propose2( name proposer, 
                   std::string slug, 
                   ipfshash_t ipfs_hash, 

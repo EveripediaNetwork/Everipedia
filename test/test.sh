@@ -454,14 +454,9 @@ echo -e "${CYAN}-----------------------FINALIZE FAIL (ALREADY FINALIZED)--------
 cleos push action --force-unique eparticlectr finalize "[ $PROPID3 ]" -p eptestuserse
 assert $(bc <<< "$? == 1")
 
-# Procrewards
-echo -e "${CYAN}-----------------------EARLY PROCREWARDS SHOULD FAIL-----------------------${NC}"
-
-FINALIZE_PERIOD=$(cleos get table eparticlectr eparticlectr rewardstbl2 -r | jq ".rows[0].proposal_finalize_period")
-ONE_BACK_PERIOD=$(bc <<< "$FINALIZE_PERIOD - 1")
-ONE_FORWARD_PERIOD=$(bc <<< "$FINALIZE_PERIOD + 1")
-
-cleos push action eparticlectr procrewards "[$ONE_FORWARD_PERIOD]" -p eptestusersa
+echo -e "${CYAN}-----------------------EARLY REWARD CLAIM FAIL-----------------------${NC}"
+REWARD_ID1=$(cleos get table eparticlectr eparticlectr rewardstbl2 -r | jq ".rows[0].id")
+cleos push action eparticlectr rewardclmid "[$REWARD_ID1]" -p eptestuserse
 assert $(bc <<< "$? == 1")
 
 # Slash checks
@@ -469,11 +464,6 @@ echo -e "${CYAN}-----------------------TODO: TEST SLASHES-----------------------
 
 echo -e "${CYAN}WAITING FOR REWARDS PERIOD TO END...${NC}"
 sleep 5
-
-
-echo -e "${CYAN}-----------------------PROCESS REWARDS-----------------------${NC}"
-cleos push action eparticlectr procrewards "[$FINALIZE_PERIOD]" -p eptestusersa
-assert $(bc <<< "$? == 0")
 
 CURATION_REWARD_SUM=$(cleos get table eparticlectr eparticlectr perrwdstbl2 -r | jq ".rows[0].curation_sum")
 EDITOR_REWARD_SUM=$(cleos get table eparticlectr eparticlectr perrwdstbl2 -r | jq ".rows[0].editor_sum")
@@ -490,22 +480,21 @@ OLD_BALANCE5=$(balance eptestuserse)
 OLD_BALANCE6=$(balance eptestusersf)
 OLD_BALANCE7=$(balance eptestusersg)
 
-REWARD_ID1=$(cleos get table eparticlectr eparticlectr rewardstbl2 -r | jq ".rows[0].id")
 REWARD_ID2=$(bc <<< "$REWARD_ID1 - 2")
 REWARD_ID3=$(bc <<< "$REWARD_ID1 - 3")
 REWARD_ID4=$(bc <<< "$REWARD_ID1 - 4")
 REWARD_ID5=$(bc <<< "$REWARD_ID1 - 8") # this one has edit points
 
 echo -e "${CYAN}-----------------------CLAIM REWARDS-----------------------${NC}"
-cleos push action eparticlectr rewardclmid "[\"$REWARD_ID1\"]" -p eptestuserse
+cleos push action eparticlectr rewardclmid "[$REWARD_ID1]" -p eptestuserse
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr rewardclmid "[\"$REWARD_ID2\"]" -p eptestusersg
+cleos push action eparticlectr rewardclmid "[$REWARD_ID2]" -p eptestusersg
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr rewardclmid "[\"$REWARD_ID3\"]" -p eptestusersf
+cleos push action eparticlectr rewardclmid "[$REWARD_ID3]" -p eptestusersf
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr rewardclmid "[\"$REWARD_ID4\"]" -p eptestuserse
+cleos push action eparticlectr rewardclmid "[$REWARD_ID4]" -p eptestuserse
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr rewardclmid "[\"$REWARD_ID5\"]" -p eptestusersd
+cleos push action eparticlectr rewardclmid "[$REWARD_ID5]" -p eptestusersd
 assert $(bc <<< "$? == 0")
 
 NEW_BALANCE4=$(balance eptestusersd)
