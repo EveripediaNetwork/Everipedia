@@ -117,13 +117,11 @@ cleos wallet import --private-key 5HyQUNxE9T83RLiS9HdZeJck5WRqNSSzVztZ3JwYvkYPrG
 cleos wallet import --private-key 5KZC9soBHR4AF1kt93pCNfjSLPJN9y51AKR4r4vvPsiPvFdLG3t # eptestuserse
 cleos wallet import --private-key 5K9dtgQXBCggrMugEAxsBfcUZ8mmnbDpiZZYt7RvoxwChqiFdS1 # eptestusersf
 cleos wallet import --private-key 5JU8qQMV3cD4HzA14meGEBWwWxNWAk9QAebSkQotv4wXHkKncNh # eptestusersg
-cleos wallet import --private-key 5Hs2n2AHvWaUFjXWarmexxA6EULosaVneSeoAu1JHfMJRNugDx5 # iqutxoiqutxo
 
 # Create user accounts
 echo -e "${CYAN}-----------------------USER ACCOUNTS-----------------------${NC}"
 cleos system newaccount eosio everipediaiq EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
 cleos system newaccount eosio eparticlectr EOS8dYVzNktdam3Vn31mSXcmbj7J7MzGNudqKb3MLW1wdxWJpEbrw --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
-cleos system newaccount eosio iqutxoiqutxo EOS59w4biA5MRe6q746frzQDTvDJQpsfj9Nd6howM4FX7vLhiz4qz --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
 cleos system newaccount eosio eptestusersa EOS6HfoynFKZ1Msq1bKNwtSTTpEu8NssYMcgsy6nHqhRp3mz7tNkB --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
 cleos system newaccount eosio eptestusersb EOS68s2PrHPDeGWTKczrNZCn4MDMgoW6SFHuTQhXYUNLT1hAmJei8 --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
 cleos system newaccount eosio eptestusersc EOS7LpZDPKwWWXgJnNYnX6LCBgNqCEqugW9oUQr7XqcSfz7aSFk8o --stake-cpu "50 EOS" --stake-net "10 EOS" --buy-ram-kbytes 5000 --transfer
@@ -153,13 +151,10 @@ cleos transfer eosio eptestusersg "1000 EOS"
 echo -e "${CYAN}-----------------------DEPLOYING EVERIPEDIA CONTRACTS-----------------------${NC}"
 cleos set contract everipediaiq ../everipediaiq/
 cleos set contract eparticlectr ../eparticlectr/
-cleos set contract iqutxoiqutxo ../iqutxo/
 cleos set account permission everipediaiq active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p everipediaiq
 cleos set account permission eparticlectr active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p eparticlectr
-cleos set account permission iqutxoiqutxo active '{ "threshold": 1, "keys": [{ "key": "EOS59w4biA5MRe6q746frzQDTvDJQpsfj9Nd6howM4FX7vLhiz4qz", "weight": 1 }], "accounts": [{ "permission": { "actor":"iqutxoiqutxo","permission":"eosio.code" }, "weight":1 } ] }' owner -p iqutxoiqutxo
 
 # Create and issue token
 echo -e "${CYAN}-----------------------CREATING IQ TOKEN-----------------------${NC}"
 cleos push action everipediaiq create "[\"everipediaiq\", \"100000000000.000 IQ\"]" -p everipediaiq@active
 cleos push action everipediaiq issue "[\"everipediaiq\", \"10000000000.000 IQ\", \"initial supply\"]" -p everipediaiq@active
-cleos push action iqutxoiqutxo create "[\"iqutxoiqutxo\", \"1000000000.000 IQUTXO\"]" -p iqutxoiqutxo@active
