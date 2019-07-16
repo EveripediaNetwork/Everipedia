@@ -80,6 +80,7 @@ void iqdelegation::withdraw( name withdrawer, name guild, uint64_t shares ) {
     auto account_it = acctstbl.find( from );
     eosio_assert(account_it != acctstbl.end(), "user does not have shares in this guild");
     eosio_assert(shares <= account_it->shares, "user is attempting to withdraw too many shares");
+    eosio_assert(now > account_it->last_modified + MINIMUM_DELEGATION_TIME, "cannot withdraw within 7 days of a deposit");
 
     // calculate share value
     uint64_t guild_balance = stat_it->available.amount + stat_it->staked.amount;

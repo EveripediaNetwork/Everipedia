@@ -3,6 +3,7 @@ using std::string;
 
 const symbol IQ_SYMBOL = symbol(symbol_code("IQ"), 3);
 const uint64_t IQ_PRECISION_MULTIPLIER = 1000; // 3 decimal places
+const uint64_t MINIMUM_DELEGATION_TIME = 7*86400; // 7 days
 
 class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
 
@@ -15,6 +16,7 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
 
     struct [[eosio::table]] account {
         name delegator;
+        uint64_t last_modified; // UNIX timestamp of last deposit
         uint64_t shares;
 
         uint64_t primary_key()const { return delegator; }
