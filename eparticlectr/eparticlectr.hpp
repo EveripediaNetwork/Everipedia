@@ -51,6 +51,7 @@ const uint64_t MAX_IPFS_SIZE = 46;
 const uint64_t MIN_IPFS_SIZE = 46;
 const uint64_t REFERENDUM_DURATION_SECS = 14*86400; // 14 days
 const eosio::symbol IQSYMBOL = symbol(symbol_code("IQ"), 3);
+const uint64_t MINIMUM_DELEGATION_TIME = 7*86400; // 7 days
 
 class [[eosio::contract("eparticlectr")]] eparticlectr : public contract {
 public:
@@ -92,6 +93,10 @@ public:
             return sha256_slug_lang(slug, lang_code);
         }
     };
+    // composite of slug + lang_code must be unique
+    typedef eosio::multi_index<name("wikistbl2"), wiki,
+        indexed_by< name("uniqsluglang"), const_mem_fun<wiki, fixed_bytes<32>, &wiki::hash_slug_lang>>
+    > wikistbl; // EOS table for the articles
 
     // Internal struct for stakes 
     struct [[eosio::table]] stake {
@@ -104,6 +109,9 @@ public:
         uint64_t primary_key()const { return id; }
         uint64_t get_user()const { return user.value; }
     };
+    typedef eosio::multi_index<name("staketbl2"), stake,
+        indexed_by< name("byuser"), const_mem_fun<stake, uint64_t, &stake::get_user >>
+    > staketbl;
 
     // Voting tally
     struct [[eosio::table]] vote_t {
@@ -120,6 +128,8 @@ public:
 
           uint64_t primary_key()const { return id; }
     };
+    // scoped by proposal
+    typedef eosio::multi_index<name("votestbl2"), vote_t > votestbl; // EOS table for the votes
 
     // Edit Proposals
     struct [[eosio::table]] editproposal {
@@ -137,6 +147,7 @@ public:
 
         uint64_t primary_key () const { return id; }
     };
+    typedef eosio::multi_index<name("propstbl2"), editproposal> propstbl; // EOS table for the edit proposals
 
     // Internal struct for history of success rewards and reject slashes
     // slashes will be done immediately at finalize(). Rewards will be done at 30min periods
@@ -158,6 +169,11 @@ public:
         uint64_t get_proposal()const { return proposal_id; }
         uint64_t get_finalize_period()const { return proposal_finalize_period; }
     };
+    typedef eosio::multi_index<name("rewardstbl2"), rewardhistory,
+        indexed_by< name("byuser"), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_user>>,
+        indexed_by< name("byfinalper"), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_finalize_period >>,
+        indexed_by< name("byproposal"), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_proposal >>
+    > rewardstbl;
 
     struct [[eosio::table]] periodreward {
         uint64_t period;
@@ -166,6 +182,7 @@ public:
 
         uint64_t primary_key() const { return period; }
     };
+    typedef eosio::multi_index<name("perrwdstbl2"), periodreward> perrwdstbl;
 
     struct [[eosio::table]] oldwiki {
           uint64_t id;
@@ -174,44 +191,23 @@ public:
 
           uint64_t primary_key () const { return id; }
     };
-
-    //  ==================================================
-    //  ==================================================
-    //  ==================================================
-    // DATABASE TABLES
-    // GUIDE: https://developers.eos.io/eosio-cpp/docs/db-api
-
-    // Legacy wikis
     typedef eosio::multi_index<name("wikistbl"), oldwiki> oldwikistbl; 
 
-    // wikis table
-    // composite of slug + lang_code must be unique
-    typedef eosio::multi_index<name("wikistbl2"), wiki,
-        indexed_by< name("uniqsluglang"), const_mem_fun<wiki, fixed_bytes<32>, &wiki::hash_slug_lang>>
-    > wikistbl; // EOS table for the articles
+    struct [[eosio::table]] account {
+        name delegator;
+        uint64_t last_modified; // UNIX timestamp of last deposit
+        uint64_t shares;
 
-    // stake table
-    typedef eosio::multi_index<name("staketbl2"), stake,
-        indexed_by< name("byuser"), const_mem_fun<stake, uint64_t, &stake::get_user >>
-    > staketbl;
+        uint64_t primary_key()const { return delegator; }
+    };
+    typedef eosio::multi_index<name("accounts"), account> accounts;
 
-    // votes table
-    // scoped by proposal
-    typedef eosio::multi_index<name("votestbl2"), vote_t > votestbl; // EOS table for the votes
-
-    // edit proposals table
-    typedef eosio::multi_index<name("propstbl2"), editproposal> propstbl; // EOS table for the edit proposals
-
-
-    // rewards history table
-    typedef eosio::multi_index<name("rewardstbl2"), rewardhistory,
-        indexed_by< name("byuser"), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_user>>,
-        indexed_by< name("byfinalper"), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_finalize_period >>,
-        indexed_by< name("byproposal"), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_proposal >>
-    > rewardstbl;
-
-    // period rewards table
-    typedef eosio::multi_index<name("perrwdstbl2"), periodreward> perrwdstbl;
+    struct [[eosio::table]] stats {
+        asset available;
+        asset staked;
+        uint64_t total_shares;
+    };
+    typedef eosio::multi_index<name("stats"), stats> stats; // scoped by user
 
 
     //  ==================================================
@@ -276,4 +272,10 @@ public:
 
     [[eosio::action]]
     void mkreferendum( uint64_t proposal_id );
+
+    // Triggered by sending IQ to contract
+    void deposit( name from, name to, asset quantity, string memo );
+
+    [[eosio::action]]
+    void withdraw( name withdrawer, name guild, uint64_t amount );
 };
