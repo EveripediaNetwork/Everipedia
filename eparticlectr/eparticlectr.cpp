@@ -74,14 +74,14 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
     eosio_assert( !prop_it->finalized, "Proposal is finalized");
 
     // Verify balances are available
-    stats statstbl( _self, guild.value );
+    stats statstbl( _self, voter.value );
     auto stat_it = statstbl.begin();
     eosio_assert(statstbl.begin() != statstbl.end(), "Balance does not exist for user");
     eosio_assert(stat_it->available.amount >= amount * IQ_PRECISION_MULTIPLIER, "not enough available IQ to vote");
     eosio_assert(amount > 0, "PROTOCOL ERROR: Why is there a negative vote amount?");
 
     // Subtract amount from balance
-    asset voting_iq = asset(amount * IQ_PRECISION_MULTIPLIER, IQ_SYMBOL);
+    asset voting_iq = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
     statstbl.modify( stat_it, same_payer, [&]( auto& g ) {
         g.available -= voting_iq;
         g.staked += voting_iq;
@@ -345,24 +345,24 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
         proptable.erase( prop_it );
 }
 
-void eparticlectr::deposit( name from, name to, asset quantity, string memo ) {
+void eparticlectr::deposit( name from, name to, asset quantity, std::string memo ) {
     if (from == _self) return; // sending tokens, ignore
 
     auto symbol = quantity.symbol;
     eosio_assert(memo.size() <= 12, "memo must be an EOS account name");
     eosio_assert(to == _self, "stop trying to hack the contract");
     eosio_assert(symbol.is_valid(), "invalid symbol name");
-    eosio_assert(symbol == IQ_SYMBOL, "This contract only accepts IQ");
+    eosio_assert(symbol == IQSYMBOL, "This contract only accepts IQ");
     eosio_assert(quantity.is_valid(), "invalid quantity");
     eosio_assert(quantity.amount > 0, "must deposit positive quantity");
 
     // IQ rewards from contract
-    if (from == name("everipediaiq").value) {
+    if (from == name("everipediaiq")) {
         int colon_index1 = memo.find(":");
         int colon_index2 = memo.find(":", colon_index1);
         int colon_index3 = memo.find(":", colon_index2);
-        eosio_assert(colon_index3 != string::npos, "PROTOCOL ERROR: memo is malformed. should contain 3 colons");
-        name guild = memo.substring(colon_index2 + 1, colon_index3);
+        eosio_assert(colon_index3 != std::string::npos, "PROTOCOL ERROR: memo is malformed. should contain 3 colons");
+        name guild = name(memo.substr(colon_index2 + 1, colon_index3));
 
         // Update available balance
         stats statstbl( _self, guild.value );
@@ -380,8 +380,8 @@ void eparticlectr::deposit( name from, name to, asset quantity, string memo ) {
         stats statstbl( _self, guild.value );
         if (statstbl.begin() == statstbl.end()) {
             statstbl.emplace( guild, [&]( auto& g ){
-                g.available = asset(0, IQ_SYMBOL);
-                g.staked = asset(0, IQ_SYMBOL);
+                g.available = asset(0, IQSYMBOL);
+                g.staked = asset(0, IQSYMBOL);
                 g.total_shares = 0;
             });
         }
@@ -390,12 +390,12 @@ void eparticlectr::deposit( name from, name to, asset quantity, string memo ) {
         // calculate share allocation
         eosio_assert(quantity.amount % IQ_PRECISION_MULTIPLIER == 0, "must send a whole number of IQ");
         uint64_t shares;
-        if (total_shares == 0) {
+        if (stat_it->total_shares == 0) {
             shares = quantity.amount / IQ_PRECISION_MULTIPLIER; // shares = (whole IQ sent)
         }
         else {
             uint64_t guild_balance = stat_it->available.amount + stat_it->staked.amount;
-            uint64_t share_price = guild_balance / total_shares;
+            uint64_t share_price = guild_balance / stat_it->total_shares;
             shares = quantity.amount / share_price;
         }
 
@@ -407,8 +407,8 @@ void eparticlectr::deposit( name from, name to, asset quantity, string memo ) {
 
         // update user shares
         accounts acctstbl( _self, guild.value );
-        auto account_it = acctstbl.find( from );
-        if (account_it = acctstbl.end()) {
+        auto account_it = acctstbl.find( from.value );
+        if (account_it == acctstbl.end()) {
             acctstbl.emplace( from, [&]( auto& a ){
                 a.delegator = from;
                 a.shares = shares;
@@ -425,30 +425,30 @@ void eparticlectr::deposit( name from, name to, asset quantity, string memo ) {
 }
 
 [[eosio::action]]
-void iqdelegation::withdraw( name withdrawer, name guild, uint64_t shares ) {
+void eparticlectr::withdraw( name withdrawer, name guild, uint64_t shares ) {
     stats statstbl( _self, guild.value );
-    eosio_assert(statstbl.begin() != statstbl.end(), "guild is not registered");
+    eosio_assert(statstbl.begin() != statstbl.end(), "No available balance to withdraw");
+    auto stat_it = statstbl.begin();
     
     accounts acctstbl( _self, guild.value );
-    auto account_it = acctstbl.find( from );
+    auto account_it = acctstbl.find( withdrawer.value );
     eosio_assert(account_it != acctstbl.end(), "user does not have shares in this guild");
     eosio_assert(shares <= account_it->shares, "user is attempting to withdraw too many shares");
-    eosio_assert(now > account_it->last_modified + MINIMUM_DELEGATION_TIME, "cannot withdraw within 7 days of a deposit");
+    eosio_assert(now() > account_it->last_modified + MINIMUM_DELEGATION_TIME, "cannot withdraw within 7 days of a deposit");
 
     // calculate share value
     uint64_t guild_balance = stat_it->available.amount + stat_it->staked.amount;
-    uint64_t share_price = guild_balance / total_shares;
+    uint64_t share_price = guild_balance / stat_it->total_shares;
     uint64_t iq_amount = share_price * account_it->shares;
-    asset iq_withdraw = asset(iq_amount, IQ_SYMBOL);
+    asset iq_withdraw = asset(iq_amount, IQSYMBOL);
 
-    eosio_assert(stat->available_balance < iq_withdraw, "available balance does not cover attempted withdrawal");
+    eosio_assert(stat_it->available < iq_withdraw, "available balance does not cover attempted withdrawal");
     
     // send IQ
-    asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
     action(
         permission_level{ _self , name("active") }, 
         _self , name("transfer"),
-        std::make_tuple( _self, account->delegator, iq_withdraw, std::string("withdrawing shares from guild"));
+        std::make_tuple( _self, account_it->delegator, iq_withdraw, std::string("withdrawing shares from guild"))
     ).send();
 
     // share accounting
@@ -578,13 +578,13 @@ extern "C" void apply(uint64_t receiver, uint64_t code, uint64_t action)
     if (code == name("everipediaiq").value && action == name("transfer").value)
     {
         eosio::execute_action(
-            eosio::name(receiver), eosio::name(code), &iqdelegation::deposit
+            eosio::name(receiver), eosio::name(code), &eparticlectr::deposit
         );
     }
     else if (code == _self)
     {
         switch (action) {
-            EOSIO_DISPATCH_INTERNAL( eparticlectr, (brainclmid)(slashnotify)(finalize)(oldvotepurge)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(mkreferendum)(withdraw) )
+            EOSIO_DISPATCH_HELPER( eparticlectr, (brainclmid)(slashnotify)(finalize)(oldvotepurge)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(mkreferendum)(withdraw) )
         }
     }
 }

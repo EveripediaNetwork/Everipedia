@@ -1,7 +1,25 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Mon Jul 15 15:11:41 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Thu Jul 25 00:25:16 2019",
     "version": "eosio::abi/1.1",
     "structs": [
+        {
+            "name": "account",
+            "base": "",
+            "fields": [
+                {
+                    "name": "delegator",
+                    "type": "name"
+                },
+                {
+                    "name": "last_modified",
+                    "type": "uint64"
+                },
+                {
+                    "name": "shares",
+                    "type": "uint64"
+                }
+            ]
+        },
         {
             "name": "brainclmid",
             "base": "",
@@ -347,6 +365,28 @@
             ]
         },
         {
+            "name": "stat_t",
+            "base": "",
+            "fields": [
+                {
+                    "name": "id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "available",
+                    "type": "asset"
+                },
+                {
+                    "name": "staked",
+                    "type": "asset"
+                },
+                {
+                    "name": "total_shares",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
             "name": "vote",
             "base": "",
             "fields": [
@@ -447,6 +487,24 @@
                     "type": "ipfshash_t"
                 }
             ]
+        },
+        {
+            "name": "withdraw",
+            "base": "",
+            "fields": [
+                {
+                    "name": "withdrawer",
+                    "type": "name"
+                },
+                {
+                    "name": "guild",
+                    "type": "name"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint64"
+                }
+            ]
         }
     ],
     "types": [
@@ -505,9 +563,21 @@
             "name": "vote",
             "type": "vote",
             "ricardian_contract": "Vote on a proposal (uses IQ, only callable by everipediaiq::epartvote)."
+        },
+        {
+            "name": "withdraw",
+            "type": "withdraw",
+            "ricardian_contract": ""
         }
     ],
     "tables": [
+        {
+            "name": "accounts",
+            "type": "account",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
         {
             "name": "perrwdstbl2",
             "type": "periodreward",
@@ -532,6 +602,13 @@
         {
             "name": "staketbl2",
             "type": "stake",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "stats",
+            "type": "stat_t",
             "index_type": "i64",
             "key_names": [],
             "key_types": []

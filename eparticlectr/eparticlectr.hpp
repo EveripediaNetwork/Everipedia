@@ -198,16 +198,19 @@ public:
         uint64_t last_modified; // UNIX timestamp of last deposit
         uint64_t shares;
 
-        uint64_t primary_key()const { return delegator; }
+        uint64_t primary_key()const { return delegator.value; }
     };
     typedef eosio::multi_index<name("accounts"), account> accounts;
 
-    struct [[eosio::table]] stats {
+    struct [[eosio::table]] stat_t {
+        uint64_t id;
         asset available;
         asset staked;
         uint64_t total_shares;
+
+        uint64_t primary_key()const { return id; }
     };
-    typedef eosio::multi_index<name("stats"), stats> stats; // scoped by user
+    typedef eosio::multi_index<name("stats"), stat_t> stats; // scoped by user
 
 
     //  ==================================================
@@ -274,7 +277,7 @@ public:
     void mkreferendum( uint64_t proposal_id );
 
     // Triggered by sending IQ to contract
-    void deposit( name from, name to, asset quantity, string memo );
+    void deposit( name from, name to, asset quantity, std::string memo );
 
     [[eosio::action]]
     void withdraw( name withdrawer, name guild, uint64_t amount );
