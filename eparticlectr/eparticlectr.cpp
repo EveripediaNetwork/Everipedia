@@ -45,7 +45,8 @@ void eparticlectr::brainclmid( uint64_t stakeid ) {
     eosio_assert(statstbl.begin() != statstbl.end(), "PROTOCOL ERROR: This user should have a balance");
     auto stat_it = statstbl.begin();
     statstbl.modify( stat_it, same_payer, [&]( auto& g ) {
-        g.available += curation_quantity;
+        g.staked -= stake_quantity;
+        g.available += stake_quantity;
     });
 
     // Delete the stake.
@@ -58,7 +59,20 @@ void eparticlectr::brainclmid( uint64_t stakeid ) {
 // Users have to trigger this action through the everipediaiq::epartvote action
 [[eosio::action]]
 void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string comment, std::string memo ) {
-    require_auth( voter );
+    votestbl votetbl( _self, proposal_id );
+
+    // the initial vote comes from the propose2 action, so to prevent permission
+    // issues, it is self-signed by the contract
+    bool is_initial_vote = (comment == std::string("editor initial vote"));
+    if (is_initial_vote) {
+        eosio_assert( amount == EDIT_PROPOSE_IQ, "inital vote must be 50 IQ");
+        eosio_assert( votetbl.begin() == votetbl.end(), "PROTOCOL ERROR: Votes already exist. This should be the initial vote");
+        require_auth( _self );
+    }
+    // all votes except the intial vote come directly from the user
+    // and require their signature
+    else
+        require_auth( voter );
 
     // validate inputs
     eosio_assert(comment.size() < MAX_COMMENT_SIZE, "Comment must be less than 256 bytes");
@@ -98,16 +112,12 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
         s.completion_time = now() + STAKING_DURATION;
     });
 
-    // mark if this is the initial editor vote
-    votestbl votetbl( _self, proposal_id );
-    bool voterIsProposer = (votetbl.begin() == votetbl.end()); 
-   
     // Store vote in DB
     votetbl.emplace( _self, [&]( auto& a ) {
          a.id = votetbl.available_primary_key();
          a.proposal_id = proposal_id;
          a.approve = approve;
-         a.is_editor = voterIsProposer;
+         a.is_editor = is_initial_vote;
          a.amount = amount;
          a.voter = voter;
          a.timestamp = now();
@@ -187,7 +197,7 @@ void eparticlectr::propose2( name proposer, std::string slug, ipfshash_t ipfs_ha
 
     // Place the default vote
     action(
-        permission_level { proposer , name("active") },
+        permission_level { _self , name("active") },
         _self, name("vote"),
         std::make_tuple( proposer, proposal_id, true, EDIT_PROPOSE_IQ, std::string("editor initial vote"), memo )
     ).send();
