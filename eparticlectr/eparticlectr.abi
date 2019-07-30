@@ -1,5 +1,5 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Fri Jul 26 22:35:13 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Mon Jul 29 18:49:11 2019",
     "version": "eosio::abi/1.1",
     "structs": [
         {
@@ -17,6 +17,20 @@
                 {
                     "name": "shares",
                     "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "allowdelegat",
+            "base": "",
+            "fields": [
+                {
+                    "name": "user",
+                    "type": "name"
+                },
+                {
+                    "name": "allow",
+                    "type": "bool"
                 }
             ]
         },
@@ -383,6 +397,10 @@
                 {
                     "name": "total_shares",
                     "type": "uint64"
+                },
+                {
+                    "name": "allow_delegation",
+                    "type": "bool"
                 }
             ]
         },
@@ -493,7 +511,7 @@
             "base": "",
             "fields": [
                 {
-                    "name": "withdrawer",
+                    "name": "account",
                     "type": "name"
                 },
                 {
@@ -503,6 +521,10 @@
                 {
                     "name": "amount",
                     "type": "uint64"
+                },
+                {
+                    "name": "executor",
+                    "type": "name"
                 }
             ]
         }
@@ -514,6 +536,11 @@
         }
     ],
     "actions": [
+        {
+            "name": "allowdelegat",
+            "type": "allowdelegat",
+            "ricardian_contract": ""
+        },
         {
             "name": "brainclmid",
             "type": "brainclmid",

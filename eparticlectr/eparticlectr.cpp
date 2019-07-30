@@ -389,9 +389,11 @@ void eparticlectr::deposit( name from, name to, asset quantity, std::string memo
             g.available = asset(0, IQSYMBOL);
             g.staked = asset(0, IQSYMBOL);
             g.total_shares = 0;
+            g.allow_delegation = true;
         });
     }
     auto stat_it = statstbl.begin();
+    eosio_assert(stat_it->allow_delegation, "This account does not allow delegation");
 
     // calculate share allocation
     eosio_assert(quantity.amount % IQ_PRECISION_MULTIPLIER == 0, "must send a whole number of IQ");
@@ -429,13 +431,16 @@ void eparticlectr::deposit( name from, name to, asset quantity, std::string memo
 
 
 [[eosio::action]]
-void eparticlectr::withdraw( name withdrawer, name guild, uint64_t shares ) {
+void eparticlectr::withdraw( name account, name guild, uint64_t shares, name executor ) {
+    eosio_assert( executor == guild || executor == account, "Only the guild owner or account holder can execute this action");
+    require_auth( executor );
+
     stats statstbl( _self, guild.value );
     eosio_assert(statstbl.begin() != statstbl.end(), "No available balance to withdraw");
     auto stat_it = statstbl.begin();
     
     accounts acctstbl( _self, guild.value );
-    auto account_it = acctstbl.find( withdrawer.value );
+    auto account_it = acctstbl.find( account.value );
     eosio_assert(account_it != acctstbl.end(), "user does not have shares in this guild");
     eosio_assert(shares <= account_it->shares, "user is attempting to withdraw too many shares");
     eosio_assert(now() > account_it->last_modified + MINIMUM_DELEGATION_TIME, "cannot withdraw within 7 days of a deposit");
@@ -443,20 +448,17 @@ void eparticlectr::withdraw( name withdrawer, name guild, uint64_t shares ) {
     // calculate share value
     uint64_t guild_balance = stat_it->available.amount + stat_it->staked.amount;
     uint64_t share_price = guild_balance / stat_it->total_shares;
-    uint64_t iq_amount = share_price * account_it->shares;
+    uint64_t iq_amount = share_price * shares;
     asset iq_withdraw = asset(iq_amount, IQSYMBOL);
 
-    eosio_assert(stat_it->available < iq_withdraw, "available balance does not cover attempted withdrawal");
+    eosio_assert(iq_withdraw <= stat_it->available, "available balance does not cover attempted withdrawal");
     
-    // send IQ
-    action(
-        permission_level{ _self , name("active") }, 
-        _self , name("transfer"),
-        std::make_tuple( _self, account_it->delegator, iq_withdraw, std::string("withdrawing shares from guild"))
-    ).send();
-
-    // share accounting
-    // delete entry if all shares are withdrawn
+    // share and balance accounting
+    statstbl.modify( stat_it, same_payer, [&]( auto& g ) {
+        g.available -= iq_withdraw;
+        g.total_shares -= shares;
+    });
+    // delete account entry if all shares are withdrawn
     if (account_it->shares == shares)
         acctstbl.erase( account_it );
     else {
@@ -464,6 +466,13 @@ void eparticlectr::withdraw( name withdrawer, name guild, uint64_t shares ) {
             a.shares -= shares;         
         });
     }
+    // send IQ
+    action(
+        permission_level{ _self , name("active") }, 
+        name("everipediaiq") , name("transfer"),
+        std::make_tuple( _self, account, iq_withdraw, std::string("withdrawing shares from guild"))
+    ).send();
+
 }
 
 
@@ -560,6 +569,26 @@ void eparticlectr::oldvotepurge( uint64_t proposal_id, uint32_t loop_limit ) {
 }
 
 [[eosio::action]]
+void eparticlectr::allowdelegat( name user, bool allow ) {
+    require_auth( user );
+
+    stats statstbl( _self, user.value );
+    if (statstbl.begin() == statstbl.end()) {
+        statstbl.emplace( _self, [&]( auto& g ){
+            g.available = asset(0, IQSYMBOL);
+            g.staked = asset(0, IQSYMBOL);
+            g.total_shares = 0;
+            g.allow_delegation = allow;
+        });
+    }
+    else {
+        statstbl.modify( statstbl.begin(), same_payer, [&]( auto& g ) {
+            g.allow_delegation = allow;
+        });
+    }
+}
+
+[[eosio::action]]
 void eparticlectr::mkreferendum( uint64_t proposal_id ) {
     propstbl proptable( _self, _self.value );
 
@@ -603,7 +632,7 @@ extern "C" void apply(uint64_t receiver, uint64_t code, uint64_t action)
     else if (code == _self)
     {
         switch (action) {
-            EOSIO_DISPATCH_HELPER( eparticlectr, (brainclmid)(slashnotify)(finalize)(oldvotepurge)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(mkreferendum)(withdraw) )
+            EOSIO_DISPATCH_HELPER( eparticlectr, (allowdelegat)(brainclmid)(slashnotify)(finalize)(oldvotepurge)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(mkreferendum)(withdraw) )
         }
     }
 }

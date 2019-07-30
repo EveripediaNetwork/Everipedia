@@ -42,6 +42,10 @@ ipfsgen () {
     echo -e "Qm$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 44 | head -n 1)"
 }
 
+accountgen () {
+    echo -e "$(cat /dev/urandom | tr -dc 'a-z1-5' | fold -w 12 | head -n 1)"
+}
+
 titlegen () {
     cat /dev/urandom | tr -dc 'a-z\-' | fold -w 15 | head -n 1
 }
@@ -223,19 +227,22 @@ assert $(bc <<< "$? == 1")
 
 # Self-Delegate
 echo -e "${CYAN}-----------------------DEPOSITS-----------------------${NC}"
-cleos push action everipediaiq transfer '["eptestusersa", "eparticlectr", "1000.000 IQ", "delegate:eptestusersa"]' -p eptestusersa
+cleos push action everipediaiq transfer '["eptestusersa", "eparticlectr", "2000.000 IQ", "delegate:eptestusersa"]' -p eptestusersa
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq transfer '["eptestusersb", "eparticlectr", "1000.000 IQ", "delegate:eptestusersb"]' -p eptestusersb
+cleos push action everipediaiq transfer '["eptestusersb", "eparticlectr", "2000.000 IQ", "delegate:eptestusersb"]' -p eptestusersb
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq transfer '["eptestusersc", "eparticlectr", "1000.000 IQ", "delegate:eptestusersc"]' -p eptestusersc
+cleos push action everipediaiq transfer '["eptestusersc", "eparticlectr", "2000.000 IQ", "delegate:eptestusersc"]' -p eptestusersc
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq transfer '["eptestusersd", "eparticlectr", "1000.000 IQ", "delegate:eptestusersd"]' -p eptestusersd
+cleos push action everipediaiq transfer '["eptestusersd", "eparticlectr", "2000.000 IQ", "delegate:eptestusersd"]' -p eptestusersd
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq transfer '["eptestuserse", "eparticlectr", "1000.000 IQ", "delegate:eptestuserse"]' -p eptestuserse
+cleos push action everipediaiq transfer '["eptestuserse", "eparticlectr", "2000.000 IQ", "delegate:eptestuserse"]' -p eptestuserse
 assert $(bc <<< "$? == 0")
 
 # Deposit to others
 echo -e "${CYAN}-----------------------DELEGATION-----------------------${NC}"
+OLD_BALANCE6=$(cleos get table eparticlectr eptestusersf stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
+OLD_BALANCE7=$(cleos get table eparticlectr eptestusersg stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
+
 cleos push action everipediaiq transfer '["eptestusersa", "eparticlectr", "1000.000 IQ", "delegate:eptestusersf"]' -p eptestusersa
 assert $(bc <<< "$? == 0")
 cleos push action everipediaiq transfer '["eptestusersb", "eparticlectr", "1000.000 IQ", "delegate:eptestusersf"]' -p eptestusersb
@@ -245,6 +252,35 @@ assert $(bc <<< "$? == 0")
 cleos push action everipediaiq transfer '["eptestusersd", "eparticlectr", "1000.000 IQ", "delegate:eptestusersg"]' -p eptestusersd
 assert $(bc <<< "$? == 0")
 cleos push action everipediaiq transfer '["eptestuserse", "eparticlectr", "1000.000 IQ", "delegate:eptestusersg"]' -p eptestuserse
+assert $(bc <<< "$? == 0")
+
+NEW_BALANCE6=$(cleos get table eparticlectr eptestusersf stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
+NEW_BALANCE7=$(cleos get table eparticlectr eptestusersg stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
+
+assert $(bc <<< "$NEW_BALANCE6 - $OLD_BALANCE6 == 3000.000")
+assert $(bc <<< "$NEW_BALANCE7 - $OLD_BALANCE7 == 2000.000")
+
+# Failed delegations
+echo -e "${CYAN}-----------------------FAILED DELEGATION-----------------------${NC}"
+cleos push action everipediaiq transfer '["eptestusersa", "eparticlectr", "1000.000 IQ", "delegat:eptestusersf"]' -p eptestusersa
+assert $(bc <<< "$? == 1")
+cleos push action everipediaiq transfer '["eptestusersa", "eparticlectr", "1000.000 IQ", "Editor IQ reward:eptestusersf"]' -p eptestusersa
+assert $(bc <<< "$? == 1")
+cleos push action everipediaiq transfer '["eptestusersa", "eparticlectr", "1000.000 IQ", "delegate:eptestusersf"]' -p eptestusersb
+assert $(bc <<< "$? == 1")
+cleos push action everipediaiq transfer '["eptestusersa", "eparticlectr", "10000000.000 IQ", "delegate:eptestusersf"]' -p eptestusersa
+assert $(bc <<< "$? == 1")
+
+# Ban delegation
+echo -e "${CYAN}-----------------------BLOCK DELEGATION-----------------------${NC}"
+ACCOUNT1=$(accountgen)
+cleos push action eparticlectr allowdelegat '["eptestusersf", false]' -p eptestusersf
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq transfer '["eptestusersa", "eparticlectr", "1001.000 IQ", "delegate:eptestusersf"]' -p eptestusersa
+assert $(bc <<< "$? == 1")
+cleos push action everipediaiq transfer "[\"eptestusersb\", \"eparticlectr\", \"1001.000 IQ\", \"delegate:$ACCOUNT1\"]" -p eptestusersb
+assert $(bc <<< "$? == 1")
+cleos push action eparticlectr allowdelegat '["eptestusersf", true]' -p eptestusersf
 assert $(bc <<< "$? == 0")
 
 # Proposals
@@ -306,6 +342,21 @@ PROPID4=$(echo $PROPS | jq ".[2].id")
 PROPID3=$(echo $PROPS | jq ".[3].id")
 PROPID2=$(echo $PROPS | jq ".[4].id")
 PROPID1=$(echo $PROPS | jq ".[5].id")
+
+# Mark pre-vote balances
+OLD_AVAILABLE_BALANCE2=$(cleos get table eparticlectr eptestusersb stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
+OLD_AVAILABLE_BALANCE3=$(cleos get table eparticlectr eptestusersc stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
+OLD_AVAILABLE_BALANCE4=$(cleos get table eparticlectr eptestusersd stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
+OLD_AVAILABLE_BALANCE5=$(cleos get table eparticlectr eptestuserse stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
+OLD_AVAILABLE_BALANCE6=$(cleos get table eparticlectr eptestusersf stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
+OLD_AVAILABLE_BALANCE7=$(cleos get table eparticlectr eptestusersg stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
+
+OLD_STAKED_BALANCE2=$(cleos get table eparticlectr eptestusersb stats | jq ".rows[0].staked" | tr -d '"' | awk '{ print $1 }')
+OLD_STAKED_BALANCE3=$(cleos get table eparticlectr eptestusersc stats | jq ".rows[0].staked" | tr -d '"' | awk '{ print $1 }')
+OLD_STAKED_BALANCE4=$(cleos get table eparticlectr eptestusersd stats | jq ".rows[0].staked" | tr -d '"' | awk '{ print $1 }')
+OLD_STAKED_BALANCE5=$(cleos get table eparticlectr eptestuserse stats | jq ".rows[0].staked" | tr -d '"' | awk '{ print $1 }')
+OLD_STAKED_BALANCE6=$(cleos get table eparticlectr eptestusersf stats | jq ".rows[0].staked" | tr -d '"' | awk '{ print $1 }')
+OLD_STAKED_BALANCE7=$(cleos get table eparticlectr eptestusersg stats | jq ".rows[0].staked" | tr -d '"' | awk '{ print $1 }')
 
 # Win
 echo -e "${CYAN}-----------------------SETTING WINNING VOTES-----------------------${NC}"
@@ -378,6 +429,38 @@ cleos push action eparticlectr vote "[ \"eptestusersg\", $PROPID4, 1, 500000000,
 assert $(bc <<< "$? == 1")
 cleos push action eparticlectr vote "[ \"eptestusersc\", $PROPID4, 1, 500, \"vote comment\", \"votememo\"]" -p eptestusersg
 assert $(bc <<< "$? == 1")
+
+# Post-vote balances
+echo -e "${CYAN}-----------------------VERIFY BALANCES ARE PROPERLY ADJUSTED-----------------------${NC}"
+NEW_AVAILABLE_BALANCE2=$(cleos get table eparticlectr eptestusersb stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
+NEW_AVAILABLE_BALANCE3=$(cleos get table eparticlectr eptestusersc stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
+NEW_AVAILABLE_BALANCE4=$(cleos get table eparticlectr eptestusersd stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
+NEW_AVAILABLE_BALANCE5=$(cleos get table eparticlectr eptestuserse stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
+NEW_AVAILABLE_BALANCE6=$(cleos get table eparticlectr eptestusersf stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
+NEW_AVAILABLE_BALANCE7=$(cleos get table eparticlectr eptestusersg stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
+
+NEW_STAKED_BALANCE2=$(cleos get table eparticlectr eptestusersb stats | jq ".rows[0].staked" | tr -d '"' | awk '{ print $1 }')
+NEW_STAKED_BALANCE3=$(cleos get table eparticlectr eptestusersc stats | jq ".rows[0].staked" | tr -d '"' | awk '{ print $1 }')
+NEW_STAKED_BALANCE4=$(cleos get table eparticlectr eptestusersd stats | jq ".rows[0].staked" | tr -d '"' | awk '{ print $1 }')
+NEW_STAKED_BALANCE5=$(cleos get table eparticlectr eptestuserse stats | jq ".rows[0].staked" | tr -d '"' | awk '{ print $1 }')
+NEW_STAKED_BALANCE6=$(cleos get table eparticlectr eptestusersf stats | jq ".rows[0].staked" | tr -d '"' | awk '{ print $1 }')
+NEW_STAKED_BALANCE7=$(cleos get table eparticlectr eptestusersg stats | jq ".rows[0].staked" | tr -d '"' | awk '{ print $1 }')
+
+assert $(bc <<< "$OLD_AVAILABLE_BALANCE2 - $NEW_AVAILABLE_BALANCE2 == 75.000")
+assert $(bc <<< "$OLD_AVAILABLE_BALANCE3 - $NEW_AVAILABLE_BALANCE3 == 360.000")
+assert $(bc <<< "$OLD_AVAILABLE_BALANCE4 - $NEW_AVAILABLE_BALANCE4 == 1090.000")
+assert $(bc <<< "$OLD_AVAILABLE_BALANCE5 - $NEW_AVAILABLE_BALANCE5 == 1610.000")
+assert $(bc <<< "$OLD_AVAILABLE_BALANCE6 - $NEW_AVAILABLE_BALANCE6 == 455.000")
+assert $(bc <<< "$OLD_AVAILABLE_BALANCE7 - $NEW_AVAILABLE_BALANCE7 == 1000.000")
+
+assert $(bc <<< "$NEW_STAKED_BALANCE2 - $OLD_STAKED_BALANCE2 == 75.000")
+assert $(bc <<< "$NEW_STAKED_BALANCE3 - $OLD_STAKED_BALANCE3 == 360.000")
+assert $(bc <<< "$NEW_STAKED_BALANCE4 - $OLD_STAKED_BALANCE4 == 1090.000")
+assert $(bc <<< "$NEW_STAKED_BALANCE5 - $OLD_STAKED_BALANCE5 == 1610.000")
+assert $(bc <<< "$NEW_STAKED_BALANCE6 - $OLD_STAKED_BALANCE6 == 455.000")
+assert $(bc <<< "$NEW_STAKED_BALANCE7 - $OLD_STAKED_BALANCE7 == 1000.000")
+
+echo "All balances are properly accounted"
 
 
 # Finalize
@@ -525,6 +608,30 @@ assert $(bc <<< "$? == 0")
 echo -e "${CYAN}-----------------------THIS CLAIM SHOULD FAIL-----------------------${NC}"
 cleos push action eparticlectr brainclmid "[$STAKE_ID1]" -p eptestusersf
 assert $(bc <<< "$? == 1")
+
+echo -e "${CYAN}-----------------------WITHDRAWALS-----------------------${NC}"
+cleos push action eparticlectr withdraw '["eptestusersa", "eptestusersf", 1000, "eptestusersa"]' -p eptestusersa
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr withdraw '["eptestusersa", "eptestusersf", 1000, "eptestusersf"]' -p eptestusersf
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr withdraw '["eptestusersd", "eptestusersg", 500, "eptestusersd"]' -p eptestusersd
+assert $(bc <<< "$? == 0")
+
+# Boot user
+echo -e "${CYAN}-----------------------BOOT USER-----------------------${NC}"
+SHARES1=$(cleos get table eparticlectr eptestusersg accounts | jq '.rows[] | select(.delegator == "eptestusersd") | .shares')
+cleos push action eparticlectr withdraw "[\"eptestusersd\", \"eptestusersg\", $SHARES1, \"eptestusersg\"]" -p eptestusersg
+assert $(bc <<< "$? == 0")
+
+BOOTED_ACCOUNT=$(cleos get table eparticlectr eptestusersg accounts | jq '.rows[] | select(.delegator == "eptestusersd")')
+if [ -n "$BOOTED_ACCOUNT" ]; then assert 0; fi
+
+echo -e "${CYAN}-----------------------FAILED WITHDRAWALS-----------------------${NC}"
+cleos push action eparticlectr withdraw '["eptestusersg", "eptestusersf", 1000, "eptestusersa"]' -p eptestusersg
+assert $(bc <<< "$? == 1")
+cleos push action eparticlectr withdraw '["eptestusersa", "eptestusersf", 1000, "eptestuserse"]' -p eptestuserse
+assert $(bc <<< "$? == 1")
+
 
 echo -e "${CYAN}-----------------------MAKE MORE PROPOSALS THEN PURGE THE PREVIOUS ONE-----------------------${NC}"
 cleos push action eparticlectr propose2 "[ \"eptestusersa\", \"$SLUG8\", \"$IPFS4\", \"en\", -1, \"new wiki\", \"memoing\"]" -p eptestusersa

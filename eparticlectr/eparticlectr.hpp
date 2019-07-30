@@ -207,6 +207,7 @@ public:
         asset available;
         asset staked;
         uint64_t total_shares;
+        bool allow_delegation;
 
         uint64_t primary_key()const { return id; }
     };
@@ -274,11 +275,14 @@ public:
                       uint32_t endtime );
 
     [[eosio::action]]
+    void allowdelegat( name user, bool allow );
+
+    [[eosio::action]]
     void mkreferendum( uint64_t proposal_id );
 
     // Triggered by sending IQ to contract
     void deposit( name from, name to, asset quantity, std::string memo );
 
     [[eosio::action]]
-    void withdraw( name withdrawer, name guild, uint64_t amount );
+    void withdraw( name account, name guild, uint64_t amount, name executor );
 };
