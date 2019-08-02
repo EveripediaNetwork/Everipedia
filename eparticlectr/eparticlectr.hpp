@@ -194,11 +194,11 @@ public:
     typedef eosio::multi_index<name("wikistbl"), oldwiki> oldwikistbl; 
 
     struct [[eosio::table]] account {
-        name delegator;
+        name guild;
         uint64_t last_modified; // UNIX timestamp of last deposit
         uint64_t shares;
 
-        uint64_t primary_key()const { return delegator.value; }
+        uint64_t primary_key()const { return guild.value; }
     };
     typedef eosio::multi_index<name("accounts"), account> accounts;
 
@@ -206,6 +206,7 @@ public:
         uint64_t id;
         asset available;
         asset staked;
+        asset delegating;
         uint64_t total_shares;
         bool allow_delegation;
 

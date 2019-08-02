@@ -89,12 +89,14 @@ if [ $BUILD -eq 1 ]; then
     sed -i -e 's/REWARD_INTERVAL = 1800/REWARD_INTERVAL = 5/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e 's/DEFAULT_VOTING_TIME = 43200/DEFAULT_VOTING_TIME = 3/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e 's/STAKING_DURATION = 21 \* 86400/STAKING_DURATION = 5/g' ../eparticlectr/eparticlectr.hpp
+    sed -i -e 's/MINIMUM_DELEGATION_TIME = 7\*86400/MINIMUM_DELEGATION_TIME = 5/g' ../eparticlectr/eparticlectr.hpp
     cd ..
     bash build.sh
     cd test
     sed -i -e 's/REWARD_INTERVAL = 5/REWARD_INTERVAL = 1800/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e 's/DEFAULT_VOTING_TIME = 3/DEFAULT_VOTING_TIME = 43200/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e 's/STAKING_DURATION = 5/STAKING_DURATION = 21 \* 86400/g' ../eparticlectr/eparticlectr.hpp
+    sed -i -e 's/MINIMUM_DELEGATION_TIME = 5/MINIMUM_DELEGATION_TIME = 7\*86400/g' ../eparticlectr/eparticlectr.hpp
 fi
 
 if [ $BOOTSTRAP -eq 1 ]; then
@@ -243,6 +245,19 @@ echo -e "${CYAN}-----------------------DELEGATION-----------------------${NC}"
 OLD_BALANCE6=$(cleos get table eparticlectr eptestusersf stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
 OLD_BALANCE7=$(cleos get table eparticlectr eptestusersg stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
 
+STAKED_BALANCE6=$(cleos get table eparticlectr eptestusersf stats | jq ".rows[0].staked" | tr -d '"' | awk '{ print $1 }')
+STAKED_BALANCE7=$(cleos get table eparticlectr eptestusersg stats | jq ".rows[0].staked" | tr -d '"' | awk '{ print $1 }')
+TOTAL_SHARES6=$(cleos get table eparticlectr eptestusersf stats | jq ".rows[0].total_shares")
+TOTAL_SHARES7=$(cleos get table eparticlectr eptestusersg stats | jq ".rows[0].total_shares")
+SHARE_PRICE6=$(bc <<< "($OLD_BALANCE6 + $STAKED_BALANCE6) * 1000 / $TOTAL_SHARES6")
+SHARE_PRICE7=$(bc <<< "($OLD_BALANCE7 + $STAKED_BALANCE7) * 1000 / $TOTAL_SHARES7")
+
+OLD_SHARES1=$(cleos get table eparticlectr eptestusersa accounts | jq '.rows[] | select(.guild == "eptestusersf") | .shares')
+OLD_SHARES2=$(cleos get table eparticlectr eptestusersb accounts | jq '.rows[] | select(.guild == "eptestusersf") | .shares')
+OLD_SHARES3=$(cleos get table eparticlectr eptestusersc accounts | jq '.rows[] | select(.guild == "eptestusersf") | .shares')
+OLD_SHARES4=$(cleos get table eparticlectr eptestusersd accounts | jq '.rows[] | select(.guild == "eptestusersg") | .shares')
+OLD_SHARES5=$(cleos get table eparticlectr eptestuserse accounts | jq '.rows[] | select(.guild == "eptestusersg") | .shares')
+
 cleos push action everipediaiq transfer '["eptestusersa", "eparticlectr", "1000.000 IQ", "delegate:eptestusersf"]' -p eptestusersa
 assert $(bc <<< "$? == 0")
 cleos push action everipediaiq transfer '["eptestusersb", "eparticlectr", "1000.000 IQ", "delegate:eptestusersf"]' -p eptestusersb
@@ -254,11 +269,41 @@ assert $(bc <<< "$? == 0")
 cleos push action everipediaiq transfer '["eptestuserse", "eparticlectr", "1000.000 IQ", "delegate:eptestusersg"]' -p eptestuserse
 assert $(bc <<< "$? == 0")
 
+NEW_SHARES1=$(cleos get table eparticlectr eptestusersa accounts | jq '.rows[] | select(.guild == "eptestusersf") | .shares')
+NEW_SHARES2=$(cleos get table eparticlectr eptestusersb accounts | jq '.rows[] | select(.guild == "eptestusersf") | .shares')
+NEW_SHARES3=$(cleos get table eparticlectr eptestusersc accounts | jq '.rows[] | select(.guild == "eptestusersf") | .shares')
+NEW_SHARES4=$(cleos get table eparticlectr eptestusersd accounts | jq '.rows[] | select(.guild == "eptestusersg") | .shares')
+NEW_SHARES5=$(cleos get table eparticlectr eptestuserse accounts | jq '.rows[] | select(.guild == "eptestusersg") | .shares')
+NEW_SHARES7=$(cleos get table eparticlectr eptestuserse accounts | jq '.rows[] | select(.guild == "eptestusersg") | .shares')
+
+EXPECTED_SHARES6=$(bc <<< "1000000 / $SHARE_PRICE6")
+EXPECTED_SHARES7=$(bc <<< "1000000 / $SHARE_PRICE7")
+
+assert $(bc <<< "$NEW_SHARES1 - $OLD_SHARES1 == $EXPECTED_SHARES6")
+assert $(bc <<< "$NEW_SHARES2 - $OLD_SHARES2 == $EXPECTED_SHARES6")
+assert $(bc <<< "$NEW_SHARES3 - $OLD_SHARES3 == $EXPECTED_SHARES6")
+assert $(bc <<< "$NEW_SHARES4 - $OLD_SHARES4 == $EXPECTED_SHARES7")
+assert $(bc <<< "$NEW_SHARES5 - $OLD_SHARES5 == $EXPECTED_SHARES7")
+
 NEW_BALANCE6=$(cleos get table eparticlectr eptestusersf stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
 NEW_BALANCE7=$(cleos get table eparticlectr eptestusersg stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
-
+TOTAL_SHARES6=$(cleos get table eparticlectr eptestusersf stats | jq ".rows[0].total_shares")
+TOTAL_SHARES7=$(cleos get table eparticlectr eptestusersg stats | jq ".rows[0].total_shares")
+SUM_SHARES6=$(bc <<< "$NEW_SHARES1 + $NEW_SHARES2 + $NEW_SHARES3")
+SUM_SHARES7=$(bc <<< "$NEW_SHARES4 + $NEW_SHARES5")
 assert $(bc <<< "$NEW_BALANCE6 - $OLD_BALANCE6 == 3000.000")
 assert $(bc <<< "$NEW_BALANCE7 - $OLD_BALANCE7 == 2000.000")
+assert $(bc <<< "$SUM_SHARES6 == $TOTAL_SHARES6")
+assert $(bc <<< "$SUM_SHARES7 == $TOTAL_SHARES7")
+
+# Too soon withdrawal
+echo -e "${CYAN}-----------------------FAILED IMMEDIATE WITHDRAWALS-----------------------${NC}"
+cleos push action eparticlectr withdraw '["eptestusersa", "eptestusersf", 100, "eptestusersa"]' -p eptestusersa
+assert $(bc <<< "$? == 1")
+
+echo -e "${CYAN}-----------------------SUCCESSFUL IMMEDIATE BOOT-----------------------${NC}"
+cleos push action eparticlectr withdraw '["eptestusersa", "eptestusersf", 100, "eptestusersf"]' -p eptestusersf
+assert $(bc <<< "$? == 0")
 
 # Failed delegations
 echo -e "${CYAN}-----------------------FAILED DELEGATION-----------------------${NC}"
@@ -610,12 +655,54 @@ cleos push action eparticlectr brainclmid "[$STAKE_ID1]" -p eptestusersf
 assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}-----------------------WITHDRAWALS-----------------------${NC}"
+OLD_BALANCE1=$(cleos get table everipediaiq eptestusersa accounts | jq ".rows[0].balance" | tr -d '"' | awk '{ print $1 }')
+OLD_BALANCE4=$(cleos get table everipediaiq eptestusersd accounts | jq ".rows[0].balance" | tr -d '"' | awk '{ print $1 }')
+
+OLD_AVAILABLE6=$(cleos get table eparticlectr eptestusersf stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
+OLD_AVAILABLE7=$(cleos get table eparticlectr eptestusersg stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
+
+STAKED_BALANCE6=$(cleos get table eparticlectr eptestusersf stats | jq ".rows[0].staked" | tr -d '"' | awk '{ print $1 }')
+STAKED_BALANCE7=$(cleos get table eparticlectr eptestusersg stats | jq ".rows[0].staked" | tr -d '"' | awk '{ print $1 }')
+TOTAL_SHARES6=$(cleos get table eparticlectr eptestusersf stats | jq ".rows[0].total_shares")
+TOTAL_SHARES7=$(cleos get table eparticlectr eptestusersg stats | jq ".rows[0].total_shares")
+SHARE_PRICE6=$(bc <<< "($OLD_BALANCE6 + $STAKED_BALANCE6) * 1000 / $TOTAL_SHARES6")
+SHARE_PRICE7=$(bc <<< "($OLD_BALANCE7 + $STAKED_BALANCE7) * 1000 / $TOTAL_SHARES7")
+
+OLD_SHARES1=$(cleos get table eparticlectr eptestusersa accounts | jq '.rows[] | select(.guild == "eptestusersf") | .shares')
+OLD_SHARES4=$(cleos get table eparticlectr eptestusersd accounts | jq '.rows[] | select(.guild == "eptestusersg") | .shares')
+
 cleos push action eparticlectr withdraw '["eptestusersa", "eptestusersf", 1000, "eptestusersa"]' -p eptestusersa
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr withdraw '["eptestusersa", "eptestusersf", 1000, "eptestusersf"]' -p eptestusersf
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr withdraw '["eptestusersd", "eptestusersg", 500, "eptestusersd"]' -p eptestusersd
 assert $(bc <<< "$? == 0")
+
+EXPECTED_IQ1=$(bc <<< "2000 * $SHARE_PRICE6 / 1000")
+EXPECTED_IQ2=$(bc <<< "2000 * $SHARE_PRICE7 / 1000")
+NEW_BALANCE1=$(cleos get table everipediaiq eptestusersa accounts | jq ".rows[0].balance" | tr -d '"' | awk '{ print $1 }')
+NEW_BALANCE4=$(cleos get table everipediaiq eptestusersd accounts | jq ".rows[0].balance" | tr -d '"' | awk '{ print $1 }')
+
+echo $OLD_BALANCE1
+echo $EXPECTED_IQ1
+echo $NEW_BALANCE1
+assert $(bc <<< "$OLD_BALANCE1 - $EXPECTED_IQ1 == $NEW_BALANCE1")
+assert $(bc <<< "$OLD_BALANCE4 - $EXPECTED_IQ4 == $NEW_BALANCE4")
+
+NEW_SHARES1=$(cleos get table eparticlectr eptestusersa accounts | jq '.rows[] | select(.guild == "eptestusersf") | .shares')
+NEW_SHARES4=$(cleos get table eparticlectr eptestusersd accounts | jq '.rows[] | select(.guild == "eptestusersg") | .shares')
+
+assert $(bc <<< "$OLD_SHARES1 - $NEW_SHARES1 == 2000")
+assert $(bc <<< "$OLD_SHARES2 - $NEW_SHARES2 == 500")
+
+NEW_BALANCE6=$(cleos get table eparticlectr eptestusersf stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
+NEW_BALANCE7=$(cleos get table eparticlectr eptestusersg stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
+TOTAL_SHARES6=$(cleos get table eparticlectr eptestusersf stats | jq ".rows[0].total_shares")
+TOTAL_SHARES7=$(cleos get table eparticlectr eptestusersg stats | jq ".rows[0].total_shares")
+SUM_SHARES6=$(bc <<< "$NEW_SHARES1 + $NEW_SHARES2 + $NEW_SHARES3")
+SUM_SHARES7=$(bc <<< "$NEW_SHARES2 + $NEW_SHARES3")
+assert $(bc <<< "$SUM_SHARES6 == $TOTAL_SHARES6")
+assert $(bc <<< "$SUM_SHARES7 == $TOTAL_SHARES7")
 
 # Boot user
 echo -e "${CYAN}-----------------------BOOT USER-----------------------${NC}"

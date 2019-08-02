@@ -388,6 +388,7 @@ void eparticlectr::deposit( name from, name to, asset quantity, std::string memo
         statstbl.emplace( _self, [&]( auto& g ){
             g.available = asset(0, IQSYMBOL);
             g.staked = asset(0, IQSYMBOL);
+            g.delegating = asset(0, IQSYMBOL);
             g.total_shares = 0;
             g.allow_delegation = true;
         });
@@ -414,17 +415,19 @@ void eparticlectr::deposit( name from, name to, asset quantity, std::string memo
     });
 
     // update user shares
-    accounts acctstbl( _self, guild.value );
-    auto account_it = acctstbl.find( from.value );
+    accounts acctstbl( _self, from.value );
+    auto account_it = acctstbl.find( guild.value );
     if (account_it == acctstbl.end()) {
         acctstbl.emplace( _self, [&]( auto& a ){
-            a.delegator = from;
+            a.guild = guild;
             a.shares = shares;
+            a.last_modified = now();
         });
     }
     else {
         acctstbl.modify( account_it, same_payer, [&]( auto& a ){
             a.shares += shares;
+            a.last_modified = now();
         });
     }
 }
@@ -439,11 +442,12 @@ void eparticlectr::withdraw( name account, name guild, uint64_t shares, name exe
     eosio_assert(statstbl.begin() != statstbl.end(), "No available balance to withdraw");
     auto stat_it = statstbl.begin();
     
-    accounts acctstbl( _self, guild.value );
-    auto account_it = acctstbl.find( account.value );
+    accounts acctstbl( _self, account.value );
+    auto account_it = acctstbl.find( guild.value );
     eosio_assert(account_it != acctstbl.end(), "user does not have shares in this guild");
     eosio_assert(shares <= account_it->shares, "user is attempting to withdraw too many shares");
-    eosio_assert(now() > account_it->last_modified + MINIMUM_DELEGATION_TIME, "cannot withdraw within 7 days of a deposit");
+    if (executor == account)
+        eosio_assert(now() > account_it->last_modified + MINIMUM_DELEGATION_TIME, "user cannot withdraw within 7 days of a deposit");
 
     // calculate share value
     uint64_t guild_balance = stat_it->available.amount + stat_it->staked.amount;
@@ -506,17 +510,15 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
         std::make_tuple( _self, curation_quantity, memo )
     ).send();
 
-    // Add curation reward to available balance
+    // Get stats table for user
     stats statstbl( _self, reward_it->user.value );
     eosio_assert(statstbl.begin() != statstbl.end(), "PROTOCOL ERROR: This user should have a balance");
     auto stat_it = statstbl.begin();
-    statstbl.modify( stat_it, same_payer, [&]( auto& g ) {
-        g.available += curation_quantity;
-    });
 
     // Calculate editor reward if needed
+    int64_t editor_reward = 0;
     if (reward_it->is_editor && reward_it->proposalresult) {
-        int64_t editor_reward = reward_it->edit_points * PERIOD_EDITOR_REWARD / period_it->editor_sum;
+        editor_reward = reward_it->edit_points * PERIOD_EDITOR_REWARD / period_it->editor_sum;
         if (editor_reward == 0) // Minimum reward of 0.001 IQ to prevent unclaimable rewards
             editor_reward = 1;
         eosio_assert(editor_reward <= PERIOD_EDITOR_REWARD, "System logic error. Too much IQ calculated for editor reward.");
@@ -530,11 +532,14 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
             std::make_tuple( _self, editor_quantity, memo )
         ).send();
         
-        // Add editor reward to available balance
-        statstbl.modify( stat_it, same_payer, [&]( auto& g ) {
-            g.available += editor_quantity;
-        });
     }
+
+    // TODO: Reward guild owner shares for half the reward
+    int64_t total_reward = editor_reward + curation_reward;
+    asset total_quantity = asset(total_reward, IQSYMBOL);
+    statstbl.modify( stat_it, same_payer, [&]( auto& g ) {
+        g.available += total_quantity;
+    });
 
     // delete reward after claiming
     rewardstable.erase( reward_it );
@@ -577,6 +582,7 @@ void eparticlectr::allowdelegat( name user, bool allow ) {
         statstbl.emplace( _self, [&]( auto& g ){
             g.available = asset(0, IQSYMBOL);
             g.staked = asset(0, IQSYMBOL);
+            g.delegating = asset(0, IQSYMBOL);
             g.total_shares = 0;
             g.allow_delegation = allow;
         });
