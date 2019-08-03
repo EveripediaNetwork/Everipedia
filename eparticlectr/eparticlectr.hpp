@@ -153,7 +153,7 @@ public:
     // slashes will be done immediately at finalize(). Rewards will be done at 30min periods
     struct [[eosio::table]] rewardhistory {
         uint64_t id;
-        name user;
+        name guild;
         uint64_t vote_points; // reward amount
         uint64_t edit_points; // sum of all "for" votes for this proposal
         uint64_t proposal_id; // id of the proposal that this person voted on
@@ -165,12 +165,12 @@ public:
         std::string memo; // optional memo to pass thru logging actions. primarily used by proxy contracts to identify sub-permisisons responsible for an edit. Size limit is MAX_MEMO_SIZE
 
         uint64_t primary_key()const { return id; }
-        uint64_t get_user()const { return user.value; }
+        uint64_t get_guild()const { return guild.value; }
         uint64_t get_proposal()const { return proposal_id; }
         uint64_t get_finalize_period()const { return proposal_finalize_period; }
     };
     typedef eosio::multi_index<name("rewardstbl2"), rewardhistory,
-        indexed_by< name("byuser"), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_user>>,
+        indexed_by< name("byuser"), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_guild>>,
         indexed_by< name("byfinalper"), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_finalize_period >>,
         indexed_by< name("byproposal"), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_proposal >>
     > rewardstbl;

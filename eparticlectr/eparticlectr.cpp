@@ -285,7 +285,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
         else{
             rewardstable.emplace( _self,  [&]( auto& a ) {
                 a.id = rewardstable.available_primary_key();
-                a.user = vote_it->voter;
+                a.guild = vote_it->voter;
                 a.vote_points = vote_it->amount;
                 if (approved && vote_it->is_editor)
                     a.edit_points = (yes_votes - no_votes);
@@ -503,17 +503,12 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
     if (curation_reward == 0) // Minimum reward of 0.001 IQ to prevent unclaimable rewards
         curation_reward = 1;
     asset curation_quantity = asset(curation_reward, IQSYMBOL);
-    std::string memo = std::string("Curation IQ reward:" + reward_it->user.to_string() + ":" + reward_it->memo);
+    std::string memo = std::string("Curation IQ reward:" + reward_it->guild.to_string() + ":" + reward_it->memo);
     action(
         permission_level { TOKEN_CONTRACT, name("active") },
         TOKEN_CONTRACT, name("issue"),
         std::make_tuple( _self, curation_quantity, memo )
     ).send();
-
-    // Get stats table for user
-    stats statstbl( _self, reward_it->user.value );
-    eosio_assert(statstbl.begin() != statstbl.end(), "PROTOCOL ERROR: This user should have a balance");
-    auto stat_it = statstbl.begin();
 
     // Calculate editor reward if needed
     int64_t editor_reward = 0;
@@ -523,7 +518,7 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
             editor_reward = 1;
         eosio_assert(editor_reward <= PERIOD_EDITOR_REWARD, "System logic error. Too much IQ calculated for editor reward.");
         asset editor_quantity = asset(editor_reward, IQSYMBOL);
-        std::string memo = std::string("Editor IQ reward:" + reward_it->user.to_string() + ":" + reward_it->memo);
+        std::string memo = std::string("Editor IQ reward:" + reward_it->guild.to_string() + ":" + reward_it->memo);
         
         // Issue editor reward
         action(
@@ -533,12 +528,40 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
         ).send();
         
     }
+    
+    // Get stats table for guild
+    stats statstbl( _self, reward_it->guild.value );
+    eosio_assert(statstbl.begin() != statstbl.end(), "PROTOCOL ERROR: This user should have a balance");
+    auto stat_it = statstbl.begin();
 
-    // TODO: Reward guild owner shares for half the reward
+    // Get accounts table for guild owner
+    accounts acctstbl( _self, reward_it->guild.value );
+    auto account_it = acctstbl.find( reward_it->guild.value );
+    if (account_it == acctstbl.end()) {
+        acctstbl.emplace( _self, [&]( auto& a ){
+            a.guild = reward_it->guild;
+            a.shares = 0;
+            a.last_modified = now();
+        });
+        account_it = acctstbl.find( reward_it->guild.value );
+    }
+
+    // Update available balance of guild
+    // Reward guild owner shares for half the reward
+    // Update guild's total_shares to account for new shares
     int64_t total_reward = editor_reward + curation_reward;
     asset total_quantity = asset(total_reward, IQSYMBOL);
+    asset half_quantity = total_quantity / 2;
+    uint64_t guild_balance = stat_it->available.amount + stat_it->staked.amount;
+    uint64_t share_price = guild_balance / stat_it->total_shares;
+    uint64_t new_shares = half_quantity.amount / share_price;
     statstbl.modify( stat_it, same_payer, [&]( auto& g ) {
         g.available += total_quantity;
+        g.total_shares += new_shares;
+    });
+    acctstbl.modify( account_it, same_payer, [&]( auto& a ) {
+        a.shares += new_shares;
+        // don't update last_modified for rewards
     });
 
     // delete reward after claiming
