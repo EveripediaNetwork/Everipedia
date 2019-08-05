@@ -388,7 +388,6 @@ void eparticlectr::deposit( name from, name to, asset quantity, std::string memo
         statstbl.emplace( _self, [&]( auto& g ){
             g.available = asset(0, IQSYMBOL);
             g.staked = asset(0, IQSYMBOL);
-            g.delegating = asset(0, IQSYMBOL);
             g.total_shares = 0;
             g.allow_delegation = true;
         });
@@ -605,7 +604,6 @@ void eparticlectr::allowdelegat( name user, bool allow ) {
         statstbl.emplace( _self, [&]( auto& g ){
             g.available = asset(0, IQSYMBOL);
             g.staked = asset(0, IQSYMBOL);
-            g.delegating = asset(0, IQSYMBOL);
             g.total_shares = 0;
             g.allow_delegation = allow;
         });

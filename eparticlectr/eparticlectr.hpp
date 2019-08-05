@@ -206,7 +206,6 @@ public:
         uint64_t id;
         asset available;
         asset staked;
-        asset delegating;
         uint64_t total_shares;
         bool allow_delegation;
 
