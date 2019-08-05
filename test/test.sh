@@ -566,6 +566,11 @@ OLD_BALANCE5=$(cleos get table eparticlectr eptestuserse stats | jq ".rows[0].av
 OLD_BALANCE6=$(cleos get table eparticlectr eptestusersf stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
 OLD_BALANCE7=$(cleos get table eparticlectr eptestusersg stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
 
+OLD_SHARES4=$(cleos get table eparticlectr eptestusersd accounts | jq '.rows[] | select(.guild == "eptestusersd") | .shares')
+OLD_SHARES5=$(cleos get table eparticlectr eptestuserse accounts | jq '.rows[] | select(.guild == "eptestuserse") | .shares')
+OLD_SHARES6=$(cleos get table eparticlectr eptestusersf accounts | jq '.rows[] | select(.guild == "eptestusersf") | .shares')
+OLD_SHARES7=$(cleos get table eparticlectr eptestusersg accounts | jq '.rows[] | select(.guild == "eptestusersg") | .shares')
+
 REWARD_ID2=$(bc <<< "$REWARD_ID1 - 2")
 REWARD_ID3=$(bc <<< "$REWARD_ID1 - 3")
 REWARD_ID4=$(bc <<< "$REWARD_ID1 - 4")
@@ -588,6 +593,11 @@ NEW_BALANCE5=$(cleos get table eparticlectr eptestuserse stats | jq ".rows[0].av
 NEW_BALANCE6=$(cleos get table eparticlectr eptestusersf stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
 NEW_BALANCE7=$(cleos get table eparticlectr eptestusersg stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
 
+NEW_SHARES4=$(cleos get table eparticlectr eptestusersd accounts | jq '.rows[] | select(.guild == "eptestusersd") | .shares')
+NEW_SHARES5=$(cleos get table eparticlectr eptestuserse accounts | jq '.rows[] | select(.guild == "eptestuserse") | .shares')
+NEW_SHARES6=$(cleos get table eparticlectr eptestusersf accounts | jq '.rows[] | select(.guild == "eptestusersf") | .shares')
+NEW_SHARES7=$(cleos get table eparticlectr eptestusersg accounts | jq '.rows[] | select(.guild == "eptestusersg") | .shares')
+
 DIFF4=$(bc <<< "$NEW_BALANCE4 - $OLD_BALANCE4")
 DIFF5=$(bc <<< "$NEW_BALANCE5 - $OLD_BALANCE5")
 DIFF6=$(bc <<< "$NEW_BALANCE6 - $OLD_BALANCE6")
@@ -599,10 +609,17 @@ echo -e "${CYAN}    eptestuserse: $DIFF5${NC}"
 echo -e "${CYAN}    eptestusersf: $DIFF6${NC}"
 echo -e "${CYAN}    eptestusersg: $DIFF7${NC}"
 
+# Assert rewards were distributed to guilds
 assert $(bc <<< "$DIFF4 == 198.250")
 assert $(bc <<< "$DIFF5 == 2.024")
 assert $(bc <<< "$DIFF6 == 41.176")
 assert $(bc <<< "$DIFF7 == 2.429")
+
+# Assert shares were awarded to guild owners
+assert $(bc <<< "$NEW_SHARES4 > $OLD_SHARES4")
+assert $(bc <<< "$NEW_SHARES5 > $OLD_SHARES5")
+assert $(bc <<< "$NEW_SHARES6 > $OLD_SHARES6")
+assert $(bc <<< "$NEW_SHARES7 > $OLD_SHARES7")
 
 echo -e "${CYAN}-----------------------NEXT TWO CLAIMS SHOULD FAIL-----------------------${NC}"
 cleos push action --force-unique eparticlectr rewardclmid "[\"$REWARD_ID3\"]" -p eptestusersf
