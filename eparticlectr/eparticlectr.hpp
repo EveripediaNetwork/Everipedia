@@ -153,12 +153,12 @@ public:
     struct [[eosio::table]] boostledger {
         uint64_t id;
         uint64_t wiki_id; // the ID of the boosted wiki
-        name user;
+        name booster;
         uint64_t amount; // amount that was burned to generate the boost. The vote multiplier is 2^(log(amount)) + 1
         uint32_t timestamp; // UNIX timestamp of the vote. Used for the BOOST_TRANSFER_WAITING_PERIOD
 
         uint64_t primary_key()const { return id; }
-        uint64_t get_user()const { return user.value; }
+        uint64_t get_booster()const { return booster.value; }
         uint64_t get_wiki_id()const { return wiki_id; }
     };
 
@@ -261,7 +261,7 @@ public:
 
     // boostledger table
     typedef eosio::multi_index<name("boosttbl"), boostledger,
-        indexed_by< name("byuser"), const_mem_fun<boostledger, uint64_t, &boostledger::get_user >>,
+        indexed_by< name("bybooster"), const_mem_fun<boostledger, uint64_t, &boostledger::get_booster >>,
         indexed_by< name("bywikiid"), const_mem_fun<boostledger, uint64_t, &boostledger::get_wiki_id >>
     > boosttbl;
 

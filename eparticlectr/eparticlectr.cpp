@@ -52,7 +52,7 @@ void eparticlectr::boostincrse( name booster, uint64_t amount, std::string slug,
     // Loop through all of the boosts for a given wiki_id and find the one that belongs to the booster
     bool existing_boost_found = false;
     while(boost_it != boost_idx.end() && !existing_boost_found) {
-        if (boost_it->user == booster) {
+        if (boost_it->booster == booster) {
             articleboosts.modify( boost_it, _self, [&]( auto& b ) {
                 b.amount += amount;
             });
@@ -68,7 +68,7 @@ void eparticlectr::boostincrse( name booster, uint64_t amount, std::string slug,
         articleboosts.emplace( _self, [&]( auto& b ) {
             b.id = articleboosts.available_primary_key();
             b.wiki_id = wiki_id_source;
-            b.user = booster;
+            b.booster = booster;
             b.amount = amount;
         });
     }
@@ -147,7 +147,7 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
     auto boost_it = boost_idx.find( prop_it->wiki_id );
 
     // Loop through all of the boosts for a given wiki_id and find the one that belongs to the booster, if there is one
-    while(boost_it != boost_idx.end() && boost_it->user == booster) {
+    while(boost_it != boost_idx.end() && boost_it->booster == booster) {
         boost_it++;
     }
 
@@ -177,7 +177,7 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
          a.proposal_id = proposal_id;
          a.approve = approve;
          a.is_editor = voterIsProposer;
-         a.amount = amount;
+         a.amount = amount * boost_multiplier;
          a.voter = voter;
          a.timestamp = now();
          a.stake_id = stake_id;
