@@ -4,7 +4,7 @@ CYAN='\033[1;36m'
 NC='\033[0m'
 
 trap ctrl_c INT
-function ctrl_c {
+ctrl_c () {
     exit 11;
 }
 
@@ -23,7 +23,7 @@ alias cleos="cleos --url=${NODEOS_LOCATION}"
 #######################################
 ## HELPERS
 
-function balance {
+balance () {
     cleos get table everipediaiq $1 accounts | jq ".rows[0].balance" | tr -d '"' | awk '{print $1}'
 }
 

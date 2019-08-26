@@ -4,12 +4,13 @@ CYAN='\033[1;36m'
 NC='\033[0m'
 
 trap ctrl_c INT
-function ctrl_c {
+ctrl_c () {
     exit 11;
 }
 
 RECOMPILE_AND_RESET_EOSIO_CONTRACTS=0
-EOSIO_CONTRACTS_ROOT=/home/kedar/eosio.contracts/build/contracts/
+#EOSIO_CONTRACTS_ROOT=/home/kedar/eosio.contracts/build/contracts/
+EOSIO_CONTRACTS_ROOT=/home/travis/Programs/contracts/eosio.contracts/build/contracts
 NODEOS_HOST="127.0.0.1"
 NODEOS_PROTOCOL="http"
 NODEOS_PORT="8888"
@@ -20,7 +21,7 @@ alias cleos="cleos --url=${NODEOS_LOCATION}"
 #######################################
 ## HELPERS
 
-function balance {
+balance () {
     cleos get table everipediaiq $1 accounts | jq ".rows[0].balance" | tr -d '"' | awk '{print $1}'
 }
 
