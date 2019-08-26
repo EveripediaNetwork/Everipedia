@@ -78,7 +78,10 @@ public:
         return sha256(combined.c_str(), combined.size());
     }
 
-    static uint64_t get_or_create_wiki_id(std::string slug, std::string lang_code) {
+    static uint64_t get_or_create_wiki_id(name caller, std::string slug, std::string lang_code) {
+        // Table definitions
+        wikistbl wikitbl( caller, caller.value );
+
         eosio_assert( slug != "", "slug cannot be empty");
         eosio_assert( slug.size() <= MAX_SLUG_SIZE, "slug must be max 256 bytes");
         eosio_assert( lang_code.size() <= MAX_LANG_CODE_SIZE, "lang_code must be max 7 bytes");
@@ -90,15 +93,20 @@ public:
         auto sluglang_idx = wikitbl.get_index<name("uniqsluglang")>();
         auto existing_wiki_it = sluglang_idx.find(sha256_slug_lang(slug, lang_code));
         int64_t wiki_id;
-        if (existing_wiki_it != sluglang_idx.end())
-            wiki_id = existing_wiki_it->id;
-        else
-            wiki_id = wikitbl.available_primary_key(); 
-        if (group_id == -1) group_id = wiki_id; 
+        uint64_t group_id;
 
+        if (existing_wiki_it != sluglang_idx.end()){
+            wiki_id = existing_wiki_it->id;
+            group_id = existing_wiki_it->group_id;
+        }
+        else {
+            wiki_id = wikitbl.available_primary_key(); 
+            group_id = wiki_id; 
+        }
+            
         // Place new wikis into the table
         if (existing_wiki_it == sluglang_idx.end()) {
-            wikitbl.emplace( _self,  [&]( auto& a ) {
+            wikitbl.emplace( caller,  [&]( auto& a ) {
                 a.id = wiki_id;
                 a.slug = slug;
                 a.lang_code = lang_code;

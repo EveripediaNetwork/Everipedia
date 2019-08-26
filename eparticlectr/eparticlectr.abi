@@ -1,7 +1,35 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Mon Jul 15 13:55:11 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT ",
     "version": "eosio::abi/1.1",
+    "types": [
+        {
+            "new_type_name": "ipfshash_t",
+            "type": "string"
+        }
+    ],
     "structs": [
+        {
+            "name": "boostincrse",
+            "base": "",
+            "fields": [
+                {
+                    "name": "booster",
+                    "type": "name"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint64"
+                },
+                {
+                    "name": "slug",
+                    "type": "string"
+                },
+                {
+                    "name": "lang_code",
+                    "type": "string"
+                }
+            ]
+        },
         {
             "name": "boostledger",
             "base": "",
@@ -25,28 +53,6 @@
                 {
                     "name": "timestamp",
                     "type": "uint32"
-                }
-            ]
-        },
-        {
-            "name": "boostincrse",
-            "base": "",
-            "fields": [
-                {
-                    "name": "booster",
-                    "type": "name"
-                },
-                {
-                    "name": "amount",
-                    "type": "uint64"
-                },
-                {
-                    "name": "slug",
-                    "type": "string"
-                },
-                {
-                    "name": "lang_code",
-                    "type": "string"
                 }
             ]
         },
@@ -80,9 +86,6 @@
                 }
             ]
         },
-
-
-
         {
             "name": "brainclmid",
             "base": "",
@@ -530,12 +533,6 @@
             ]
         }
     ],
-    "types": [
-        {
-            "new_type_name": "ipfshash_t",
-            "type": "string"
-        }
-    ],
     "actions": [
         {
             "name": "boostincrse",
@@ -657,6 +654,5 @@
         }
     ],
     "ricardian_clauses": [],
-    "variants": [],
-    "abi_extensions": []
+    "variants": []
 }

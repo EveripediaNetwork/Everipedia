@@ -33,7 +33,7 @@ void eparticlectr::boostincrse( name booster, uint64_t amount, std::string slug,
     require_auth( booster );
 
     // Get the existing wiki_id or create an new one
-    int64_t wiki_id_source = eparticlectr::get_or_create_wiki_id(slug, lang_code);
+    int64_t wiki_id_source = eparticlectr::get_or_create_wiki_id(_self, slug, lang_code);
 
     // Burn the amount for the boost
     // Should automatically check for correct balance
@@ -53,7 +53,7 @@ void eparticlectr::boostincrse( name booster, uint64_t amount, std::string slug,
     bool existing_boost_found = false;
     while(boost_it != boost_idx.end() && !existing_boost_found) {
         if (boost_it->booster == booster) {
-            articleboosts.modify( boost_it, _self, [&]( auto& b ) {
+            boost_idx.modify( boost_it, _self, [&]( auto& b ) {
                 b.amount += amount;
             });
 
@@ -88,7 +88,7 @@ void eparticlectr::boosttxfr(
     require_auth( booster );
 
     // // Get the destination wiki_id or create an new one
-    // int64_t destination_wiki_id = eparticlectr::get_or_create_wiki_id(dest_slug, dest_lang_code);
+    // int64_t destination_wiki_id = eparticlectr::get_or_create_wiki_id(_self, dest_slug, dest_lang_code);
 
 
     // eosio_assert(current_period > BOOST_TRANSFER_WAITING_PERIOD, "You must wait until the boost is eligible to be transferred!");
@@ -147,7 +147,7 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
     auto boost_it = boost_idx.find( prop_it->wiki_id );
 
     // Loop through all of the boosts for a given wiki_id and find the one that belongs to the booster, if there is one
-    while(boost_it != boost_idx.end() && boost_it->booster == booster) {
+    while(boost_it != boost_idx.end() && boost_it->booster == voter) {
         boost_it++;
     }
 
@@ -191,8 +191,7 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
 void eparticlectr::propose2( name proposer, std::string slug, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo ) {
     require_auth( _self );
 
-    // Table definitions
-    wikistbl wikitbl( _self, _self.value );
+    // Table definition
     propstbl proptable( _self, _self.value );
 
     // Argument checks
@@ -203,7 +202,7 @@ void eparticlectr::propose2( name proposer, std::string slug, ipfshash_t ipfs_ha
     eosio_assert( group_id >= -1, "group_id must be greater than -2. Specify -1 for auto-generated ID");
 
     // Get the existing wiki_id or create an new one
-    int64_t wiki_id = eparticlectr::get_or_create_wiki_id(slug, lang_code);
+    int64_t wiki_id = eparticlectr::get_or_create_wiki_id(_self, slug, lang_code);
 
     // Calculate proposal parameters
     uint64_t proposal_id = proptable.available_primary_key();
