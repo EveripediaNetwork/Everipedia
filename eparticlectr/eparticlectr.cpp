@@ -35,17 +35,36 @@ void eparticlectr::boostincrse( name booster, uint64_t amount, std::string slug,
     // Get the existing wiki_id or create an new one
     int64_t wiki_id_source = eparticlectr::get_or_create_wiki_id(slug, lang_code);
 
+    // Burn the amount for the boost
+    // Should automatically check for correct balance
+    std::string memo = std::string("Burning ") + std::to_string(amount) + std::string(" for ") + std::string("lang_") + lang_code + std::string("/") + slug+ std::string(" boost.");
+    action(
+        permission_level { booster, name("active") },
+        TOKEN_CONTRACT, name("burn"),
+        std::make_tuple( booster, amount, memo )
+    ).send();
 
-        // uint64_t id;
-        // uint64_t wiki_id; // the ID of the boosted wiki
-        // name user;
-        // uint64_t amount; // amount that was burned to generate the boost. The vote multiplier is 2^(log(amount)) + 1
-
-    // Update the boostvotetbl table
+    // Update the boostvotetbl table, or create it if an existing boost isn't already there
     boostvotetbl articleboosts( _self, _self.value );
     auto boost_idx = articleboosts.get_index<name("bywikiid")>();
     auto boost_it = boost_idx.find( wiki_id_source );
-    if (boost_it == boost_idx.end()) {
+
+    // Loop through all of the boosts for a given wiki_id and find the one that belongs to the booster
+    bool existing_boost_found = false;
+    while(boost_it != boost_idx.end() && !existing_boost_found) {
+        if (boost_it->user == booster) {
+            articleboosts.modify( boost_it, _self, [&]( auto& b ) {
+                b.amount += amount;
+            });
+
+            // Only modify once;
+            existing_boost_found = true;
+            break;
+        }
+    }
+
+    // Create the new boost entry if it doesn't exist
+    if (!existing_boost_found) {
         articleboosts.emplace( _self, [&]( auto& b ) {
             b.id = articleboosts.available_primary_key();
             b.wiki_id = wiki_id_source;
@@ -54,9 +73,7 @@ void eparticlectr::boostincrse( name booster, uint64_t amount, std::string slug,
         });
     }
     else {
-        articleboosts.modify( boost_it, same_payer, [&]( auto& b ) {
-            b.amount += amount;
-        });
+
     }
 
 }
