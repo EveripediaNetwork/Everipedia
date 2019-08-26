@@ -105,6 +105,18 @@ public:
         uint64_t get_user()const { return user.value; }
     };
 
+    // Internal struct for article voting boosts 
+    struct [[eosio::table]] boostvote {
+        uint64_t id;
+        uint64_t wiki_id; // the ID of the boosted wiki
+        name user;
+        uint64_t amount; // amount that was burned to generate the boost. The vote multiplier is 2^(log(amount)) + 1
+
+        uint64_t primary_key()const { return id; }
+        uint64_t get_user()const { return user.value; }
+        uint64_t get_wiki()const { return wiki_id; }
+    };
+
     // Voting tally
     struct [[eosio::table]] vote_t {
           uint64_t id;
@@ -202,6 +214,11 @@ public:
     // edit proposals table
     typedef eosio::multi_index<name("propstbl2"), editproposal> propstbl; // EOS table for the edit proposals
 
+    // boostvote table
+    typedef eosio::multi_index<name("boostvotetbl"), boostvote,
+        indexed_by< name("byuser"), const_mem_fun<boostvote, uint64_t, &boostvote::get_user >>,
+        indexed_by< name("bywiki"), const_mem_fun<boostvote, uint64_t, &boostvote::get_wiki >>
+    > boostvotetbl;
 
     // rewards history table
     typedef eosio::multi_index<name("rewardstbl2"), rewardhistory,
