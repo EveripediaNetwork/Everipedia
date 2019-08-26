@@ -1,7 +1,7 @@
 <h1 class="contract">boostincrse</h1>
 Increase the boost amount for an article.
 <h1 class="contract">boosttxfr</h1>
-Transfer an article's boost amount (fully or partially) to another account.
+Transfer an article's boost amount (fully or partially) to another account and wiki.
 <h1 class="contract">brainclmid</h1>
 Claim back IQ that was staked for Brainpower. Must happen after the 21 day staking period.
 <h1 class="contract">brainmeart</h1>

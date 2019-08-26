@@ -33,16 +33,48 @@ void eparticlectr::boostincrse( name booster, uint64_t amount, std::string slug,
     require_auth( booster );
 
     // Get the existing wiki_id or create an new one
-    int64_t wiki_id = eparticlectr::get_or_create_wiki_id(slug, lang_code);
+    int64_t wiki_id_source = eparticlectr::get_or_create_wiki_id(slug, lang_code);
+
+
+        // uint64_t id;
+        // uint64_t wiki_id; // the ID of the boosted wiki
+        // name user;
+        // uint64_t amount; // amount that was burned to generate the boost. The vote multiplier is 2^(log(amount)) + 1
+
+    // Update the boostvotetbl table
+    boostvotetbl articleboosts( _self, _self.value );
+    auto boost_idx = articleboosts.get_index<name("bywikiid")>();
+    auto boost_it = boost_idx.find( wiki_id_source );
+    if (boost_it == boost_idx.end()) {
+        articleboosts.emplace( _self, [&]( auto& b ) {
+            b.id = articleboosts.available_primary_key();
+            b.wiki_id = wiki_id_source;
+            b.user = booster;
+            b.amount = amount;
+        });
+    }
+    else {
+        articleboosts.modify( boost_it, same_payer, [&]( auto& b ) {
+            b.amount += amount;
+        });
+    }
+
 }
 
-// Transfer an article's boost amount (fully or partially) to another account
+// Transfer an article's boost amount (fully or partially) to another account and wiki
 [[eosio::action]]
-void eparticlectr::boosttxfr( name booster, name beneficiary, uint64_t amount, std::string slug, std::string lang_code ){
+void eparticlectr::boosttxfr( 
+    name booster, 
+    name beneficiary, 
+    uint64_t amount, 
+    uint64_t source_wiki_id,
+    std::string dest_slug, 
+    std::string dest_lang_code 
+){
     require_auth( booster );
 
-    // Get the existing wiki_id or create an new one
-    int64_t wiki_id = eparticlectr::get_or_create_wiki_id(slug, lang_code);
+    // Get the destination wiki_id or create an new one
+    int64_t destination_wiki_id = eparticlectr::get_or_create_wiki_id(dest_slug, dest_lang_code);
 
 }
 
@@ -294,7 +326,6 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
             p.editor_sum += edit_points;
         });
     }
-
 
     // Insert wiki into DB
     if (approved) {

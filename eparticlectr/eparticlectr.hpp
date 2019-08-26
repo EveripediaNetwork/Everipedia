@@ -144,7 +144,7 @@ public:
 
         uint64_t primary_key()const { return id; }
         uint64_t get_user()const { return user.value; }
-        uint64_t get_wiki()const { return wiki_id; }
+        uint64_t get_wiki_id()const { return wiki_id; }
     };
 
     // Voting tally
@@ -247,7 +247,7 @@ public:
     // boostvote table
     typedef eosio::multi_index<name("boostvotetbl"), boostvote,
         indexed_by< name("byuser"), const_mem_fun<boostvote, uint64_t, &boostvote::get_user >>,
-        indexed_by< name("bywiki"), const_mem_fun<boostvote, uint64_t, &boostvote::get_wiki >>
+        indexed_by< name("bywikiid"), const_mem_fun<boostvote, uint64_t, &boostvote::get_wiki_id >>
     > boostvotetbl;
 
     // rewards history table
@@ -282,7 +282,14 @@ public:
     void boostincrse( name booster, uint64_t amount, std::string slug, std::string lang_code );
 
     [[eosio::action]]
-    void boosttxfr( name booster, name beneficiary, uint64_t amount, std::string slug, std::string lang_code );
+    void boosttxfr( 
+        name booster, 
+        name beneficiary, 
+        uint64_t amount, 
+        uint64_t source_wiki_id,
+        std::string dest_slug, 
+        std::string dest_lang_code 
+    );
 
     [[eosio::action]]
     void oldvotepurge( uint64_t proposal_id,
