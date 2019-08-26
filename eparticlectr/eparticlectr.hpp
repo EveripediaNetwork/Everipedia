@@ -27,6 +27,7 @@
 
 #include <eosiolib/eosio.hpp>
 #include <eosiolib/asset.hpp>
+#include <cmath>
 #include <ctime>
 
 using namespace eosio;
@@ -50,6 +51,8 @@ const uint64_t MAX_MEMO_SIZE = 32;
 const uint64_t MAX_IPFS_SIZE = 46;
 const uint64_t MIN_IPFS_SIZE = 46;
 const uint64_t REFERENDUM_DURATION_SECS = 14*86400; // 14 days
+const uint64_t BOOST_MINIMUM = 100.0; // 100 IQ
+const uint64_t BOOST_TRANSFER_WAITING_PERIOD = 14*86400; // 14 days
 const eosio::symbol IQSYMBOL = symbol(symbol_code("IQ"), 3);
 
 class [[eosio::contract("eparticlectr")]] eparticlectr : public contract {
@@ -105,6 +108,17 @@ public:
         return wiki_id;
     }
 
+    // Formula for the voting boost
+    static uint64_t get_boost_multiplier(uint64_t amount) {
+        if (amount < BOOST_MINIMUM) {
+            return 1.0;
+        }
+        else{
+            return (pow(2.0, log10(amount)) + 1.0);
+        }
+        
+    }
+
     // ==================================================
     // ==================================================
     // ==================================================
@@ -136,11 +150,12 @@ public:
     };
 
     // Internal struct for article voting boosts 
-    struct [[eosio::table]] boostvote {
+    struct [[eosio::table]] boostledger {
         uint64_t id;
         uint64_t wiki_id; // the ID of the boosted wiki
         name user;
         uint64_t amount; // amount that was burned to generate the boost. The vote multiplier is 2^(log(amount)) + 1
+        uint32_t timestamp; // UNIX timestamp of the vote. Used for the BOOST_TRANSFER_WAITING_PERIOD
 
         uint64_t primary_key()const { return id; }
         uint64_t get_user()const { return user.value; }
@@ -244,11 +259,11 @@ public:
     // edit proposals table
     typedef eosio::multi_index<name("propstbl2"), editproposal> propstbl; // EOS table for the edit proposals
 
-    // boostvote table
-    typedef eosio::multi_index<name("boostvotetbl"), boostvote,
-        indexed_by< name("byuser"), const_mem_fun<boostvote, uint64_t, &boostvote::get_user >>,
-        indexed_by< name("bywikiid"), const_mem_fun<boostvote, uint64_t, &boostvote::get_wiki_id >>
-    > boostvotetbl;
+    // boostledger table
+    typedef eosio::multi_index<name("boosttbl"), boostledger,
+        indexed_by< name("byuser"), const_mem_fun<boostledger, uint64_t, &boostledger::get_user >>,
+        indexed_by< name("bywikiid"), const_mem_fun<boostledger, uint64_t, &boostledger::get_wiki_id >>
+    > boosttbl;
 
     // rewards history table
     typedef eosio::multi_index<name("rewardstbl2"), rewardhistory,

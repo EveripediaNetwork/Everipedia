@@ -44,8 +44,8 @@ void eparticlectr::boostincrse( name booster, uint64_t amount, std::string slug,
         std::make_tuple( booster, amount, memo )
     ).send();
 
-    // Update the boostvotetbl table, or create it if an existing boost isn't already there
-    boostvotetbl articleboosts( _self, _self.value );
+    // Update the boosttbl table, or create it if an existing boost isn't already there
+    boosttbl articleboosts( _self, _self.value );
     auto boost_idx = articleboosts.get_index<name("bywikiid")>();
     auto boost_it = boost_idx.find( wiki_id_source );
 
@@ -59,8 +59,8 @@ void eparticlectr::boostincrse( name booster, uint64_t amount, std::string slug,
 
             // Only modify once;
             existing_boost_found = true;
-            break;
         }
+        else { boost_it++; }
     }
 
     // Create the new boost entry if it doesn't exist
@@ -71,9 +71,6 @@ void eparticlectr::boostincrse( name booster, uint64_t amount, std::string slug,
             b.user = booster;
             b.amount = amount;
         });
-    }
-    else {
-
     }
 
 }
@@ -90,8 +87,11 @@ void eparticlectr::boosttxfr(
 ){
     require_auth( booster );
 
-    // Get the destination wiki_id or create an new one
-    int64_t destination_wiki_id = eparticlectr::get_or_create_wiki_id(dest_slug, dest_lang_code);
+    // // Get the destination wiki_id or create an new one
+    // int64_t destination_wiki_id = eparticlectr::get_or_create_wiki_id(dest_slug, dest_lang_code);
+
+
+    // eosio_assert(current_period > BOOST_TRANSFER_WAITING_PERIOD, "You must wait until the boost is eligible to be transferred!");
 
 }
 
@@ -140,6 +140,21 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
     // Verify voting is still in progress
     eosio_assert( now() < prop_it->endtime, "Voting period is over");
     eosio_assert( !prop_it->finalized, "Proposal is finalized");
+
+    // Update the boosttbl table, or create it if an existing boost isn't already there
+    boosttbl articleboosts( _self, _self.value );
+    auto boost_idx = articleboosts.get_index<name("bywikiid")>();
+    auto boost_it = boost_idx.find( prop_it->wiki_id );
+
+    // Loop through all of the boosts for a given wiki_id and find the one that belongs to the booster, if there is one
+    while(boost_it != boost_idx.end() && boost_it->user == booster) {
+        boost_it++;
+    }
+
+    float boost_multiplier = 1.0;
+    if (boost_it != boost_idx.end()){
+        boost_multiplier = eparticlectr::get_boost_multiplier(boost_it->amount);
+    } 
 
     // Create the stake object
     staketbl staketblobj(_self, _self.value);
