@@ -75,6 +75,36 @@ public:
         return sha256(combined.c_str(), combined.size());
     }
 
+    static uint64_t get_or_create_wiki_id(std::string slug, std::string lang_code) {
+        eosio_assert( slug != "", "slug cannot be empty");
+        eosio_assert( slug.size() <= MAX_SLUG_SIZE, "slug must be max 256 bytes");
+        eosio_assert( lang_code.size() <= MAX_LANG_CODE_SIZE, "lang_code must be max 7 bytes");
+        eosio_assert( lang_code.size() >= MIN_LANG_CODE_SIZE, "lang_code must be atleast 2 characters");
+
+        // check for duplicate slug + lang. grab id if it exists.
+        // otherwise set a new ID for the wiki
+        // group id matches wiki id if set to -1
+        auto sluglang_idx = wikitbl.get_index<name("uniqsluglang")>();
+        auto existing_wiki_it = sluglang_idx.find(sha256_slug_lang(slug, lang_code));
+        int64_t wiki_id;
+        if (existing_wiki_it != sluglang_idx.end())
+            wiki_id = existing_wiki_it->id;
+        else
+            wiki_id = wikitbl.available_primary_key(); 
+        if (group_id == -1) group_id = wiki_id; 
+
+        // Place new wikis into the table
+        if (existing_wiki_it == sluglang_idx.end()) {
+            wikitbl.emplace( _self,  [&]( auto& a ) {
+                a.id = wiki_id;
+                a.slug = slug;
+                a.lang_code = lang_code;
+                a.group_id = group_id;
+            });
+        }
+        return wiki_id;
+    }
+
     // ==================================================
     // ==================================================
     // ==================================================
@@ -247,6 +277,12 @@ public:
 
     [[eosio::action]]
     void finalize( uint64_t proposal_id );
+
+    [[eosio::action]]
+    void boostincrse( name booster, uint64_t amount, std::string slug, std::string lang_code );
+
+    [[eosio::action]]
+    void boosttxfr( name booster, name beneficiary, uint64_t amount, std::string slug, std::string lang_code );
 
     [[eosio::action]]
     void oldvotepurge( uint64_t proposal_id,

@@ -27,6 +27,25 @@
 
 #include "eparticlectr.hpp"
 
+// Increase the boost amount for an article
+[[eosio::action]]
+void eparticlectr::boostincrse( name booster, uint64_t amount, std::string slug, std::string lang_code ){
+    require_auth( booster );
+
+    // Get the existing wiki_id or create an new one
+    int64_t wiki_id = eparticlectr::get_or_create_wiki_id(slug, lang_code);
+}
+
+// Transfer an article's boost amount (fully or partially) to another account
+[[eosio::action]]
+void eparticlectr::boosttxfr( name booster, name beneficiary, uint64_t amount, std::string slug, std::string lang_code ){
+    require_auth( booster );
+
+    // Get the existing wiki_id or create an new one
+    int64_t wiki_id = eparticlectr::get_or_create_wiki_id(slug, lang_code);
+
+}
+
 // Redeem IQ, with a specific stake specified
 [[eosio::action]]
 void eparticlectr::brainclmid( uint64_t stakeid ) {
@@ -113,37 +132,14 @@ void eparticlectr::propose2( name proposer, std::string slug, ipfshash_t ipfs_ha
     propstbl proptable( _self, _self.value );
 
     // Argument checks
-    eosio_assert( slug != "", "slug cannot be empty");
-    eosio_assert( slug.size() <= MAX_SLUG_SIZE, "slug must be max 256 bytes");
     eosio_assert( ipfs_hash.size() <= MAX_IPFS_SIZE, "IPFS hash is too long. MAX_IPFS_SIZE=46");
     eosio_assert( ipfs_hash.size() >= MIN_IPFS_SIZE, "IPFS hash is too short. MIN_IPFS_SIZE=46");
-    eosio_assert( lang_code.size() <= MAX_LANG_CODE_SIZE, "lang_code must be max 7 bytes");
-    eosio_assert( lang_code.size() >= MIN_LANG_CODE_SIZE, "lang_code must be atleast 2 characters");
     eosio_assert( comment.size() < MAX_COMMENT_SIZE, "comment must be less than 256 bytes");
     eosio_assert( memo.size() < MAX_MEMO_SIZE, "memo must be less than 32 bytes");
     eosio_assert( group_id >= -1, "group_id must be greater than -2. Specify -1 for auto-generated ID");
 
-    // check for duplicate slug + lang. grab id if it exists.
-    // otherwise set a new ID for the wiki
-    // group id matches wiki id if set to -1
-    auto sluglang_idx = wikitbl.get_index<name("uniqsluglang")>();
-    auto existing_wiki_it = sluglang_idx.find(sha256_slug_lang(slug, lang_code));
-    int64_t wiki_id;
-    if (existing_wiki_it != sluglang_idx.end())
-        wiki_id = existing_wiki_it->id;
-    else
-        wiki_id = wikitbl.available_primary_key(); 
-    if (group_id == -1) group_id = wiki_id; 
-
-    // Place new wikis into the table
-    if (existing_wiki_it == sluglang_idx.end()) {
-        wikitbl.emplace( _self,  [&]( auto& a ) {
-            a.id = wiki_id;
-            a.slug = slug;
-            a.lang_code = lang_code;
-            a.group_id = group_id;
-        });
-    }
+    // Get the existing wiki_id or create an new one
+    int64_t wiki_id = eparticlectr::get_or_create_wiki_id(slug, lang_code);
 
     // Calculate proposal parameters
     uint64_t proposal_id = proptable.available_primary_key();
@@ -441,4 +437,4 @@ void eparticlectr::logpropinfo( uint64_t proposal_id, name proposer, uint64_t wi
     require_auth( _self );
 }
 
-EOSIO_DISPATCH( eparticlectr, (brainclmid)(slashnotify)(finalize)(oldvotepurge)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(mkreferendum) )
+EOSIO_DISPATCH( eparticlectr, (boostincrse)(boosttxfr)(brainclmid)(slashnotify)(finalize)(oldvotepurge)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(mkreferendum) )
