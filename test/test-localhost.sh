@@ -1,5 +1,5 @@
 #!/bin/bash
-# use bash ./test.sh
+# use bash ./test-localhost.sh
 
 CYAN='\033[1;36m'
 NC='\033[0m'
@@ -255,6 +255,10 @@ assert $(bc <<< "$? == 0")
 cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"$SLUG2\", \"$IPFS5\", \"kr\", 5, \"update hash\", \"memoing\", "active" ]" -p eptestusersf
 assert $(bc <<< "$? == 0")
 
+echo -e "${CYAN}-----------------------TEST A BOOST-----------------------${NC}"
+cleos push action eparticlectr boostincrse "[ \"eptestusersa\", 100, \"$SLUG1\", \"en\"]" -p eptestusersa
+assert $(bc <<< "$? == 1")
+
 # Failed proposals
 echo -e "${CYAN}-----------------------NEXT SET OF PROPOSALS SHOULD FAIL-----------------------${NC}"
 cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"7-Dwarfs-of Christmas-have-too-long-a-title-matesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersf
@@ -353,7 +357,6 @@ cleos push action everipediaiq epartvote "[ \"eptestusersg\", $PROPID4, 1, 50000
 assert $(bc <<< "$? == 1")
 cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID4, 1, 500, \"vote comment\", \"votememo\", "active"]" -p eptestusersg
 assert $(bc <<< "$? == 1")
-
 
 # Finalize
 echo -e "${CYAN}-----------------------EARLY FINALIZE SHOULD FAIL-----------------------${NC}"
