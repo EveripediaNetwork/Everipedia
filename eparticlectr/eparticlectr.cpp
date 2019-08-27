@@ -28,21 +28,13 @@
 #include "eparticlectr.hpp"
 
 // Increase the boost amount for an article
+// Users have to trigger this action through the everipediaiq::epartboost action
 [[eosio::action]]
 void eparticlectr::boostincrse( name booster, uint64_t amount, std::string slug, std::string lang_code ){
-    require_auth( booster );
+    require_auth( _self );
 
     // Get the existing wiki_id or create an new one
     int64_t wiki_id_source = eparticlectr::get_or_create_wiki_id(_self, slug, lang_code);
-
-    // Burn the amount for the boost
-    // Should automatically check for correct balance
-    std::string memo = std::string("Burning ") + std::to_string(amount) + std::string(" for ") + std::string("lang_") + lang_code + std::string("/") + slug+ std::string(" boost.");
-    action(
-        permission_level { booster, name("active") },
-        TOKEN_CONTRACT, name("burn"),
-        std::make_tuple( booster, amount, memo )
-    ).send();
 
     // Update the boosttbl table, or create it if an existing boost isn't already there
     boosttbl articleboosts( _self, _self.value );

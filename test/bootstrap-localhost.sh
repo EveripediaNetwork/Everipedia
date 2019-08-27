@@ -10,6 +10,7 @@ ctrl_c () {
 }
 
 RECOMPILE_AND_RESET_EOSIO_CONTRACTS=0
+REBUILD_EVERIPEDIA_CONTRACTS=1
 #EOSIO_CONTRACTS_ROOT=/home/kedar/eosio.contracts/build/contracts/
 EOSIO_CONTRACTS_ROOT=/home/travis/Programs/contracts/eosio.contracts/build/contracts
 NODEOS_HOST="127.0.0.1"
@@ -88,6 +89,18 @@ if [ $RECOMPILE_AND_RESET_EOSIO_CONTRACTS -eq 1 ]; then
     eosio-cpp -I ./include -I "${EOSIO_CONTRACTS_ROOT}/eosio.token/include" -o ./eosio.system.wasm ./src/eosio.system.cpp --abigen
     cd "${EOSIO_CONTRACTS_ROOT}/eosio.wrap"
     eosio-cpp -I ./include -o ./eosio.wrap.wasm ./src/eosio.wrap.cpp --abigen
+fi
+
+if [ $REBUILD_EVERIPEDIA_CONTRACTS -eq 1 ]; then
+    cd ../everipediaiq
+    echo "Building everipediaiq..."
+    /usr/bin/eosio-cpp -g everipediaiq.cpp -o everipediaiq.wasm -I everipediaiq.clauses.md -I everipediaiq.contracts.md
+
+    cd ../eparticlectr
+    echo "Building eparticlectr..."
+    /usr/bin/eosio-cpp -g eparticlectr.cpp -o eparticlectr.wasm -I eparticlectr.clauses.md -I eparticlectr.contracts.md
+
+    cd ../test
 fi
 
 # Bootstrap new system contracts
