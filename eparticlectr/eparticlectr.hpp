@@ -115,6 +115,7 @@ public:
                 a.group_id = group_id;
             });
         }
+
         return wiki_id;
     }
 

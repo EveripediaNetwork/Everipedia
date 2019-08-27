@@ -33,39 +33,45 @@
 void eparticlectr::boostincrse( name booster, uint64_t amount, std::string slug, std::string lang_code ){
     require_auth( _self );
 
-    eosio::print("BEEEE\n");
+    // eosio::print("PART1111\n");
+    // eosio::print("PART2\n");
 
-    // // Get the existing wiki_id or create an new one
-    // int64_t wiki_id_source = eparticlectr::get_or_create_wiki_id(_self, slug, lang_code);
+    // Get the existing wiki_id or create an new one
+    
+    int64_t wiki_id_source = eparticlectr::get_or_create_wiki_id(_self, slug, lang_code);
 
-    // // Update the boosttbl table, or create it if an existing boost isn't already there
-    // boosttbl articleboosts( _self, _self.value );
-    // auto boost_idx = articleboosts.get_index<name("bywikiid")>();
-    // auto boost_it = boost_idx.find( wiki_id_source );
+    std::string debug_msg = std::string("wiki_id for lang_") + lang_code + std::string("/") + slug + std::string(" is ") + std::to_string(wiki_id_source);
+    eosio::print(debug_msg);
 
-    // // Loop through all of the boosts for a given wiki_id and find the one that belongs to the booster
-    // bool existing_boost_found = false;
-    // while(boost_it != boost_idx.end() && !existing_boost_found) {
-    //     if (boost_it->booster == booster) {
-    //         boost_idx.modify( boost_it, _self, [&]( auto& b ) {
-    //             b.amount += amount;
-    //         });
 
-    //         // Only modify once;
-    //         existing_boost_found = true;
-    //     }
-    //     else { boost_it++; }
-    // }
+    // Update the boosttbl table, or create it if an existing boost isn't already there
+    boosttbl articleboosts( _self, _self.value );
+    auto boost_idx = articleboosts.get_index<name("bywikiid")>();
+    auto boost_it = boost_idx.find( wiki_id_source );
 
-    // // Create the new boost entry if it doesn't exist
-    // if (!existing_boost_found) {
-    //     articleboosts.emplace( _self, [&]( auto& b ) {
-    //         b.id = articleboosts.available_primary_key();
-    //         b.wiki_id = wiki_id_source;
-    //         b.booster = booster;
-    //         b.amount = amount;
-    //     });
-    // }
+    // Loop through all of the boosts for a given wiki_id and find the one that belongs to the booster
+    bool existing_boost_found = false;
+    while(boost_it != boost_idx.end() && !existing_boost_found) {
+        if (boost_it->booster == booster) {
+            boost_idx.modify( boost_it, _self, [&]( auto& b ) {
+                b.amount += amount;
+            });
+
+            // Only modify once;
+            existing_boost_found = true;
+        }
+        else { boost_it++; }
+    }
+
+    // Create the new boost entry if it doesn't exist
+    if (!existing_boost_found) {
+        articleboosts.emplace( _self, [&]( auto& b ) {
+            b.id = articleboosts.available_primary_key();
+            b.wiki_id = wiki_id_source;
+            b.booster = booster;
+            b.amount = amount;
+        });
+    }
 
 }
 
