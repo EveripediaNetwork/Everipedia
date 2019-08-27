@@ -1,5 +1,6 @@
 
 #include "everipediaiq.hpp"
+#include "../eparticlectr/eparticlectr.hpp"
 
 [[eosio::action]]
 void everipediaiq::create( name issuer,
@@ -8,13 +9,13 @@ void everipediaiq::create( name issuer,
     require_auth( _self );
 
     auto sym = maximum_supply.symbol;
-    eosio_assert( sym.is_valid(), "invalid symbol name" );
-    eosio_assert( maximum_supply.is_valid(), "invalid supply");
-    eosio_assert( maximum_supply.amount > 0, "max-supply must be positive");
+    eosio::check( sym.is_valid(), "invalid symbol name" );
+    eosio::check( maximum_supply.is_valid(), "invalid supply");
+    eosio::check( maximum_supply.amount > 0, "max-supply must be positive");
 
     stats statstable( _self, sym.code().raw() );
     auto existing = statstable.find( sym.code().raw() );
-    eosio_assert( existing == statstable.end(), "token with symbol already exists" );
+    eosio::check( existing == statstable.end(), "token with symbol already exists" );
 
     statstable.emplace( _self, [&]( auto& s ) {
        s.supply.symbol = maximum_supply.symbol;
@@ -27,21 +28,21 @@ void everipediaiq::create( name issuer,
 void everipediaiq::issue( name to, asset quantity, string memo )
 {
     auto sym = quantity.symbol;
-    eosio_assert( sym.is_valid(), "invalid symbol name" );
-    eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
+    eosio::check( sym.is_valid(), "invalid symbol name" );
+    eosio::check( memo.size() <= 256, "memo has more than 256 bytes" );
 
     auto sym_name = sym.code().raw();
     stats statstable( _self, sym_name );
     auto existing = statstable.find( sym_name );
-    eosio_assert( existing != statstable.end(), "token with symbol does not exist, create token before issue" );
+    eosio::check( existing != statstable.end(), "token with symbol does not exist, create token before issue" );
     const auto& st = *existing;
 
     require_auth( st.issuer );
-    eosio_assert( quantity.is_valid(), "invalid quantity" );
-    eosio_assert( quantity.amount > 0, "must issue positive quantity" );
+    eosio::check( quantity.is_valid(), "invalid quantity" );
+    eosio::check( quantity.amount > 0, "must issue positive quantity" );
 
-    eosio_assert( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
-    eosio_assert( quantity.amount <= st.max_supply.amount - st.supply.amount, "quantity exceeds available supply");
+    eosio::check( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
+    eosio::check( quantity.amount <= st.max_supply.amount - st.supply.amount, "quantity exceeds available supply");
 
     statstable.modify( st, same_payer, [&]( auto& s ) {
        s.supply += quantity;
@@ -60,9 +61,9 @@ void everipediaiq::transfer( name from,
                       asset        quantity,
                       string       memo )
 {
-    eosio_assert( from != to, "cannot transfer to self" );
+    eosio::check( from != to, "cannot transfer to self" );
     require_auth( from );
-    eosio_assert( is_account( to ), "to account does not exist");
+    eosio::check( is_account( to ), "to account does not exist");
     auto sym = quantity.symbol.code();
     stats statstable( _self, sym.raw() );
     const auto& st = statstable.get( sym.raw() );
@@ -70,10 +71,10 @@ void everipediaiq::transfer( name from,
     require_recipient( from );
     require_recipient( to );
 
-    eosio_assert( quantity.is_valid(), "invalid quantity" );
-    eosio_assert( quantity.amount > 0, "must transfer positive quantity" );
-    eosio_assert( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
-    eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
+    eosio::check( quantity.is_valid(), "invalid quantity" );
+    eosio::check( quantity.amount > 0, "must transfer positive quantity" );
+    eosio::check( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
+    eosio::check( memo.size() <= 256, "memo has more than 256 bytes" );
 
     sub_balance( from, quantity );
     add_balance( to, quantity, from );
@@ -84,18 +85,18 @@ void everipediaiq::burn( name from, asset quantity, string memo )
 {
      require_auth( from );
      auto sym = quantity.symbol;
-     eosio_assert( sym.is_valid(), "invalid symbol name" );
-     eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
+     eosio::check( sym.is_valid(), "invalid symbol name" );
+     eosio::check( memo.size() <= 256, "memo has more than 256 bytes" );
 
      auto sym_name = sym.code().raw();
      stats statstable( _self, sym_name );
      auto existing = statstable.find( sym_name );
-     eosio_assert( existing != statstable.end(), "token with symbol does not exist" );
+     eosio::check( existing != statstable.end(), "token with symbol does not exist" );
      const auto& st = *existing;
 
-     eosio_assert( quantity.is_valid(), "invalid quantity" );
-     eosio_assert( quantity.amount > 0, "must burn positive quantity" );
-     eosio_assert( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
+     eosio::check( quantity.is_valid(), "invalid quantity" );
+     eosio::check( quantity.amount > 0, "must burn positive quantity" );
+     eosio::check( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
 
      statstable.modify( st, same_payer, [&]( auto& s ) {
         s.supply -= quantity;
@@ -108,7 +109,7 @@ void everipediaiq::sub_balance( name owner, asset value ) {
    accounts from_acnts( _self, owner.value );
 
    const auto& from = from_acnts.get( value.symbol.code().raw(), "no balance object found" );
-   eosio_assert( from.balance.amount >= value.amount, "overdrawn balance" );
+   eosio::check( from.balance.amount >= value.amount, "overdrawn balance" );
 
 
    if( from.balance.amount == value.amount ) {
@@ -169,19 +170,23 @@ void everipediaiq::epartboost( name booster, uint64_t amount, std::string slug, 
         std::make_tuple( booster, iqAssetPack, memo)
     ).send();
 
+    eparticlectr::boostinc_action boostinc("eparticlectr"_n, {get_self(), "active"_n});
+    boostinc.send(booster, amount, slug, lang_code);
+
     // Make the boost increase request to the article contract
-    action(
-        permission_level { ARTICLE_CONTRACT , name("active") }, 
-        ARTICLE_CONTRACT , name("boostincrse"),
-        std::make_tuple( booster, amount, slug, lang_code )
-    ).send();
+    // SEND_INLINE_ACTION( ARTICLE_CONTRACT, name("boostincrse"), {ARTICLE_CONTRACT, name("active")}, {booster, amount, slug, lang_code});
+    // action(
+    //     permission_level { ARTICLE_CONTRACT , name("active") }, 
+    //     ARTICLE_CONTRACT , name("boostincrse"),
+    //     std::make_tuple( booster, amount, slug, lang_code)
+    // ).send();
 }
 
 [[eosio::action]]
 void everipediaiq::epartvote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string comment, std::string memo, name permission) {
     require_auth(voter);
 
-    eosio_assert(amount > 0, "must transfer a positive amount");
+    eosio::check(amount > 0, "must transfer a positive amount");
 
     // Transfer the IQ to the eparticlectr contract for staking
     asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);

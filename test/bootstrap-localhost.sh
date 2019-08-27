@@ -95,12 +95,12 @@ if [ $REBUILD_EVERIPEDIA_CONTRACTS -eq 1 ]; then
     cd ../everipediaiq
     echo "Building everipediaiq..."
     rm -rf everipediaiq.abi everipediaiq.wasm everipediaiq.wast
-    /usr/bin/eosio-cpp -g everipediaiq.cpp -o everipediaiq.wasm -I everipediaiq.clauses.md -I everipediaiq.contracts.md
+    /usr/bin/eosio-cpp -O 3 -stack-size=16384 -g everipediaiq.cpp -o everipediaiq.wasm -I everipediaiq.clauses.md -I everipediaiq.contracts.md -I ../eparticlectr
 
     cd ../eparticlectr
     echo "Building eparticlectr..."
     rm -rf eparticlectr.abi eparticlectr.wasm eparticlectr.wast
-    /usr/bin/eosio-cpp -g eparticlectr.cpp -o eparticlectr.wasm -I eparticlectr.clauses.md -I eparticlectr.contracts.md
+    /usr/bin/eosio-cpp -O 3 -stack-size=16384 -g eparticlectr.cpp -o eparticlectr.wasm -I eparticlectr.clauses.md -I eparticlectr.contracts.md
 
     cd ../test
 fi
@@ -166,10 +166,10 @@ cleos transfer eosio eptestusersg "1000 EOS"
 
 ## Deploy contracts
 echo -e "${CYAN}-----------------------DEPLOYING EVERIPEDIA CONTRACTS-----------------------${NC}"
-cleos set contract everipediaiq ../everipediaiq/
-cleos set contract eparticlectr ../eparticlectr/
 cleos set account permission everipediaiq active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p everipediaiq
 cleos set account permission eparticlectr active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p eparticlectr
+cleos set contract everipediaiq ../everipediaiq/
+cleos set contract eparticlectr ../eparticlectr/
 
 # Create and issue token
 echo -e "${CYAN}-----------------------CREATING IQ TOKEN-----------------------${NC}"

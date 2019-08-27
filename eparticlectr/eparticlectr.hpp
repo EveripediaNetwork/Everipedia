@@ -25,8 +25,10 @@
 // # MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 // # MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 
-#include <eosiolib/eosio.hpp>
-#include <eosiolib/asset.hpp>
+#include <eosio/eosio.hpp>
+#include <eosio/asset.hpp>
+#include <eosio/system.hpp>
+#include <eosio/crypto.hpp>
 #include <cmath>
 #include <ctime>
 
@@ -36,7 +38,7 @@ using namespace eosio;
 
 const name TOKEN_CONTRACT = name("everipediaiq");
 const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
-const uint64_t EDIT_PROPOSE_IQ = 50; // 50 IQ
+const uint64_t EDIT_PROPOSE_IQ_EPARTICLECTR = 50; // 50 IQ
 const uint32_t REWARD_INTERVAL = 1800; // 30 min
 const uint32_t DEFAULT_VOTING_TIME = 43200; // 12 hours
 const uint64_t IQ_PRECISION_MULTIPLIER = 1000;
@@ -66,8 +68,8 @@ public:
     // ==================================================
     // Helper functions
     static fixed_bytes<32> sha256_slug_lang(std::string slug, std::string lang_code) {
-        eosio_assert(slug.size() <= MAX_SLUG_SIZE, "slug max size is 32 bytes");
-        eosio_assert(lang_code.size() <= MAX_LANG_CODE_SIZE, "lang_code max size is 8 bytes");
+        eosio::check(slug.size() <= MAX_SLUG_SIZE, "slug max size is 32 bytes");
+        eosio::check(lang_code.size() <= MAX_LANG_CODE_SIZE, "lang_code max size is 8 bytes");
         std::string padded_slug = slug;
         std::string padded_lang_code = lang_code;
         while (padded_slug.size() < MAX_SLUG_SIZE)
@@ -82,10 +84,10 @@ public:
         // Table definitions
         wikistbl wikitbl( caller, caller.value );
 
-        eosio_assert( slug != "", "slug cannot be empty");
-        eosio_assert( slug.size() <= MAX_SLUG_SIZE, "slug must be max 256 bytes");
-        eosio_assert( lang_code.size() <= MAX_LANG_CODE_SIZE, "lang_code must be max 7 bytes");
-        eosio_assert( lang_code.size() >= MIN_LANG_CODE_SIZE, "lang_code must be atleast 2 characters");
+        eosio::check( slug != "", "slug cannot be empty");
+        eosio::check( slug.size() <= MAX_SLUG_SIZE, "slug must be max 256 bytes");
+        eosio::check( lang_code.size() <= MAX_LANG_CODE_SIZE, "lang_code must be max 7 bytes");
+        eosio::check( lang_code.size() >= MIN_LANG_CODE_SIZE, "lang_code must be atleast 2 characters");
 
         // check for duplicate slug + lang. grab id if it exists.
         // otherwise set a new ID for the wiki
@@ -302,17 +304,22 @@ public:
     void finalize( uint64_t proposal_id );
 
     [[eosio::action]]
-    void boostincrse( name booster, uint64_t amount, std::string slug, std::string lang_code );
+    void boostincrse( name booster, 
+                        uint64_t amount, 
+                        std::string slug, 
+                        std::string lang_code );
+
+    using boostinc_action = action_wrapper<"boostincrse"_n, &eparticlectr::boostincrse>;
 
     [[eosio::action]]
-    void boosttxfr( 
-        name booster, 
-        name beneficiary, 
-        uint64_t amount, 
-        uint64_t source_wiki_id,
-        std::string dest_slug, 
-        std::string dest_lang_code 
-    );
+    void boosttxfr( name booster, 
+                name beneficiary, 
+                uint64_t amount, 
+                uint64_t source_wiki_id,
+                std::string dest_slug, 
+                std::string dest_lang_code);
+
+    using boosttxfr_action = action_wrapper<"boosttxfr"_n, &eparticlectr::boosttxfr>;
 
     [[eosio::action]]
     void oldvotepurge( uint64_t proposal_id,

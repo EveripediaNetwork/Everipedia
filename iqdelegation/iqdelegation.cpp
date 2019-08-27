@@ -2,12 +2,12 @@ void iqdelegation::deposit( name from, name to, asset quantity, string memo ) {
     if (from == _self) return; // sending tokens, ignore
 
     auto symbol = quantity.symbol;
-    eosio_assert(memo.size() <= 12, "memo must be an EOS account name");
-    eosio_assert(to == _self, "stop trying to hack the contract");
-    eosio_assert(symbol.is_valid(), "invalid symbol name");
-    eosio_assert(symbol == IQ_SYMBOL, "This contract only accepts IQ");
-    eosio_assert(quantity.is_valid(), "invalid quantity");
-    eosio_assert(quantity.amount > 0, "must deposit positive quantity");
+    eosio::check(memo.size() <= 12, "memo must be an EOS account name");
+    eosio::check(to == _self, "stop trying to hack the contract");
+    eosio::check(symbol.is_valid(), "invalid symbol name");
+    eosio::check(symbol == IQ_SYMBOL, "This contract only accepts IQ");
+    eosio::check(quantity.is_valid(), "invalid quantity");
+    eosio::check(quantity.amount > 0, "must deposit positive quantity");
 
     // IQ rewards from contract
     if (from == name("everipediaiq").value) {
@@ -19,11 +19,11 @@ void iqdelegation::deposit( name from, name to, asset quantity, string memo ) {
         name guild = name(memo);
 
         stats statstbl( _self, guild.value );
-        eosio_assert(statstbl.begin() != statstbl.end(), "guild is not registered");
+        eosio::check(statstbl.begin() != statstbl.end(), "guild is not registered");
         auto stat_it = statstbl.begin();
 
         // calculate share allocation
-        eosio_assert(quantity.amount % IQ_PRECISION_MULTIPLIER == 0, "must send a whole number of IQ");
+        eosio::check(quantity.amount % IQ_PRECISION_MULTIPLIER == 0, "must send a whole number of IQ");
         uint64_t shares;
         if (total_shares == 0) {
             shares = quantity.amount / IQ_PRECISION_MULTIPLIER; // shares = (whole IQ sent)
@@ -62,7 +62,7 @@ void iqdelegation::deposit( name from, name to, asset quantity, string memo ) {
 [[eosio::action]]
 void regguild( name guild ) {
     stats statstbl( _self, guild.value );
-    eosio_assert(statstbl.begin() == statstbl.end(), "guild already exists");
+    eosio::check(statstbl.begin() == statstbl.end(), "guild already exists");
 
     statstbl.emplace( guild, [&]( auto& g ){
         g.available = asset(0, IQ_SYMBOL);
@@ -74,13 +74,13 @@ void regguild( name guild ) {
 [[eosio::action]]
 void iqdelegation::withdraw( name withdrawer, name guild, uint64_t shares ) {
     stats statstbl( _self, guild.value );
-    eosio_assert(statstbl.begin() != statstbl.end(), "guild is not registered");
+    eosio::check(statstbl.begin() != statstbl.end(), "guild is not registered");
     
     accounts acctstbl( _self, guild.value );
     auto account_it = acctstbl.find( from );
-    eosio_assert(account_it != acctstbl.end(), "user does not have shares in this guild");
-    eosio_assert(shares <= account_it->shares, "user is attempting to withdraw too many shares");
-    eosio_assert(now > account_it->last_modified + MINIMUM_DELEGATION_TIME, "cannot withdraw within 7 days of a deposit");
+    eosio::check(account_it != acctstbl.end(), "user does not have shares in this guild");
+    eosio::check(shares <= account_it->shares, "user is attempting to withdraw too many shares");
+    eosio::check(now > account_it->last_modified + MINIMUM_DELEGATION_TIME, "cannot withdraw within 7 days of a deposit");
 
     // calculate share value
     uint64_t guild_balance = stat_it->available.amount + stat_it->staked.amount;
@@ -88,7 +88,7 @@ void iqdelegation::withdraw( name withdrawer, name guild, uint64_t shares ) {
     uint64_t iq_amount = share_price * account_it->shares;
     asset iq_withdraw = asset(iq_amount, IQ_SYMBOL);
 
-    eosio_assert(stat->available_balance < iq_withdraw, "available balance does not cover attempted withdrawal");
+    eosio::check(stat->available_balance < iq_withdraw, "available balance does not cover attempted withdrawal");
     
     // send IQ
     asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
@@ -111,8 +111,8 @@ void iqdelegation::withdraw( name withdrawer, name guild, uint64_t shares ) {
 
 [[eosio::action]]
 void iqdelegation::vote( name guild, uint64_t proposal_id, bool approve, uint64_t amount, string comment, string memo ) {
-    eosio_assert(amount > 0, "must transfer a positive amount");
-    eosio_assert(amount < 1e8, "must transfer a reasonable amount");
+    eosio::check(amount > 0, "must transfer a positive amount");
+    eosio::check(amount < 1e8, "must transfer a reasonable amount");
 
     // Subtract the value from the 
     // Transfer the IQ to the eparticlectr contract for staking

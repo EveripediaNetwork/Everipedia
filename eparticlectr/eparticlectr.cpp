@@ -33,37 +33,39 @@
 void eparticlectr::boostincrse( name booster, uint64_t amount, std::string slug, std::string lang_code ){
     require_auth( _self );
 
-    // Get the existing wiki_id or create an new one
-    int64_t wiki_id_source = eparticlectr::get_or_create_wiki_id(_self, slug, lang_code);
+    eosio::print("BEEEE\n");
 
-    // Update the boosttbl table, or create it if an existing boost isn't already there
-    boosttbl articleboosts( _self, _self.value );
-    auto boost_idx = articleboosts.get_index<name("bywikiid")>();
-    auto boost_it = boost_idx.find( wiki_id_source );
+    // // Get the existing wiki_id or create an new one
+    // int64_t wiki_id_source = eparticlectr::get_or_create_wiki_id(_self, slug, lang_code);
 
-    // Loop through all of the boosts for a given wiki_id and find the one that belongs to the booster
-    bool existing_boost_found = false;
-    while(boost_it != boost_idx.end() && !existing_boost_found) {
-        if (boost_it->booster == booster) {
-            boost_idx.modify( boost_it, _self, [&]( auto& b ) {
-                b.amount += amount;
-            });
+    // // Update the boosttbl table, or create it if an existing boost isn't already there
+    // boosttbl articleboosts( _self, _self.value );
+    // auto boost_idx = articleboosts.get_index<name("bywikiid")>();
+    // auto boost_it = boost_idx.find( wiki_id_source );
 
-            // Only modify once;
-            existing_boost_found = true;
-        }
-        else { boost_it++; }
-    }
+    // // Loop through all of the boosts for a given wiki_id and find the one that belongs to the booster
+    // bool existing_boost_found = false;
+    // while(boost_it != boost_idx.end() && !existing_boost_found) {
+    //     if (boost_it->booster == booster) {
+    //         boost_idx.modify( boost_it, _self, [&]( auto& b ) {
+    //             b.amount += amount;
+    //         });
 
-    // Create the new boost entry if it doesn't exist
-    if (!existing_boost_found) {
-        articleboosts.emplace( _self, [&]( auto& b ) {
-            b.id = articleboosts.available_primary_key();
-            b.wiki_id = wiki_id_source;
-            b.booster = booster;
-            b.amount = amount;
-        });
-    }
+    //         // Only modify once;
+    //         existing_boost_found = true;
+    //     }
+    //     else { boost_it++; }
+    // }
+
+    // // Create the new boost entry if it doesn't exist
+    // if (!existing_boost_found) {
+    //     articleboosts.emplace( _self, [&]( auto& b ) {
+    //         b.id = articleboosts.available_primary_key();
+    //         b.wiki_id = wiki_id_source;
+    //         b.booster = booster;
+    //         b.amount = amount;
+    //     });
+    // }
 
 }
 
@@ -83,7 +85,7 @@ void eparticlectr::boosttxfr(
     // int64_t destination_wiki_id = eparticlectr::get_or_create_wiki_id(_self, dest_slug, dest_lang_code);
 
 
-    // eosio_assert(current_period > BOOST_TRANSFER_WAITING_PERIOD, "You must wait until the boost is eligible to be transferred!");
+    // eosio::check(current_period > BOOST_TRANSFER_WAITING_PERIOD, "You must wait until the boost is eligible to be transferred!");
 
 }
 
@@ -94,10 +96,10 @@ void eparticlectr::brainclmid( uint64_t stakeid ) {
     // Get the stakes
     staketbl staketable(_self, _self.value);
     auto stake_it = staketable.find(stakeid);
-    eosio_assert( stake_it != staketable.end(), "Stake does not exist in database");
+    eosio::check( stake_it != staketable.end(), "Stake does not exist in database");
 
     // See if the stake is complete
-    eosio_assert( now() > stake_it->completion_time, "Staking period not over yet");
+    eosio::check( eosio::current_time_point().sec_since_epoch() > stake_it->completion_time, "Staking period not over yet");
 
     // Transfer back the IQ
     asset iqAssetPack = asset(int64_t(stake_it->amount * IQ_PRECISION_MULTIPLIER), IQSYMBOL);
@@ -121,17 +123,17 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
     require_auth( _self );
 
     // validate inputs
-    eosio_assert(comment.size() < MAX_COMMENT_SIZE, "Comment must be less than 256 bytes");
-    eosio_assert(memo.size() < MAX_MEMO_SIZE, "Memo must be less than 32 bytes");
+    eosio::check(comment.size() < MAX_COMMENT_SIZE, "Comment must be less than 256 bytes");
+    eosio::check(memo.size() < MAX_MEMO_SIZE, "Memo must be less than 32 bytes");
 
     // Check if proposal exists
     propstbl proptable( _self, _self.value );
     auto prop_it = proptable.find( proposal_id );
-    eosio_assert( prop_it != proptable.end(), "Proposal not found" );
+    eosio::check( prop_it != proptable.end(), "Proposal not found" );
 
     // Verify voting is still in progress
-    eosio_assert( now() < prop_it->endtime, "Voting period is over");
-    eosio_assert( !prop_it->finalized, "Proposal is finalized");
+    eosio::check( eosio::current_time_point().sec_since_epoch() < prop_it->endtime, "Voting period is over");
+    eosio::check( !prop_it->finalized, "Proposal is finalized");
 
     // Update the boosttbl table, or create it if an existing boost isn't already there
     boosttbl articleboosts( _self, _self.value );
@@ -155,8 +157,8 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
         s.id = stake_id;
         s.user = voter;
         s.amount = amount;
-        s.timestamp = now();
-        s.completion_time = now() + STAKING_DURATION;
+        s.timestamp = eosio::current_time_point().sec_since_epoch();
+        s.completion_time = eosio::current_time_point().sec_since_epoch() + STAKING_DURATION;
     });
 
     // mark if this is the initial editor vote
@@ -171,7 +173,7 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
          a.is_editor = voterIsProposer;
          a.amount = amount * boost_multiplier;
          a.voter = voter;
-         a.timestamp = now();
+         a.timestamp = eosio::current_time_point().sec_since_epoch();
          a.stake_id = stake_id;
          a.memo = memo;
     });
@@ -187,19 +189,19 @@ void eparticlectr::propose2( name proposer, std::string slug, ipfshash_t ipfs_ha
     propstbl proptable( _self, _self.value );
 
     // Argument checks
-    eosio_assert( ipfs_hash.size() <= MAX_IPFS_SIZE, "IPFS hash is too long. MAX_IPFS_SIZE=46");
-    eosio_assert( ipfs_hash.size() >= MIN_IPFS_SIZE, "IPFS hash is too short. MIN_IPFS_SIZE=46");
-    eosio_assert( comment.size() < MAX_COMMENT_SIZE, "comment must be less than 256 bytes");
-    eosio_assert( memo.size() < MAX_MEMO_SIZE, "memo must be less than 32 bytes");
-    eosio_assert( group_id >= -1, "group_id must be greater than -2. Specify -1 for auto-generated ID");
+    eosio::check( ipfs_hash.size() <= MAX_IPFS_SIZE, "IPFS hash is too long. MAX_IPFS_SIZE=46");
+    eosio::check( ipfs_hash.size() >= MIN_IPFS_SIZE, "IPFS hash is too short. MIN_IPFS_SIZE=46");
+    eosio::check( comment.size() < MAX_COMMENT_SIZE, "comment must be less than 256 bytes");
+    eosio::check( memo.size() < MAX_MEMO_SIZE, "memo must be less than 32 bytes");
+    eosio::check( group_id >= -1, "group_id must be greater than -2. Specify -1 for auto-generated ID");
 
     // Get the existing wiki_id or create an new one
     int64_t wiki_id = eparticlectr::get_or_create_wiki_id(_self, slug, lang_code);
 
     // Calculate proposal parameters
     uint64_t proposal_id = proptable.available_primary_key();
-    uint32_t starttime = now();
-    uint32_t endtime = now() + DEFAULT_VOTING_TIME;
+    uint32_t starttime = eosio::current_time_point().sec_since_epoch();
+    uint32_t endtime = eosio::current_time_point().sec_since_epoch() + DEFAULT_VOTING_TIME;
 
     // Store the proposal
     proptable.emplace( _self, [&]( auto& p ) {
@@ -226,7 +228,7 @@ void eparticlectr::propose2( name proposer, std::string slug, ipfshash_t ipfs_ha
     action(
         permission_level { _self , name("active") },
         _self, name("vote"),
-        std::make_tuple( proposer, proposal_id, true, EDIT_PROPOSE_IQ, std::string("editor initial vote"), memo )
+        std::make_tuple( proposer, proposal_id, true, EDIT_PROPOSE_IQ_EPARTICLECTR, std::string("editor initial vote"), memo )
     ).send();
 }
 
@@ -235,15 +237,15 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     // Verify proposal exists
     propstbl proptable( _self, _self.value );
     auto prop_it = proptable.find( proposal_id );
-    eosio_assert( prop_it != proptable.end(), "Proposal not found" );
+    eosio::check( prop_it != proptable.end(), "Proposal not found" );
 
     // Verify voting period is complete
-    eosio_assert( now() > prop_it->endtime, "Voting period is not over yet");
+    eosio::check( eosio::current_time_point().sec_since_epoch() > prop_it->endtime, "Voting period is not over yet");
 
     // Retrieve votes from DB
     votestbl votetbl( _self, proposal_id );
     auto vote_it = votetbl.begin();
-    eosio_assert( vote_it != votetbl.end(), "No votes found for proposal");
+    eosio::check( vote_it != votetbl.end(), "No votes found for proposal");
 
     // Tally votes
     uint64_t yes_votes = 0;
@@ -276,7 +278,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     }
 
     // Make sure no weird bugs cause the slash reward to under/overflow
-    eosio_assert( slash_ratio >= 0.0f && slash_ratio <= 1.0f, "Slash ratio out of bounds");
+    eosio::check( slash_ratio >= 0.0f && slash_ratio <= 1.0f, "Slash ratio out of bounds");
 
     rewardstbl rewardstable( _self, _self.value );
     staketbl staketable(_self, _self.value);
@@ -291,7 +293,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
         if (approved && vote_it->is_editor) {
             auto stake_it = staketable.find(vote_it->stake_id);
             staketable.modify( stake_it, same_payer, [&]( auto& a ) {
-                a.completion_time = now();
+                a.completion_time = eosio::current_time_point().sec_since_epoch();
             });
         }
         
@@ -319,8 +321,8 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
                 else
                     a.edit_points = 0;
                 a.proposal_id = proposal_id;
-                a.proposal_finalize_time = now();
-                a.proposal_finalize_period = uint32_t(now() / REWARD_INTERVAL);
+                a.proposal_finalize_time = eosio::current_time_point().sec_since_epoch();
+                a.proposal_finalize_period = uint32_t(eosio::current_time_point().sec_since_epoch() / REWARD_INTERVAL);
                 a.proposalresult = approved;
                 a.is_editor = vote_it->is_editor;
                 a.is_tie = istie;
@@ -332,7 +334,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     }
 
     // Update rewards table
-    uint64_t current_period = now() / REWARD_INTERVAL;
+    uint64_t current_period = eosio::current_time_point().sec_since_epoch() / REWARD_INTERVAL;
     perrwdstbl perrewards( _self, _self.value );
     auto period_it = perrewards.find( current_period );
     uint64_t edit_points = approved ? (yes_votes - no_votes) : 0;
@@ -354,7 +356,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     if (approved) {
         wikistbl wikitbl( _self, _self.value );
         auto wiki_it = wikitbl.find( prop_it->wiki_id );
-        eosio_assert(wiki_it != wikitbl.end(), "PROTOCOL ERROR: An ID should already exist for this wiki");
+        eosio::check(wiki_it != wikitbl.end(), "PROTOCOL ERROR: An ID should already exist for this wiki");
 
         wikitbl.modify( wiki_it, _self, [&]( auto& a ) {
             a.slug = prop_it->slug;
@@ -390,18 +392,18 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
 
     // check if user rewards exist
     auto reward_it = rewardstable.find( reward_id );
-    eosio_assert( reward_it != rewardstable.end(), "reward doesn't exist in database");
+    eosio::check( reward_it != rewardstable.end(), "reward doesn't exist in database");
 
     // Make sure period is complete before processing
     uint64_t reward_period = reward_it->proposal_finalize_period;
-    uint64_t current_period = now() / REWARD_INTERVAL;
+    uint64_t current_period = eosio::current_time_point().sec_since_epoch() / REWARD_INTERVAL;
     auto period_it = perrewards.find( reward_period );
-    eosio_assert(period_it != perrewards.end(), "PROTOCOL ERROR: This period should exist");
-    eosio_assert(current_period > reward_period, "Reward period must complete before claiming rewards");
+    eosio::check(period_it != perrewards.end(), "PROTOCOL ERROR: This period should exist");
+    eosio::check(current_period > reward_period, "Reward period must complete before claiming rewards");
 
     // Send curation reward
     int64_t curation_reward = reward_it->vote_points * PERIOD_CURATION_REWARD / period_it->curation_sum;
-    eosio_assert(curation_reward <= PERIOD_CURATION_REWARD, "System logic error. Too much IQ calculated for curation reward.");
+    eosio::check(curation_reward <= PERIOD_CURATION_REWARD, "System logic error. Too much IQ calculated for curation reward.");
     if (curation_reward == 0) // Minimum reward of 0.001 IQ to prevent unclaimable rewards
         curation_reward = 1;
     asset curation_quantity = asset(curation_reward, IQSYMBOL);
@@ -417,7 +419,7 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
         int64_t editor_reward = reward_it->edit_points * PERIOD_EDITOR_REWARD / period_it->editor_sum;
         if (editor_reward == 0) // Minimum reward of 0.001 IQ to prevent unclaimable rewards
             editor_reward = 1;
-        eosio_assert(editor_reward <= PERIOD_EDITOR_REWARD, "System logic error. Too much IQ calculated for editor reward.");
+        eosio::check(editor_reward <= PERIOD_EDITOR_REWARD, "System logic error. Too much IQ calculated for editor reward.");
         asset editor_quantity = asset(editor_reward, IQSYMBOL);
         std::string memo = std::string("Editor IQ reward:" + reward_it->memo);
         action(
@@ -436,20 +438,20 @@ void eparticlectr::oldvotepurge( uint64_t proposal_id, uint32_t loop_limit ) {
     // Get the proposal object
     propstbl proptable( _self, _self.value );
     auto prop_it = proptable.find(proposal_id);
-    eosio_assert( prop_it == proptable.end() || prop_it->finalized, "Proposal not finalized yet!");
+    eosio::check( prop_it == proptable.end() || prop_it->finalized, "Proposal not finalized yet!");
 
     // If it is an undeleted proposal, make sure it's no longer the most current proposal
     // so the auto-increment doesn't get screwed up
     // If it isn't delete it
     if ( prop_it != proptable.end() ) {
-        eosio_assert( prop_it->id != proptable.available_primary_key() - 1, "Cannot delete most recent proposal" );
+        eosio::check( prop_it->id != proptable.available_primary_key() - 1, "Cannot delete most recent proposal" );
         proptable.erase( prop_it );
     }
 
     // Retrieve votes from DB
     votestbl votetbl( _self, proposal_id );
     auto vote_it = votetbl.begin();
-    eosio_assert( vote_it != votetbl.end(), "No votes found for proposal!");
+    eosio::check( vote_it != votetbl.end(), "No votes found for proposal!");
 
     // Free up RAM
     uint32_t count = 0;
@@ -465,14 +467,14 @@ void eparticlectr::mkreferendum( uint64_t proposal_id ) {
 
     // Validate proposal
     auto prop_it = proptable.find(proposal_id);
-    eosio_assert( prop_it != proptable.end(), "Proposal does not exist");
-    eosio_assert( !prop_it->finalized, "Proposal is finalized");
-    eosio_assert( prop_it->endtime - prop_it->starttime < REFERENDUM_DURATION_SECS, "Proposal has already been marked as a referendum");
+    eosio::check( prop_it != proptable.end(), "Proposal does not exist");
+    eosio::check( !prop_it->finalized, "Proposal is finalized");
+    eosio::check( prop_it->endtime - prop_it->starttime < REFERENDUM_DURATION_SECS, "Proposal has already been marked as a referendum");
 
     require_auth(prop_it->proposer);
 
     proptable.modify( prop_it, same_payer, [&]( auto& p ) {
-        p.endtime = now() + REFERENDUM_DURATION_SECS;
+        p.endtime = eosio::current_time_point().sec_since_epoch() + REFERENDUM_DURATION_SECS;
     });
 }
 
