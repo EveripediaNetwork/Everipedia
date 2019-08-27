@@ -94,10 +94,12 @@ fi
 if [ $REBUILD_EVERIPEDIA_CONTRACTS -eq 1 ]; then
     cd ../everipediaiq
     echo "Building everipediaiq..."
+    rm -rf everipediaiq.abi everipediaiq.wasm everipediaiq.wast
     /usr/bin/eosio-cpp -g everipediaiq.cpp -o everipediaiq.wasm -I everipediaiq.clauses.md -I everipediaiq.contracts.md
 
     cd ../eparticlectr
     echo "Building eparticlectr..."
+    rm -rf eparticlectr.abi eparticlectr.wasm eparticlectr.wast
     /usr/bin/eosio-cpp -g eparticlectr.cpp -o eparticlectr.wasm -I eparticlectr.clauses.md -I eparticlectr.contracts.md
 
     cd ../test

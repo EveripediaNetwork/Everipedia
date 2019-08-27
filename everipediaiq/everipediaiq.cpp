@@ -159,21 +159,24 @@ void everipediaiq::epartpropose( name proposer, std::string slug, ipfshash_t ipf
 void everipediaiq::epartboost( name booster, uint64_t amount, std::string slug, std::string lang_code ) { 
     require_auth(booster);
 
-    // // Burn the amount for the boost
-    // // Should automatically check for correct balance
-    // std::string memo = std::string("Burning ") + std::to_string(amount) + std::string(" for ") + std::string("lang_") + lang_code + std::string("/") + slug+ std::string(" boost.");
-    // action(
-    //     permission_level { booster, name("active") },
-    //     _self, name("burn"),
-    //     std::make_tuple( booster, amount, memo )
-    // ).send();
+    // Burn the amount for the boost
+    // Should automatically check for correct balance
+    // std::string memo = std::string("Burning " + std::to_string(amount));
+    // std::string memo = std::string("Burning ") + std::to_string(amount) + std::string(" for ") + std::string("lang_") + std::to_string(lang_code) + std::string("/") + std::to_string(slug) + std::string(" boost.");
+    std::string memo = std::string("Burning for lang_") + lang_code + std::string("/") + slug + std::string(" boost.");
+    asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
+    action(
+        permission_level { booster , name("active") }, 
+        _self , name("burn"),
+        std::make_tuple( booster, iqAssetPack, memo)
+    ).send();
 
-    // // Make the boost increase request to the article contract
-    // action(
-    //     permission_level{ ARTICLE_CONTRACT, name("active") }, 
-    //     ARTICLE_CONTRACT, name("boostincrse"),
-    //     std::make_tuple( booster, amount, slug, lang_code )
-    // ).send();
+    // Make the boost increase request to the article contract
+    action(
+        permission_level { ARTICLE_CONTRACT, name("active") }, 
+        ARTICLE_CONTRACT, name("boostincrse"),
+        std::make_tuple( booster, amount, slug, lang_code )
+    ).send();
 }
 
 [[eosio::action]]
