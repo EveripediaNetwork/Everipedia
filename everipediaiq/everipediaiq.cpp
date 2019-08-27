@@ -170,8 +170,9 @@ void everipediaiq::epartboost( name booster, uint64_t amount, std::string slug, 
         std::make_tuple( booster, iqAssetPack, memo)
     ).send();
 
-    eparticlectr::boostinc_action boostinc("eparticlectr"_n, {get_self(), "active"_n});
-    boostinc.send(booster, amount, slug, lang_code);
+    // eparticlectr::boostinc_action boostinc("eparticlectr"_n, {get_self(), "active"_n});
+    // boostinc.send(booster, amount, slug, lang_code);
+
 
     // Make the boost increase request to the article contract
     // SEND_INLINE_ACTION( ARTICLE_CONTRACT, name("boostincrse"), {ARTICLE_CONTRACT, name("active")}, {booster, amount, slug, lang_code});
