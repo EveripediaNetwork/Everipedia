@@ -172,15 +172,15 @@ void everipediaiq::epartboost( name booster, uint64_t amount, std::string slug, 
 
     // eparticlectr::boostinc_action boostinc("eparticlectr"_n, {get_self(), "active"_n});
     // boostinc.send(booster, amount, slug, lang_code);
-
+    // SEND_INLINE_ACTION( ARTICLE_CONTRACT, name("boostincrse"), {ARTICLE_CONTRACT, name("active")}, {booster, amount, slug, lang_code});
+    
 
     // Make the boost increase request to the article contract
-    // SEND_INLINE_ACTION( ARTICLE_CONTRACT, name("boostincrse"), {ARTICLE_CONTRACT, name("active")}, {booster, amount, slug, lang_code});
-    // action(
-    //     permission_level { ARTICLE_CONTRACT , name("active") }, 
-    //     ARTICLE_CONTRACT , name("boostincrse"),
-    //     std::make_tuple( booster, amount, slug, lang_code)
-    // ).send();
+    action(
+        permission_level { ARTICLE_CONTRACT , name("active") }, 
+        ARTICLE_CONTRACT , name("boostincrse"),
+        std::make_tuple( booster, amount, slug, lang_code)
+    ).send();
 }
 
 [[eosio::action]]
