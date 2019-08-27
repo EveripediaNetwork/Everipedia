@@ -142,7 +142,7 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
     eosio::check( eosio::current_time_point().sec_since_epoch() < prop_it->endtime, "Voting period is over");
     eosio::check( !prop_it->finalized, "Proposal is finalized");
 
-    // Update the boosttbl table, or create it if an existing boost isn't already there
+    // Initialize the boost table
     boosttbl articleboosts( _self, _self.value );
     auto boost_idx = articleboosts.get_index<name("bywikiid")>();
     auto boost_it = boost_idx.find( prop_it->wiki_id );
@@ -152,6 +152,7 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
         boost_it++;
     }
 
+    // Default boost is 1 (i.e. no boost)
     float boost_multiplier = 1.0;
     if (boost_it != boost_idx.end()){
         boost_multiplier = eparticlectr::get_boost_multiplier(boost_it->amount);
@@ -339,6 +340,8 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
         }
         vote_it++;
     }
+
+    NEED TO SCALE DOWN THE REWARDS TO ACCOUNT FOR BOOSTS
 
     // Update rewards table
     uint64_t current_period = eosio::current_time_point().sec_since_epoch() / REWARD_INTERVAL;
