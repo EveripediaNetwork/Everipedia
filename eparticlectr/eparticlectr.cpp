@@ -30,19 +30,14 @@
 // Increase the boost amount for an article
 // Users have to trigger this action through the everipediaiq::epartboost action
 [[eosio::action]]
-void eparticlectr::boostincrse( name booster, uint64_t amount, std::string slug, std::string lang_code ){
+void eparticlectr::boostinvest( name booster, uint64_t amount, std::string slug, std::string lang_code ){
     require_auth( _self );
 
-    // eosio::print("PART1111\n");
-    // eosio::print("PART2\n");
+    // Initialize the variable
+    int64_t total_boost = 0;
 
     // Get the existing wiki_id or create an new one
-    
     int64_t wiki_id_source = eparticlectr::get_or_create_wiki_id(_self, slug, lang_code);
-
-    std::string debug_msg = std::string("wiki_id for lang_") + lang_code + std::string("/") + slug + std::string(" is ") + std::to_string(wiki_id_source);
-    eosio::print(debug_msg);
-
 
     // Update the boosttbl table, or create it if an existing boost isn't already there
     boosttbl articleboosts( _self, _self.value );
@@ -53,8 +48,9 @@ void eparticlectr::boostincrse( name booster, uint64_t amount, std::string slug,
     bool existing_boost_found = false;
     while(boost_it != boost_idx.end() && !existing_boost_found) {
         if (boost_it->booster == booster) {
+            total_boost = boost_it->amount + amount;
             boost_idx.modify( boost_it, _self, [&]( auto& b ) {
-                b.amount += amount;
+                b.amount = total_boost;
             });
 
             // Only modify once;
@@ -65,6 +61,7 @@ void eparticlectr::boostincrse( name booster, uint64_t amount, std::string slug,
 
     // Create the new boost entry if it doesn't exist
     if (!existing_boost_found) {
+        total_boost = amount;
         articleboosts.emplace( _self, [&]( auto& b ) {
             b.id = articleboosts.available_primary_key();
             b.wiki_id = wiki_id_source;
@@ -72,6 +69,10 @@ void eparticlectr::boostincrse( name booster, uint64_t amount, std::string slug,
             b.amount = amount;
         });
     }
+
+    std::string multiplier_string = std::string("IQ [") + std::to_string(eparticlectr::get_boost_multiplier(total_boost)) + std::string("x voting power]");
+    std::string debug_msg = std::string("Boost investment is now ") + std::to_string(total_boost) + multiplier_string + std::string(" for lang_") + lang_code + std::string("/") + slug + std::string(" (wiki_id: ") + std::to_string(wiki_id_source) + std::string(")");
+    eosio::print(debug_msg);
 
 }
 
@@ -499,4 +500,4 @@ void eparticlectr::logpropinfo( uint64_t proposal_id, name proposer, uint64_t wi
     require_auth( _self );
 }
 
-EOSIO_DISPATCH( eparticlectr, (boostincrse)(boosttxfr)(brainclmid)(slashnotify)(finalize)(oldvotepurge)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(mkreferendum) )
+EOSIO_DISPATCH( eparticlectr, (boostinvest)(boosttxfr)(brainclmid)(slashnotify)(finalize)(oldvotepurge)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(mkreferendum) )

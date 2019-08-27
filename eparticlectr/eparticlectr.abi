@@ -9,7 +9,7 @@
     ],
     "structs": [
         {
-            "name": "boostincrse",
+            "name": "boostinvest",
             "base": "",
             "fields": [
                 {
@@ -535,8 +535,8 @@
     ],
     "actions": [
         {
-            "name": "boostincrse",
-            "type": "boostincrse",
+            "name": "boostinvest",
+            "type": "boostinvest",
             "ricardian_contract": "Increase the boost amount for an article."
         },
         {

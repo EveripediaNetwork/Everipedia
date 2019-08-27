@@ -116,19 +116,19 @@ OLD_SUPPLY=$(cleos get table everipediaiq IQ stat | jq ".rows[0].supply" | tr -d
 
 # Test IQ transfers
 echo -e "${CYAN}-----------------------MOVING TOKENS FROM THE CONTRACT TO SOME USERS -----------------------${NC}"
-cleos push action everipediaiq transfer '["everipediaiq", "eptestusersa", "10000.000 IQ", "test"]' -p everipediaiq
+cleos push action everipediaiq transfer '["everipediaiq", "eptestusersa", "100000.000 IQ", "test"]' -p everipediaiq
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq transfer '["everipediaiq", "eptestusersb", "10000.000 IQ", "test"]' -p everipediaiq
+cleos push action everipediaiq transfer '["everipediaiq", "eptestusersb", "100000.000 IQ", "test"]' -p everipediaiq
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq transfer '["everipediaiq", "eptestusersc", "10000.000 IQ", "test"]' -p everipediaiq
+cleos push action everipediaiq transfer '["everipediaiq", "eptestusersc", "100000.000 IQ", "test"]' -p everipediaiq
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq transfer '["everipediaiq", "eptestusersd", "10000.000 IQ", "test"]' -p everipediaiq
+cleos push action everipediaiq transfer '["everipediaiq", "eptestusersd", "100000.000 IQ", "test"]' -p everipediaiq
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq transfer '["everipediaiq", "eptestuserse", "10000.000 IQ", "test"]' -p everipediaiq
+cleos push action everipediaiq transfer '["everipediaiq", "eptestuserse", "100000.000 IQ", "test"]' -p everipediaiq
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq transfer '["everipediaiq", "eptestusersf", "10000.000 IQ", "test"]' -p everipediaiq
+cleos push action everipediaiq transfer '["everipediaiq", "eptestusersf", "100000.000 IQ", "test"]' -p everipediaiq
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq transfer '["everipediaiq", "eptestusersg", "10000.000 IQ", "test"]' -p everipediaiq
+cleos push action everipediaiq transfer '["everipediaiq", "eptestusersg", "100000.000 IQ", "test"]' -p everipediaiq
 assert $(bc <<< "$? == 0")
 
 NEW_BALANCE1=$(balance eptestusersa)
@@ -139,13 +139,13 @@ NEW_BALANCE5=$(balance eptestuserse)
 NEW_BALANCE6=$(balance eptestusersf)
 NEW_BALANCE7=$(balance eptestusersg)
 
-assert $(bc <<< "$NEW_BALANCE1 - $OLD_BALANCE1 == 10000")
-assert $(bc <<< "$NEW_BALANCE2 - $OLD_BALANCE2 == 10000")
-assert $(bc <<< "$NEW_BALANCE3 - $OLD_BALANCE3 == 10000")
-assert $(bc <<< "$NEW_BALANCE4 - $OLD_BALANCE4 == 10000")
-assert $(bc <<< "$NEW_BALANCE5 - $OLD_BALANCE5 == 10000")
-assert $(bc <<< "$NEW_BALANCE6 - $OLD_BALANCE6 == 10000")
-assert $(bc <<< "$NEW_BALANCE7 - $OLD_BALANCE7 == 10000")
+assert $(bc <<< "$NEW_BALANCE1 - $OLD_BALANCE1 == 100000")
+assert $(bc <<< "$NEW_BALANCE2 - $OLD_BALANCE2 == 100000")
+assert $(bc <<< "$NEW_BALANCE3 - $OLD_BALANCE3 == 100000")
+assert $(bc <<< "$NEW_BALANCE4 - $OLD_BALANCE4 == 100000")
+assert $(bc <<< "$NEW_BALANCE5 - $OLD_BALANCE5 == 100000")
+assert $(bc <<< "$NEW_BALANCE6 - $OLD_BALANCE6 == 100000")
+assert $(bc <<< "$NEW_BALANCE7 - $OLD_BALANCE7 == 100000")
 
 # Standard transfers
 OLD_BALANCE1=$(balance eptestusersa)
@@ -158,17 +158,17 @@ OLD_BALANCE7=$(balance eptestusersg)
 
 # Standard transfers
 echo -e "${CYAN}-----------------------MOVING TOKENS FROM ONE USER TO THE NEXT, UNSAFELY-----------------------${NC}"
-cleos push action everipediaiq transfer '["eptestusersa", "eptestusersb", "1000.000 IQ", "test"]' -p eptestusersa
+cleos push action everipediaiq transfer '["eptestusersa", "eptestusersb", "10000.000 IQ", "test"]' -p eptestusersa
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq transfer '["eptestusersa", "eptestusersc", "1000.000 IQ", "test"]' -p eptestusersa
+cleos push action everipediaiq transfer '["eptestusersa", "eptestusersc", "10000.000 IQ", "test"]' -p eptestusersa
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq transfer '["eptestusersa", "eptestusersd", "1000.000 IQ", "test"]' -p eptestusersa
+cleos push action everipediaiq transfer '["eptestusersa", "eptestusersd", "10000.000 IQ", "test"]' -p eptestusersa
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq transfer '["eptestusersa", "eptestuserse", "1000.000 IQ", "test"]' -p eptestusersa
+cleos push action everipediaiq transfer '["eptestusersa", "eptestuserse", "10000.000 IQ", "test"]' -p eptestusersa
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq transfer '["eptestusersa", "eptestusersf", "1000.000 IQ", "test"]' -p eptestusersa
+cleos push action everipediaiq transfer '["eptestusersa", "eptestusersf", "10000.000 IQ", "test"]' -p eptestusersa
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq transfer '["eptestusersa", "eptestusersg", "1000.000 IQ", "test"]' -p eptestusersa
+cleos push action everipediaiq transfer '["eptestusersa", "eptestusersg", "10000.000 IQ", "test"]' -p eptestusersa
 assert $(bc <<< "$? == 0")
 
 NEW_BALANCE1=$(balance eptestusersa)
@@ -179,13 +179,13 @@ NEW_BALANCE5=$(balance eptestuserse)
 NEW_BALANCE6=$(balance eptestusersf)
 NEW_BALANCE7=$(balance eptestusersg)
 
-assert $(bc <<< "$OLD_BALANCE1 - $NEW_BALANCE1 == 6000")
-assert $(bc <<< "$NEW_BALANCE2 - $OLD_BALANCE2 == 1000")
-assert $(bc <<< "$NEW_BALANCE3 - $OLD_BALANCE3 == 1000")
-assert $(bc <<< "$NEW_BALANCE4 - $OLD_BALANCE4 == 1000")
-assert $(bc <<< "$NEW_BALANCE5 - $OLD_BALANCE5 == 1000")
-assert $(bc <<< "$NEW_BALANCE6 - $OLD_BALANCE6 == 1000")
-assert $(bc <<< "$NEW_BALANCE7 - $OLD_BALANCE7 == 1000")
+assert $(bc <<< "$OLD_BALANCE1 - $NEW_BALANCE1 == 60000")
+assert $(bc <<< "$NEW_BALANCE2 - $OLD_BALANCE2 == 10000")
+assert $(bc <<< "$NEW_BALANCE3 - $OLD_BALANCE3 == 10000")
+assert $(bc <<< "$NEW_BALANCE4 - $OLD_BALANCE4 == 10000")
+assert $(bc <<< "$NEW_BALANCE5 - $OLD_BALANCE5 == 10000")
+assert $(bc <<< "$NEW_BALANCE6 - $OLD_BALANCE6 == 10000")
+assert $(bc <<< "$NEW_BALANCE7 - $OLD_BALANCE7 == 10000")
 
 # Failed transfers
 echo -e "${CYAN}-----------------------NEXT THREE TRANSFERS SHOULD FAIL-----------------------${NC}"
@@ -255,9 +255,9 @@ assert $(bc <<< "$? == 0")
 cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"$SLUG2\", \"$IPFS5\", \"kr\", 5, \"update hash\", \"memoing\", "active" ]" -p eptestusersf
 assert $(bc <<< "$? == 0")
 
-echo -e "${CYAN}-----------------------TEST A BOOST-----------------------${NC}"
-cleos push action eparticlectr boostincrse "[ \"eptestusersa\", 100, \"$SLUG1\", \"en\"]" -p eptestusersa
-assert $(bc <<< "$? == 1")
+echo -e "${CYAN}-----------------------INITIATE A BOOST-----------------------${NC}"
+cleos push action everipediaiq epartboost "[ \"eptestusersb\", 10000, \"$SLUG1\", \"en\"]" -p eptestusersb
+assert $(bc <<< "$? == 0")
 
 # Failed proposals
 echo -e "${CYAN}-----------------------NEXT SET OF PROPOSALS SHOULD FAIL-----------------------${NC}"

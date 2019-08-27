@@ -1,4 +1,4 @@
-<h1 class="contract">boostincrse</h1>
+<h1 class="contract">boostinvest</h1>
 Increase the boost amount for an article.
 <h1 class="contract">boosttxfr</h1>
 Transfer an article's boost amount (fully or partially) to another account and wiki.
