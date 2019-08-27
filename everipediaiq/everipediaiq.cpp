@@ -161,8 +161,6 @@ void everipediaiq::epartboost( name booster, uint64_t amount, std::string slug, 
 
     // Burn the amount for the boost
     // Should automatically check for correct balance
-    // std::string memo = std::string("Burning " + std::to_string(amount));
-    // std::string memo = std::string("Burning ") + std::to_string(amount) + std::string(" for ") + std::string("lang_") + std::to_string(lang_code) + std::string("/") + std::to_string(slug) + std::string(" boost.");
     std::string memo = std::string("Burning for lang_") + lang_code + std::string("/") + slug + std::string(" boost.");
     asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
     action(
@@ -173,8 +171,8 @@ void everipediaiq::epartboost( name booster, uint64_t amount, std::string slug, 
 
     // Make the boost increase request to the article contract
     action(
-        permission_level { ARTICLE_CONTRACT, name("active") }, 
-        ARTICLE_CONTRACT, name("boostincrse"),
+        permission_level { ARTICLE_CONTRACT , name("active") }, 
+        ARTICLE_CONTRACT , name("boostincrse"),
         std::make_tuple( booster, amount, slug, lang_code )
     ).send();
 }
