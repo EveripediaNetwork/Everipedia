@@ -359,7 +359,7 @@ assert $(bc <<< "$? == 1")
 cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID4, 1, 500, \"vote comment\", \"votememo\", "active"]" -p eptestusersg
 assert $(bc <<< "$? == 1")
 
-read -p "Voting done. Press [Enter] key to continue script"
+#read -p "Voting done. Press [Enter] key to continue script"
 
 # Finalize
 echo -e "${CYAN}-----------------------EARLY FINALIZE SHOULD FAIL-----------------------${NC}"
@@ -409,8 +409,8 @@ EDITOR_REWARD_SUM=$(cleos get table eparticlectr eparticlectr perrwdstbl2 -r | j
 echo -e "   ${CYAN}CURATION REWARD SUM: ${CURATION_REWARD_SUM}${NC}"
 echo -e "   ${CYAN}EDITOR REWARD SUM: ${EDITOR_REWARD_SUM}${NC}"
 
-assert $(bc <<< "$CURATION_REWARD_SUM == 2470")
-assert $(bc <<< "$EDITOR_REWARD_SUM == 530")
+assert $(bc <<< "$CURATION_REWARD_SUM == 3154")
+assert $(bc <<< "$EDITOR_REWARD_SUM == 1214")
 
 # Claim rewards
 OLD_BALANCE4=$(balance eptestusersd)
