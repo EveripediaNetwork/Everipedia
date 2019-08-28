@@ -9,6 +9,38 @@
     ],
     "structs": [
         {
+            "name": "account",
+            "base": "",
+            "fields": [
+                {
+                    "name": "guild",
+                    "type": "name"
+                },
+                {
+                    "name": "last_modified",
+                    "type": "uint64"
+                },
+                {
+                    "name": "shares",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "allowdelegat",
+            "base": "",
+            "fields": [
+                {
+                    "name": "user",
+                    "type": "name"
+                },
+                {
+                    "name": "allow",
+                    "type": "bool"
+                }
+            ]
+        },
+        {
             "name": "boostinvest",
             "base": "",
             "fields": [
@@ -341,7 +373,7 @@
                     "type": "uint64"
                 },
                 {
-                    "name": "user",
+                    "name": "guild",
                     "type": "name"
                 },
                 {
@@ -427,6 +459,32 @@
                 {
                     "name": "completion_time",
                     "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "stat_t",
+            "base": "",
+            "fields": [
+                {
+                    "name": "id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "available",
+                    "type": "asset"
+                },
+                {
+                    "name": "staked",
+                    "type": "asset"
+                },
+                {
+                    "name": "total_shares",
+                    "type": "uint64"
+                },
+                {
+                    "name": "allow_delegation",
+                    "type": "bool"
                 }
             ]
         },
@@ -531,9 +589,36 @@
                     "type": "ipfshash_t"
                 }
             ]
+        },
+        {
+            "name": "withdraw",
+            "base": "",
+            "fields": [
+                {
+                    "name": "account",
+                    "type": "name"
+                },
+                {
+                    "name": "guild",
+                    "type": "name"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint64"
+                },
+                {
+                    "name": "executor",
+                    "type": "name"
+                }
+            ]
         }
     ],
     "actions": [
+        {
+            "name": "allowdelegat",
+            "type": "allowdelegat",
+            "ricardian_contract": ""
+        },
         {
             "name": "boostinvest",
             "type": "boostinvest",
@@ -593,9 +678,21 @@
             "name": "vote",
             "type": "vote",
             "ricardian_contract": "Vote on a proposal (uses IQ, only callable by everipediaiq::epartvote)."
+        },
+        {
+            "name": "withdraw",
+            "type": "withdraw",
+            "ricardian_contract": ""
         }
     ],
     "tables": [
+        {
+            "name": "accounts",
+            "type": "account",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
         {
             "name": "booststbl",
             "type": "boostledger",
@@ -627,6 +724,13 @@
         {
             "name": "staketbl2",
             "type": "stake",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "stats",
+            "type": "stat_t",
             "index_type": "i64",
             "key_names": [],
             "key_types": []

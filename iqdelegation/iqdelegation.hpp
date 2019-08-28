@@ -5,7 +5,7 @@ const symbol IQ_SYMBOL = symbol(symbol_code("IQ"), 3);
 const uint64_t IQ_PRECISION_MULTIPLIER = 1000; // 3 decimal places
 const uint64_t MINIMUM_DELEGATION_TIME = 7*86400; // 7 days
 
-class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
+class [[eosio::contract("iqdelegation")]] iqdelegation : public contract {
 
     struct [[eosio::table]] stats {
         asset available;
@@ -24,9 +24,6 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
     typedef eosio::multi_index<name("accounts"), account> accounts;
 
     void deposit( name from, name to, asset quantity, string memo );
-
-    [[eosio::action]]
-    void regguild( name guild );
 
     [[eosio::action]]
     void withdraw( name withdrawer, name guild, uint64_t amount );

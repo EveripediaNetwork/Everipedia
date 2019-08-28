@@ -148,8 +148,8 @@ void eparticlectr::boosttxfr(
     }
     
     // Debug message
-    std::string from_part = booster.to_string() + std::string(" [") + std::to_string(wiki_id_source) + std::string("]")
-    std::string to_part = target.to_string() + std::string(" [") + std::to_string(destination_wiki_id) + std::string("]")
+    std::string from_part = booster.to_string() + std::string(" [") + std::to_string(wiki_id_source) + std::string("]");
+    std::string to_part = target.to_string() + std::string(" [") + std::to_string(destination_wiki_id) + std::string("]");
     std::string debug_msg = std::to_string(amount) + std::string(" boost moved from ") + from_part + std::string(" to ") + to_part;
     eosio::print(debug_msg);
 }
@@ -167,13 +167,14 @@ void eparticlectr::brainclmid( uint64_t stakeid ) {
     eosio::check( eosio::current_time_point().sec_since_epoch() > stake_it->completion_time, "Staking period not over yet");
 
     // Transfer back the IQ
-    asset iqAssetPack = asset(int64_t(stake_it->amount * IQ_PRECISION_MULTIPLIER), IQSYMBOL);
-    std::string memo = std::string("return stake #") + std::to_string(stake_it->id);
-    action(
-        permission_level{ _self, name("active") },
-        TOKEN_CONTRACT, name("transfer"),
-        std::make_tuple(_self, stake_it->user, iqAssetPack, memo)
-    ).send();
+    asset stake_quantity = asset(int64_t(stake_it->amount * IQ_PRECISION_MULTIPLIER), IQSYMBOL);
+    stats statstbl( _self, stake_it->user.value );
+    eosio::check(statstbl.begin() != statstbl.end(), "PROTOCOL ERROR: This user should have a balance");
+    auto stat_it = statstbl.begin();
+    statstbl.modify( stat_it, same_payer, [&]( auto& g ) {
+        g.staked -= stake_quantity;
+        g.available += stake_quantity;
+    });
 
     // Delete the stake.
     // Note that the erase() function increments the iterator, then gives it back after the erase is done
@@ -185,7 +186,20 @@ void eparticlectr::brainclmid( uint64_t stakeid ) {
 // Users have to trigger this action through the everipediaiq::epartvote action
 [[eosio::action]]
 void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string comment, std::string memo ) {
-    require_auth( _self );
+    votestbl votetbl( _self, proposal_id );
+
+    // the initial vote comes from the propose2 action, so to prevent permission
+    // issues, it is self-signed by the contract
+    bool is_initial_vote = (comment == std::string("editor initial vote"));
+    if (is_initial_vote) {
+        eosio::check( amount == EDIT_PROPOSE_IQ_EPARTICLECTR, "inital vote must be 50 IQ");
+        eosio::check( votetbl.begin() == votetbl.end(), "PROTOCOL ERROR: Votes already exist. This should be the initial vote");
+        require_auth( _self );
+    }
+    // all votes except the intial vote come directly from the user
+    // and require their signature
+    else
+        require_auth( voter );
 
     // validate inputs
     eosio::check(comment.size() < MAX_COMMENT_SIZE, "Comment must be less than 256 bytes");
@@ -219,6 +233,20 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
         eosio::print(debug_msg);
     } 
 
+    // Verify balances are available
+    stats statstbl( _self, voter.value );
+    auto stat_it = statstbl.begin();
+    eosio::check(statstbl.begin() != statstbl.end(), "Balance does not exist for user");
+    eosio::check(stat_it->available.amount >= amount * IQ_PRECISION_MULTIPLIER, "not enough available IQ to vote");
+    eosio::check(amount > 0, "PROTOCOL ERROR: Why is there a negative vote amount?");
+
+    // Subtract amount from balance
+    asset voting_iq = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
+    statstbl.modify( stat_it, same_payer, [&]( auto& g ) {
+        g.available -= voting_iq;
+        g.staked += voting_iq;
+    });
+
     // Create the stake object
     staketbl staketblobj(_self, _self.value);
     uint64_t stake_id = staketblobj.available_primary_key();
@@ -230,16 +258,12 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
         s.completion_time = eosio::current_time_point().sec_since_epoch() + STAKING_DURATION;
     });
 
-    // mark if this is the initial editor vote
-    votestbl votetbl( _self, proposal_id );
-    bool voterIsProposer = (votetbl.begin() == votetbl.end()); 
-   
     // Store vote in DB
     votetbl.emplace( _self, [&]( auto& a ) {
          a.id = votetbl.available_primary_key();
          a.proposal_id = proposal_id;
          a.approve = approve;
-         a.is_editor = voterIsProposer;
+         a.is_editor = is_initial_vote;
          a.amount = amount * boost_multiplier;
          a.voter = voter;
          a.timestamp = eosio::current_time_point().sec_since_epoch();
@@ -252,7 +276,7 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
 // Users have to trigger this action through the everipediaiq::epartpropose action
 [[eosio::action]]
 void eparticlectr::propose2( name proposer, std::string slug, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo ) {
-    require_auth( _self );
+    require_auth( proposer );
 
     // Table definition
     propstbl proptable( _self, _self.value );
@@ -383,7 +407,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
         else{
             rewardstable.emplace( _self,  [&]( auto& a ) {
                 a.id = rewardstable.available_primary_key();
-                a.user = vote_it->voter;
+                a.guild = vote_it->voter;
                 a.vote_points = vote_it->amount;
                 if (approved && vote_it->is_editor)
                     a.edit_points = (yes_votes - no_votes);
@@ -452,6 +476,129 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
         proptable.erase( prop_it );
 }
 
+void eparticlectr::deposit( name from, name to, asset quantity, std::string memo ) {
+    if (from == _self) return; // sending tokens, ignore
+    if (from == name("everipediaiq")) return; // sending rewards, ignore
+
+    auto symbol = quantity.symbol;
+    eosio::check(to == _self, "stop trying to hack the contract");
+    eosio::check(symbol.is_valid(), "invalid symbol name");
+    eosio::check(symbol == IQSYMBOL, "This contract only accepts IQ");
+    eosio::check(quantity.is_valid(), "invalid quantity");
+    eosio::check(quantity.amount > 0, "must deposit positive quantity");
+    eosio::check(memo.size() < 128, "deposit memo has max length 128");
+
+    // Determine deposit type
+    // 1. Delegate IQ
+    // 2. IQ reward 
+    bool is_delegated = false;
+    int first_colon = memo.find(":");
+    std::string deposit_type = memo.substr(0, first_colon);
+    eosio::check( deposit_type == "delegate", "Deposit must specify delegation in the format delegate:myeosaccount" );
+
+    // IQ delegation
+    std::string account_string = memo.substr(first_colon + 1);
+    eosio::check(account_string.size() <= 12, "delegated account is invalid");
+
+    name guild = name(account_string);
+    eosio::check(is_account(guild), "delegate account does not exist");
+    
+    // initialize stats if it doesn't exist
+    stats statstbl( _self, guild.value );
+    if (statstbl.begin() == statstbl.end()) {
+        statstbl.emplace( _self, [&]( auto& g ){
+            g.available = asset(0, IQSYMBOL);
+            g.staked = asset(0, IQSYMBOL);
+            g.total_shares = 0;
+            g.allow_delegation = true;
+        });
+    }
+    auto stat_it = statstbl.begin();
+    eosio::check(stat_it->allow_delegation, "This account does not allow delegation");
+
+    // calculate share allocation
+    eosio::check(quantity.amount % IQ_PRECISION_MULTIPLIER == 0, "must send a whole number of IQ");
+    uint64_t shares;
+    if (stat_it->total_shares == 0) {
+        shares = quantity.amount / IQ_PRECISION_MULTIPLIER; // shares = (whole IQ sent)
+    }
+    else {
+        uint64_t guild_balance = stat_it->available.amount + stat_it->staked.amount;
+        uint64_t share_price = guild_balance / stat_it->total_shares;
+        shares = quantity.amount / share_price;
+    }
+
+    // update guild balance
+    statstbl.modify( stat_it, same_payer, [&]( auto& g ){
+        g.available += quantity;
+        g.total_shares += shares;
+    });
+
+    // update user shares
+    accounts acctstbl( _self, from.value );
+    auto account_it = acctstbl.find( guild.value );
+    if (account_it == acctstbl.end()) {
+        acctstbl.emplace( _self, [&]( auto& a ){
+            a.guild = guild;
+            a.shares = shares;
+            a.last_modified = eosio::current_time_point().sec_since_epoch();
+        });
+    }
+    else {
+        acctstbl.modify( account_it, same_payer, [&]( auto& a ){
+            a.shares += shares;
+            a.last_modified = eosio::current_time_point().sec_since_epoch();
+        });
+    }
+}
+
+
+[[eosio::action]]
+void eparticlectr::withdraw( name account, name guild, uint64_t shares, name executor ) {
+    eosio::check( executor == guild || executor == account, "Only the guild owner or account holder can execute this action");
+    require_auth( executor );
+
+    stats statstbl( _self, guild.value );
+    eosio::check(statstbl.begin() != statstbl.end(), "No available balance to withdraw");
+    auto stat_it = statstbl.begin();
+    
+    accounts acctstbl( _self, account.value );
+    auto account_it = acctstbl.find( guild.value );
+    eosio::check(account_it != acctstbl.end(), "user does not have shares in this guild");
+    eosio::check(shares <= account_it->shares, "user is attempting to withdraw too many shares");
+    if (executor == account)
+        eosio::check(eosio::current_time_point().sec_since_epoch() > account_it->last_modified + MINIMUM_DELEGATION_TIME, "user cannot withdraw within 7 days of a deposit");
+
+    // calculate share value
+    uint64_t guild_balance = stat_it->available.amount + stat_it->staked.amount;
+    uint64_t share_price = guild_balance / stat_it->total_shares;
+    uint64_t iq_amount = share_price * shares;
+    asset iq_withdraw = asset(iq_amount, IQSYMBOL);
+
+    eosio::check(iq_withdraw <= stat_it->available, "available balance does not cover attempted withdrawal");
+    
+    // share and balance accounting
+    statstbl.modify( stat_it, same_payer, [&]( auto& g ) {
+        g.available -= iq_withdraw;
+        g.total_shares -= shares;
+    });
+    // delete account entry if all shares are withdrawn
+    if (account_it->shares == shares)
+        acctstbl.erase( account_it );
+    else {
+        acctstbl.modify( account_it, same_payer, [&]( auto& a ){
+            a.shares -= shares;         
+        });
+    }
+    // send IQ
+    action(
+        permission_level{ _self , name("active") }, 
+        name("everipediaiq") , name("transfer"),
+        std::make_tuple( _self, account, iq_withdraw, std::string("withdrawing shares from guild"))
+    ).send();
+
+}
+
 
 [[eosio::action]]
 void eparticlectr::rewardclmid ( uint64_t reward_id ) {
@@ -470,33 +617,72 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
     eosio::check(period_it != perrewards.end(), "PROTOCOL ERROR: This period should exist");
     eosio::check(current_period > reward_period, "Reward period must complete before claiming rewards");
 
-    // Send curation reward
+    // Issue curation reward
     int64_t curation_reward = reward_it->vote_points * PERIOD_CURATION_REWARD / period_it->curation_sum;
     eosio::check(curation_reward <= PERIOD_CURATION_REWARD, "System logic error. Too much IQ calculated for curation reward.");
     if (curation_reward == 0) // Minimum reward of 0.001 IQ to prevent unclaimable rewards
         curation_reward = 1;
     asset curation_quantity = asset(curation_reward, IQSYMBOL);
-    std::string memo = std::string("Curation IQ reward:" + reward_it->memo);
+    std::string memo = std::string("Curation IQ reward:" + reward_it->guild.to_string() + ":" + reward_it->memo);
     action(
         permission_level { TOKEN_CONTRACT, name("active") },
         TOKEN_CONTRACT, name("issue"),
-        std::make_tuple( reward_it->user, curation_quantity, memo )
+        std::make_tuple( _self, curation_quantity, memo )
     ).send();
 
-    // Send editor reward
+    // Calculate editor reward if needed
+    int64_t editor_reward = 0;
     if (reward_it->is_editor && reward_it->proposalresult) {
-        int64_t editor_reward = reward_it->edit_points * PERIOD_EDITOR_REWARD / period_it->editor_sum;
+        editor_reward = reward_it->edit_points * PERIOD_EDITOR_REWARD / period_it->editor_sum;
         if (editor_reward == 0) // Minimum reward of 0.001 IQ to prevent unclaimable rewards
             editor_reward = 1;
         eosio::check(editor_reward <= PERIOD_EDITOR_REWARD, "System logic error. Too much IQ calculated for editor reward.");
         asset editor_quantity = asset(editor_reward, IQSYMBOL);
-        std::string memo = std::string("Editor IQ reward:" + reward_it->memo);
+        std::string memo = std::string("Editor IQ reward:" + reward_it->guild.to_string() + ":" + reward_it->memo);
+        
+        // Issue editor reward
         action(
             permission_level { TOKEN_CONTRACT, name("active") },
             TOKEN_CONTRACT, name("issue"),
-            std::make_tuple( reward_it->user, editor_quantity, memo )
+            std::make_tuple( _self, editor_quantity, memo )
         ).send();
+        
     }
+    
+    // Get stats table for guild
+    stats statstbl( _self, reward_it->guild.value );
+    eosio::check(statstbl.begin() != statstbl.end(), "PROTOCOL ERROR: This user should have a balance");
+    auto stat_it = statstbl.begin();
+
+    // Get accounts table for guild owner
+    accounts acctstbl( _self, reward_it->guild.value );
+    auto account_it = acctstbl.find( reward_it->guild.value );
+    if (account_it == acctstbl.end()) {
+        acctstbl.emplace( _self, [&]( auto& a ){
+            a.guild = reward_it->guild;
+            a.shares = 0;
+            a.last_modified = eosio::current_time_point().sec_since_epoch();
+        });
+        account_it = acctstbl.find( reward_it->guild.value );
+    }
+
+    // Update available balance of guild
+    // Reward guild owner shares for half the reward
+    // Update guild's total_shares to account for new shares
+    int64_t total_reward = editor_reward + curation_reward;
+    asset total_quantity = asset(total_reward, IQSYMBOL);
+    asset half_quantity = total_quantity / 2;
+    uint64_t guild_balance = stat_it->available.amount + stat_it->staked.amount;
+    uint64_t share_price = guild_balance / stat_it->total_shares;
+    uint64_t new_shares = half_quantity.amount / share_price;
+    statstbl.modify( stat_it, same_payer, [&]( auto& g ) {
+        g.available += total_quantity;
+        g.total_shares += new_shares;
+    });
+    acctstbl.modify( account_it, same_payer, [&]( auto& a ) {
+        a.shares += new_shares;
+        // don't update last_modified for rewards
+    });
 
     // delete reward after claiming
     rewardstable.erase( reward_it );
@@ -527,6 +713,26 @@ void eparticlectr::oldvotepurge( uint64_t proposal_id, uint32_t loop_limit ) {
     while(count < loop_limit && vote_it != votetbl.end()) {
         vote_it = votetbl.erase(vote_it);
         count++;
+    }
+}
+
+[[eosio::action]]
+void eparticlectr::allowdelegat( name user, bool allow ) {
+    require_auth( user );
+
+    stats statstbl( _self, user.value );
+    if (statstbl.begin() == statstbl.end()) {
+        statstbl.emplace( _self, [&]( auto& g ){
+            g.available = asset(0, IQSYMBOL);
+            g.staked = asset(0, IQSYMBOL);
+            g.total_shares = 0;
+            g.allow_delegation = allow;
+        });
+    }
+    else {
+        statstbl.modify( statstbl.begin(), same_payer, [&]( auto& g ) {
+            g.allow_delegation = allow;
+        });
     }
 }
 
@@ -562,4 +768,19 @@ void eparticlectr::logpropinfo( uint64_t proposal_id, name proposer, uint64_t wi
     require_auth( _self );
 }
 
-EOSIO_DISPATCH( eparticlectr, (boostinvest)(boosttxfr)(brainclmid)(slashnotify)(finalize)(oldvotepurge)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(mkreferendum) )
+extern "C" void apply(uint64_t receiver, uint64_t code, uint64_t action)
+{
+    auto _self = receiver;
+    if (code == name("everipediaiq").value && action == name("transfer").value)
+    {
+        eosio::execute_action(
+            eosio::name(receiver), eosio::name(code), &eparticlectr::deposit
+        );
+    }
+    else if (code == _self)
+    {
+        switch (action) {
+            EOSIO_DISPATCH_HELPER( eparticlectr, (allowdelegat)(boostinvest)(boosttxfr)(brainclmid)(slashnotify)(finalize)(oldvotepurge)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(mkreferendum)(withdraw) )
+        }
+    }
+}
