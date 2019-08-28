@@ -266,10 +266,10 @@ public:
     typedef eosio::multi_index<name("propstbl2"), editproposal> propstbl; // EOS table for the edit proposals
 
     // boostledger table
-    typedef eosio::multi_index<name("boosttbl"), boostledger,
+    typedef eosio::multi_index<name("booststbl"), boostledger,
         indexed_by< name("bybooster"), const_mem_fun<boostledger, uint64_t, &boostledger::get_booster >>,
         indexed_by< name("bywikiid"), const_mem_fun<boostledger, uint64_t, &boostledger::get_wiki_id >>
-    > boosttbl;
+    > booststbl;
 
     // rewards history table
     typedef eosio::multi_index<name("rewardstbl2"), rewardhistory,

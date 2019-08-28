@@ -9,9 +9,10 @@ ctrl_c () {
     exit 11;
 }
 
+BUILD=1 # Rebuild everipedia contracts, changing the variables for the test
 BOOTSTRAP=0 # 1 if chain bootstrapping (bios, system contract, etc.) is needed, else 0
 RECOMPILE_AND_RESET_EOSIO_CONTRACTS=0
-BUILD=0
+
 HELP=0
 EOSIO_CONTRACTS_ROOT=/home/kedar/eosio.contracts/build/contracts/
 NODEOS_HOST="127.0.0.1"
@@ -95,7 +96,7 @@ if [ $BUILD -eq 1 ]; then
 fi
 
 if [ $BOOTSTRAP -eq 1 ]; then
-    bash bootstrap.sh
+    bash bootstrap-localhost.sh
 fi
 
 ## Deploy contracts
@@ -357,6 +358,8 @@ cleos push action everipediaiq epartvote "[ \"eptestusersg\", $PROPID4, 1, 50000
 assert $(bc <<< "$? == 1")
 cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID4, 1, 500, \"vote comment\", \"votememo\", "active"]" -p eptestusersg
 assert $(bc <<< "$? == 1")
+
+read -p "Voting done. Press [Enter] key to continue script"
 
 # Finalize
 echo -e "${CYAN}-----------------------EARLY FINALIZE SHOULD FAIL-----------------------${NC}"

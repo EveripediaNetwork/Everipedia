@@ -39,8 +39,8 @@ void eparticlectr::boostinvest( name booster, uint64_t amount, std::string slug,
     // Get the existing wiki_id or create an new one
     int64_t wiki_id_source = eparticlectr::get_or_create_wiki_id(_self, slug, lang_code);
 
-    // Update the boosttbl table, or create it if an existing boost isn't already there
-    boosttbl articleboosts( _self, _self.value );
+    // Update the booststbl table, or create it if an existing boost isn't already there
+    booststbl articleboosts( _self, _self.value );
     auto boost_idx = articleboosts.get_index<name("bywikiid")>();
     auto boost_it = boost_idx.find( wiki_id_source );
 
@@ -51,6 +51,7 @@ void eparticlectr::boostinvest( name booster, uint64_t amount, std::string slug,
             total_boost = boost_it->amount + amount;
             boost_idx.modify( boost_it, _self, [&]( auto& b ) {
                 b.amount = total_boost;
+                b.timestamp = eosio::current_time_point().sec_since_epoch();
             });
 
             // Only modify once;
@@ -67,6 +68,7 @@ void eparticlectr::boostinvest( name booster, uint64_t amount, std::string slug,
             b.wiki_id = wiki_id_source;
             b.booster = booster;
             b.amount = amount;
+            b.timestamp = eosio::current_time_point().sec_since_epoch();
         });
     }
 
@@ -143,19 +145,22 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
     eosio::check( !prop_it->finalized, "Proposal is finalized");
 
     // Initialize the boost table
-    boosttbl articleboosts( _self, _self.value );
+    booststbl articleboosts( _self, _self.value );
     auto boost_idx = articleboosts.get_index<name("bywikiid")>();
     auto boost_it = boost_idx.find( prop_it->wiki_id );
 
     // Loop through all of the boosts for a given wiki_id and find the one that belongs to the booster, if there is one
-    while(boost_it != boost_idx.end() && boost_it->booster == voter) {
+    while(boost_it != boost_idx.end() && boost_it->booster != voter) {
         boost_it++;
     }
 
     // Default boost is 1 (i.e. no boost)
     float boost_multiplier = 1.0;
-    if (boost_it != boost_idx.end()){
+    if (boost_it != boost_idx.end() && boost_it->booster == voter){
         boost_multiplier = eparticlectr::get_boost_multiplier(boost_it->amount);
+        std::string multiplier_string = std::to_string(boost_multiplier) + std::string("x");
+        std::string debug_msg = std::string("Multiplying vote by ") + multiplier_string + std::string(" due to ") + std::to_string(boost_it->amount) + std::string("IQ boost present");
+        eosio::print(debug_msg);
     } 
 
     // Create the stake object

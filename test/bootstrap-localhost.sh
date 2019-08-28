@@ -11,12 +11,23 @@ ctrl_c () {
 
 RECOMPILE_AND_RESET_EOSIO_CONTRACTS=0
 REBUILD_EVERIPEDIA_CONTRACTS=1
+RESET_NODEOS=0
 #EOSIO_CONTRACTS_ROOT=/home/kedar/eosio.contracts/build/contracts/
 EOSIO_CONTRACTS_ROOT=/home/travis/Programs/contracts/eosio.contracts/build/contracts
 NODEOS_HOST="127.0.0.1"
 NODEOS_PROTOCOL="http"
 NODEOS_PORT="8888"
 NODEOS_LOCATION="${NODEOS_PROTOCOL}://${NODEOS_HOST}:${NODEOS_PORT}"
+
+if [ $RESET_NODEOS -eq 1 ]; then
+    echo -e "${CYAN}-----------------------PURGING NODEOS-----------------------${NC}"
+    rm -rf ~/.local/share/eosio/nodeos
+    echo -e "REMEMBER TO RESTART NODEOS!"
+    echo -e "REMEMBER TO RESTART NODEOS!"
+    echo -e "REMEMBER TO RESTART NODEOS!"
+    exit 1;
+fi
+
 
 alias cleos="cleos --url=${NODEOS_LOCATION}"
 
@@ -91,34 +102,6 @@ if [ $RECOMPILE_AND_RESET_EOSIO_CONTRACTS -eq 1 ]; then
     eosio-cpp -I ./include -o ./eosio.wrap.wasm ./src/eosio.wrap.cpp --abigen
 fi
 
-if [ $REBUILD_EVERIPEDIA_CONTRACTS -eq 1 ]; then
-    cd ..
-
-    echo "Deleting old everipediaiq files..."
-    cd everipediaiq
-    rm -rf everipediaiq.abi everipediaiq.wasm everipediaiq.wast
-    cd ..
-
-    echo "Deleting old eparticlectr files..."
-    cd eparticlectr
-    rm -rf eparticlectr.abi eparticlectr.wasm eparticlectr.wast
-    cd ..
-
-    cd everipediaiq
-    echo "Building everipediaiq..."
-    /usr/bin/eosio-cpp everipediaiq.cpp -O=3 -lto-opt=O3 -stack-size=16384 -abigen -o everipediaiq.wasm -I everipediaiq.clauses.md -I everipediaiq.contracts.md -I ../eparticlectr
-    cd ..
-
-    cd eparticlectr
-    echo "Building eparticlectr..."
-    /usr/bin/eosio-cpp eparticlectr.cpp -O=3 -lto-opt=O3 -stack-size=16384 -abigen -o eparticlectr.wasm -I eparticlectr.clauses.md -I eparticlectr.contracts.md
-    cd ..
-
-    cd test
-
-    sleep 1
-fi
-
 # Bootstrap new system contracts
 echo -e "${CYAN}-----------------------SYSTEM CONTRACTS-----------------------${NC}"
 cleos set contract eosio.token $EOSIO_CONTRACTS_ROOT/eosio.token/
@@ -178,14 +161,43 @@ cleos transfer eosio eptestuserse "1000 EOS"
 cleos transfer eosio eptestusersf "1000 EOS"
 cleos transfer eosio eptestusersg "1000 EOS"
 
-## Deploy contracts
-echo -e "${CYAN}-----------------------DEPLOYING EVERIPEDIA CONTRACTS-----------------------${NC}"
-cleos set account permission everipediaiq active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p everipediaiq
-cleos set account permission eparticlectr active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p eparticlectr
-cleos set contract everipediaiq ../everipediaiq/
-cleos set contract eparticlectr ../eparticlectr/
+if [ $REBUILD_EVERIPEDIA_CONTRACTS -eq 1 ]; then
+    cd ..
 
-# Create and issue token
-echo -e "${CYAN}-----------------------CREATING IQ TOKEN-----------------------${NC}"
-cleos push action everipediaiq create "[\"everipediaiq\", \"100000000000.000 IQ\"]" -p everipediaiq@active
-cleos push action everipediaiq issue "[\"everipediaiq\", \"10000000000.000 IQ\", \"initial supply\"]" -p everipediaiq@active
+    echo "Deleting old everipediaiq files..."
+    cd everipediaiq
+    rm -rf everipediaiq.abi everipediaiq.wasm everipediaiq.wast
+    cd ..
+
+    echo "Deleting old eparticlectr files..."
+    cd eparticlectr
+    rm -rf eparticlectr.abi eparticlectr.wasm eparticlectr.wast
+    cd ..
+
+    cd everipediaiq
+    echo "Building everipediaiq..."
+    /usr/bin/eosio-cpp everipediaiq.cpp -O=3 -lto-opt=O3 -stack-size=16384 -abigen -o everipediaiq.wasm -I everipediaiq.clauses.md -I everipediaiq.contracts.md -I ../eparticlectr
+    cd ..
+
+    cd eparticlectr
+    echo "Building eparticlectr..."
+    /usr/bin/eosio-cpp eparticlectr.cpp -O=3 -lto-opt=O3 -stack-size=16384 -abigen -o eparticlectr.wasm -I eparticlectr.clauses.md -I eparticlectr.contracts.md
+    cd ..
+
+    cd test
+
+    sleep 1
+
+    ## Deploy contracts
+    echo -e "${CYAN}-----------------------DEPLOYING EVERIPEDIA CONTRACTS-----------------------${NC}"
+    cleos set account permission everipediaiq active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p everipediaiq
+    cleos set account permission eparticlectr active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p eparticlectr
+    cleos set contract everipediaiq ../everipediaiq/
+    cleos set contract eparticlectr ../eparticlectr/
+
+    # Create and issue token
+    echo -e "${CYAN}-----------------------CREATING IQ TOKEN-----------------------${NC}"
+    cleos push action everipediaiq create "[\"everipediaiq\", \"100000000000.000 IQ\"]" -p everipediaiq@active
+    cleos push action everipediaiq issue "[\"everipediaiq\", \"10000000000.000 IQ\", \"initial supply\"]" -p everipediaiq@active
+
+fi

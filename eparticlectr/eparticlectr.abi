@@ -597,7 +597,7 @@
     ],
     "tables": [
         {
-            "name": "boosttbl",
+            "name": "booststbl",
             "type": "boostledger",
             "index_type": "i64",
             "key_names": [],
