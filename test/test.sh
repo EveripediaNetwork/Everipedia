@@ -9,9 +9,10 @@ ctrl_c () {
     exit 11;
 }
 
+BUILD=1 # Rebuild everipedia contracts, changing the variables for the test
 BOOTSTRAP=0 # 1 if chain bootstrapping (bios, system contract, etc.) is needed, else 0
 RECOMPILE_AND_RESET_EOSIO_CONTRACTS=0
-BUILD=0
+
 HELP=0
 EOSIO_CONTRACTS_ROOT=/home/kedar/eosio.contracts/build/contracts/
 NODEOS_HOST="127.0.0.1"
@@ -361,6 +362,15 @@ assert $(bc <<< "$? == 0")
 cleos push action eparticlectr propose2 "[ \"eptestusersf\", \"$SLUG1\", \"$IPFS1\", \"kr\", 0, \"update lang code\", \"memoing\"]" -p eptestusersf
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr propose2 "[ \"eptestusersf\", \"$SLUG2\", \"$IPFS5\", \"kr\", 5, \"update hash\", \"memoing\"]" -p eptestusersf
+assert $(bc <<< "$? == 0")
+
+# Testing boosts
+echo -e "${CYAN}-----------------------INITIATE AND TRANSFER A BOOST-----------------------${NC}"
+cleos push action everipediaiq epartboost "[ \"eptestusersb\", 10000, \"$SLUG1\", \"en\"]" -p eptestusersb
+assert $(bc <<< "$? == 0")
+
+WIKI_ID1=$(cleos get table eparticlectr eparticlectr propstbl2 -r | jq ".rows[5].wiki_id")
+cleos push action eparticlectr boosttxfr "[ \"eptestusersb\",  \"eptestusersc\", 100, $WIKI_ID1, \"$SLUG2\", \"kr\"]" -p eptestusersb
 assert $(bc <<< "$? == 0")
 
 # Failed proposals
