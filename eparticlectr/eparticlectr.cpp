@@ -103,7 +103,7 @@ void eparticlectr::boosttxfr(
 
     // Checks
     eosio::check(boost_it_src->timestamp - eosio::current_time_point().sec_since_epoch() >= BOOST_TRANSFER_WAITING_PERIOD, "You must wait until the boost is eligible to be transferred!");
-    eosio::check(amount >= boost_it_src->amount, "Not enough boost to transfer!");
+    eosio::check(boost_it_src->amount >= amount, "Not enough boost to transfer!");
 
     // Get the destination wiki_id or create an new one
     int64_t destination_wiki_id = eparticlectr::get_or_create_wiki_id(_self, dest_slug, dest_lang_code);

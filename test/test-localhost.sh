@@ -256,9 +256,19 @@ assert $(bc <<< "$? == 0")
 cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"$SLUG2\", \"$IPFS5\", \"kr\", 5, \"update hash\", \"memoing\", "active" ]" -p eptestusersf
 assert $(bc <<< "$? == 0")
 
-echo -e "${CYAN}-----------------------INITIATE A BOOST-----------------------${NC}"
+echo -e "${CYAN}-----------------------INITIATE AND TRANSFER A BOOST-----------------------${NC}"
 cleos push action everipediaiq epartboost "[ \"eptestusersb\", 10000, \"$SLUG1\", \"en\"]" -p eptestusersb
 assert $(bc <<< "$? == 0")
+
+NEED TO FIX THIS TO ACCOUNT FOR THE WIKI ID. USE THE 
+PROPS=$(cleos get table eparticlectr eparticlectr propstbl2 -r | jq ".rows")
+PROPID6=$(echo $PROPS | jq ".[0].id")
+FORMAT
+cleos push action eparticlectr boosttxfr "[ \"eptestusersb\",  \"eptestusersc\", 100, \"$SLUG2\", \"kr\"]" -p eptestusersb
+assert $(bc <<< "$? == 0")
+
+
+FIX THIS
 
 # Failed proposals
 echo -e "${CYAN}-----------------------NEXT SET OF PROPOSALS SHOULD FAIL-----------------------${NC}"
