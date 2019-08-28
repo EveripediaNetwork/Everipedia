@@ -65,7 +65,7 @@
                     "type": "name"
                 },
                 {
-                    "name": "beneficiary",
+                    "name": "target",
                     "type": "name"
                 },
                 {

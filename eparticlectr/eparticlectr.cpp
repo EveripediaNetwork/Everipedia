@@ -82,19 +82,73 @@ void eparticlectr::boostinvest( name booster, uint64_t amount, std::string slug,
 [[eosio::action]]
 void eparticlectr::boosttxfr( 
     name booster, 
-    name beneficiary, 
+    name target, 
     uint64_t amount, 
     uint64_t source_wiki_id,
     std::string dest_slug, 
     std::string dest_lang_code 
 ){
     require_auth( booster );
+    require_recipient( target );
 
-    // // Get the destination wiki_id or create an new one
-    // int64_t destination_wiki_id = eparticlectr::get_or_create_wiki_id(_self, dest_slug, dest_lang_code);
+    // Initialize the source boost table
+    booststbl articleboosts_src( _self, _self.value );
+    auto boost_idx_src = articleboosts_src.get_index<name("bywikiid")>();
+    auto boost_it_src = boost_idx_src.find( source_wiki_id );
+
+    // Loop through all of the boosts for a given wiki_id and find the one that belongs to the booster, if there is one
+    while(boost_it_src != boost_idx_src.end() && boost_it_src->booster != booster) {
+        boost_it_src++;
+    }
+
+    // Checks
+    eosio::check(boost_it_src->timestamp - eosio::current_time_point().sec_since_epoch() >= BOOST_TRANSFER_WAITING_PERIOD, "You must wait until the boost is eligible to be transferred!");
+    eosio::check(amount >= boost_it_src->amount, "Not enough boost to transfer!");
+
+    // Get the destination wiki_id or create an new one
+    int64_t destination_wiki_id = eparticlectr::get_or_create_wiki_id(_self, dest_slug, dest_lang_code);
+
+    // Initialize the target boost table
+    booststbl articleboosts_tgt( _self, _self.value );
+    auto boost_idx_tgt = articleboosts_tgt.get_index<name("bywikiid")>();
+    auto boost_it_tgt = boost_idx_tgt.find( destination_wiki_id );
 
 
-    // eosio::check(current_period > BOOST_TRANSFER_WAITING_PERIOD, "You must wait until the boost is eligible to be transferred!");
+    // Entire boost is transferred
+    if (boost_it_src->amount == amount) {
+        // Erase the entry for the source boost
+        boost_idx_src.erase( boost_it_src );
+    }
+    // Boost is partially transferred
+    else {
+        // Subtract the source's specified boost amount
+        boost_idx_src.modify( boost_it_src, _self, [&]( auto& b ) {
+            b.amount = boost_it_src->amount - amount;
+            b.timestamp = eosio::current_time_point().sec_since_epoch();
+        });
+    }
+        
+
+    // Add the source's boost to the target
+    // Create the new target boost entry if it doesn't exist
+    if (boost_it_tgt == boost_idx_tgt.end()) {
+        // Set the target's boost iterator to the new entry
+        articleboosts_tgt.emplace( _self, [&]( auto& b ) {
+            b.id = articleboosts_tgt.available_primary_key();
+            b.wiki_id = destination_wiki_id;
+            b.booster = target;
+            b.amount = amount;
+            b.timestamp = eosio::current_time_point().sec_since_epoch();
+        });
+    }
+    // Or add to the target's existing boost
+    else{
+        boost_idx_tgt.modify( boost_it_tgt, _self, [&]( auto& b ) {
+            b.amount = boost_it_tgt->amount + amount;
+            b.timestamp = eosio::current_time_point().sec_since_epoch();
+        });
+    }
+    
 
 }
 

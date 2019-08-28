@@ -309,7 +309,7 @@ public:
 
     [[eosio::action]]
     void boosttxfr( name booster, 
-                name beneficiary, 
+                name target, 
                 uint64_t amount, 
                 uint64_t source_wiki_id,
                 std::string dest_slug, 
