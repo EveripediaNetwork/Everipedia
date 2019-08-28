@@ -11,7 +11,7 @@ ctrl_c () {
 
 RECOMPILE_AND_RESET_EOSIO_CONTRACTS=0
 REBUILD_EVERIPEDIA_CONTRACTS=1
-RESET_NODEOS=0
+RESET_NODEOS=1
 #EOSIO_CONTRACTS_ROOT=/home/kedar/eosio.contracts/build/contracts/
 EOSIO_CONTRACTS_ROOT=/home/travis/Programs/contracts/eosio.contracts/build/contracts
 NODEOS_HOST="127.0.0.1"
@@ -22,10 +22,10 @@ NODEOS_LOCATION="${NODEOS_PROTOCOL}://${NODEOS_HOST}:${NODEOS_PORT}"
 if [ $RESET_NODEOS -eq 1 ]; then
     echo -e "${CYAN}-----------------------PURGING NODEOS-----------------------${NC}"
     rm -rf ~/.local/share/eosio/nodeos
-    echo -e "REMEMBER TO RESTART NODEOS!"
-    echo -e "REMEMBER TO RESTART NODEOS!"
-    echo -e "REMEMBER TO RESTART NODEOS!"
-    exit 1;
+    pkill -f nodeos
+    gnome-terminal --tab -e "nodeos -e -p eosio --plugin eosio::producer_plugin --plugin eosio::chain_api_plugin --plugin eosio::http_plugin --plugin eosio::history_plugin --plugin eosio::history_api_plugin --access-control-allow-origin='*' --contracts-console --http-validate-host=false --verbose-http-errors --filter-on='*' --http-server-address='0.0.0.0:8888'"
+    echo -e "${CYAN}RESTARTING NODEOS${NC}"
+    sleep 5
 fi
 
 

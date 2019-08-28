@@ -260,15 +260,9 @@ echo -e "${CYAN}-----------------------INITIATE AND TRANSFER A BOOST------------
 cleos push action everipediaiq epartboost "[ \"eptestusersb\", 10000, \"$SLUG1\", \"en\"]" -p eptestusersb
 assert $(bc <<< "$? == 0")
 
-NEED TO FIX THIS TO ACCOUNT FOR THE WIKI ID. USE THE 
-PROPS=$(cleos get table eparticlectr eparticlectr propstbl2 -r | jq ".rows")
-PROPID6=$(echo $PROPS | jq ".[0].id")
-FORMAT
-cleos push action eparticlectr boosttxfr "[ \"eptestusersb\",  \"eptestusersc\", 100, \"$SLUG2\", \"kr\"]" -p eptestusersb
+WIKI_ID1=$(cleos get table eparticlectr eparticlectr propstbl2 -r | jq ".rows[5].wiki_id")
+cleos push action eparticlectr boosttxfr "[ \"eptestusersb\",  \"eptestusersc\", 100, $WIKI_ID1, \"$SLUG2\", \"kr\"]" -p eptestusersb
 assert $(bc <<< "$? == 0")
-
-
-FIX THIS
 
 # Failed proposals
 echo -e "${CYAN}-----------------------NEXT SET OF PROPOSALS SHOULD FAIL-----------------------${NC}"
@@ -369,7 +363,7 @@ assert $(bc <<< "$? == 1")
 cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID4, 1, 500, \"vote comment\", \"votememo\", "active"]" -p eptestusersg
 assert $(bc <<< "$? == 1")
 
-#read -p "Voting done. Press [Enter] key to continue script"
+read -p "Voting done. Press [Enter] key to continue script"
 
 # Finalize
 echo -e "${CYAN}-----------------------EARLY FINALIZE SHOULD FAIL-----------------------${NC}"

@@ -72,10 +72,10 @@ void eparticlectr::boostinvest( name booster, uint64_t amount, std::string slug,
         });
     }
 
+    // Debug message
     std::string multiplier_string = std::string("IQ [") + std::to_string(eparticlectr::get_boost_multiplier(total_boost)) + std::string("x voting power]");
     std::string debug_msg = std::string("Boost investment is now ") + std::to_string(total_boost) + multiplier_string + std::string(" for lang_") + lang_code + std::string("/") + slug + std::string(" (wiki_id: ") + std::to_string(wiki_id_source) + std::string(")");
     eosio::print(debug_msg);
-
 }
 
 // Transfer an article's boost amount (fully or partially) to another account and wiki
@@ -84,7 +84,7 @@ void eparticlectr::boosttxfr(
     name booster, 
     name target, 
     uint64_t amount, 
-    uint64_t source_wiki_id,
+    uint64_t wiki_id_source,
     std::string dest_slug, 
     std::string dest_lang_code 
 ){
@@ -94,7 +94,7 @@ void eparticlectr::boosttxfr(
     // Initialize the source boost table
     booststbl articleboosts_src( _self, _self.value );
     auto boost_idx_src = articleboosts_src.get_index<name("bywikiid")>();
-    auto boost_it_src = boost_idx_src.find( source_wiki_id );
+    auto boost_it_src = boost_idx_src.find( wiki_id_source );
 
     // Loop through all of the boosts for a given wiki_id and find the one that belongs to the booster, if there is one
     while(boost_it_src != boost_idx_src.end() && boost_it_src->booster != booster) {
@@ -113,7 +113,6 @@ void eparticlectr::boosttxfr(
     auto boost_idx_tgt = articleboosts_tgt.get_index<name("bywikiid")>();
     auto boost_it_tgt = boost_idx_tgt.find( destination_wiki_id );
 
-
     // Entire boost is transferred
     if (boost_it_src->amount == amount) {
         // Erase the entry for the source boost
@@ -128,7 +127,6 @@ void eparticlectr::boosttxfr(
         });
     }
         
-
     // Add the source's boost to the target
     // Create the new target boost entry if it doesn't exist
     if (boost_it_tgt == boost_idx_tgt.end()) {
@@ -149,7 +147,11 @@ void eparticlectr::boosttxfr(
         });
     }
     
-
+    // Debug message
+    std::string from_part = booster.to_string() + std::string(" [") + std::to_string(wiki_id_source) + std::string("]")
+    std::string to_part = target.to_string() + std::string(" [") + std::to_string(destination_wiki_id) + std::string("]")
+    std::string debug_msg = std::to_string(amount) + std::string(" boost moved from ") + from_part + std::string(" to ") + to_part;
+    eosio::print(debug_msg);
 }
 
 // Redeem IQ, with a specific stake specified

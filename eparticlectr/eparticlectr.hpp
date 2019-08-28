@@ -311,7 +311,7 @@ public:
     void boosttxfr( name booster, 
                 name target, 
                 uint64_t amount, 
-                uint64_t source_wiki_id,
+                uint64_t wiki_id_source,
                 std::string dest_slug, 
                 std::string dest_lang_code);
 

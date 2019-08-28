@@ -73,7 +73,7 @@
                     "type": "uint64"
                 },
                 {
-                    "name": "source_wiki_id",
+                    "name": "wiki_id_source",
                     "type": "uint64"
                 },
                 {
