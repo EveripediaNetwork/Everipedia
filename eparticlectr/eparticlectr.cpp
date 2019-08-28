@@ -341,8 +341,6 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
         vote_it++;
     }
 
-    NEED TO SCALE DOWN THE REWARDS TO ACCOUNT FOR BOOSTS
-
     // Update rewards table
     uint64_t current_period = eosio::current_time_point().sec_since_epoch() / REWARD_INTERVAL;
     perrwdstbl perrewards( _self, _self.value );

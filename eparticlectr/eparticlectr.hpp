@@ -53,8 +53,8 @@ const uint64_t MAX_MEMO_SIZE = 32;
 const uint64_t MAX_IPFS_SIZE = 46;
 const uint64_t MIN_IPFS_SIZE = 46;
 const uint64_t REFERENDUM_DURATION_SECS = 14*86400; // 14 days
-const uint64_t BOOST_SCALING_CONSTANT = 1.0; // Can be adjusted as the IQ price changes to change the boost power
-const uint64_t BOOST_MINIMUM = 100.0; // 100 IQ
+const float BOOST_BASE_CONSTANT = 750.0; // Can be adjusted as the IQ price changes to change the boost power
+const float BOOST_EXPONENT_CONSTANT = 1.01; // Can be adjusted as the IQ price changes to change the boost power
 const uint64_t BOOST_TRANSFER_WAITING_PERIOD = 14*86400; // 14 days
 const eosio::symbol IQSYMBOL = symbol(symbol_code("IQ"), 3);
 
@@ -122,13 +122,7 @@ public:
 
     // Formula for the voting boost
     static float get_boost_multiplier(uint64_t amount) {
-        if (amount < BOOST_MINIMUM) {
-            return 1.0;
-        }
-        else{
-            return pow(2.0, log10(amount) + BOOST_SCALING_CONSTANT );
-        }
-        
+        return (1 + pow((amount / BOOST_BASE_CONSTANT), BOOST_EXPONENT_CONSTANT));
     }
 
     // ==================================================
