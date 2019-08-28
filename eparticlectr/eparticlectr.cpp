@@ -264,7 +264,7 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
          a.proposal_id = proposal_id;
          a.approve = approve;
          a.is_editor = is_initial_vote;
-         a.amount = amount * boost_multiplier;
+         a.amount = round(amount * boost_multiplier);
          a.voter = voter;
          a.timestamp = eosio::current_time_point().sec_since_epoch();
          a.stake_id = stake_id;

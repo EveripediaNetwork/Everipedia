@@ -92,6 +92,7 @@ if [ $BUILD -eq 1 ]; then
     sed -i -e 's/DEFAULT_VOTING_TIME = 43200/DEFAULT_VOTING_TIME = 3/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e 's/STAKING_DURATION = 21 \* 86400/STAKING_DURATION = 5/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e 's/MINIMUM_DELEGATION_TIME = 7\*86400/MINIMUM_DELEGATION_TIME = 5/g' ../eparticlectr/eparticlectr.hpp
+    sed -i -e 's/BOOST_TRANSFER_WAITING_PERIOD = 14\*86400/BOOST_TRANSFER_WAITING_PERIOD = 5/g' ../eparticlectr/eparticlectr.hpp
     cd ..
     bash build.sh
     cd test
@@ -99,6 +100,7 @@ if [ $BUILD -eq 1 ]; then
     sed -i -e 's/DEFAULT_VOTING_TIME = 3/DEFAULT_VOTING_TIME = 43200/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e 's/STAKING_DURATION = 5/STAKING_DURATION = 21 \* 86400/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e 's/MINIMUM_DELEGATION_TIME = 5/MINIMUM_DELEGATION_TIME = 7\*86400/g' ../eparticlectr/eparticlectr.hpp
+    sed -i -e 's/BOOST_TRANSFER_WAITING_PERIOD = 5/BOOST_TRANSFER_WAITING_PERIOD = 14\*86400/g' ../eparticlectr/eparticlectr.hpp
 fi
 
 if [ $BOOTSTRAP -eq 1 ]; then
@@ -365,13 +367,14 @@ cleos push action eparticlectr propose2 "[ \"eptestusersf\", \"$SLUG2\", \"$IPFS
 assert $(bc <<< "$? == 0")
 
 # Testing boosts
-echo -e "${CYAN}-----------------------INITIATE AND TRANSFER A BOOST-----------------------${NC}"
-cleos push action everipediaiq epartboost "[ \"eptestusersb\", 10000, \"$SLUG1\", \"en\"]" -p eptestusersb
+echo -e "${CYAN}-----------------------INITIATE A BOOST-----------------------${NC}"
+cleos push action everipediaiq epartboost "[ \"eptestusersb\", 1000, \"$SLUG1\", \"en\"]" -p eptestusersb
 assert $(bc <<< "$? == 0")
 
+echo -e "${CYAN}-----------------------BOOST TRANSFER SHOULD FAIL (TOO EARLY)-----------------------${NC}"
 WIKI_ID1=$(cleos get table eparticlectr eparticlectr propstbl2 -r | jq ".rows[5].wiki_id")
-cleos push action eparticlectr boosttxfr "[ \"eptestusersb\",  \"eptestusersc\", 100, $WIKI_ID1, \"$SLUG2\", \"kr\"]" -p eptestusersb
-assert $(bc <<< "$? == 0")
+cleos push action eparticlectr boosttxfr "[ \"eptestusersb\",  \"eptestusersc\", 250, $WIKI_ID1, \"$SLUG2\", \"kr\"]" -p eptestusersb
+assert $(bc <<< "$? == 1")
 
 # Failed proposals
 echo -e "${CYAN}-----------------------NEXT SET OF PROPOSALS SHOULD FAIL-----------------------${NC}"
@@ -528,6 +531,11 @@ assert $(bc <<< "$? == 1")
 echo -e "${CYAN}WAITING FOR VOTING PERIOD TO END...${NC}"
 sleep 4 # wait for test voting period to end
 
+echo -e "${CYAN}-----------------------BOOST TRANSFER SHOULD WORK NOW-----------------------${NC}"
+WIKI_ID1=$(cleos get table eparticlectr eparticlectr propstbl2 -r | jq ".rows[5].wiki_id")
+cleos push action eparticlectr boosttxfr "[ \"eptestusersb\",  \"eptestusersc\", 250, $WIKI_ID1, \"$SLUG2\", \"kr\"]" -p eptestusersb
+assert $(bc <<< "$? == 0")
+
 # Bad vote
 echo -e "${CYAN}-----------------------LATE VOTE SHOULD FAIL-----------------------${NC}"
 cleos push action eparticlectr vote "[ \"eptestusersc\", $PROPID4, 1, 500, \"votecomment\", \"votememo\" ]" -p eptestusersc
@@ -568,8 +576,8 @@ EDITOR_REWARD_SUM=$(cleos get table eparticlectr eparticlectr perrwdstbl2 -r | j
 echo -e "   ${CYAN}CURATION REWARD SUM: ${CURATION_REWARD_SUM}${NC}"
 echo -e "   ${CYAN}EDITOR REWARD SUM: ${EDITOR_REWARD_SUM}${NC}"
 
-assert $(bc <<< "$CURATION_REWARD_SUM == 2470")
-assert $(bc <<< "$EDITOR_REWARD_SUM == 530")
+assert $(bc <<< "$CURATION_REWARD_SUM == 2537")
+assert $(bc <<< "$EDITOR_REWARD_SUM == 597")
 
 # Claim rewards
 OLD_BALANCE4=$(cleos get table eparticlectr eptestusersd stats | jq ".rows[0].available" | tr -d '"' | awk '{ print $1 }')
@@ -621,10 +629,10 @@ echo -e "${CYAN}    eptestusersf: $DIFF6${NC}"
 echo -e "${CYAN}    eptestusersg: $DIFF7${NC}"
 
 # Assert rewards were distributed to guilds
-assert $(bc <<< "$DIFF4 == 198.250")
-assert $(bc <<< "$DIFF5 == 2.024")
-assert $(bc <<< "$DIFF6 == 41.176")
-assert $(bc <<< "$DIFF7 == 2.429")
+assert $(bc <<< "$DIFF4 == 176.174")
+assert $(bc <<< "$DIFF5 == 1.970")
+assert $(bc <<< "$DIFF6 == 36.849")
+assert $(bc <<< "$DIFF7 == 2.364")
 
 # Assert shares were awarded to guild owners
 assert $(bc <<< "$NEW_SHARES4 > $OLD_SHARES4")
