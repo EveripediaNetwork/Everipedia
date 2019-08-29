@@ -40,31 +40,6 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
                     asset        quantity,
                     string       memo );
 
-    [[eosio::action]]
-    void epartvote( name voter, 
-                     uint64_t proposal_id,
-                     bool approve,
-                     uint64_t amount,
-                     std::string comment, 
-                     std::string memo,
-                     name permission );
-
-    [[eosio::action]]
-    void epartboost( name booster, 
-                      uint64_t amount, 
-                      std::string slug, 
-                      std::string lang_code );
-
-    [[eosio::action]]
-    void epartpropose( name proposer, 
-                        std::string slug,
-                        ipfshash_t ipfs_hash,
-                        std::string lang_code,
-                        int64_t group_id,
-                        std::string comment,
-                        std::string memo, 
-                        name permission );
-
     inline asset get_supply( symbol_code sym )const;
 
     inline asset get_balance( name owner, symbol_code sym )const;
