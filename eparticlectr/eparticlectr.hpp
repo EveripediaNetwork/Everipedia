@@ -160,12 +160,14 @@ public:
 
         uint64_t primary_key()const { return id; }
         uint64_t get_booster()const { return booster.value; }
-        fixed_bytes<32> get_slug_lang_name()const { return sha256_slug_lang_name(slug, lang_code); }
+        fixed_bytes<32> get_slug_lang()const { return sha256_slug_lang(slug, lang_code); }
+        fixed_bytes<32> get_slug_lang_name()const { return sha256_slug_lang_name(slug, lang_code, booster); }
     };
 
     // boostledger table
     typedef eosio::multi_index<name("booststbl"), boostledger,
         indexed_by< name("bybooster"), const_mem_fun<boostledger, uint64_t, &boostledger::get_booster >>,
+        indexed_by< name("sluglang"), const_mem_fun<boostledger, uint64_t, &boostledger::get_slug_lang >>,
         indexed_by< name("sluglangname"), const_mem_fun<boostledger, uint64_t, &boostledger::get_slug_lang_name >>
     > booststbl;
 
