@@ -85,6 +85,10 @@
                 {
                     "name": "timestamp",
                     "type": "uint32"
+                },
+                {
+                    "name": "the_sha",
+                    "type": "checksum256"
                 }
             ]
         },

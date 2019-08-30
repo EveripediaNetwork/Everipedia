@@ -69,6 +69,7 @@ void eparticlectr::boostinvest( name booster, uint64_t amount, std::string slug,
             b.booster = booster;
             b.amount = amount;
             b.timestamp = eosio::current_time_point().sec_since_epoch();
+            b.the_sha = eparticlectr::sha256_slug_lang(slug, lang_code);
         });
     }
 
