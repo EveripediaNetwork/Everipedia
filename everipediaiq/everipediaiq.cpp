@@ -1,6 +1,5 @@
 
 #include "everipediaiq.hpp"
-#include "../eparticlectr/eparticlectr.hpp"
 
 [[eosio::action]]
 void everipediaiq::create( name issuer,
@@ -136,70 +135,5 @@ void everipediaiq::add_balance( name owner, asset value, name ram_payer )
    }
 }
 
-[[eosio::action]]
-void everipediaiq::epartpropose( name proposer, std::string slug, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo, name permission) { 
-    require_auth(proposer);
 
-    // Transfer the IQ to the eparticlectr contract for staking
-    asset iqAssetPack = asset(EDIT_PROPOSE_IQ * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
-    action(
-        permission_level{ proposer , permission }, 
-        _self , name("transfer"),
-        std::make_tuple( proposer, ARTICLE_CONTRACT, iqAssetPack, std::string("stake for vote"))
-    ).send();
-
-    // Make the proposal to the article contract
-    action(
-        permission_level{ ARTICLE_CONTRACT, name("active") }, 
-        ARTICLE_CONTRACT, name("propose2"),
-        std::make_tuple( proposer, slug, ipfs_hash, lang_code, group_id, comment, memo )
-    ).send();
-}
-
-[[eosio::action]]
-void everipediaiq::epartboost( name booster, uint64_t amount, std::string slug, std::string lang_code ) { 
-    require_auth(booster);
-
-    // Burn the amount for the boost
-    // Should automatically check for correct balance
-    std::string memo = std::string("Burning for lang_") + lang_code + std::string("/") + slug + std::string(" boost.");
-    asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
-    action(
-        permission_level { booster , name("active") }, 
-        _self , name("burn"),
-        std::make_tuple( booster, iqAssetPack, memo)
-    ).send();
-
-    // Make the boost increase request to the article contract
-    action(
-        permission_level { ARTICLE_CONTRACT , name("active") }, 
-        ARTICLE_CONTRACT , name("boostinvest"),
-        std::make_tuple( booster, amount, slug, lang_code)
-    ).send();
-}
-
-[[eosio::action]]
-void everipediaiq::epartvote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string comment, std::string memo, name permission) {
-    require_auth(voter);
-
-    eosio::check(amount > 0, "must transfer a positive amount");
-
-    // Transfer the IQ to the eparticlectr contract for staking
-    asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
-    action(
-        permission_level{ voter , permission }, 
-        _self , name("transfer"),
-        std::make_tuple( voter, ARTICLE_CONTRACT, iqAssetPack, std::string("stake for vote"))
-    ).send();
-
-    // Create the vote in the eparticlectr contract
-    action(
-        permission_level{ ARTICLE_CONTRACT, name("active") }, 
-        ARTICLE_CONTRACT, name("vote"),
-        std::make_tuple( voter, proposal_id, approve, amount, comment, memo )
-    ).send();
-}
-
-
-// EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(transfer)(epartvote)(epartpropose)(epartboost) )
-EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(transfer)(epartpropose)(epartvote)(epartboost) )
+EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(transfer) )
