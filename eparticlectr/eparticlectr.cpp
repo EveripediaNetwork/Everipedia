@@ -36,46 +36,30 @@ void eparticlectr::boostinvest( name booster, uint64_t amount, std::string slug,
     // Initialize the variable
     int64_t total_boost = 0;
 
-    // Get the existing wiki_id or create an new one
-    int64_t wiki_id_source = eparticlectr::get_or_create_wiki_id(_self, slug, lang_code);
-
     // Update the booststbl table, or create it if an existing boost isn't already there
     booststbl articleboosts( _self, _self.value );
-    auto boost_idx = articleboosts.get_index<name("bywikiid")>();
-    auto boost_it = boost_idx.find( wiki_id_source );
-
-    // Loop through all of the boosts for a given wiki_id and find the one that belongs to the booster
-    bool existing_boost_found = false;
-    while(boost_it != boost_idx.end() && !existing_boost_found) {
-        if (boost_it->booster == booster) {
-            total_boost = boost_it->amount + amount;
-            boost_idx.modify( boost_it, _self, [&]( auto& b ) {
-                b.amount = total_boost;
-                b.timestamp = eosio::current_time_point().sec_since_epoch();
-            });
-
-            // Only modify once;
-            existing_boost_found = true;
-        }
-        else { boost_it++; }
-    }
+    auto boost_it = articleboosts.find( sha256_slug_lang_name(slug, lang_code, booster) );
 
     // Create the new boost entry if it doesn't exist
-    if (!existing_boost_found) {
+    if (boost_it == articleboosts.end()) {
         total_boost = amount;
         articleboosts.emplace( _self, [&]( auto& b ) {
             b.id = articleboosts.available_primary_key();
-            b.wiki_id = wiki_id_source;
+            b.slug = slug;
+            b.lang_code = lang_code;
             b.booster = booster;
             b.amount = amount;
             b.timestamp = eosio::current_time_point().sec_since_epoch();
         });
     }
+    else {
+        total_boost = boost_it->amount + amount;
+        articleboosts.modify( boost_it, _self, [&]( auto& b ) {
+            b.amount = total_boost;
+            b.timestamp = eosio::current_time_point().sec_since_epoch();
+        });
+    }
 
-    // Debug message
-    std::string multiplier_string = std::string("IQ [") + std::to_string(eparticlectr::get_boost_multiplier(total_boost)) + std::string("x voting power]");
-    std::string debug_msg = std::string("Boost investment is now ") + std::to_string(total_boost) + multiplier_string + std::string(" for lang_") + lang_code + std::string("/") + slug + std::string(" (wiki_id: ") + std::to_string(wiki_id_source) + std::string(")");
-    eosio::print(debug_msg);
 }
 
 // Transfer an article's boost amount (fully or partially) to another account and wiki
@@ -84,7 +68,8 @@ void eparticlectr::boosttxfr(
     name booster, 
     name target, 
     uint64_t amount, 
-    uint64_t wiki_id_source,
+    std::string src_slug,
+    std::string src_lang_code,
     std::string dest_slug, 
     std::string dest_lang_code 
 ){
@@ -92,36 +77,28 @@ void eparticlectr::boosttxfr(
     require_recipient( target );
 
     // Initialize the source boost table
-    booststbl articleboosts_src( _self, _self.value );
-    auto boost_idx_src = articleboosts_src.get_index<name("bywikiid")>();
-    auto boost_it_src = boost_idx_src.find( wiki_id_source );
-
-    // Loop through all of the boosts for a given wiki_id and find the one that belongs to the booster, if there is one
-    while(boost_it_src != boost_idx_src.end() && boost_it_src->booster != booster) {
-        boost_it_src++;
-    }
+    booststbl articleboosts( _self, _self.value );
+    auto boost_idx = articleboosts.get_index<name("sluglangname")>();
+    auto boost_it_src = boost_idx.find( sha256_slug_lang_name(src_slug, src_lang_code, booster) );
 
     // Checks
+    eosio::check(boost_it_src != boost_idx.end(), "Source boost does not exist");
     eosio::check(boost_it_src->timestamp - eosio::current_time_point().sec_since_epoch() >= BOOST_TRANSFER_WAITING_PERIOD, "You must wait until the boost is eligible to be transferred!");
     eosio::check(boost_it_src->amount >= amount, "Not enough boost to transfer!");
-
-    // Get the destination wiki_id or create an new one
-    int64_t destination_wiki_id = eparticlectr::get_or_create_wiki_id(_self, dest_slug, dest_lang_code);
+    eosio::check(boost_it_src->booster == booster, "Only owner can transfer boost");
 
     // Initialize the target boost table
-    booststbl articleboosts_tgt( _self, _self.value );
-    auto boost_idx_tgt = articleboosts_tgt.get_index<name("bywikiid")>();
-    auto boost_it_tgt = boost_idx_tgt.find( destination_wiki_id );
+    auto boost_it_tgt = boost_idx.find( sha256_slug_lang_name(dest_slug, dest_lang_code, target) );
 
     // Entire boost is transferred
     if (boost_it_src->amount == amount) {
         // Erase the entry for the source boost
-        boost_idx_src.erase( boost_it_src );
+        boost_idx.erase( boost_it_src );
     }
     // Boost is partially transferred
     else {
         // Subtract the source's specified boost amount
-        boost_idx_src.modify( boost_it_src, _self, [&]( auto& b ) {
+        boost_idx.modify( boost_it_src, _self, [&]( auto& b ) {
             b.amount = boost_it_src->amount - amount;
             b.timestamp = eosio::current_time_point().sec_since_epoch();
         });
@@ -129,11 +106,12 @@ void eparticlectr::boosttxfr(
         
     // Add the source's boost to the target
     // Create the new target boost entry if it doesn't exist
-    if (boost_it_tgt == boost_idx_tgt.end()) {
+    if (boost_it_tgt == boost_idx.end()) {
         // Set the target's boost iterator to the new entry
-        articleboosts_tgt.emplace( _self, [&]( auto& b ) {
-            b.id = articleboosts_tgt.available_primary_key();
-            b.wiki_id = destination_wiki_id;
+        articleboosts.emplace( _self, [&]( auto& b ) {
+            b.id = articleboosts.available_primary_key();
+            b.slug = dest_slug;
+            b.lang_code = dest_lang_code;
             b.booster = target;
             b.amount = amount;
             b.timestamp = eosio::current_time_point().sec_since_epoch();
@@ -141,17 +119,11 @@ void eparticlectr::boosttxfr(
     }
     // Or add to the target's existing boost
     else{
-        boost_idx_tgt.modify( boost_it_tgt, _self, [&]( auto& b ) {
+        boost_idx.modify( boost_it_tgt, _self, [&]( auto& b ) {
             b.amount = boost_it_tgt->amount + amount;
             b.timestamp = eosio::current_time_point().sec_since_epoch();
         });
     }
-    
-    // Debug message
-    std::string from_part = booster.to_string() + std::string(" [") + std::to_string(wiki_id_source) + std::string("]");
-    std::string to_part = target.to_string() + std::string(" [") + std::to_string(destination_wiki_id) + std::string("]");
-    std::string debug_msg = std::to_string(amount) + std::string(" boost moved from ") + from_part + std::string(" to ") + to_part;
-    eosio::print(debug_msg);
 }
 
 // Redeem IQ, with a specific stake specified
@@ -216,17 +188,12 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
 
     // Initialize the boost table
     booststbl articleboosts( _self, _self.value );
-    auto boost_idx = articleboosts.get_index<name("bywikiid")>();
-    auto boost_it = boost_idx.find( prop_it->wiki_id );
-
-    // Loop through all of the boosts for a given wiki_id and find the one that belongs to the booster, if there is one
-    while(boost_it != boost_idx.end() && boost_it->booster != voter) {
-        boost_it++;
-    }
+    auto boost_idx = articleboosts.get_index<name("sluglangname")>();
+    auto boost_it = boost_idx.find( sha256_slug_lang_name(prop_it->slug, prop_it->lang_code, voter) );
 
     // Default boost is 1 (i.e. no boost)
     float boost_multiplier = 1.0;
-    if (boost_it != boost_idx.end() && boost_it->booster == voter){
+    if (boost_it != boost_idx.end()) {
         boost_multiplier = eparticlectr::get_boost_multiplier(boost_it->amount);
         std::string multiplier_string = std::to_string(boost_multiplier) + std::string("x");
         std::string debug_msg = std::string("Multiplying vote by ") + multiplier_string + std::string(" due to ") + std::to_string(boost_it->amount) + std::string("IQ boost present");
