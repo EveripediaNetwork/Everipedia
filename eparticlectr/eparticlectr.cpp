@@ -56,7 +56,6 @@ void eparticlectr::brainclmid( uint64_t stakeid ) {
 
 
 // Place a vote using the IPFS hash
-// Users have to trigger this action through the everipediaiq::epartvote action
 [[eosio::action]]
 void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string comment, std::string memo ) {
     votestbl votetbl( _self, proposal_id );
@@ -127,7 +126,6 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
 }
 
 // Logic for proposing an edit for an article
-// Users have to trigger this action through the everipediaiq::epartpropose action
 [[eosio::action]]
 void eparticlectr::propose2( name proposer, std::string slug, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo ) {
     require_auth( proposer );
