@@ -39,8 +39,12 @@
                     "type": "uint64"
                 },
                 {
-                    "name": "wiki_id",
-                    "type": "uint64"
+                    "name": "slug",
+                    "type": "string"
+                },
+                {
+                    "name": "lang_code",
+                    "type": "string"
                 },
                 {
                     "name": "booster",
@@ -73,8 +77,12 @@
                     "type": "uint64"
                 },
                 {
-                    "name": "wiki_id_source",
-                    "type": "uint64"
+                    "name": "src_slug",
+                    "type": "string"
+                },
+                {
+                    "name": "src_lang_code",
+                    "type": "string"
                 },
                 {
                     "name": "dest_slug",

@@ -38,10 +38,11 @@ void eparticlectr::boostinvest( name booster, uint64_t amount, std::string slug,
 
     // Update the booststbl table, or create it if an existing boost isn't already there
     booststbl articleboosts( _self, _self.value );
-    auto boost_it = articleboosts.find( sha256_slug_lang_name(slug, lang_code, booster) );
+    auto boost_idx = articleboosts.get_index<name("sluglangname")>();
+    auto boost_it = boost_idx.find( sha256_slug_lang_name(slug, lang_code, booster) );
 
     // Create the new boost entry if it doesn't exist
-    if (boost_it == articleboosts.end()) {
+    if (boost_it == boost_idx.end()) {
         total_boost = amount;
         articleboosts.emplace( _self, [&]( auto& b ) {
             b.id = articleboosts.available_primary_key();
@@ -52,9 +53,10 @@ void eparticlectr::boostinvest( name booster, uint64_t amount, std::string slug,
             b.timestamp = eosio::current_time_point().sec_since_epoch();
         });
     }
+    // Otherwise, increase the existing investment
     else {
         total_boost = boost_it->amount + amount;
-        articleboosts.modify( boost_it, _self, [&]( auto& b ) {
+        boost_idx.modify( boost_it, _self, [&]( auto& b ) {
             b.amount = total_boost;
             b.timestamp = eosio::current_time_point().sec_since_epoch();
         });
@@ -157,8 +159,6 @@ void eparticlectr::brainclmid( uint64_t stakeid ) {
 // Users have to trigger this action through the everipediaiq::epartvote action
 [[eosio::action]]
 void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string comment, std::string memo ) {
-    votestbl votetbl( _self, proposal_id );
-
     // validate inputs
     eosio::check(comment.size() < MAX_COMMENT_SIZE, "Comment must be less than 256 bytes");
     eosio::check(memo.size() < MAX_MEMO_SIZE, "Memo must be less than 32 bytes");
@@ -172,15 +172,10 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
     eosio::check( eosio::current_time_point().sec_since_epoch() < prop_it->endtime, "Voting period is over");
     eosio::check( !prop_it->finalized, "Proposal is finalized");
 
-    // Initialize the boost table
+    // See if the voter has any boosts for this article
     booststbl articleboosts( _self, _self.value );
-    auto boost_idx = articleboosts.get_index<name("bywikiid")>();
-    auto boost_it = boost_idx.find( prop_it->wiki_id );
-
-    // Loop through all of the boosts for a given wiki_id and find the one that belongs to the booster, if there is one
-    while(boost_it != boost_idx.end() && boost_it->booster != voter) {
-        boost_it++;
-    }
+    auto boost_idx = articleboosts.get_index<name("sluglangname")>();
+    auto boost_it = boost_idx.find( sha256_slug_lang_name(prop_it->slug, prop_it->lang_code, voter) );
 
     // Default boost is 1 (i.e. no boost)
     float boost_multiplier = 1.0;
@@ -190,20 +185,6 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
         std::string debug_msg = std::string("Multiplying vote by ") + multiplier_string + std::string(" due to ") + std::to_string(boost_it->amount) + std::string("IQ boost present");
         eosio::print(debug_msg);
     } 
-
-    // Verify balances are available
-    stats statstbl( _self, voter.value );
-    auto stat_it = statstbl.begin();
-    eosio::check(statstbl.begin() != statstbl.end(), "Balance does not exist for user");
-    eosio::check(stat_it->available.amount >= amount * IQ_PRECISION_MULTIPLIER, "not enough available IQ to vote");
-    eosio::check(amount > 0, "PROTOCOL ERROR: Why is there a negative vote amount?");
-
-    // Subtract amount from balance
-    asset voting_iq = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
-    statstbl.modify( stat_it, same_payer, [&]( auto& g ) {
-        g.available -= voting_iq;
-        g.staked += voting_iq;
-    });
 
     // Create the stake object
     staketbl staketblobj(_self, _self.value);
@@ -225,7 +206,7 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
          a.id = votetbl.available_primary_key();
          a.proposal_id = proposal_id;
          a.approve = approve;
-         a.is_editor = is_initial_vote;
+         a.is_editor = voterIsProposer;
          a.amount = round(amount * boost_multiplier);
          a.voter = voter;
          a.timestamp = eosio::current_time_point().sec_since_epoch();

@@ -109,6 +109,46 @@ public:
         return (1 + pow((amount / BOOST_BASE_CONSTANT), BOOST_EXPONENT_CONSTANT));
     }
 
+    static uint64_t get_or_create_wiki_id(name caller, std::string slug, std::string lang_code) {
+        // Table definitions
+        wikistbl wikitbl( caller, caller.value );
+
+        eosio::check( slug != "", "slug cannot be empty");
+        eosio::check( slug.size() <= MAX_SLUG_SIZE, "slug must be max 256 bytes");
+        eosio::check( lang_code.size() <= MAX_LANG_CODE_SIZE, "lang_code must be max 7 bytes");
+        eosio::check( lang_code.size() >= MIN_LANG_CODE_SIZE, "lang_code must be atleast 2 characters");
+
+        // check for duplicate slug + lang. grab id if it exists.
+        // otherwise set a new ID for the wiki
+        // group id matches wiki id if set to -1
+        auto sluglang_idx = wikitbl.get_index<name("uniqsluglang")>();
+        auto existing_wiki_it = sluglang_idx.find(sha256_slug_lang(slug, lang_code));
+        int64_t wiki_id;
+        uint64_t group_id;
+
+        if (existing_wiki_it != sluglang_idx.end()){
+            wiki_id = existing_wiki_it->id;
+            group_id = existing_wiki_it->group_id;
+        }
+        else {
+            wiki_id = wikitbl.available_primary_key(); 
+            group_id = wiki_id; 
+        }
+            
+        // Place new wikis into the table
+        if (existing_wiki_it == sluglang_idx.end()) {
+            wikitbl.emplace( caller,  [&]( auto& a ) {
+                a.id = wiki_id;
+                a.slug = slug;
+                a.lang_code = lang_code;
+                a.group_id = group_id;
+            });
+        }
+
+        return wiki_id;
+    }
+
+
     // ==================================================
     // ==================================================
     // ==================================================
@@ -246,19 +286,19 @@ public:
         indexed_by< name("byuser"), const_mem_fun<stake, uint64_t, &stake::get_user >>
     > staketbl;
 
-    // votes table
-    // scoped by proposal
-    typedef eosio::multi_index<name("votestbl2"), vote_t > votestbl; // EOS table for the votes
-
-    // edit proposals table
-    typedef eosio::multi_index<name("propstbl2"), editproposal> propstbl; // EOS table for the edit proposals
-
     // boostledger table
     typedef eosio::multi_index<name("booststbl"), boostledger,
         indexed_by< name("bybooster"), const_mem_fun<boostledger, uint64_t, &boostledger::get_booster >>,
         indexed_by< name("sluglang"), const_mem_fun<boostledger, fixed_bytes<32>, &boostledger::get_slug_lang >>,
         indexed_by< name("sluglangname"), const_mem_fun<boostledger, fixed_bytes<32>, &boostledger::get_slug_lang_name >>
     > booststbl;
+
+    // votes table
+    // scoped by proposal
+    typedef eosio::multi_index<name("votestbl2"), vote_t > votestbl; // EOS table for the votes
+
+    // edit proposals table
+    typedef eosio::multi_index<name("propstbl2"), editproposal> propstbl; // EOS table for the edit proposals
 
     // rewards history table
     typedef eosio::multi_index<name("rewardstbl2"), rewardhistory,
