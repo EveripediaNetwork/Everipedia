@@ -1,5 +1,5 @@
 #!/bin/bash
-# use bash ./bootstrap-localhost.sh
+# use bash ./bootstrap.sh, NOT sh ./bootstrap.sh,
 
 CYAN='\033[1;36m'
 NC='\033[0m'
