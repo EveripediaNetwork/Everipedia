@@ -156,13 +156,6 @@ public:
         fixed_bytes<32> get_slug_lang_name()const { return sha256_slug_lang_name(slug, lang_code, booster); }
     };
 
-    // boostledger table
-    typedef eosio::multi_index<name("booststbl"), boostledger,
-        indexed_by< name("bybooster"), const_mem_fun<boostledger, uint64_t, &boostledger::get_booster >>,
-        indexed_by< name("sluglang"), const_mem_fun<boostledger, uint64_t, &boostledger::get_slug_lang >>,
-        indexed_by< name("sluglangname"), const_mem_fun<boostledger, uint64_t, &boostledger::get_slug_lang_name >>
-    > booststbl;
-
     // Voting tally
     struct [[eosio::table]] vote_t {
           uint64_t id;
@@ -263,7 +256,8 @@ public:
     // boostledger table
     typedef eosio::multi_index<name("booststbl"), boostledger,
         indexed_by< name("bybooster"), const_mem_fun<boostledger, uint64_t, &boostledger::get_booster >>,
-        indexed_by< name("bywikiid"), const_mem_fun<boostledger, uint64_t, &boostledger::get_wiki_id >>
+        indexed_by< name("sluglang"), const_mem_fun<boostledger, fixed_bytes<32>, &boostledger::get_slug_lang >>,
+        indexed_by< name("sluglangname"), const_mem_fun<boostledger, fixed_bytes<32>, &boostledger::get_slug_lang_name >>
     > booststbl;
 
     // rewards history table

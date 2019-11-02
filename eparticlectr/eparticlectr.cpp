@@ -36,8 +36,6 @@ void eparticlectr::boostinvest( name booster, uint64_t amount, std::string slug,
     // Initialize the variable
     int64_t total_boost = 0;
 
-
-
     // Update the booststbl table, or create it if an existing boost isn't already there
     booststbl articleboosts( _self, _self.value );
     auto boost_it = articleboosts.find( sha256_slug_lang_name(slug, lang_code, booster) );
