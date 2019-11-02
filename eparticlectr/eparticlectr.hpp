@@ -68,6 +68,7 @@ public:
     // ==================================================
     // ==================================================
     // Helper functions
+    // fixed_bytes<32> is the same as checksum256
     static fixed_bytes<32> sha256_slug_lang(std::string slug, std::string lang_code) {
         eosio::check(slug.size() <= MAX_SLUG_SIZE, "slug max size is 32 bytes");
         eosio::check(lang_code.size() <= MAX_LANG_CODE_SIZE, "lang_code max size is 8 bytes");
@@ -78,6 +79,12 @@ public:
         while (padded_lang_code.size() < MAX_LANG_CODE_SIZE)
             padded_lang_code.append(" ");
         std::string combined = padded_slug + padded_lang_code;
+        // fixed_bytes<32> shaResult = sha256(combined.c_str(), combined.size());
+
+        // Debug message
+        // std::string debug_msg = std::string("shaResult for ") + std::string(" for lang_") + lang_code + std::string("/") + slug + std::string(" is |");
+        // eosio::print(shaResult);
+
         return sha256(combined.c_str(), combined.size());
     }
 
@@ -115,6 +122,8 @@ public:
         ipfshash_t ipfs_hash; // IPFS hash of the current consensus article version
 
         uint64_t primary_key () const { return id; }
+
+        // fixed_bytes<32> is the same as checksum256
         fixed_bytes<32> hash_slug_lang () const { 
             return sha256_slug_lang(slug, lang_code);
         }
