@@ -185,7 +185,7 @@ void eparticlectr::brainclmid( uint64_t stakeid ) {
 // Users have to trigger this action through the everipediaiq::epartvote action
 [[eosio::action]]
 void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string comment, std::string memo ) {
-    require_auth( _self );
+    votestbl votetbl( _self, proposal_id );
 
     // validate inputs
     eosio::check(comment.size() < MAX_COMMENT_SIZE, "Comment must be less than 256 bytes");
@@ -219,6 +219,20 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
         eosio::print(debug_msg);
     } 
 
+    // Verify balances are available
+    stats statstbl( _self, voter.value );
+    auto stat_it = statstbl.begin();
+    eosio::check(statstbl.begin() != statstbl.end(), "Balance does not exist for user");
+    eosio::check(stat_it->available.amount >= amount * IQ_PRECISION_MULTIPLIER, "not enough available IQ to vote");
+    eosio::check(amount > 0, "PROTOCOL ERROR: Why is there a negative vote amount?");
+
+    // Subtract amount from balance
+    asset voting_iq = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
+    statstbl.modify( stat_it, same_payer, [&]( auto& g ) {
+        g.available -= voting_iq;
+        g.staked += voting_iq;
+    });
+
     // Create the stake object
     staketbl staketblobj(_self, _self.value);
     uint64_t stake_id = staketblobj.available_primary_key();
@@ -239,7 +253,7 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
          a.id = votetbl.available_primary_key();
          a.proposal_id = proposal_id;
          a.approve = approve;
-         a.is_editor = voterIsProposer;
+         a.is_editor = is_initial_vote;
          a.amount = amount * boost_multiplier;
          a.voter = voter;
          a.timestamp = eosio::current_time_point().sec_since_epoch();
