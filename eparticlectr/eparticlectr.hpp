@@ -81,43 +81,20 @@ public:
         return sha256(combined.c_str(), combined.size());
     }
 
-    static uint64_t get_or_create_wiki_id(name caller, std::string slug, std::string lang_code) {
-        // Table definitions
-        wikistbl wikitbl( caller, caller.value );
-
-        eosio::check( slug != "", "slug cannot be empty");
-        eosio::check( slug.size() <= MAX_SLUG_SIZE, "slug must be max 256 bytes");
-        eosio::check( lang_code.size() <= MAX_LANG_CODE_SIZE, "lang_code must be max 7 bytes");
-        eosio::check( lang_code.size() >= MIN_LANG_CODE_SIZE, "lang_code must be atleast 2 characters");
-
-        // check for duplicate slug + lang. grab id if it exists.
-        // otherwise set a new ID for the wiki
-        // group id matches wiki id if set to -1
-        auto sluglang_idx = wikitbl.get_index<name("uniqsluglang")>();
-        auto existing_wiki_it = sluglang_idx.find(sha256_slug_lang(slug, lang_code));
-        int64_t wiki_id;
-        uint64_t group_id;
-
-        if (existing_wiki_it != sluglang_idx.end()){
-            wiki_id = existing_wiki_it->id;
-            group_id = existing_wiki_it->group_id;
-        }
-        else {
-            wiki_id = wikitbl.available_primary_key(); 
-            group_id = wiki_id; 
-        }
-            
-        // Place new wikis into the table
-        if (existing_wiki_it == sluglang_idx.end()) {
-            wikitbl.emplace( caller,  [&]( auto& a ) {
-                a.id = wiki_id;
-                a.slug = slug;
-                a.lang_code = lang_code;
-                a.group_id = group_id;
-            });
-        }
-
-        return wiki_id;
+    static fixed_bytes<32> sha256_slug_lang_name(std::string slug, std::string lang_code, name user) {
+        eosio::check(slug.size() <= MAX_SLUG_SIZE, "slug max size is 32 bytes");
+        eosio::check(lang_code.size() <= MAX_LANG_CODE_SIZE, "lang_code max size is 8 bytes");
+        std::string padded_slug = slug;
+        std::string padded_lang_code = lang_code;
+        std::string padded_name = user.to_string();
+        while (padded_slug.size() < MAX_SLUG_SIZE)
+            padded_slug.append(" ");
+        while (padded_lang_code.size() < MAX_LANG_CODE_SIZE)
+            padded_lang_code.append(" ");
+        while (padded_name.size() < 12)
+            padded_name.append(" ");
+        std::string combined = padded_slug + padded_lang_code + padded_name;
+        return sha256(combined.c_str(), combined.size());
     }
 
     // Formula for the voting boost
@@ -155,18 +132,27 @@ public:
         uint64_t get_user()const { return user.value; }
     };
 
-    // Internal struct for article voting boosts 
+// Internal struct for article voting boosts 
     struct [[eosio::table]] boostledger {
         uint64_t id;
-        uint64_t wiki_id; // the ID of the boosted wiki
+        std::string slug;
+        std::string lang_code;
         name booster;
         uint64_t amount; // amount that was burned to generate the boost. The vote multiplier is 2^(log(amount)) + 1
         uint32_t timestamp; // UNIX timestamp of the vote. Used for the BOOST_TRANSFER_WAITING_PERIOD
 
         uint64_t primary_key()const { return id; }
         uint64_t get_booster()const { return booster.value; }
-        uint64_t get_wiki_id()const { return wiki_id; }
+        fixed_bytes<32> get_slug_lang()const { return sha256_slug_lang(slug, lang_code); }
+        fixed_bytes<32> get_slug_lang_name()const { return sha256_slug_lang_name(slug, lang_code, booster); }
     };
+
+    // boostledger table
+    typedef eosio::multi_index<name("booststbl"), boostledger,
+        indexed_by< name("bybooster"), const_mem_fun<boostledger, uint64_t, &boostledger::get_booster >>,
+        indexed_by< name("sluglang"), const_mem_fun<boostledger, uint64_t, &boostledger::get_slug_lang >>,
+        indexed_by< name("sluglangname"), const_mem_fun<boostledger, uint64_t, &boostledger::get_slug_lang_name >>
+    > booststbl;
 
     // Voting tally
     struct [[eosio::table]] vote_t {
@@ -309,11 +295,12 @@ public:
 
     [[eosio::action]]
     void boosttxfr( name booster, 
-                name target, 
-                uint64_t amount, 
-                uint64_t wiki_id_source,
-                std::string dest_slug, 
-                std::string dest_lang_code);
+                    name target, 
+                    uint64_t amount, 
+                    std::string src_slug,
+                    std::string src_lang_code,
+                    std::string dest_slug, 
+                    std::string dest_lang_code );
 
     using boosttxfr_action = action_wrapper<"boosttxfr"_n, &eparticlectr::boosttxfr>;
 
