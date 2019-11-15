@@ -24,5 +24,7 @@ Vote on a proposal (uses IQ, only callable by everipediaiq::epartvote).
 Log proposal results.
 <h1 class="contract">logpropinfo</h1>
 Log proposal information.
+<h1 class="contract">logboostinv</h1>
+Log boost investment information.
 <h1 class="contract">mkreferendum</h1>
 Mark a proposal as a referendum

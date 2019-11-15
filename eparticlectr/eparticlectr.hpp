@@ -373,22 +373,32 @@ public:
 
     [[eosio::action]]
     void logpropres( uint64_t proposal_id, 
-                     bool approved, 
-                     uint64_t yes_votes, 
-                     uint64_t no_votes );
+                    bool approved, 
+                    uint64_t yes_votes, 
+                    uint64_t no_votes );
 
     [[eosio::action]]
     void logpropinfo( uint64_t proposal_id,
-                      name proposer, 
-                      uint64_t wiki_id, 
-                      std::string slug, 
-                      ipfshash_t ipfs_hash, 
-                      std::string lang_code,
-                      uint64_t group_id,
-                      std::string comment, 
-                      std::string memo,
-                      uint32_t starttime, 
-                      uint32_t endtime );
+                    name proposer, 
+                    uint64_t wiki_id, 
+                    std::string slug, 
+                    ipfshash_t ipfs_hash, 
+                    std::string lang_code,
+                    uint64_t group_id,
+                    std::string comment, 
+                    std::string memo,
+                    uint32_t starttime, 
+                    uint32_t endtime );
+
+    [[eosio::action]]
+    void logboostinv( 
+                    uint64_t boost_id,
+                    name booster, 
+                    std::string slug, 
+                    std::string lang_code, 
+                    uint64_t amount, 
+                    std::string memo, 
+                    uint32_t timestamp);
 
     [[eosio::action]]
     void mkreferendum( uint64_t proposal_id );

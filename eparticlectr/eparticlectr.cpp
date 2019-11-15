@@ -41,16 +41,19 @@ void eparticlectr::boostinvest( name booster, uint64_t amount, std::string slug,
     auto boost_idx = articleboosts.get_index<name("sluglangname")>();
     auto boost_it = boost_idx.find( sha256_slug_lang_name(slug, lang_code, booster) );
 
+    u_int32_t the_timestamp = eosio::current_time_point().sec_since_epoch();
+    uint64_t boost_id = articleboosts.available_primary_key();
+
     // Create the new boost entry if it doesn't exist
     if (boost_it == boost_idx.end()) {
         total_boost = amount;
         articleboosts.emplace( _self, [&]( auto& b ) {
-            b.id = articleboosts.available_primary_key();
+            b.id = boost_id;
             b.slug = slug;
             b.lang_code = lang_code;
             b.booster = booster;
             b.amount = amount;
-            b.timestamp = eosio::current_time_point().sec_since_epoch();
+            b.timestamp = the_timestamp;
         });
     }
     // Otherwise, increase the existing investment
@@ -58,9 +61,17 @@ void eparticlectr::boostinvest( name booster, uint64_t amount, std::string slug,
         total_boost = boost_it->amount + amount;
         boost_idx.modify( boost_it, _self, [&]( auto& b ) {
             b.amount = total_boost;
-            b.timestamp = eosio::current_time_point().sec_since_epoch();
+            b.timestamp = the_timestamp;
         });
+        boost_id = boost_it->id;
     }
+
+    // Log boost result 
+    action(
+        permission_level { _self, name("active") },
+        _self, name("logboostinv"),
+        std::make_tuple( boost_id, booster, slug, lang_code, amount, std:string("boost"), the_timestamp )
+    ).send();
 
 }
 
@@ -529,4 +540,9 @@ void eparticlectr::logpropinfo( uint64_t proposal_id, name proposer, uint64_t wi
     require_auth( _self );
 }
 
-EOSIO_DISPATCH( eparticlectr, (boostinvest)(boosttxfr)(brainclmid)(slashnotify)(finalize)(oldvotepurge)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(mkreferendum) )
+[[eosio::action]]
+void eparticlectr::logboostinv( uint64_t boost_id, name booster, std::string slug, std::string lang_code, uint64_t amount, std::string memo, uint32_t timestamp) {
+    require_auth( _self );
+}
+
+EOSIO_DISPATCH( eparticlectr, (boostinvest)(boosttxfr)(brainclmid)(slashnotify)(finalize)(oldvotepurge)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(logboostinv)(mkreferendum) )
