@@ -165,6 +165,40 @@
             ]
         },
         {
+            "name": "logboostinv",
+            "base": "",
+            "fields": [
+                {
+                    "name": "boost_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "booster",
+                    "type": "name"
+                },
+                {
+                    "name": "slug",
+                    "type": "string"
+                },
+                {
+                    "name": "lang_code",
+                    "type": "string"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint64"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                },
+                {
+                    "name": "timestamp",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
             "name": "logpropinfo",
             "base": "",
             "fields": [
@@ -210,40 +244,6 @@
                 },
                 {
                     "name": "endtime",
-                    "type": "uint32"
-                }
-            ]
-        },
-        {
-            "name": "logboostinv",
-            "base": "",
-            "fields": [
-                {
-                    "name": "boost_id",
-                    "type": "uint64"
-                },
-                {
-                    "name": "booster",
-                    "type": "name"
-                },
-                {
-                    "name": "slug",
-                    "type": "string"
-                },
-                {
-                    "name": "lang_code",
-                    "type": "string"
-                },
-                {
-                    "name": "amount",
-                    "type": "uint64_t"
-                },
-                {
-                    "name": "memo",
-                    "type": "string"
-                },
-                {
-                    "name": "timestamp",
                     "type": "uint32"
                 }
             ]
@@ -597,6 +597,11 @@
             "ricardian_contract": "Finalize a proposal and calculate rewards & slashings."
         },
         {
+            "name": "logboostinv",
+            "type": "logboostinv",
+            "ricardian_contract": "Log boost investment information."
+        },
+        {
             "name": "logpropinfo",
             "type": "logpropinfo",
             "ricardian_contract": "Log proposal information."
@@ -605,11 +610,6 @@
             "name": "logpropres",
             "type": "logpropres",
             "ricardian_contract": "Log proposal results."
-        },
-        {
-            "name": "logboostinv",
-            "type": "logboostinv",
-            "ricardian_contract": "Log boost investment information."
         },
         {
             "name": "mkreferendum",

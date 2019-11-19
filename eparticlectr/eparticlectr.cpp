@@ -41,7 +41,7 @@ void eparticlectr::boostinvest( name booster, uint64_t amount, std::string slug,
     auto boost_idx = articleboosts.get_index<name("sluglangname")>();
     auto boost_it = boost_idx.find( sha256_slug_lang_name(slug, lang_code, booster) );
 
-    u_int32_t the_timestamp = eosio::current_time_point().sec_since_epoch();
+    uint32_t the_timestamp = eosio::current_time_point().sec_since_epoch();
     uint64_t boost_id = articleboosts.available_primary_key();
 
     // Create the new boost entry if it doesn't exist
@@ -70,7 +70,7 @@ void eparticlectr::boostinvest( name booster, uint64_t amount, std::string slug,
     action(
         permission_level { _self, name("active") },
         _self, name("logboostinv"),
-        std::make_tuple( boost_id, booster, slug, lang_code, amount, std:string("boost"), the_timestamp )
+        std::make_tuple( boost_id, booster, slug, lang_code, amount, std::string("boost"), the_timestamp )
     ).send();
 
 }
