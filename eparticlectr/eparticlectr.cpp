@@ -89,6 +89,9 @@ void eparticlectr::boosttxfr(
     require_auth( booster );
     require_recipient( target );
 
+    // Disable for now 
+    eosio::check( 0, "boost transfers not ready yet" );
+
     // Initialize the source boost table
     booststbl articleboosts( _self, _self.value );
     auto boost_idx = articleboosts.get_index<name("sluglangname")>();

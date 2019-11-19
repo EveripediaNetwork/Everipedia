@@ -160,6 +160,9 @@ void everipediaiq::epartpropose( name proposer, std::string slug, ipfshash_t ipf
 void everipediaiq::epartboost( name booster, uint64_t amount, std::string slug, std::string lang_code ) { 
     require_auth(booster);
 
+    // Make sure the amount is not negative
+    eosio::check( amount > 0, "boost amount must be a positive integer" );
+
     // Burn the amount for the boost
     // Should automatically check for correct balance
     std::string memo = std::string("Burning for lang_") + lang_code + std::string("/") + slug + std::string(" boost.");
