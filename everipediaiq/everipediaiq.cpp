@@ -157,7 +157,7 @@ void everipediaiq::epartpropose( name proposer, std::string slug, ipfshash_t ipf
 }
 
 [[eosio::action]]
-void everipediaiq::epartboost( name booster, uint64_t amount, std::string slug, std::string lang_code ) { 
+void everipediaiq::epartboost( name booster, uint64_t amount, std::string slug, std::string lang_code, name permission ) { 
     require_auth(booster);
 
     // Make sure the amount is not negative
@@ -168,7 +168,7 @@ void everipediaiq::epartboost( name booster, uint64_t amount, std::string slug, 
     std::string memo = std::string("Burning for lang_") + lang_code + std::string("/") + slug + std::string(" boost.");
     asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
     action(
-        permission_level { booster , name("active") }, 
+        permission_level { booster , permission }, 
         _self , name("burn"),
         std::make_tuple( booster, iqAssetPack, memo)
     ).send();
@@ -204,5 +204,4 @@ void everipediaiq::epartvote( name voter, uint64_t proposal_id, bool approve, ui
 }
 
 
-// EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(transfer)(epartvote)(epartpropose)(epartboost) )
 EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(transfer)(epartpropose)(epartvote)(epartboost) )

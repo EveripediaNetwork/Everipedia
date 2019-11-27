@@ -53,7 +53,8 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
     void epartboost( name booster, 
                       uint64_t amount, 
                       std::string slug, 
-                      std::string lang_code );
+                      std::string lang_code,
+                      name permission );
 
     [[eosio::action]]
     void epartpropose( name proposer, 

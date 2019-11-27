@@ -87,6 +87,10 @@
                 {
                     "name": "lang_code",
                     "type": "string"
+                },
+                {
+                    "name": "permission",
+                    "type": "name"
                 }
             ]
         },

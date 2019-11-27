@@ -61,40 +61,6 @@
             ]
         },
         {
-            "name": "boosttxfr",
-            "base": "",
-            "fields": [
-                {
-                    "name": "booster",
-                    "type": "name"
-                },
-                {
-                    "name": "target",
-                    "type": "name"
-                },
-                {
-                    "name": "amount",
-                    "type": "uint64"
-                },
-                {
-                    "name": "src_slug",
-                    "type": "string"
-                },
-                {
-                    "name": "src_lang_code",
-                    "type": "string"
-                },
-                {
-                    "name": "dest_slug",
-                    "type": "string"
-                },
-                {
-                    "name": "dest_lang_code",
-                    "type": "string"
-                }
-            ]
-        },
-        {
             "name": "brainclmid",
             "base": "",
             "fields": [
@@ -580,11 +546,6 @@
             "name": "boostinvest",
             "type": "boostinvest",
             "ricardian_contract": "Increase the boost amount for an article."
-        },
-        {
-            "name": "boosttxfr",
-            "type": "boosttxfr",
-            "ricardian_contract": "Transfer an article's boost amount (fully or partially) to another account and wiki."
         },
         {
             "name": "brainclmid",

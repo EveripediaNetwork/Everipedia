@@ -46,6 +46,7 @@ const float TIER_ONE_THRESHOLD = 0.5f;
 const uint64_t PERIOD_CURATION_REWARD = 100000; // 100 IQ per period
 const uint64_t PERIOD_EDITOR_REWARD = 400000; // 400 IQ per period
 const uint64_t MAX_SLUG_SIZE = 256;
+const uint64_t MIN_SLUG_SIZE = 1;
 const uint64_t MAX_LANG_CODE_SIZE = 7;
 const uint64_t MIN_LANG_CODE_SIZE = 2;
 const uint64_t MAX_COMMENT_SIZE = 256;
@@ -79,11 +80,6 @@ public:
         while (padded_lang_code.size() < MAX_LANG_CODE_SIZE)
             padded_lang_code.append(" ");
         std::string combined = padded_slug + padded_lang_code;
-        // fixed_bytes<32> shaResult = sha256(combined.c_str(), combined.size());
-
-        // Debug message
-        // std::string debug_msg = std::string("shaResult for ") + std::string(" for lang_") + lang_code + std::string("/") + slug + std::string(" is |");
-        // eosio::print(shaResult);
 
         return sha256(combined.c_str(), combined.size());
     }
@@ -105,49 +101,9 @@ public:
     }
 
     // Formula for the voting boost
-    static float get_boost_multiplier(uint64_t amount) {
-        return (1 + pow((amount / BOOST_BASE_CONSTANT), BOOST_EXPONENT_CONSTANT));
-    }
-
-    static uint64_t get_or_create_wiki_id(name caller, std::string slug, std::string lang_code) {
-        // Table definitions
-        wikistbl wikitbl( caller, caller.value );
-
-        eosio::check( slug != "", "slug cannot be empty");
-        eosio::check( slug.size() <= MAX_SLUG_SIZE, "slug must be max 256 bytes");
-        eosio::check( lang_code.size() <= MAX_LANG_CODE_SIZE, "lang_code must be max 7 bytes");
-        eosio::check( lang_code.size() >= MIN_LANG_CODE_SIZE, "lang_code must be atleast 2 characters");
-
-        // check for duplicate slug + lang. grab id if it exists.
-        // otherwise set a new ID for the wiki
-        // group id matches wiki id if set to -1
-        auto sluglang_idx = wikitbl.get_index<name("uniqsluglang")>();
-        auto existing_wiki_it = sluglang_idx.find(sha256_slug_lang(slug, lang_code));
-        int64_t wiki_id;
-        uint64_t group_id;
-
-        if (existing_wiki_it != sluglang_idx.end()){
-            wiki_id = existing_wiki_it->id;
-            group_id = existing_wiki_it->group_id;
-        }
-        else {
-            wiki_id = wikitbl.available_primary_key(); 
-            group_id = wiki_id; 
-        }
-            
-        // Place new wikis into the table
-        if (existing_wiki_it == sluglang_idx.end()) {
-            wikitbl.emplace( caller,  [&]( auto& a ) {
-                a.id = wiki_id;
-                a.slug = slug;
-                a.lang_code = lang_code;
-                a.group_id = group_id;
-            });
-        }
-
-        return wiki_id;
-    }
-
+    //static float get_boost_multiplier(uint64_t amount) {
+    //    return (1 + pow((amount / BOOST_BASE_CONSTANT), BOOST_EXPONENT_CONSTANT));
+    //}
 
     // ==================================================
     // ==================================================
@@ -334,18 +290,18 @@ public:
                         std::string slug, 
                         std::string lang_code );
 
-    using boostinc_action = action_wrapper<"boostinvest"_n, &eparticlectr::boostinvest>;
+    //using boostinc_action = action_wrapper<"boostinvest"_n, &eparticlectr::boostinvest>;
 
-    [[eosio::action]]
-    void boosttxfr( name booster, 
-                    name target, 
-                    uint64_t amount, 
-                    std::string src_slug,
-                    std::string src_lang_code,
-                    std::string dest_slug, 
-                    std::string dest_lang_code );
+    //[[eosio::action]]
+    //void boosttxfr( name booster, 
+    //                name target, 
+    //                uint64_t amount, 
+    //                std::string src_slug,
+    //                std::string src_lang_code,
+    //                std::string dest_slug, 
+    //                std::string dest_lang_code );
 
-    using boosttxfr_action = action_wrapper<"boosttxfr"_n, &eparticlectr::boosttxfr>;
+    //using boosttxfr_action = action_wrapper<"boosttxfr"_n, &eparticlectr::boosttxfr>;
 
     [[eosio::action]]
     void oldvotepurge( uint64_t proposal_id,
@@ -372,33 +328,32 @@ public:
     void rewardclmid ( uint64_t reward_id );
 
     [[eosio::action]]
-    void logpropres( uint64_t proposal_id, 
-                    bool approved, 
-                    uint64_t yes_votes, 
-                    uint64_t no_votes );
+    void logpropres( uint64_t proposal_id,
+                     bool approved,
+                     uint64_t yes_votes,
+                     uint64_t no_votes );
 
     [[eosio::action]]
     void logpropinfo( uint64_t proposal_id,
-                    name proposer, 
-                    uint64_t wiki_id, 
-                    std::string slug, 
-                    ipfshash_t ipfs_hash, 
-                    std::string lang_code,
-                    uint64_t group_id,
-                    std::string comment, 
-                    std::string memo,
-                    uint32_t starttime, 
-                    uint32_t endtime );
+                      name proposer,
+                      uint64_t wiki_id,
+                      std::string slug,
+                      ipfshash_t ipfs_hash,
+                      std::string lang_code,
+                      uint64_t group_id,
+                      std::string comment,
+                      std::string memo,
+                      uint32_t starttime,
+                      uint32_t endtime );
 
     [[eosio::action]]
-    void logboostinv( 
-                    uint64_t boost_id,
-                    name booster, 
-                    std::string slug, 
-                    std::string lang_code, 
-                    uint64_t amount, 
-                    std::string memo, 
-                    uint32_t timestamp);
+    void logboostinv( uint64_t boost_id,
+                      name booster, 
+                      std::string slug, 
+                      std::string lang_code, 
+                      uint64_t amount, 
+                      std::string memo, 
+                      uint32_t timestamp);
 
     [[eosio::action]]
     void mkreferendum( uint64_t proposal_id );

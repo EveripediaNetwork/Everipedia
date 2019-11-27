@@ -33,6 +33,13 @@
 void eparticlectr::boostinvest( name booster, uint64_t amount, std::string slug, std::string lang_code ){
     require_auth( _self );
 
+    // Validate inputs
+    eosio::check( is_account(booster), "booster account could not be found");
+    eosio::check( slug.size() <= MAX_SLUG_SIZE, "slug must be less than 256 bytes");
+    eosio::check( slug.size() >= MIN_SLUG_SIZE, "slug must be more than 1 byte");
+    eosio::check( lang_code.size() <= MAX_LANG_CODE_SIZE, "lang code must be less than 7 bytes");
+    eosio::check( lang_code.size() >= MIN_LANG_CODE_SIZE, "lang code must be more than 2 bytes");
+
     // Initialize the variable
     int64_t total_boost = 0;
 
@@ -76,71 +83,71 @@ void eparticlectr::boostinvest( name booster, uint64_t amount, std::string slug,
 }
 
 // Transfer an article's boost amount (fully or partially) to another account and wiki
-[[eosio::action]]
-void eparticlectr::boosttxfr( 
-    name booster, 
-    name target, 
-    uint64_t amount, 
-    std::string src_slug,
-    std::string src_lang_code,
-    std::string dest_slug, 
-    std::string dest_lang_code 
-){
-    require_auth( booster );
-    require_recipient( target );
-
-    // Disable for now 
-    eosio::check( 0, "boost transfers not ready yet" );
-
-    // Initialize the source boost table
-    booststbl articleboosts( _self, _self.value );
-    auto boost_idx = articleboosts.get_index<name("sluglangname")>();
-    auto boost_it_src = boost_idx.find( sha256_slug_lang_name(src_slug, src_lang_code, booster) );
-
-    // Checks
-    eosio::check(boost_it_src != boost_idx.end(), "Source boost does not exist");
-    eosio::check(boost_it_src->timestamp - eosio::current_time_point().sec_since_epoch() >= BOOST_TRANSFER_WAITING_PERIOD, "You must wait until the boost is eligible to be transferred!");
-    eosio::check(boost_it_src->amount >= amount, "Not enough boost to transfer!");
-    eosio::check(boost_it_src->booster == booster, "Only owner can transfer boost");
-
-    // Initialize the target boost table
-    auto boost_it_tgt = boost_idx.find( sha256_slug_lang_name(dest_slug, dest_lang_code, target) );
-
-    // Entire boost is transferred
-    if (boost_it_src->amount == amount) {
-        // Erase the entry for the source boost
-        boost_idx.erase( boost_it_src );
-    }
-    // Boost is partially transferred
-    else {
-        // Subtract the source's specified boost amount
-        boost_idx.modify( boost_it_src, _self, [&]( auto& b ) {
-            b.amount = boost_it_src->amount - amount;
-            b.timestamp = eosio::current_time_point().sec_since_epoch();
-        });
-    }
-        
-    // Add the source's boost to the target
-    // Create the new target boost entry if it doesn't exist
-    if (boost_it_tgt == boost_idx.end()) {
-        // Set the target's boost iterator to the new entry
-        articleboosts.emplace( _self, [&]( auto& b ) {
-            b.id = articleboosts.available_primary_key();
-            b.slug = dest_slug;
-            b.lang_code = dest_lang_code;
-            b.booster = target;
-            b.amount = amount;
-            b.timestamp = eosio::current_time_point().sec_since_epoch();
-        });
-    }
-    // Or add to the target's existing boost
-    else{
-        boost_idx.modify( boost_it_tgt, _self, [&]( auto& b ) {
-            b.amount = boost_it_tgt->amount + amount;
-            b.timestamp = eosio::current_time_point().sec_since_epoch();
-        });
-    }
-}
+//[[eosio::action]]
+//void eparticlectr::boosttxfr( 
+//    name booster, 
+//    name target, 
+//    uint64_t amount, 
+//    std::string src_slug,
+//    std::string src_lang_code,
+//    std::string dest_slug, 
+//    std::string dest_lang_code 
+//){
+//    require_auth( booster );
+//    require_recipient( target );
+//
+//    // Disable for now 
+//    eosio::check( 0, "boost transfers not ready yet" );
+//
+//    // Initialize the source boost table
+//    booststbl articleboosts( _self, _self.value );
+//    auto boost_idx = articleboosts.get_index<name("sluglangname")>();
+//    auto boost_it_src = boost_idx.find( sha256_slug_lang_name(src_slug, src_lang_code, booster) );
+//
+//    // Checks
+//    eosio::check(boost_it_src != boost_idx.end(), "Source boost does not exist");
+//    eosio::check(boost_it_src->timestamp - eosio::current_time_point().sec_since_epoch() >= BOOST_TRANSFER_WAITING_PERIOD, "You must wait until the boost is eligible to be transferred!");
+//    eosio::check(boost_it_src->amount >= amount, "Not enough boost to transfer!");
+//    eosio::check(boost_it_src->booster == booster, "Only owner can transfer boost");
+//
+//    // Initialize the target boost table
+//    auto boost_it_tgt = boost_idx.find( sha256_slug_lang_name(dest_slug, dest_lang_code, target) );
+//
+//    // Entire boost is transferred
+//    if (boost_it_src->amount == amount) {
+//        // Erase the entry for the source boost
+//        boost_idx.erase( boost_it_src );
+//    }
+//    // Boost is partially transferred
+//    else {
+//        // Subtract the source's specified boost amount
+//        boost_idx.modify( boost_it_src, _self, [&]( auto& b ) {
+//            b.amount = boost_it_src->amount - amount;
+//            b.timestamp = eosio::current_time_point().sec_since_epoch();
+//        });
+//    }
+//        
+//    // Add the source's boost to the target
+//    // Create the new target boost entry if it doesn't exist
+//    if (boost_it_tgt == boost_idx.end()) {
+//        // Set the target's boost iterator to the new entry
+//        articleboosts.emplace( _self, [&]( auto& b ) {
+//            b.id = articleboosts.available_primary_key();
+//            b.slug = dest_slug;
+//            b.lang_code = dest_lang_code;
+//            b.booster = target;
+//            b.amount = amount;
+//            b.timestamp = eosio::current_time_point().sec_since_epoch();
+//        });
+//    }
+//    // Or add to the target's existing boost
+//    else{
+//        boost_idx.modify( boost_it_tgt, _self, [&]( auto& b ) {
+//            b.amount = boost_it_tgt->amount + amount;
+//            b.timestamp = eosio::current_time_point().sec_since_epoch();
+//        });
+//    }
+//}
 
 // Redeem IQ, with a specific stake specified
 [[eosio::action]]
@@ -192,13 +199,13 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
     auto boost_it = boost_idx.find( sha256_slug_lang_name(prop_it->slug, prop_it->lang_code, voter) );
 
     // Default boost is 1 (i.e. no boost)
-    float boost_multiplier = 1.0;
-    if (boost_it != boost_idx.end() && boost_it->booster == voter){
-        boost_multiplier = eparticlectr::get_boost_multiplier(boost_it->amount);
-        std::string multiplier_string = std::to_string(boost_multiplier) + std::string("x");
-        std::string debug_msg = std::string("Multiplying vote by ") + multiplier_string + std::string(" due to ") + std::to_string(boost_it->amount) + std::string("IQ boost present");
-        eosio::print(debug_msg);
-    } 
+    float boost_multiplier = 1.0 + boost_it->amount / BOOST_BASE_CONSTANT;
+    //if (boost_it != boost_idx.end() && boost_it->booster == voter){
+    //    boost_multiplier = eparticlectr::get_boost_multiplier(boost_it->amount);
+    //    std::string multiplier_string = std::to_string(boost_multiplier) + std::string("x");
+    //    std::string debug_msg = std::string("Multiplying vote by ") + multiplier_string + std::string(" due to ") + std::to_string(boost_it->amount) + std::string("IQ boost present");
+    //    eosio::print(debug_msg);
+    //} 
 
     // Create the stake object
     staketbl staketblobj(_self, _self.value);
@@ -243,10 +250,14 @@ void eparticlectr::propose2( name proposer, std::string slug, ipfshash_t ipfs_ha
     eosio::check( ipfs_hash.size() >= MIN_IPFS_SIZE, "IPFS hash is too short. MIN_IPFS_SIZE=46");
     eosio::check( comment.size() < MAX_COMMENT_SIZE, "comment must be less than 256 bytes");
     eosio::check( memo.size() < MAX_MEMO_SIZE, "memo must be less than 32 bytes");
+    eosio::check( slug.size() <= MAX_SLUG_SIZE, "slug must be less than 256 bytes");
+    eosio::check( slug.size() >= MIN_SLUG_SIZE, "slug must be more than 1 byte");
+    eosio::check( lang_code.size() <= MAX_LANG_CODE_SIZE, "lang code must be less than 7 bytes");
+    eosio::check( slug.size() >= MIN_LANG_CODE_SIZE, "lang code must be more than 2 bytes");
     eosio::check( group_id >= -1, "group_id must be greater than -2. Specify -1 for auto-generated ID");
 
-    // Get the existing wiki_id or create an new one
-    int64_t wiki_id = eparticlectr::get_or_create_wiki_id(_self, slug, lang_code);
+    // Wiki IDs are phased out
+    int64_t wiki_id = -1;
 
     // Calculate proposal parameters
     uint64_t proposal_id = proptable.available_primary_key();
@@ -402,20 +413,6 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
         });
     }
 
-    // Insert wiki into DB
-    if (approved) {
-        wikistbl wikitbl( _self, _self.value );
-        auto wiki_it = wikitbl.find( prop_it->wiki_id );
-        eosio::check(wiki_it != wikitbl.end(), "PROTOCOL ERROR: An ID should already exist for this wiki");
-
-        wikitbl.modify( wiki_it, _self, [&]( auto& a ) {
-            a.slug = prop_it->slug;
-            a.group_id = prop_it->group_id;
-            a.lang_code = prop_it->lang_code;
-            a.ipfs_hash = prop_it->ipfs_hash;
-        });
-    }
-
     // Log proposal result and new wiki id
     action(
         permission_level { _self, name("active") },
@@ -548,4 +545,4 @@ void eparticlectr::logboostinv( uint64_t boost_id, name booster, std::string slu
     require_auth( _self );
 }
 
-EOSIO_DISPATCH( eparticlectr, (boostinvest)(boosttxfr)(brainclmid)(slashnotify)(finalize)(oldvotepurge)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(logboostinv)(mkreferendum) )
+EOSIO_DISPATCH( eparticlectr, (boostinvest)(brainclmid)(slashnotify)(finalize)(oldvotepurge)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(logboostinv)(mkreferendum) )

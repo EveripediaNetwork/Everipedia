@@ -264,17 +264,28 @@ assert $(bc <<< "$? == 0")
 
 # Testing boosts
 echo -e "${CYAN}-----------------------INITIATE A BOOST-----------------------${NC}"
-cleos push action everipediaiq epartboost "[ \"eptestusersb\", 1000, \"$SLUG1\", \"en\"]" -p eptestusersb
+cleos push action everipediaiq epartboost "[ \"eptestusersb\", 1000, \"$SLUG1\", \"en\", \"active\"]" -p eptestusersb
 assert $(bc <<< "$? == 0")
 
-echo -e "${CYAN}-----------------------BOOST TRANSFER SHOULD FAIL (TOO EARLY)-----------------------${NC}"
-WIKI_ID1=$(cleos get table eparticlectr eparticlectr propstbl2 -r | jq ".rows[5].wiki_id")
-cleos push action eparticlectr boosttxfr "[ \"eptestusersb\",  \"eptestusersc\", 250, \"$SLUG1\", \"en\", \"$SLUG2\", \"kr\"]" -p eptestusersb
+echo -e "${CYAN}-----------------------FAILED BOOSTS-----------------------${NC}"
+# not enough IQ
+cleos push action everipediaiq epartboost "[ \"eptestusersb\", 10000000, \"$SLUG1\", \"en\", \"active\"]" -p eptestusersb
 assert $(bc <<< "$? == 1")
+# empty slug
+cleos push action everipediaiq epartboost "[ \"eptestusersb\", 1000, \"\", \"en\", \"active\"]" -p eptestusersb
+assert $(bc <<< "$? == 1")
+# empty lang code
+cleos push action everipediaiq epartboost "[ \"eptestusersb\", 1000, \"$SLUG1\", \"\", \"active\"]" -p eptestusersb
+assert $(bc <<< "$? == 1")
+
+#echo -e "${CYAN}-----------------------BOOST TRANSFER SHOULD FAIL (TOO EARLY)-----------------------${NC}"
+#WIKI_ID1=$(cleos get table eparticlectr eparticlectr propstbl2 -r | jq ".rows[5].wiki_id")
+#cleos push action eparticlectr boosttxfr "[ \"eptestusersb\",  \"eptestusersc\", 250, \"$SLUG1\", \"en\", \"$SLUG2\", \"kr\"]" -p eptestusersb
+#assert $(bc <<< "$? == 1")
 
 # Failed proposals
 echo -e "${CYAN}-----------------------NEXT SET OF PROPOSALS SHOULD FAIL-----------------------${NC}"
-cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"7-Dwarfs-of Christmas-have-too-long-a-title-matesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersf
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"7-Dwarfs-of Christmas-have-too-long-a-title-matesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\", \"active\" ]" -p eptestusersf
 assert $(bc <<< "$? == 1")
 cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"$SLUG8\", \"$IPFS1\", \"en\", -2, \"specifying a group ID below -1\", \"memoing\", \"active\" ]" -p eptestusersf
 assert $(bc <<< "$? == 1")
@@ -408,10 +419,10 @@ assert $(bc <<< "$? == 1")
 echo -e "${CYAN}WAITING FOR VOTING PERIOD TO END...${NC}"
 sleep 4 # wait for test voting period to end
 
-echo -e "${CYAN}-----------------------BOOST TRANSFER SHOULD WORK NOW-----------------------${NC}"
-WIKI_ID1=$(cleos get table eparticlectr eparticlectr propstbl2 -r | jq ".rows[5].wiki_id")
-cleos push action eparticlectr boosttxfr "[ \"eptestusersb\",  \"eptestusersc\", 250, \"$SLUG1\", \"en\", \"$SLUG2\", \"kr\"]" -p eptestusersb
-assert $(bc <<< "$? == 0")
+#echo -e "${CYAN}-----------------------BOOST TRANSFER SHOULD WORK NOW-----------------------${NC}"
+#WIKI_ID1=$(cleos get table eparticlectr eparticlectr propstbl2 -r | jq ".rows[5].wiki_id")
+#cleos push action eparticlectr boosttxfr "[ \"eptestusersb\",  \"eptestusersc\", 250, \"$SLUG1\", \"en\", \"$SLUG2\", \"kr\"]" -p eptestusersb
+#assert $(bc <<< "$? == 0")
 
 # Bad vote
 echo -e "${CYAN}-----------------------LATE VOTE SHOULD FAIL-----------------------${NC}"
