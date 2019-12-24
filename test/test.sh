@@ -91,14 +91,12 @@ if [ $BUILD -eq 1 ]; then
     sed -i -e 's/REWARD_INTERVAL = 1800/REWARD_INTERVAL = 5/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e 's/DEFAULT_VOTING_TIME = 43200/DEFAULT_VOTING_TIME = 3/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e 's/STAKING_DURATION = 21 \* 86400/STAKING_DURATION = 5/g' ../eparticlectr/eparticlectr.hpp
-    sed -i -e 's/BOOST_TRANSFER_WAITING_PERIOD = 14\*86400/BOOST_TRANSFER_WAITING_PERIOD = 5/g' ../eparticlectr/eparticlectr.hpp
     cd ..
     bash build.sh
     cd test
     sed -i -e 's/REWARD_INTERVAL = 5/REWARD_INTERVAL = 1800/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e 's/DEFAULT_VOTING_TIME = 3/DEFAULT_VOTING_TIME = 43200/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e 's/STAKING_DURATION = 5/STAKING_DURATION = 21 \* 86400/g' ../eparticlectr/eparticlectr.hpp
-    sed -i -e 's/BOOST_TRANSFER_WAITING_PERIOD = 5/BOOST_TRANSFER_WAITING_PERIOD = 14\*86400/g' ../eparticlectr/eparticlectr.hpp
 fi
 
 if [ $BOOTSTRAP -eq 1 ]; then
@@ -262,16 +260,6 @@ assert $(bc <<< "$? == 0")
 cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"$SLUG2\", \"$IPFS5\", \"kr\", 5, \"update hash\", \"memoing\", \"active\" ]" -p eptestusersf
 assert $(bc <<< "$? == 0")
 
-# Testing boosts
-echo -e "${CYAN}-----------------------INITIATE A BOOST-----------------------${NC}"
-cleos push action everipediaiq epartboost "[ \"eptestusersb\", 1000, \"$SLUG1\", \"en\"]" -p eptestusersb
-assert $(bc <<< "$? == 0")
-
-echo -e "${CYAN}-----------------------BOOST TRANSFER SHOULD FAIL (TOO EARLY)-----------------------${NC}"
-WIKI_ID1=$(cleos get table eparticlectr eparticlectr propstbl2 -r | jq ".rows[5].wiki_id")
-cleos push action eparticlectr boosttxfr "[ \"eptestusersb\",  \"eptestusersc\", 250, \"$SLUG1\", \"en\", \"$SLUG2\", \"kr\"]" -p eptestusersb
-assert $(bc <<< "$? == 1")
-
 # Failed proposals
 echo -e "${CYAN}-----------------------NEXT SET OF PROPOSALS SHOULD FAIL-----------------------${NC}"
 cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"7-Dwarfs-of Christmas-have-too-long-a-title-matesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\" ]" -p eptestusersf
@@ -407,11 +395,6 @@ assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}WAITING FOR VOTING PERIOD TO END...${NC}"
 sleep 4 # wait for test voting period to end
-
-echo -e "${CYAN}-----------------------BOOST TRANSFER SHOULD WORK NOW-----------------------${NC}"
-WIKI_ID1=$(cleos get table eparticlectr eparticlectr propstbl2 -r | jq ".rows[5].wiki_id")
-cleos push action eparticlectr boosttxfr "[ \"eptestusersb\",  \"eptestusersc\", 250, \"$SLUG1\", \"en\", \"$SLUG2\", \"kr\"]" -p eptestusersb
-assert $(bc <<< "$? == 0")
 
 # Bad vote
 echo -e "${CYAN}-----------------------LATE VOTE SHOULD FAIL-----------------------${NC}"

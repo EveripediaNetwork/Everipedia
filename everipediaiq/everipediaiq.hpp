@@ -50,12 +50,6 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
                      name permission );
 
     [[eosio::action]]
-    void epartboost( name booster, 
-                      uint64_t amount, 
-                      std::string slug, 
-                      std::string lang_code );
-
-    [[eosio::action]]
     void epartpropose( name proposer, 
                         std::string slug,
                         ipfshash_t ipfs_hash,

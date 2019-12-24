@@ -27,121 +27,6 @@
 
 #include "eparticlectr.hpp"
 
-// Increase the boost amount for an article
-// Users have to trigger this action through the everipediaiq::epartboost action
-[[eosio::action]]
-void eparticlectr::boostinvest( name booster, uint64_t amount, std::string slug, std::string lang_code ){
-    require_auth( _self );
-
-    // Initialize the variable
-    int64_t total_boost = 0;
-
-    // Update the booststbl table, or create it if an existing boost isn't already there
-    booststbl articleboosts( _self, _self.value );
-    auto boost_idx = articleboosts.get_index<name("sluglangname")>();
-    auto boost_it = boost_idx.find( sha256_slug_lang_name(slug, lang_code, booster) );
-
-    uint32_t the_timestamp = eosio::current_time_point().sec_since_epoch();
-    uint64_t boost_id = articleboosts.available_primary_key();
-
-    // Create the new boost entry if it doesn't exist
-    if (boost_it == boost_idx.end()) {
-        total_boost = amount;
-        articleboosts.emplace( _self, [&]( auto& b ) {
-            b.id = boost_id;
-            b.slug = slug;
-            b.lang_code = lang_code;
-            b.booster = booster;
-            b.amount = amount;
-            b.timestamp = the_timestamp;
-        });
-    }
-    // Otherwise, increase the existing investment
-    else {
-        total_boost = boost_it->amount + amount;
-        boost_idx.modify( boost_it, _self, [&]( auto& b ) {
-            b.amount = total_boost;
-            b.timestamp = the_timestamp;
-        });
-        boost_id = boost_it->id;
-    }
-
-    // Log boost result 
-    action(
-        permission_level { _self, name("active") },
-        _self, name("logboostinv"),
-        std::make_tuple( boost_id, booster, slug, lang_code, amount, std::string("boost"), the_timestamp )
-    ).send();
-
-}
-
-// Transfer an article's boost amount (fully or partially) to another account and wiki
-[[eosio::action]]
-void eparticlectr::boosttxfr( 
-    name booster, 
-    name target, 
-    uint64_t amount, 
-    std::string src_slug,
-    std::string src_lang_code,
-    std::string dest_slug, 
-    std::string dest_lang_code 
-){
-    require_auth( booster );
-    require_recipient( target );
-
-    // Disable for now 
-    eosio::check( 0, "boost transfers not ready yet" );
-
-    // Initialize the source boost table
-    booststbl articleboosts( _self, _self.value );
-    auto boost_idx = articleboosts.get_index<name("sluglangname")>();
-    auto boost_it_src = boost_idx.find( sha256_slug_lang_name(src_slug, src_lang_code, booster) );
-
-    // Checks
-    eosio::check(boost_it_src != boost_idx.end(), "Source boost does not exist");
-    eosio::check(boost_it_src->timestamp - eosio::current_time_point().sec_since_epoch() >= BOOST_TRANSFER_WAITING_PERIOD, "You must wait until the boost is eligible to be transferred!");
-    eosio::check(boost_it_src->amount >= amount, "Not enough boost to transfer!");
-    eosio::check(boost_it_src->booster == booster, "Only owner can transfer boost");
-
-    // Initialize the target boost table
-    auto boost_it_tgt = boost_idx.find( sha256_slug_lang_name(dest_slug, dest_lang_code, target) );
-
-    // Entire boost is transferred
-    if (boost_it_src->amount == amount) {
-        // Erase the entry for the source boost
-        boost_idx.erase( boost_it_src );
-    }
-    // Boost is partially transferred
-    else {
-        // Subtract the source's specified boost amount
-        boost_idx.modify( boost_it_src, _self, [&]( auto& b ) {
-            b.amount = boost_it_src->amount - amount;
-            b.timestamp = eosio::current_time_point().sec_since_epoch();
-        });
-    }
-        
-    // Add the source's boost to the target
-    // Create the new target boost entry if it doesn't exist
-    if (boost_it_tgt == boost_idx.end()) {
-        // Set the target's boost iterator to the new entry
-        articleboosts.emplace( _self, [&]( auto& b ) {
-            b.id = articleboosts.available_primary_key();
-            b.slug = dest_slug;
-            b.lang_code = dest_lang_code;
-            b.booster = target;
-            b.amount = amount;
-            b.timestamp = eosio::current_time_point().sec_since_epoch();
-        });
-    }
-    // Or add to the target's existing boost
-    else{
-        boost_idx.modify( boost_it_tgt, _self, [&]( auto& b ) {
-            b.amount = boost_it_tgt->amount + amount;
-            b.timestamp = eosio::current_time_point().sec_since_epoch();
-        });
-    }
-}
-
 // Redeem IQ, with a specific stake specified
 [[eosio::action]]
 void eparticlectr::brainclmid( uint64_t stakeid ) {
@@ -186,20 +71,6 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
     eosio::check( eosio::current_time_point().sec_since_epoch() < prop_it->endtime, "Voting period is over");
     eosio::check( !prop_it->finalized, "Proposal is finalized");
 
-    // See if the voter has any boosts for this article
-    booststbl articleboosts( _self, _self.value );
-    auto boost_idx = articleboosts.get_index<name("sluglangname")>();
-    auto boost_it = boost_idx.find( sha256_slug_lang_name(prop_it->slug, prop_it->lang_code, voter) );
-
-    // Default boost is 1 (i.e. no boost)
-    float boost_multiplier = 1.0;
-    if (boost_it != boost_idx.end() && boost_it->booster == voter){
-        boost_multiplier = eparticlectr::get_boost_multiplier(boost_it->amount);
-        std::string multiplier_string = std::to_string(boost_multiplier) + std::string("x");
-        std::string debug_msg = std::string("Multiplying vote by ") + multiplier_string + std::string(" due to ") + std::to_string(boost_it->amount) + std::string("IQ boost present");
-        eosio::print(debug_msg);
-    } 
-
     // Create the stake object
     staketbl staketblobj(_self, _self.value);
     uint64_t stake_id = staketblobj.available_primary_key();
@@ -221,7 +92,7 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
          a.proposal_id = proposal_id;
          a.approve = approve;
          a.is_editor = voterIsProposer;
-         a.amount = round(amount * boost_multiplier);
+         a.amount = amount;
          a.voter = voter;
          a.timestamp = eosio::current_time_point().sec_since_epoch();
          a.stake_id = stake_id;
@@ -543,9 +414,4 @@ void eparticlectr::logpropinfo( uint64_t proposal_id, name proposer, uint64_t wi
     require_auth( _self );
 }
 
-[[eosio::action]]
-void eparticlectr::logboostinv( uint64_t boost_id, name booster, std::string slug, std::string lang_code, uint64_t amount, std::string memo, uint32_t timestamp) {
-    require_auth( _self );
-}
-
-EOSIO_DISPATCH( eparticlectr, (boostinvest)(boosttxfr)(brainclmid)(slashnotify)(finalize)(oldvotepurge)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(logboostinv)(mkreferendum) )
+EOSIO_DISPATCH( eparticlectr, (brainclmid)(slashnotify)(finalize)(oldvotepurge)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(mkreferendum) )

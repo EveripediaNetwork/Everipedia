@@ -157,31 +157,6 @@ void everipediaiq::epartpropose( name proposer, std::string slug, ipfshash_t ipf
 }
 
 [[eosio::action]]
-void everipediaiq::epartboost( name booster, uint64_t amount, std::string slug, std::string lang_code ) { 
-    require_auth(booster);
-
-    // Make sure the amount is not negative
-    eosio::check( amount > 0, "boost amount must be a positive integer" );
-
-    // Burn the amount for the boost
-    // Should automatically check for correct balance
-    std::string memo = std::string("Burning for lang_") + lang_code + std::string("/") + slug + std::string(" boost.");
-    asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
-    action(
-        permission_level { booster , name("active") }, 
-        _self , name("burn"),
-        std::make_tuple( booster, iqAssetPack, memo)
-    ).send();
-
-    // Make the boost increase request to the article contract
-    action(
-        permission_level { ARTICLE_CONTRACT , name("active") }, 
-        ARTICLE_CONTRACT , name("boostinvest"),
-        std::make_tuple( booster, amount, slug, lang_code)
-    ).send();
-}
-
-[[eosio::action]]
 void everipediaiq::epartvote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string comment, std::string memo, name permission) {
     require_auth(voter);
 
@@ -204,5 +179,5 @@ void everipediaiq::epartvote( name voter, uint64_t proposal_id, bool approve, ui
 }
 
 
-// EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(transfer)(epartvote)(epartpropose)(epartboost) )
-EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(transfer)(epartpropose)(epartvote)(epartboost) )
+// EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(transfer)(epartvote)(epartpropose) )
+EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(transfer)(epartpropose)(epartvote) )

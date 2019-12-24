@@ -8,8 +8,6 @@ Issue IQ tokens.
 Stake IQ for Brainpower.
 <h1 class="contract">create</h1>
 Create a token.
-<h1 class="contract">epartboost</h1>
-User-facing action for increasing a boost position in an article. 
 <h1 class="contract">epartpropose</h1>
 User-facing action for creating a proposal. 
 <h1 class="contract">epartvote</h1>

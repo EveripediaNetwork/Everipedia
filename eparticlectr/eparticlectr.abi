@@ -9,92 +9,6 @@
     ],
     "structs": [
         {
-            "name": "boostinvest",
-            "base": "",
-            "fields": [
-                {
-                    "name": "booster",
-                    "type": "name"
-                },
-                {
-                    "name": "amount",
-                    "type": "uint64"
-                },
-                {
-                    "name": "slug",
-                    "type": "string"
-                },
-                {
-                    "name": "lang_code",
-                    "type": "string"
-                }
-            ]
-        },
-        {
-            "name": "boostledger",
-            "base": "",
-            "fields": [
-                {
-                    "name": "id",
-                    "type": "uint64"
-                },
-                {
-                    "name": "slug",
-                    "type": "string"
-                },
-                {
-                    "name": "lang_code",
-                    "type": "string"
-                },
-                {
-                    "name": "booster",
-                    "type": "name"
-                },
-                {
-                    "name": "amount",
-                    "type": "uint64"
-                },
-                {
-                    "name": "timestamp",
-                    "type": "uint32"
-                }
-            ]
-        },
-        {
-            "name": "boosttxfr",
-            "base": "",
-            "fields": [
-                {
-                    "name": "booster",
-                    "type": "name"
-                },
-                {
-                    "name": "target",
-                    "type": "name"
-                },
-                {
-                    "name": "amount",
-                    "type": "uint64"
-                },
-                {
-                    "name": "src_slug",
-                    "type": "string"
-                },
-                {
-                    "name": "src_lang_code",
-                    "type": "string"
-                },
-                {
-                    "name": "dest_slug",
-                    "type": "string"
-                },
-                {
-                    "name": "dest_lang_code",
-                    "type": "string"
-                }
-            ]
-        },
-        {
             "name": "brainclmid",
             "base": "",
             "fields": [
@@ -161,40 +75,6 @@
                 {
                     "name": "proposal_id",
                     "type": "uint64"
-                }
-            ]
-        },
-        {
-            "name": "logboostinv",
-            "base": "",
-            "fields": [
-                {
-                    "name": "boost_id",
-                    "type": "uint64"
-                },
-                {
-                    "name": "booster",
-                    "type": "name"
-                },
-                {
-                    "name": "slug",
-                    "type": "string"
-                },
-                {
-                    "name": "lang_code",
-                    "type": "string"
-                },
-                {
-                    "name": "amount",
-                    "type": "uint64"
-                },
-                {
-                    "name": "memo",
-                    "type": "string"
-                },
-                {
-                    "name": "timestamp",
-                    "type": "uint32"
                 }
             ]
         },
@@ -577,16 +457,6 @@
     ],
     "actions": [
         {
-            "name": "boostinvest",
-            "type": "boostinvest",
-            "ricardian_contract": "Increase the boost amount for an article."
-        },
-        {
-            "name": "boosttxfr",
-            "type": "boosttxfr",
-            "ricardian_contract": "Transfer an article's boost amount (fully or partially) to another account and wiki."
-        },
-        {
             "name": "brainclmid",
             "type": "brainclmid",
             "ricardian_contract": "Claim back IQ that was staked for Brainpower. Must happen after the 21 day staking period."
@@ -595,11 +465,6 @@
             "name": "finalize",
             "type": "finalize",
             "ricardian_contract": "Finalize a proposal and calculate rewards & slashings."
-        },
-        {
-            "name": "logboostinv",
-            "type": "logboostinv",
-            "ricardian_contract": "Log boost investment information."
         },
         {
             "name": "logpropinfo",
@@ -643,13 +508,6 @@
         }
     ],
     "tables": [
-        {
-            "name": "booststbl",
-            "type": "boostledger",
-            "index_type": "i64",
-            "key_names": [],
-            "key_types": []
-        },
         {
             "name": "perrwdstbl2",
             "type": "periodreward",
