@@ -13,7 +13,7 @@ RECOMPILE_AND_RESET_EOSIO_CONTRACTS=0
 REBUILD_EVERIPEDIA_CONTRACTS=1
 RESET_NODEOS=1
 #EOSIO_CONTRACTS_ROOT=/home/kedar/eosio.contracts/build/contracts/
-EOSIO_CONTRACTS_ROOT=/home/travis/Programs/contracts/eosio.contracts/build/contracts
+EOSIO_CONTRACTS_ROOT="/home/${USER}/Programs/contracts/eosio.contracts/build/contracts"
 NODEOS_HOST="127.0.0.1"
 NODEOS_PROTOCOL="http"
 NODEOS_PORT="8888"
@@ -166,12 +166,12 @@ if [ $REBUILD_EVERIPEDIA_CONTRACTS -eq 1 ]; then
 
     echo "Deleting old everipediaiq files..."
     cd everipediaiq
-    rm -rf everipediaiq.abi everipediaiq.wasm everipediaiq.wast
+    rm -f everipediaiq.abi everipediaiq.wasm everipediaiq.wast
     cd ..
 
     echo "Deleting old eparticlectr files..."
     cd eparticlectr
-    rm -rf eparticlectr.abi eparticlectr.wasm eparticlectr.wast
+    rm -f eparticlectr.abi eparticlectr.wasm eparticlectr.wast
     cd ..
 
     cd everipediaiq

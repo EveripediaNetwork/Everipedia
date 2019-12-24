@@ -10,12 +10,12 @@ fi
 
 echo "Deleting old everipediaiq files..."
 cd everipediaiq
-rm -rf everipediaiq.abi everipediaiq.wasm everipediaiq.wast
+rm -f everipediaiq.abi everipediaiq.wasm everipediaiq.wast
 cd ..
 
 echo "Deleting old eparticlectr files..."
 cd eparticlectr
-rm -rf eparticlectr.abi eparticlectr.wasm eparticlectr.wast
+rm -f eparticlectr.abi eparticlectr.wasm eparticlectr.wast
 cd ..
 
 cd everipediaiq
