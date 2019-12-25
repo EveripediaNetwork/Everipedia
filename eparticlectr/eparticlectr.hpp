@@ -251,32 +251,7 @@ public:
 
 
 
-    //  ==================================================
-    // GUILD STUFF
 
-    struct [[eosio::table]] guild {
-        uint64_t id;
-        std::string title; // Display name of guild
-        std::string slug; // URL slug of the guild.
-        std::string slogan; // Slogan
-        uint32_t creation; // Creation date
-        asset iq_funds; // Total funds
-    }
-
-    struct [[eosio::table]] guildroster {
-        uint64_t id; // 
-        uint64_t guild_id; // ID of the guild
-        name member; // Account name
-        std::string role; // 'master' | 'officer' | 'editor' | 'patron'
-        uint32_t join_date; // Date joined
-        asset iq_deposited; // Amount of IQ deposited
-    }
-
-    // Guild roles explained
-    // master: Appoint / remove editors, Appoint / remove officers, make edits
-    // officer: Appoint / remove editors, make edits
-    // editor: Make edits
-    // patron: Nothing (sole purpose is to delegate IQ)
 
 
     //  ==================================================
