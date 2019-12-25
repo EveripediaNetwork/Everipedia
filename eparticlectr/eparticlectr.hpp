@@ -228,7 +228,7 @@ public:
 
         uint64_t primary_key()const { return id; }
         uint64_t get_user()const { return user.value; }
-        uint64_t get_guild_id()const { return user.guild_id; }
+        uint64_t get_guild_id()const { return guild_id; }
         uint64_t get_proposal()const { return proposal_id; }
         uint64_t get_finalize_period()const { return proposal_finalize_period; }
     };

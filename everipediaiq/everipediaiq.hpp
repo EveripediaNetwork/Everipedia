@@ -75,14 +75,14 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
     // DEPOSIT INTO GUILD
     [[eosio::action]]
     void gld_deposit( name depositor, // The account depositing into the guild
-                        uint64_t _guild_id, // The ID of the guild the deposit is going to
+                        uint64_t guild_id, // The ID of the guild the deposit is going to
                         asset quantity, // Amount of IQ being deposited
                         std::string memo ); // (optional) A memo for the deposit
 
     // WITHDRAW DEPOSIT FROM GUILD
     [[eosio::action]]
     void gld_withdraw( name withdrawer, // The account withdrawing from the guild
-                        uint64_t _guild_id, // The ID of the guild the withdrawal is coming from
+                        uint64_t guild_id, // The ID of the guild the withdrawal is coming from
                         asset quantity, // Amount of IQ being withdrawn
                         std::string memo ); // (optional) A memo for the withdrawal
 
@@ -131,6 +131,8 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
         uint32_t creation; // Creation date
         asset iq_free; // Total free iq
         asset iq_staked; // Total staked_iq
+
+        uint64_t primary_key()const { return id; }
     }
 
     struct [[eosio::table]] guildroster {
@@ -140,6 +142,10 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
         std::string role; // 'guildmaster' | 'officer' | 'user' | 'patron'
         uint32_t join_date; // Date joined
         asset iq_deposited; // Amount of IQ deposited
+
+        uint64_t primary_key()const { return id; }
+        uint64_t get_guild_id()const { return guild_id; }
+        uint64_t get_member()const { return member.value; }
     }
 
     // Guild roles explained
@@ -148,8 +154,19 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
     // user: use things
     // patron: Nothing (sole purpose is to delegate IQ)
 
+    // guild
+    typedef eosio::multi_index<name("guilds"), guild> guilds;
 
+    // guildroster
+    typedef eosio::multi_index<name("guildroster"), guildroster,
+        indexed_by< name("byguildid"), const_mem_fun<guildroster, uint64_t, &guildroster::get_guild_id>>,
+        indexed_by< name("bymember"), const_mem_fun<guildroster, uint64_t, &guildroster::get_member>>,
+    > guildroster;
+
+    // account
     typedef eosio::multi_index<name("accounts"), account> accounts;
+
+    // currency_stats
     typedef eosio::multi_index<name("stat"), currency_stats> stats;
 
     void sub_balance( name owner, asset value );
