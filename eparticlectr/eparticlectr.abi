@@ -1,6 +1,12 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Mon Jul 15 13:55:11 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT ",
     "version": "eosio::abi/1.1",
+    "types": [
+        {
+            "new_type_name": "ipfshash_t",
+            "type": "string"
+        }
+    ],
     "structs": [
         {
             "name": "brainclmid",
@@ -9,6 +15,32 @@
                 {
                     "name": "stakeid",
                     "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "curatelist",
+            "base": "",
+            "fields": [
+                {
+                    "name": "account",
+                    "type": "name"
+                },
+                {
+                    "name": "title",
+                    "type": "string"
+                },
+                {
+                    "name": "description",
+                    "type": "string"
+                },
+                {
+                    "name": "wikis",
+                    "type": "string[]"
+                },
+                {
+                    "name": "ranked",
+                    "type": "bool"
                 }
             ]
         },
@@ -449,17 +481,16 @@
             ]
         }
     ],
-    "types": [
-        {
-            "new_type_name": "ipfshash_t",
-            "type": "string"
-        }
-    ],
     "actions": [
         {
             "name": "brainclmid",
             "type": "brainclmid",
             "ricardian_contract": "Claim back IQ that was staked for Brainpower. Must happen after the 21 day staking period."
+        },
+        {
+            "name": "curatelist",
+            "type": "curatelist",
+            "ricardian_contract": ""
         },
         {
             "name": "finalize",
@@ -559,6 +590,5 @@
         }
     ],
     "ricardian_clauses": [],
-    "variants": [],
-    "abi_extensions": []
+    "variants": []
 }

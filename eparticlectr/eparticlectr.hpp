@@ -276,4 +276,11 @@ public:
 
     [[eosio::action]]
     void mkreferendum( uint64_t proposal_id );
+
+    [[eosio::action]]
+    void curatelist( name account, 
+                     std::string title,
+                     std::string description,
+                     std::vector<std::string> wikis,
+                     bool ranked );
 };

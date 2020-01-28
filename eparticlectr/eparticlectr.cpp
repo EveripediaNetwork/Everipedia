@@ -441,4 +441,11 @@ void eparticlectr::logpropinfo( uint64_t proposal_id, name proposer, uint64_t wi
     require_auth( _self );
 }
 
-EOSIO_DISPATCH( eparticlectr, (brainclmid)(slashnotify)(finalize)(oldvotepurge)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(mkreferendum) )
+[[eosio::action]]
+void eparticlectr::curatelist( name account, std::string title, std::string description, std::vector<std::string> wikis, bool ranked ) {
+    require_auth(account);
+    check(title.size() < 100, "Title is too long. Max 100 chars");
+    check(description.size() < 300, "Description is too long. Max 300 chars");
+}
+
+EOSIO_DISPATCH( eparticlectr, (brainclmid)(slashnotify)(finalize)(oldvotepurge)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(mkreferendum)(curatelist) )
