@@ -55,9 +55,9 @@ const uint64_t MAX_MEMO_SIZE = 32;
 const uint64_t MAX_IPFS_SIZE = 46;
 const uint64_t MIN_IPFS_SIZE = 46;
 const uint64_t REFERENDUM_DURATION_SECS = 14*86400; // 14 days
-const float BOOST_BASE_CONSTANT = 750.0; // Can be adjusted as the IQ price changes to change the boost power
-const float BOOST_EXPONENT_CONSTANT = 1.01; // Can be adjusted as the IQ price changes to change the boost power
-const uint64_t BOOST_TRANSFER_WAITING_PERIOD = 14*86400; // 14 days
+//const float BOOST_BASE_CONSTANT = 750.0; // Can be adjusted as the IQ price changes to change the boost power
+//const float BOOST_EXPONENT_CONSTANT = 1.01; // Can be adjusted as the IQ price changes to change the boost power
+//const uint64_t BOOST_TRANSFER_WAITING_PERIOD = 14*86400; // 14 days
 const eosio::symbol IQSYMBOL = symbol(symbol_code("IQ"), 3);
 
 class [[eosio::contract("eparticlectr")]] eparticlectr : public contract {
@@ -138,20 +138,20 @@ public:
         uint64_t get_user()const { return user.value; }
     };
 
-// Internal struct for article voting boosts 
-    struct [[eosio::table]] boostledger {
-        uint64_t id;
-        std::string slug;
-        std::string lang_code;
-        name booster;
-        uint64_t amount; // amount that was burned to generate the boost. The vote multiplier is 2^(log(amount)) + 1
-        uint32_t timestamp; // UNIX timestamp of the vote. Used for the BOOST_TRANSFER_WAITING_PERIOD
+    // Internal struct for article voting boosts 
+    //struct [[eosio::table]] boostledger {
+    //    uint64_t id;
+    //    std::string slug;
+    //    std::string lang_code;
+    //    name booster;
+    //    uint64_t amount; // amount that was burned to generate the boost. The vote multiplier is 2^(log(amount)) + 1
+    //    uint32_t timestamp; // UNIX timestamp of the vote. Used for the BOOST_TRANSFER_WAITING_PERIOD
 
-        uint64_t primary_key()const { return id; }
-        uint64_t get_booster()const { return booster.value; }
-        fixed_bytes<32> get_slug_lang()const { return sha256_slug_lang(slug, lang_code); }
-        fixed_bytes<32> get_slug_lang_name()const { return sha256_slug_lang_name(slug, lang_code, booster); }
-    };
+    //    uint64_t primary_key()const { return id; }
+    //    uint64_t get_booster()const { return booster.value; }
+    //    fixed_bytes<32> get_slug_lang()const { return sha256_slug_lang(slug, lang_code); }
+    //    fixed_bytes<32> get_slug_lang_name()const { return sha256_slug_lang_name(slug, lang_code, booster); }
+    //};
 
     // Voting tally
     struct [[eosio::table]] vote_t {
@@ -243,12 +243,12 @@ public:
         indexed_by< name("byuser"), const_mem_fun<stake, uint64_t, &stake::get_user >>
     > staketbl;
 
-    // boostledger table
-    typedef eosio::multi_index<name("booststbl"), boostledger,
-        indexed_by< name("bybooster"), const_mem_fun<boostledger, uint64_t, &boostledger::get_booster >>,
-        indexed_by< name("sluglang"), const_mem_fun<boostledger, fixed_bytes<32>, &boostledger::get_slug_lang >>,
-        indexed_by< name("sluglangname"), const_mem_fun<boostledger, fixed_bytes<32>, &boostledger::get_slug_lang_name >>
-    > booststbl;
+    //// boostledger table
+    //typedef eosio::multi_index<name("booststbl"), boostledger,
+    //    indexed_by< name("bybooster"), const_mem_fun<boostledger, uint64_t, &boostledger::get_booster >>,
+    //    indexed_by< name("sluglang"), const_mem_fun<boostledger, fixed_bytes<32>, &boostledger::get_slug_lang >>,
+    //    indexed_by< name("sluglangname"), const_mem_fun<boostledger, fixed_bytes<32>, &boostledger::get_slug_lang_name >>
+    //> booststbl;
 
     // votes table
     // scoped by proposal
@@ -285,11 +285,11 @@ public:
     [[eosio::action]]
     void finalize( uint64_t proposal_id );
 
-    [[eosio::action]]
-    void boostinvest( name booster, 
-                        uint64_t amount, 
-                        std::string slug, 
-                        std::string lang_code );
+    //[[eosio::action]]
+    //void boostinvest( name booster, 
+    //                    uint64_t amount, 
+    //                    std::string slug, 
+    //                    std::string lang_code );
 
     //using boostinc_action = action_wrapper<"boostinvest"_n, &eparticlectr::boostinvest>;
 
@@ -347,14 +347,14 @@ public:
                       uint32_t starttime,
                       uint32_t endtime );
 
-    [[eosio::action]]
-    void logboostinv( uint64_t boost_id,
-                      name booster, 
-                      std::string slug, 
-                      std::string lang_code, 
-                      uint64_t amount, 
-                      std::string memo, 
-                      uint32_t timestamp);
+    //[[eosio::action]]
+    //void logboostinv( uint64_t boost_id,
+    //                  name booster, 
+    //                  std::string slug, 
+    //                  std::string lang_code, 
+    //                  uint64_t amount, 
+    //                  std::string memo, 
+    //                  uint32_t timestamp);
 
     [[eosio::action]]
     void mkreferendum( uint64_t proposal_id );

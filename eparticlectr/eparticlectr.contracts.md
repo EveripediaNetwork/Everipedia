@@ -28,3 +28,5 @@ Log proposal information.
 Log boost investment information.
 <h1 class="contract">mkreferendum</h1>
 Mark a proposal as a referendum
+<h1 class="contract">curatelist</h1>
+Publish a curated list

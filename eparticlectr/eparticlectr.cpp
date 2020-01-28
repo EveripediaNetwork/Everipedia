@@ -27,60 +27,60 @@
 
 #include "eparticlectr.hpp"
 
-// Increase the boost amount for an article
-// Users have to trigger this action through the everipediaiq::epartboost action
-[[eosio::action]]
-void eparticlectr::boostinvest( name booster, uint64_t amount, std::string slug, std::string lang_code ){
-    require_auth( _self );
-
-    // Validate inputs
-    eosio::check( is_account(booster), "booster account could not be found");
-    eosio::check( slug.size() <= MAX_SLUG_SIZE, "slug must be less than 256 bytes");
-    eosio::check( slug.size() >= MIN_SLUG_SIZE, "slug must be more than 1 byte");
-    eosio::check( lang_code.size() <= MAX_LANG_CODE_SIZE, "lang code must be less than 7 bytes");
-    eosio::check( lang_code.size() >= MIN_LANG_CODE_SIZE, "lang code must be more than 2 bytes");
-
-    // Initialize the variable
-    int64_t total_boost = 0;
-
-    // Update the booststbl table, or create it if an existing boost isn't already there
-    booststbl articleboosts( _self, _self.value );
-    auto boost_idx = articleboosts.get_index<name("sluglangname")>();
-    auto boost_it = boost_idx.find( sha256_slug_lang_name(slug, lang_code, booster) );
-
-    uint32_t the_timestamp = eosio::current_time_point().sec_since_epoch();
-    uint64_t boost_id = articleboosts.available_primary_key();
-
-    // Create the new boost entry if it doesn't exist
-    if (boost_it == boost_idx.end()) {
-        total_boost = amount;
-        articleboosts.emplace( _self, [&]( auto& b ) {
-            b.id = boost_id;
-            b.slug = slug;
-            b.lang_code = lang_code;
-            b.booster = booster;
-            b.amount = amount;
-            b.timestamp = the_timestamp;
-        });
-    }
-    // Otherwise, increase the existing investment
-    else {
-        total_boost = boost_it->amount + amount;
-        boost_idx.modify( boost_it, _self, [&]( auto& b ) {
-            b.amount = total_boost;
-            b.timestamp = the_timestamp;
-        });
-        boost_id = boost_it->id;
-    }
-
-    // Log boost result 
-    action(
-        permission_level { _self, name("active") },
-        _self, name("logboostinv"),
-        std::make_tuple( boost_id, booster, slug, lang_code, amount, std::string("boost"), the_timestamp )
-    ).send();
-
-}
+//// Increase the boost amount for an article
+//// Users have to trigger this action through the everipediaiq::epartboost action
+//[[eosio::action]]
+//void eparticlectr::boostinvest( name booster, uint64_t amount, std::string slug, std::string lang_code ){
+//    require_auth( _self );
+//
+//    // Validate inputs
+//    eosio::check( is_account(booster), "booster account could not be found");
+//    eosio::check( slug.size() <= MAX_SLUG_SIZE, "slug must be less than 256 bytes");
+//    eosio::check( slug.size() >= MIN_SLUG_SIZE, "slug must be more than 1 byte");
+//    eosio::check( lang_code.size() <= MAX_LANG_CODE_SIZE, "lang code must be less than 7 bytes");
+//    eosio::check( lang_code.size() >= MIN_LANG_CODE_SIZE, "lang code must be more than 2 bytes");
+//
+//    // Initialize the variable
+//    int64_t total_boost = 0;
+//
+//    // Update the booststbl table, or create it if an existing boost isn't already there
+//    booststbl articleboosts( _self, _self.value );
+//    auto boost_idx = articleboosts.get_index<name("sluglangname")>();
+//    auto boost_it = boost_idx.find( sha256_slug_lang_name(slug, lang_code, booster) );
+//
+//    uint32_t the_timestamp = eosio::current_time_point().sec_since_epoch();
+//    uint64_t boost_id = articleboosts.available_primary_key();
+//
+//    // Create the new boost entry if it doesn't exist
+//    if (boost_it == boost_idx.end()) {
+//        total_boost = amount;
+//        articleboosts.emplace( _self, [&]( auto& b ) {
+//            b.id = boost_id;
+//            b.slug = slug;
+//            b.lang_code = lang_code;
+//            b.booster = booster;
+//            b.amount = amount;
+//            b.timestamp = the_timestamp;
+//        });
+//    }
+//    // Otherwise, increase the existing investment
+//    else {
+//        total_boost = boost_it->amount + amount;
+//        boost_idx.modify( boost_it, _self, [&]( auto& b ) {
+//            b.amount = total_boost;
+//            b.timestamp = the_timestamp;
+//        });
+//        boost_id = boost_it->id;
+//    }
+//
+//    // Log boost result 
+//    action(
+//        permission_level { _self, name("active") },
+//        _self, name("logboostinv"),
+//        std::make_tuple( boost_id, booster, slug, lang_code, amount, std::string("boost"), the_timestamp )
+//    ).send();
+//
+//}
 
 // Transfer an article's boost amount (fully or partially) to another account and wiki
 //[[eosio::action]]
@@ -193,19 +193,14 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
     eosio::check( eosio::current_time_point().sec_since_epoch() < prop_it->endtime, "Voting period is over");
     eosio::check( !prop_it->finalized, "Proposal is finalized");
 
-    // See if the voter has any boosts for this article
-    booststbl articleboosts( _self, _self.value );
-    auto boost_idx = articleboosts.get_index<name("sluglangname")>();
-    auto boost_it = boost_idx.find( sha256_slug_lang_name(prop_it->slug, prop_it->lang_code, voter) );
+    //// See if the voter has any boosts for this article
+    //booststbl articleboosts( _self, _self.value );
+    //auto boost_idx = articleboosts.get_index<name("sluglangname")>();
+    //auto boost_it = boost_idx.find( sha256_slug_lang_name(prop_it->slug, prop_it->lang_code, voter) );
 
     // Default boost is 1 (i.e. no boost)
-    float boost_multiplier = 1.0 + boost_it->amount / BOOST_BASE_CONSTANT;
-    //if (boost_it != boost_idx.end() && boost_it->booster == voter){
-    //    boost_multiplier = eparticlectr::get_boost_multiplier(boost_it->amount);
-    //    std::string multiplier_string = std::to_string(boost_multiplier) + std::string("x");
-    //    std::string debug_msg = std::string("Multiplying vote by ") + multiplier_string + std::string(" due to ") + std::to_string(boost_it->amount) + std::string("IQ boost present");
-    //    eosio::print(debug_msg);
-    //} 
+    float boost_multiplier = 1.0;
+    //float boost_multiplier = 1.0 + boost_it->amount / BOOST_BASE_CONSTANT;
 
     // Create the stake object
     staketbl staketblobj(_self, _self.value);
@@ -555,8 +550,8 @@ void eparticlectr::curatelist( name account, std::string title, std::string desc
     check(description.size() < 300, "Description is too long. Max 300 chars");
 }
 
-void eparticlectr::logboostinv( uint64_t boost_id, name booster, std::string slug, std::string lang_code, uint64_t amount, std::string memo, uint32_t timestamp) {
-    require_auth( _self );
-}
+//void eparticlectr::logboostinv( uint64_t boost_id, name booster, std::string slug, std::string lang_code, uint64_t amount, std::string memo, uint32_t timestamp) {
+//    require_auth( _self );
+//}
 
-EOSIO_DISPATCH( eparticlectr, (boostinvest)(brainclmid)(slashnotify)(finalize)(oldvotepurge)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(logboostinv)(mkreferendum)(curatelist) )
+EOSIO_DISPATCH( eparticlectr, (brainclmid)(slashnotify)(finalize)(oldvotepurge)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(mkreferendum)(curatelist) )
