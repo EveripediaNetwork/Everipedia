@@ -1,3 +1,7 @@
+<h1 class="contract">boostinvest</h1>
+Increase the boost amount for an article.
+<h1 class="contract">boosttxfr</h1>
+Transfer an article's boost amount (fully or partially) to another account and wiki.
 <h1 class="contract">brainclmid</h1>
 Claim back IQ that was staked for Brainpower. Must happen after the 21 day staking period.
 <h1 class="contract">brainmeart</h1>
@@ -20,5 +24,7 @@ Vote on a proposal (uses IQ, only callable by everipediaiq::epartvote).
 Log proposal results.
 <h1 class="contract">logpropinfo</h1>
 Log proposal information.
+<h1 class="contract">logboostinv</h1>
+Log boost investment information.
 <h1 class="contract">mkreferendum</h1>
 Mark a proposal as a referendum

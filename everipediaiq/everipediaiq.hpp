@@ -4,8 +4,9 @@
  */
 #pragma once
 
-#include <eosiolib/asset.hpp>
-#include <eosiolib/eosio.hpp>
+#include <eosio/asset.hpp>
+#include <eosio/eosio.hpp>
+#include <eosio/system.hpp>
 
 #include <string>
 
@@ -17,31 +18,30 @@ const uint64_t EDIT_PROPOSE_IQ = 50; // 50 IQ
 class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
   using contract::contract;
 
-  private:
+  public:
     using ipfshash_t = std::string;
 
-  public:
 
-     [[eosio::action]]
-     void burn( name from,
+    [[eosio::action]]
+    void burn( name from,
                    asset        quantity,
                    string       memo );
 
-     [[eosio::action]]
-     void create( name issuer,
+    [[eosio::action]]
+    void create( name issuer,
                   asset        maximum_supply);
 
-     [[eosio::action]]
-     void issue( name to, asset quantity, string memo );
+    [[eosio::action]]
+    void issue( name to, asset quantity, string memo );
 
-     [[eosio::action]]
-     void transfer( name from,
+    [[eosio::action]]
+    void transfer( name from,
                     name to,
                     asset        quantity,
                     string       memo );
 
-     [[eosio::action]]
-     void epartvote( name voter, 
+    [[eosio::action]]
+    void epartvote( name voter, 
                      uint64_t proposal_id,
                      bool approve,
                      uint64_t amount,
@@ -49,8 +49,15 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
                      std::string memo,
                      name permission );
 
-     [[eosio::action]]
-     void epartpropose( name proposer, 
+    [[eosio::action]]
+    void epartboost( name booster, 
+                      uint64_t amount, 
+                      std::string slug, 
+                      std::string lang_code,
+                      name permission );
+
+    [[eosio::action]]
+    void epartpropose( name proposer, 
                         std::string slug,
                         ipfshash_t ipfs_hash,
                         std::string lang_code,
@@ -59,34 +66,34 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
                         std::string memo, 
                         name permission );
 
-     inline asset get_supply( symbol_code sym )const;
+    inline asset get_supply( symbol_code sym )const;
 
-     inline asset get_balance( name owner, symbol_code sym )const;
+    inline asset get_balance( name owner, symbol_code sym )const;
 
   private:
-     const name ARTICLE_CONTRACT = name("eparticlectr");
-     const eosio::symbol IQSYMBOL = symbol(symbol_code("IQ"), 3);
-     const int64_t IQ_PRECISION_MULTIPLIER = 1000;
+    const name ARTICLE_CONTRACT = name("eparticlectr");
+    const eosio::symbol IQSYMBOL = symbol(symbol_code("IQ"), 3);
+    const int64_t IQ_PRECISION_MULTIPLIER = 1000;
 
-     struct [[eosio::table]] account {
+    struct [[eosio::table]] account {
         asset    balance;
 
         uint64_t primary_key()const { return balance.symbol.code().raw(); }
-     };
+    };
 
-     struct [[eosio::table]] currency_stats {
+    struct [[eosio::table]] currency_stats {
         asset          supply;
         asset          max_supply;
         name   issuer;
 
         uint64_t primary_key()const { return supply.symbol.code().raw(); }
-     };
+    };
 
-     typedef eosio::multi_index<name("accounts"), account> accounts;
-     typedef eosio::multi_index<name("stat"), currency_stats> stats;
+    typedef eosio::multi_index<name("accounts"), account> accounts;
+    typedef eosio::multi_index<name("stat"), currency_stats> stats;
 
-     void sub_balance( name owner, asset value );
-     void add_balance( name owner, asset value, name ram_payer );
+    void sub_balance( name owner, asset value );
+    void add_balance( name owner, asset value, name ram_payer );
 
 };
 

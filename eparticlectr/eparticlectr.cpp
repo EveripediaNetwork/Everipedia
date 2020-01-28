@@ -27,6 +27,128 @@
 
 #include "eparticlectr.hpp"
 
+// Increase the boost amount for an article
+// Users have to trigger this action through the everipediaiq::epartboost action
+[[eosio::action]]
+void eparticlectr::boostinvest( name booster, uint64_t amount, std::string slug, std::string lang_code ){
+    require_auth( _self );
+
+    // Validate inputs
+    eosio::check( is_account(booster), "booster account could not be found");
+    eosio::check( slug.size() <= MAX_SLUG_SIZE, "slug must be less than 256 bytes");
+    eosio::check( slug.size() >= MIN_SLUG_SIZE, "slug must be more than 1 byte");
+    eosio::check( lang_code.size() <= MAX_LANG_CODE_SIZE, "lang code must be less than 7 bytes");
+    eosio::check( lang_code.size() >= MIN_LANG_CODE_SIZE, "lang code must be more than 2 bytes");
+
+    // Initialize the variable
+    int64_t total_boost = 0;
+
+    // Update the booststbl table, or create it if an existing boost isn't already there
+    booststbl articleboosts( _self, _self.value );
+    auto boost_idx = articleboosts.get_index<name("sluglangname")>();
+    auto boost_it = boost_idx.find( sha256_slug_lang_name(slug, lang_code, booster) );
+
+    uint32_t the_timestamp = eosio::current_time_point().sec_since_epoch();
+    uint64_t boost_id = articleboosts.available_primary_key();
+
+    // Create the new boost entry if it doesn't exist
+    if (boost_it == boost_idx.end()) {
+        total_boost = amount;
+        articleboosts.emplace( _self, [&]( auto& b ) {
+            b.id = boost_id;
+            b.slug = slug;
+            b.lang_code = lang_code;
+            b.booster = booster;
+            b.amount = amount;
+            b.timestamp = the_timestamp;
+        });
+    }
+    // Otherwise, increase the existing investment
+    else {
+        total_boost = boost_it->amount + amount;
+        boost_idx.modify( boost_it, _self, [&]( auto& b ) {
+            b.amount = total_boost;
+            b.timestamp = the_timestamp;
+        });
+        boost_id = boost_it->id;
+    }
+
+    // Log boost result 
+    action(
+        permission_level { _self, name("active") },
+        _self, name("logboostinv"),
+        std::make_tuple( boost_id, booster, slug, lang_code, amount, std::string("boost"), the_timestamp )
+    ).send();
+
+}
+
+// Transfer an article's boost amount (fully or partially) to another account and wiki
+//[[eosio::action]]
+//void eparticlectr::boosttxfr( 
+//    name booster, 
+//    name target, 
+//    uint64_t amount, 
+//    std::string src_slug,
+//    std::string src_lang_code,
+//    std::string dest_slug, 
+//    std::string dest_lang_code 
+//){
+//    require_auth( booster );
+//    require_recipient( target );
+//
+//    // Disable for now 
+//    eosio::check( 0, "boost transfers not ready yet" );
+//
+//    // Initialize the source boost table
+//    booststbl articleboosts( _self, _self.value );
+//    auto boost_idx = articleboosts.get_index<name("sluglangname")>();
+//    auto boost_it_src = boost_idx.find( sha256_slug_lang_name(src_slug, src_lang_code, booster) );
+//
+//    // Checks
+//    eosio::check(boost_it_src != boost_idx.end(), "Source boost does not exist");
+//    eosio::check(boost_it_src->timestamp - eosio::current_time_point().sec_since_epoch() >= BOOST_TRANSFER_WAITING_PERIOD, "You must wait until the boost is eligible to be transferred!");
+//    eosio::check(boost_it_src->amount >= amount, "Not enough boost to transfer!");
+//    eosio::check(boost_it_src->booster == booster, "Only owner can transfer boost");
+//
+//    // Initialize the target boost table
+//    auto boost_it_tgt = boost_idx.find( sha256_slug_lang_name(dest_slug, dest_lang_code, target) );
+//
+//    // Entire boost is transferred
+//    if (boost_it_src->amount == amount) {
+//        // Erase the entry for the source boost
+//        boost_idx.erase( boost_it_src );
+//    }
+//    // Boost is partially transferred
+//    else {
+//        // Subtract the source's specified boost amount
+//        boost_idx.modify( boost_it_src, _self, [&]( auto& b ) {
+//            b.amount = boost_it_src->amount - amount;
+//            b.timestamp = eosio::current_time_point().sec_since_epoch();
+//        });
+//    }
+//        
+//    // Add the source's boost to the target
+//    // Create the new target boost entry if it doesn't exist
+//    if (boost_it_tgt == boost_idx.end()) {
+//        // Set the target's boost iterator to the new entry
+//        articleboosts.emplace( _self, [&]( auto& b ) {
+//            b.id = articleboosts.available_primary_key();
+//            b.slug = dest_slug;
+//            b.lang_code = dest_lang_code;
+//            b.booster = target;
+//            b.amount = amount;
+//            b.timestamp = eosio::current_time_point().sec_since_epoch();
+//        });
+//    }
+//    // Or add to the target's existing boost
+//    else{
+//        boost_idx.modify( boost_it_tgt, _self, [&]( auto& b ) {
+//            b.amount = boost_it_tgt->amount + amount;
+//            b.timestamp = eosio::current_time_point().sec_since_epoch();
+//        });
+//    }
+//}
+
 // Redeem IQ, with a specific stake specified
 [[eosio::action]]
 void eparticlectr::brainclmid( uint64_t stakeid ) {
@@ -34,10 +156,10 @@ void eparticlectr::brainclmid( uint64_t stakeid ) {
     // Get the stakes
     staketbl staketable(_self, _self.value);
     auto stake_it = staketable.find(stakeid);
-    eosio_assert( stake_it != staketable.end(), "Stake does not exist in database");
+    eosio::check( stake_it != staketable.end(), "Stake does not exist in database");
 
     // See if the stake is complete
-    eosio_assert( now() > stake_it->completion_time, "Staking period not over yet");
+    eosio::check( eosio::current_time_point().sec_since_epoch() > stake_it->completion_time, "Staking period not over yet");
 
     // Transfer back the IQ
     asset iqAssetPack = asset(int64_t(stake_it->amount * IQ_PRECISION_MULTIPLIER), IQSYMBOL);
@@ -58,20 +180,32 @@ void eparticlectr::brainclmid( uint64_t stakeid ) {
 // Users have to trigger this action through the everipediaiq::epartvote action
 [[eosio::action]]
 void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string comment, std::string memo ) {
-    require_auth( _self );
-
     // validate inputs
-    eosio_assert(comment.size() < MAX_COMMENT_SIZE, "Comment must be less than 256 bytes");
-    eosio_assert(memo.size() < MAX_MEMO_SIZE, "Memo must be less than 32 bytes");
+    eosio::check(comment.size() < MAX_COMMENT_SIZE, "Comment must be less than 256 bytes");
+    eosio::check(memo.size() < MAX_MEMO_SIZE, "Memo must be less than 32 bytes");
 
     // Check if proposal exists
     propstbl proptable( _self, _self.value );
     auto prop_it = proptable.find( proposal_id );
-    eosio_assert( prop_it != proptable.end(), "Proposal not found" );
+    eosio::check( prop_it != proptable.end(), "Proposal not found" );
 
     // Verify voting is still in progress
-    eosio_assert( now() < prop_it->endtime, "Voting period is over");
-    eosio_assert( !prop_it->finalized, "Proposal is finalized");
+    eosio::check( eosio::current_time_point().sec_since_epoch() < prop_it->endtime, "Voting period is over");
+    eosio::check( !prop_it->finalized, "Proposal is finalized");
+
+    // See if the voter has any boosts for this article
+    booststbl articleboosts( _self, _self.value );
+    auto boost_idx = articleboosts.get_index<name("sluglangname")>();
+    auto boost_it = boost_idx.find( sha256_slug_lang_name(prop_it->slug, prop_it->lang_code, voter) );
+
+    // Default boost is 1 (i.e. no boost)
+    float boost_multiplier = 1.0 + boost_it->amount / BOOST_BASE_CONSTANT;
+    //if (boost_it != boost_idx.end() && boost_it->booster == voter){
+    //    boost_multiplier = eparticlectr::get_boost_multiplier(boost_it->amount);
+    //    std::string multiplier_string = std::to_string(boost_multiplier) + std::string("x");
+    //    std::string debug_msg = std::string("Multiplying vote by ") + multiplier_string + std::string(" due to ") + std::to_string(boost_it->amount) + std::string("IQ boost present");
+    //    eosio::print(debug_msg);
+    //} 
 
     // Create the stake object
     staketbl staketblobj(_self, _self.value);
@@ -80,8 +214,8 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
         s.id = stake_id;
         s.user = voter;
         s.amount = amount;
-        s.timestamp = now();
-        s.completion_time = now() + STAKING_DURATION;
+        s.timestamp = eosio::current_time_point().sec_since_epoch();
+        s.completion_time = eosio::current_time_point().sec_since_epoch() + STAKING_DURATION;
     });
 
     // mark if this is the initial editor vote
@@ -94,9 +228,9 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
          a.proposal_id = proposal_id;
          a.approve = approve;
          a.is_editor = voterIsProposer;
-         a.amount = amount;
+         a.amount = round(amount * boost_multiplier);
          a.voter = voter;
-         a.timestamp = now();
+         a.timestamp = eosio::current_time_point().sec_since_epoch();
          a.stake_id = stake_id;
          a.memo = memo;
     });
@@ -108,47 +242,27 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
 void eparticlectr::propose2( name proposer, std::string slug, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo ) {
     require_auth( _self );
 
-    // Table definitions
-    wikistbl wikitbl( _self, _self.value );
+    // Table definition
     propstbl proptable( _self, _self.value );
 
     // Argument checks
-    eosio_assert( slug != "", "slug cannot be empty");
-    eosio_assert( slug.size() <= MAX_SLUG_SIZE, "slug must be max 256 bytes");
-    eosio_assert( ipfs_hash.size() <= MAX_IPFS_SIZE, "IPFS hash is too long. MAX_IPFS_SIZE=46");
-    eosio_assert( ipfs_hash.size() >= MIN_IPFS_SIZE, "IPFS hash is too short. MIN_IPFS_SIZE=46");
-    eosio_assert( lang_code.size() <= MAX_LANG_CODE_SIZE, "lang_code must be max 7 bytes");
-    eosio_assert( lang_code.size() >= MIN_LANG_CODE_SIZE, "lang_code must be atleast 2 characters");
-    eosio_assert( comment.size() < MAX_COMMENT_SIZE, "comment must be less than 256 bytes");
-    eosio_assert( memo.size() < MAX_MEMO_SIZE, "memo must be less than 32 bytes");
-    eosio_assert( group_id >= -1, "group_id must be greater than -2. Specify -1 for auto-generated ID");
+    eosio::check( ipfs_hash.size() <= MAX_IPFS_SIZE, "IPFS hash is too long. MAX_IPFS_SIZE=46");
+    eosio::check( ipfs_hash.size() >= MIN_IPFS_SIZE, "IPFS hash is too short. MIN_IPFS_SIZE=46");
+    eosio::check( comment.size() < MAX_COMMENT_SIZE, "comment must be less than 256 bytes");
+    eosio::check( memo.size() < MAX_MEMO_SIZE, "memo must be less than 32 bytes");
+    eosio::check( slug.size() <= MAX_SLUG_SIZE, "slug must be less than 256 bytes");
+    eosio::check( slug.size() >= MIN_SLUG_SIZE, "slug must be more than 1 byte");
+    eosio::check( lang_code.size() <= MAX_LANG_CODE_SIZE, "lang code must be less than 7 bytes");
+    eosio::check( slug.size() >= MIN_LANG_CODE_SIZE, "lang code must be more than 2 bytes");
+    eosio::check( group_id >= -1, "group_id must be greater than -2. Specify -1 for auto-generated ID");
 
-    // check for duplicate slug + lang. grab id if it exists.
-    // otherwise set a new ID for the wiki
-    // group id matches wiki id if set to -1
-    auto sluglang_idx = wikitbl.get_index<name("uniqsluglang")>();
-    auto existing_wiki_it = sluglang_idx.find(sha256_slug_lang(slug, lang_code));
-    int64_t wiki_id;
-    if (existing_wiki_it != sluglang_idx.end())
-        wiki_id = existing_wiki_it->id;
-    else
-        wiki_id = wikitbl.available_primary_key(); 
-    if (group_id == -1) group_id = wiki_id; 
-
-    // Place new wikis into the table
-    if (existing_wiki_it == sluglang_idx.end()) {
-        wikitbl.emplace( _self,  [&]( auto& a ) {
-            a.id = wiki_id;
-            a.slug = slug;
-            a.lang_code = lang_code;
-            a.group_id = group_id;
-        });
-    }
+    // Wiki IDs are phased out
+    int64_t wiki_id = -1;
 
     // Calculate proposal parameters
     uint64_t proposal_id = proptable.available_primary_key();
-    uint32_t starttime = now();
-    uint32_t endtime = now() + DEFAULT_VOTING_TIME;
+    uint32_t starttime = eosio::current_time_point().sec_since_epoch();
+    uint32_t endtime = eosio::current_time_point().sec_since_epoch() + DEFAULT_VOTING_TIME;
 
     // Store the proposal
     proptable.emplace( _self, [&]( auto& p ) {
@@ -175,7 +289,7 @@ void eparticlectr::propose2( name proposer, std::string slug, ipfshash_t ipfs_ha
     action(
         permission_level { _self , name("active") },
         _self, name("vote"),
-        std::make_tuple( proposer, proposal_id, true, EDIT_PROPOSE_IQ, std::string("editor initial vote"), memo )
+        std::make_tuple( proposer, proposal_id, true, EDIT_PROPOSE_IQ_EPARTICLECTR, std::string("editor initial vote"), memo )
     ).send();
 }
 
@@ -184,15 +298,15 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     // Verify proposal exists
     propstbl proptable( _self, _self.value );
     auto prop_it = proptable.find( proposal_id );
-    eosio_assert( prop_it != proptable.end(), "Proposal not found" );
+    eosio::check( prop_it != proptable.end(), "Proposal not found" );
 
     // Verify voting period is complete
-    eosio_assert( now() > prop_it->endtime, "Voting period is not over yet");
+    eosio::check( eosio::current_time_point().sec_since_epoch() > prop_it->endtime, "Voting period is not over yet");
 
     // Retrieve votes from DB
     votestbl votetbl( _self, proposal_id );
     auto vote_it = votetbl.begin();
-    eosio_assert( vote_it != votetbl.end(), "No votes found for proposal");
+    eosio::check( vote_it != votetbl.end(), "No votes found for proposal");
 
     // Tally votes
     uint64_t yes_votes = 0;
@@ -225,7 +339,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     }
 
     // Make sure no weird bugs cause the slash reward to under/overflow
-    eosio_assert( slash_ratio >= 0.0f && slash_ratio <= 1.0f, "Slash ratio out of bounds");
+    eosio::check( slash_ratio >= 0.0f && slash_ratio <= 1.0f, "Slash ratio out of bounds");
 
     rewardstbl rewardstable( _self, _self.value );
     staketbl staketable(_self, _self.value);
@@ -240,9 +354,17 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
         if (approved && vote_it->is_editor) {
             auto stake_it = staketable.find(vote_it->stake_id);
             staketable.modify( stake_it, same_payer, [&]( auto& a ) {
-                a.completion_time = now();
+                a.completion_time = eosio::current_time_point().sec_since_epoch();
             });
         }
+        // Reduce staking time for vote winners to 5 days
+        else if (approved && !vote_it->is_editor) {
+            auto stake_it = staketable.find(vote_it->stake_id);
+            staketable.modify( stake_it, same_payer, [&]( auto& a ) {
+                a.completion_time = a.timestamp + WINNING_VOTE_STAKE_TIME;
+            });
+        }
+
         
         // Slash losers
         if (vote_it->approve != approved) {
@@ -268,8 +390,8 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
                 else
                     a.edit_points = 0;
                 a.proposal_id = proposal_id;
-                a.proposal_finalize_time = now();
-                a.proposal_finalize_period = uint32_t(now() / REWARD_INTERVAL);
+                a.proposal_finalize_time = eosio::current_time_point().sec_since_epoch();
+                a.proposal_finalize_period = uint32_t(eosio::current_time_point().sec_since_epoch() / REWARD_INTERVAL);
                 a.proposalresult = approved;
                 a.is_editor = vote_it->is_editor;
                 a.is_tie = istie;
@@ -281,7 +403,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     }
 
     // Update rewards table
-    uint64_t current_period = now() / REWARD_INTERVAL;
+    uint64_t current_period = eosio::current_time_point().sec_since_epoch() / REWARD_INTERVAL;
     perrwdstbl perrewards( _self, _self.value );
     auto period_it = perrewards.find( current_period );
     uint64_t edit_points = approved ? (yes_votes - no_votes) : 0;
@@ -296,21 +418,6 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
         perrewards.modify( period_it, same_payer, [&]( auto& p ) {
             p.curation_sum += total_vote_points;
             p.editor_sum += edit_points;
-        });
-    }
-
-
-    // Insert wiki into DB
-    if (approved) {
-        wikistbl wikitbl( _self, _self.value );
-        auto wiki_it = wikitbl.find( prop_it->wiki_id );
-        eosio_assert(wiki_it != wikitbl.end(), "PROTOCOL ERROR: An ID should already exist for this wiki");
-
-        wikitbl.modify( wiki_it, _self, [&]( auto& a ) {
-            a.slug = prop_it->slug;
-            a.group_id = prop_it->group_id;
-            a.lang_code = prop_it->lang_code;
-            a.ipfs_hash = prop_it->ipfs_hash;
         });
     }
 
@@ -340,18 +447,18 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
 
     // check if user rewards exist
     auto reward_it = rewardstable.find( reward_id );
-    eosio_assert( reward_it != rewardstable.end(), "reward doesn't exist in database");
+    eosio::check( reward_it != rewardstable.end(), "reward doesn't exist in database");
 
     // Make sure period is complete before processing
     uint64_t reward_period = reward_it->proposal_finalize_period;
-    uint64_t current_period = now() / REWARD_INTERVAL;
+    uint64_t current_period = eosio::current_time_point().sec_since_epoch() / REWARD_INTERVAL;
     auto period_it = perrewards.find( reward_period );
-    eosio_assert(period_it != perrewards.end(), "PROTOCOL ERROR: This period should exist");
-    eosio_assert(current_period > reward_period, "Reward period must complete before claiming rewards");
+    eosio::check(period_it != perrewards.end(), "PROTOCOL ERROR: This period should exist");
+    eosio::check(current_period > reward_period, "Reward period must complete before claiming rewards");
 
     // Send curation reward
     int64_t curation_reward = reward_it->vote_points * PERIOD_CURATION_REWARD / period_it->curation_sum;
-    eosio_assert(curation_reward <= PERIOD_CURATION_REWARD, "System logic error. Too much IQ calculated for curation reward.");
+    eosio::check(curation_reward <= PERIOD_CURATION_REWARD, "System logic error. Too much IQ calculated for curation reward.");
     if (curation_reward == 0) // Minimum reward of 0.001 IQ to prevent unclaimable rewards
         curation_reward = 1;
     asset curation_quantity = asset(curation_reward, IQSYMBOL);
@@ -367,7 +474,7 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
         int64_t editor_reward = reward_it->edit_points * PERIOD_EDITOR_REWARD / period_it->editor_sum;
         if (editor_reward == 0) // Minimum reward of 0.001 IQ to prevent unclaimable rewards
             editor_reward = 1;
-        eosio_assert(editor_reward <= PERIOD_EDITOR_REWARD, "System logic error. Too much IQ calculated for editor reward.");
+        eosio::check(editor_reward <= PERIOD_EDITOR_REWARD, "System logic error. Too much IQ calculated for editor reward.");
         asset editor_quantity = asset(editor_reward, IQSYMBOL);
         std::string memo = std::string("Editor IQ reward:" + reward_it->memo);
         action(
@@ -386,20 +493,20 @@ void eparticlectr::oldvotepurge( uint64_t proposal_id, uint32_t loop_limit ) {
     // Get the proposal object
     propstbl proptable( _self, _self.value );
     auto prop_it = proptable.find(proposal_id);
-    eosio_assert( prop_it == proptable.end() || prop_it->finalized, "Proposal not finalized yet!");
+    eosio::check( prop_it == proptable.end() || prop_it->finalized, "Proposal not finalized yet!");
 
     // If it is an undeleted proposal, make sure it's no longer the most current proposal
     // so the auto-increment doesn't get screwed up
     // If it isn't delete it
     if ( prop_it != proptable.end() ) {
-        eosio_assert( prop_it->id != proptable.available_primary_key() - 1, "Cannot delete most recent proposal" );
+        eosio::check( prop_it->id != proptable.available_primary_key() - 1, "Cannot delete most recent proposal" );
         proptable.erase( prop_it );
     }
 
     // Retrieve votes from DB
     votestbl votetbl( _self, proposal_id );
     auto vote_it = votetbl.begin();
-    eosio_assert( vote_it != votetbl.end(), "No votes found for proposal!");
+    eosio::check( vote_it != votetbl.end(), "No votes found for proposal!");
 
     // Free up RAM
     uint32_t count = 0;
@@ -415,14 +522,14 @@ void eparticlectr::mkreferendum( uint64_t proposal_id ) {
 
     // Validate proposal
     auto prop_it = proptable.find(proposal_id);
-    eosio_assert( prop_it != proptable.end(), "Proposal does not exist");
-    eosio_assert( !prop_it->finalized, "Proposal is finalized");
-    eosio_assert( prop_it->endtime - prop_it->starttime < REFERENDUM_DURATION_SECS, "Proposal has already been marked as a referendum");
+    eosio::check( prop_it != proptable.end(), "Proposal does not exist");
+    eosio::check( !prop_it->finalized, "Proposal is finalized");
+    eosio::check( prop_it->endtime - prop_it->starttime < REFERENDUM_DURATION_SECS, "Proposal has already been marked as a referendum");
 
     require_auth(prop_it->proposer);
 
     proptable.modify( prop_it, same_payer, [&]( auto& p ) {
-        p.endtime = now() + REFERENDUM_DURATION_SECS;
+        p.endtime = eosio::current_time_point().sec_since_epoch() + REFERENDUM_DURATION_SECS;
     });
 }
 
@@ -448,4 +555,8 @@ void eparticlectr::curatelist( name account, std::string title, std::string desc
     check(description.size() < 300, "Description is too long. Max 300 chars");
 }
 
-EOSIO_DISPATCH( eparticlectr, (brainclmid)(slashnotify)(finalize)(oldvotepurge)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(mkreferendum)(curatelist) )
+void eparticlectr::logboostinv( uint64_t boost_id, name booster, std::string slug, std::string lang_code, uint64_t amount, std::string memo, uint32_t timestamp) {
+    require_auth( _self );
+}
+
+EOSIO_DISPATCH( eparticlectr, (boostinvest)(brainclmid)(slashnotify)(finalize)(oldvotepurge)(propose2)(rewardclmid)(vote)(logpropres)(logpropinfo)(logboostinv)(mkreferendum)(curatelist) )

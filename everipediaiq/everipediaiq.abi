@@ -1,6 +1,12 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Tue May 28 11:49:02 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT ",
     "version": "eosio::abi/1.1",
+    "types": [
+        {
+            "new_type_name": "ipfshash_t",
+            "type": "string"
+        }
+    ],
     "structs": [
         {
             "name": "account",
@@ -58,6 +64,32 @@
                 },
                 {
                     "name": "issuer",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "epartboost",
+            "base": "",
+            "fields": [
+                {
+                    "name": "booster",
+                    "type": "name"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint64"
+                },
+                {
+                    "name": "slug",
+                    "type": "string"
+                },
+                {
+                    "name": "lang_code",
+                    "type": "string"
+                },
+                {
+                    "name": "permission",
                     "type": "name"
                 }
             ]
@@ -175,12 +207,6 @@
             ]
         }
     ],
-    "types": [
-        {
-            "new_type_name": "ipfshash_t",
-            "type": "string"
-        }
-    ],
     "actions": [
         {
             "name": "burn",
@@ -191,6 +217,11 @@
             "name": "create",
             "type": "create",
             "ricardian_contract": "Create a token."
+        },
+        {
+            "name": "epartboost",
+            "type": "epartboost",
+            "ricardian_contract": "User-facing action for increasing a boost position in an article."
         },
         {
             "name": "epartpropose",
@@ -230,6 +261,5 @@
         }
     ],
     "ricardian_clauses": [],
-    "variants": [],
-    "abi_extensions": []
+    "variants": []
 }
