@@ -10,10 +10,10 @@ ctrl_c () {
 }
 
 RECOMPILE_AND_RESET_EOSIO_CONTRACTS=0
-REBUILD_EVERIPEDIA_CONTRACTS=1
-RESET_NODEOS=1
-#EOSIO_CONTRACTS_ROOT=/home/kedar/eosio.contracts/build/contracts/
-EOSIO_CONTRACTS_ROOT=/home/travis/Programs/contracts/eosio.contracts/build/contracts
+REBUILD_EVERIPEDIA_CONTRACTS=0
+RESET_NODEOS=0
+EOSIO_CONTRACTS_ROOT=/home/kedar/eosio.contracts/build/contracts/
+#EOSIO_CONTRACTS_ROOT=/home/travis/Programs/contracts/eosio.contracts/build/contracts
 NODEOS_HOST="127.0.0.1"
 NODEOS_PROTOCOL="http"
 NODEOS_PORT="8888"
@@ -187,17 +187,17 @@ if [ $REBUILD_EVERIPEDIA_CONTRACTS -eq 1 ]; then
     cd test
 
     sleep 1
-
-    ## Deploy contracts
-    echo -e "${CYAN}-----------------------DEPLOYING EVERIPEDIA CONTRACTS-----------------------${NC}"
-    cleos set account permission everipediaiq active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p everipediaiq
-    cleos set account permission eparticlectr active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p eparticlectr
-    cleos set contract everipediaiq ../everipediaiq/
-    cleos set contract eparticlectr ../eparticlectr/
-
-    # Create and issue token
-    echo -e "${CYAN}-----------------------CREATING IQ TOKEN-----------------------${NC}"
-    cleos push action everipediaiq create "[\"everipediaiq\", \"100000000000.000 IQ\"]" -p everipediaiq@active
-    cleos push action everipediaiq issue "[\"everipediaiq\", \"10000000000.000 IQ\", \"initial supply\"]" -p everipediaiq@active
-
 fi
+
+## Deploy contracts
+echo -e "${CYAN}-----------------------DEPLOYING EVERIPEDIA CONTRACTS-----------------------${NC}"
+cleos set account permission everipediaiq active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p everipediaiq
+cleos set account permission eparticlectr active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p eparticlectr
+cleos set contract everipediaiq ../everipediaiq/
+cleos set contract eparticlectr ../eparticlectr/
+
+# Create and issue token
+echo -e "${CYAN}-----------------------CREATING IQ TOKEN-----------------------${NC}"
+cleos push action everipediaiq create "[\"everipediaiq\", \"100000000000.000 IQ\"]" -p everipediaiq@active
+cleos push action everipediaiq issue "[\"everipediaiq\", \"10000000000.000 IQ\", \"initial supply\"]" -p everipediaiq@active
+
