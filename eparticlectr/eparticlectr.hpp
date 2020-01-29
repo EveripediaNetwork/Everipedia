@@ -360,7 +360,7 @@ public:
     void mkreferendum( uint64_t proposal_id );
 
     [[eosio::action]]
-    void curatelist( name account, 
+    void curatelist( name user, 
                      std::string title,
                      std::string description,
                      std::vector<std::string> wikis,

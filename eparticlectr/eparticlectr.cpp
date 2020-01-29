@@ -544,8 +544,8 @@ void eparticlectr::logpropinfo( uint64_t proposal_id, name proposer, uint64_t wi
 }
 
 [[eosio::action]]
-void eparticlectr::curatelist( name account, std::string title, std::string description, std::vector<std::string> wikis, bool ranked ) {
-    require_auth(account);
+void eparticlectr::curatelist( name user, std::string title, std::string description, std::vector<std::string> wikis, bool ranked ) {
+    require_auth(user);
     check(title.size() < 100, "Title is too long. Max 100 chars");
     check(description.size() < 300, "Description is too long. Max 300 chars");
 }

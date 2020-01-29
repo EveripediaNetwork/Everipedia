@@ -23,7 +23,7 @@
             "base": "",
             "fields": [
                 {
-                    "name": "account",
+                    "name": "user",
                     "type": "name"
                 },
                 {
