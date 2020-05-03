@@ -81,6 +81,31 @@ void everipediaiq::transfer( name from,
 }
 
 [[eosio::action]]
+void everipediaiq::transfrextra( 
+                      name from,
+                      name to,
+                      asset quantity,
+                      string memo, 
+                      string proxied_for,
+                      string purpose,
+                      string extra_note
+                      )
+{
+    require_auth(from);
+
+    eosio::check( proxied_for.size() <= 256, "proxied_for has more than 256 bytes" );
+    eosio::check( purpose.size() <= 256, "purpose has more than 256 bytes" );
+    eosio::check( extra_note.size() <= 256, "extra_note has more than 256 bytes" );
+
+    // Transfer the IQ normally
+    action(
+        permission_level{ from , name("active") }, 
+        _self , name("transfer"),
+        std::make_tuple( from, to, quantity, memo)
+    ).send();
+}
+
+[[eosio::action]]
 void everipediaiq::burn( name from, asset quantity, string memo )
 {
      require_auth( from );
@@ -157,31 +182,6 @@ void everipediaiq::epartpropose( name proposer, std::string slug, ipfshash_t ipf
 }
 
 [[eosio::action]]
-void everipediaiq::epartboost( name booster, uint64_t amount, std::string slug, std::string lang_code, name permission ) { 
-    require_auth(booster);
-
-    // Make sure the amount is not negative
-    eosio::check( amount > 0, "boost amount must be a positive integer" );
-
-    // Burn the amount for the boost
-    // Should automatically check for correct balance
-    std::string memo = std::string("Burning for lang_") + lang_code + std::string("/") + slug + std::string(" boost.");
-    asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
-    action(
-        permission_level { booster , permission }, 
-        _self , name("burn"),
-        std::make_tuple( booster, iqAssetPack, memo)
-    ).send();
-
-    // Make the boost increase request to the article contract
-    action(
-        permission_level { ARTICLE_CONTRACT , name("active") }, 
-        ARTICLE_CONTRACT , name("boostinvest"),
-        std::make_tuple( booster, amount, slug, lang_code)
-    ).send();
-}
-
-[[eosio::action]]
 void everipediaiq::epartvote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string comment, std::string memo, name permission) {
     require_auth(voter);
 
@@ -204,4 +204,4 @@ void everipediaiq::epartvote( name voter, uint64_t proposal_id, bool approve, ui
 }
 
 
-EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(transfer)(epartpropose)(epartvote)(epartboost) )
+EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(transfer)(transfrextra)(epartpropose)(epartvote) )

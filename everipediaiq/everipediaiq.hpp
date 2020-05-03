@@ -41,6 +41,17 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
                     string       memo );
 
     [[eosio::action]]
+    void transfrextra( 
+                      name from,
+                      name to,
+                      asset quantity,
+                      string memo, 
+                      string proxied_for,
+                      string purpose,
+                      string extra_note
+                    );
+
+    [[eosio::action]]
     void epartvote( name voter, 
                      uint64_t proposal_id,
                      bool approve,
@@ -48,13 +59,6 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
                      std::string comment, 
                      std::string memo,
                      name permission );
-
-    [[eosio::action]]
-    void epartboost( name booster, 
-                      uint64_t amount, 
-                      std::string slug, 
-                      std::string lang_code,
-                      name permission );
 
     [[eosio::action]]
     void epartpropose( name proposer, 

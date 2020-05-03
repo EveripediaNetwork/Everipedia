@@ -69,32 +69,6 @@
             ]
         },
         {
-            "name": "epartboost",
-            "base": "",
-            "fields": [
-                {
-                    "name": "booster",
-                    "type": "name"
-                },
-                {
-                    "name": "amount",
-                    "type": "uint64"
-                },
-                {
-                    "name": "slug",
-                    "type": "string"
-                },
-                {
-                    "name": "lang_code",
-                    "type": "string"
-                },
-                {
-                    "name": "permission",
-                    "type": "name"
-                }
-            ]
-        },
-        {
             "name": "epartpropose",
             "base": "",
             "fields": [
@@ -205,6 +179,40 @@
                     "type": "string"
                 }
             ]
+        },
+        {
+            "name": "transfrextra",
+            "base": "",
+            "fields": [
+                {
+                    "name": "from",
+                    "type": "name"
+                },
+                {
+                    "name": "to",
+                    "type": "name"
+                },
+                {
+                    "name": "quantity",
+                    "type": "asset"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                },
+                {
+                    "name": "proxied_for",
+                    "type": "string"
+                },
+                {
+                    "name": "purpose",
+                    "type": "string"
+                },
+                {
+                    "name": "extra_note",
+                    "type": "string"
+                }
+            ]
         }
     ],
     "actions": [
@@ -217,11 +225,6 @@
             "name": "create",
             "type": "create",
             "ricardian_contract": "Create a token."
-        },
-        {
-            "name": "epartboost",
-            "type": "epartboost",
-            "ricardian_contract": "User-facing action for increasing a boost position in an article."
         },
         {
             "name": "epartpropose",
@@ -242,6 +245,11 @@
             "name": "transfer",
             "type": "transfer",
             "ricardian_contract": "Transfer the IQ token."
+        },
+        {
+            "name": "transfrextra",
+            "type": "transfrextra",
+            "ricardian_contract": "Transfer the IQ token normally, with extra information recorded."
         }
     ],
     "tables": [

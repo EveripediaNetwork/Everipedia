@@ -9,12 +9,13 @@ ctrl_c () {
     exit 11;
 }
 
-BUILD=0 # KEEP AT 1!. Rebuild everipedia contracts, changing the variables for the test
+BUILD=01 # KEEP AT 1!. Rebuild everipedia contracts, changing the variables for the test
 BOOTSTRAP=0 # 1 if chain bootstrapping (bios, system contract, etc.) is needed, else 0
 RECOMPILE_AND_RESET_EOSIO_CONTRACTS=0
 
 HELP=0
-EOSIO_CONTRACTS_ROOT=/home/kedar/eosio.contracts/build/contracts/
+# EOSIO_CONTRACTS_ROOT=/home/kedar/eosio.contracts/build/contracts/
+EOSIO_CONTRACTS_ROOT="/home/${USER}/Programs/contracts/eosio.contracts/build/contracts"
 NODEOS_HOST="127.0.0.1"
 NODEOS_PROTOCOL="http"
 NODEOS_PORT="8888"
@@ -173,28 +174,41 @@ cleos push action everipediaiq transfer '["eptestusersa", "eptestusersc", "1000.
 assert $(bc <<< "$? == 0")
 cleos push action everipediaiq transfer '["eptestusersa", "eptestusersd", "1000.000 IQ", "test"]' -p eptestusersa
 assert $(bc <<< "$? == 0")
-cleos push action everipediaiq transfer '["eptestusersa", "eptestuserse", "1000.000 IQ", "test"]' -p eptestusersa
-assert $(bc <<< "$? == 0")
-cleos push action everipediaiq transfer '["eptestusersa", "eptestusersf", "1000.000 IQ", "test"]' -p eptestusersa
-assert $(bc <<< "$? == 0")
-cleos push action everipediaiq transfer '["eptestusersa", "eptestusersg", "1000.000 IQ", "test"]' -p eptestusersa
-assert $(bc <<< "$? == 0")
 
 NEW_BALANCE1=$(balance eptestusersa)
 NEW_BALANCE2=$(balance eptestusersb)
 NEW_BALANCE3=$(balance eptestusersc)
 NEW_BALANCE4=$(balance eptestusersd)
+
+assert $(bc <<< "$OLD_BALANCE1 - $NEW_BALANCE1 == 3000")
+assert $(bc <<< "$NEW_BALANCE2 - $OLD_BALANCE2 == 1000")
+assert $(bc <<< "$NEW_BALANCE3 - $OLD_BALANCE3 == 1000")
+assert $(bc <<< "$NEW_BALANCE4 - $OLD_BALANCE4 == 1000")
+
+OLD_BALANCE1=$(balance eptestusersa)
+OLD_BALANCE5=$(balance eptestuserse)
+OLD_BALANCE6=$(balance eptestusersf)
+OLD_BALANCE7=$(balance eptestusersg)
+
+# Transfers with extra info
+echo -e "${CYAN}-----------------------TRANSFERRING WITH EXTRA INFO-----------------------${NC}"
+cleos push action everipediaiq transfrextra '["eptestusersa", "eptestuserse", "1000.000 IQ", "test", "epid-abc", "withdrawal", "Note1"]' -p eptestusersa
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq transfrextra '["eptestusersa", "eptestusersf", "1000.000 IQ", "test", "epid-def", "fee", "Note2"]' -p eptestusersa
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq transfrextra '["eptestusersa", "eptestusersg", "1000.000 IQ", "test", "epid-hij", "test3", "Note3"]' -p eptestusersa
+assert $(bc <<< "$? == 0")
+
+NEW_BALANCE1=$(balance eptestusersa)
 NEW_BALANCE5=$(balance eptestuserse)
 NEW_BALANCE6=$(balance eptestusersf)
 NEW_BALANCE7=$(balance eptestusersg)
 
-assert $(bc <<< "$OLD_BALANCE1 - $NEW_BALANCE1 == 6000")
-assert $(bc <<< "$NEW_BALANCE2 - $OLD_BALANCE2 == 1000")
-assert $(bc <<< "$NEW_BALANCE3 - $OLD_BALANCE3 == 1000")
-assert $(bc <<< "$NEW_BALANCE4 - $OLD_BALANCE4 == 1000")
+assert $(bc <<< "$OLD_BALANCE1 - $NEW_BALANCE1 == 3000")
 assert $(bc <<< "$NEW_BALANCE5 - $OLD_BALANCE5 == 1000")
 assert $(bc <<< "$NEW_BALANCE6 - $OLD_BALANCE6 == 1000")
 assert $(bc <<< "$NEW_BALANCE7 - $OLD_BALANCE7 == 1000")
+
 
 # Failed transfers
 echo -e "${CYAN}-----------------------NEXT THREE TRANSFERS SHOULD FAIL-----------------------${NC}"
