@@ -92,6 +92,8 @@ void everipediaiq::transfrextra(
                       )
 {
     require_auth(from);
+    require_recipient(from);
+    require_recipient(to);
 
     eosio::check( proxied_for.size() <= 256, "proxied_for has more than 256 bytes" );
     eosio::check( purpose.size() <= 256, "purpose has more than 256 bytes" );
@@ -162,8 +164,20 @@ void everipediaiq::add_balance( name owner, asset value, name ram_payer )
 }
 
 [[eosio::action]]
-void everipediaiq::epartpropose( name proposer, std::string slug, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo, name permission) { 
+void everipediaiq::epartpropose( 
+    name proposer, 
+    std::string slug, 
+    ipfshash_t ipfs_hash, 
+    std::string lang_code, 
+    int64_t group_id, 
+    std::string comment, 
+    std::string memo, 
+    name permission,
+    std::string proxied_for 
+) { 
     require_auth(proposer);
+    
+    eosio::check( proxied_for.size() <= 256, "proxied_for has more than 256 bytes" );
 
     // Transfer the IQ to the eparticlectr contract for staking
     asset iqAssetPack = asset(EDIT_PROPOSE_IQ * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
@@ -182,10 +196,20 @@ void everipediaiq::epartpropose( name proposer, std::string slug, ipfshash_t ipf
 }
 
 [[eosio::action]]
-void everipediaiq::epartvote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string comment, std::string memo, name permission) {
+void everipediaiq::epartvote( 
+    name voter, 
+    uint64_t proposal_id, 
+    bool approve, 
+    uint64_t amount, 
+    std::string comment, 
+    std::string memo, 
+    name permission,
+    std::string proxied_for
+) {
     require_auth(voter);
 
     eosio::check(amount > 0, "must transfer a positive amount");
+    eosio::check( proxied_for.size() <= 256, "proxied_for has more than 256 bytes" );
 
     // Transfer the IQ to the eparticlectr contract for staking
     asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);

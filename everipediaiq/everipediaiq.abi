@@ -103,6 +103,10 @@
                 {
                     "name": "permission",
                     "type": "name"
+                },
+                {
+                    "name": "proxied_for",
+                    "type": "string"
                 }
             ]
         },
@@ -137,6 +141,10 @@
                 {
                     "name": "permission",
                     "type": "name"
+                },
+                {
+                    "name": "proxied_for",
+                    "type": "string"
                 }
             ]
         },
@@ -249,7 +257,7 @@
         {
             "name": "transfrextra",
             "type": "transfrextra",
-            "ricardian_contract": "Transfer the IQ token normally, with extra information recorded."
+            "ricardian_contract": "Transfer the IQ token normally, with extra information recorded. The regular transfer function is unaffected."
         }
     ],
     "tables": [

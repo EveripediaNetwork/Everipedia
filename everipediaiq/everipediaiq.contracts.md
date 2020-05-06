@@ -1,7 +1,7 @@
 <h1 class="contract">transfer</h1>
 Transfer the IQ token.
 <h1 class="contract">transfrextra</h1>
-Transfer the IQ token normally, with extra information recorded.
+Transfer the IQ token normally, with extra information recorded. The regular transfer function is unaffected.
 <h1 class="contract">burn</h1>
 Burn IQ tokens and take them out of circulation.
 <h1 class="contract">issue</h1>
