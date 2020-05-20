@@ -40,27 +40,28 @@ void iqlockupctcr::deposit(asset quantity)
 [[eosio::action]]
 void iqlockupctcr::cleanout()
 {
+    // Multi-sig required here
     require_auth(CUSTODIAN_ACCOUNT);
     require_auth(EP_ACCOUNT);
 
-    auto sym = maximum_supply.symbol;
-    eosio::check( sym.is_valid(), "invalid symbol name" );
-    eosio::check( maximum_supply.is_valid(), "invalid supply");
-    eosio::check( maximum_supply.amount > 0, "max-supply must be positive");
+    auto sym = IQSYMBOL.code();
+    statustbl statustable( _self, sym.raw() );
+    auto status_it = statustable.find( sym.raw() );
+    eosio::check( status_it != statustable.end(), "No deposit found" );
+    const auto& st = *existing;
 
-    stats statstable( _self, sym.code().raw() );
-    auto existing = statstable.find( sym.code().raw() );
-    eosio::check( existing == statstable.end(), "token with symbol already exists" );
+    eosio::check( st.balance > 0, "balance is zero" );
 
-    statstable.emplace( _self, [&]( auto& s ) {
-       s.supply.symbol = maximum_supply.symbol;
-       s.max_supply    = maximum_supply;
-       s.issuer        = issuer;
-    });
+    action(
+        permission_level{ _self, name("active") }, 
+        name("everipediaiq"), name("transfer"),
+        std::make_tuple( _self, EP_ACCOUNT, st.balance, std::string("Cleanout withdrawal"))
+    ).send();
+
 }
 
 [[eosio::action]]
-void iqlockupctcr::gettranche( name to, asset quantity, string memo )
+void iqlockupctcr::gettranches( name to, asset quantity, string memo )
 {
     auto sym = quantity.symbol;
     eosio::check( sym.is_valid(), "invalid symbol name" );
@@ -92,4 +93,4 @@ void iqlockupctcr::gettranche( name to, asset quantity, string memo )
 
 
 
-EOSIO_DISPATCH( iqlockupctcr, (cleanout)(gettranche) )
+EOSIO_DISPATCH( iqlockupctcr, (deposit)(cleanout)(gettranches) )

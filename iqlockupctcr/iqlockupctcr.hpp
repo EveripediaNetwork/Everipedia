@@ -13,13 +13,15 @@
 using namespace eosio;
 using std::string;
 
-const uint64_t LOCKUP_TOTAL = 10000000;
+const asset LOCKUP_TOTAL = asset(1000000 * IQ_PRECISION_MULTIPLIER, IQSYMBOL); // Be careful with precision here
 const name LOCKUP_CONTRACT = name("iqlockupctcr");
 const name CUSTODIAN_ACCOUNT = name("123abcabc321");
 const name EP_ACCOUNT = name("ytehekdmilty");
 const name EP_ACCOUNT = name("ytehekdmilty");
 const uint64_t TRANCHE_PERIOD = 2592000; // 1 month
 const uint64_t TOTAL_TRANCHES = 24; // 2 years
+const eosio::symbol IQSYMBOL = symbol(symbol_code("IQ"), 3);
+const int64_t IQ_PRECISION_MULTIPLIER = 1000;
 
 class [[eosio::contract("iqlockupctcr")]] iqlockupctcr : public contract {
   using contract::contract;
@@ -39,8 +41,7 @@ class [[eosio::contract("iqlockupctcr")]] iqlockupctcr : public contract {
 
 
   private:
-    const eosio::symbol IQSYMBOL = symbol(symbol_code("IQ"), 3);
-    const int64_t IQ_PRECISION_MULTIPLIER = 1000;
+
 
     struct [[eosio::table]] status {
         asset balance;
