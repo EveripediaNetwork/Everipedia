@@ -9,30 +9,40 @@ void iqlockupctcr::deposit(asset quantity)
 
     // Check the input 
     auto sym = quantity.symbol;
-    eosio::check( sym.is_valid(), "invalid symbol name" );
-    eosio::check( sym.raw() == IQSYMBOL.code().raw(), "symbol in asset is not IQ" );
-    eosio::check( quantity.is_valid(), "invalid quantity" );
-    eosio::check( quantity.amount == , "must deposit exactly " + LOCKUP_TOTAL.amount + " IQ TOKENS");
+    eosio::check( sym.is_valid(), "Invalid symbol name" );
+    eosio::check( sym.raw() == IQSYMBOL.code().raw(), "Symbol in asset is not IQ" );
+    eosio::check( quantity.is_valid(), "Invalid quantity" );
+    eosio::check( quantity.amount == , "Must deposit exactly " + LOCKUP_TOTAL.amount);
 
-    // Make sure a deposit doesn't already exist 
-    auto sym = quantity.symbol.code();
-    statustbl statustable( _self, sym.raw() );
-    auto status_it = statustable.find( sym.raw() );
-    eosio::check( status_it == statustable.end(), "There has already been an initial deposit" );
+    // Fetch the deposit entry
+    auto raw_iq_str = IQSYMBOL.code().raw();
+    statustbl statustable( _self, raw_iq_str );
+    auto status_it = statustable.find( raw_iq_str );
 
-    // Initialize the deposit status table
-    statustable.emplace( _self, [&]( auto& s ) {
-       s.balance = quantity;
-       s.deposit_complete = 1;
-       s.num_tranches_collected = 0;
-       s.most_recent_tranche_collected_time = 0;
-    });
+    // Initialize the table if it isn't already
+    if (status_it == statustable.end()){
+        // Initialize the deposit status table
+        statustable.emplace( _self, [&]( auto& s ) {
+            s.balance = quantity;
+            s.total_deposited = quantity;
+            s.num_tranches_collected = 0;
+            s.most_recent_tranche_collected_time = 0;
+        });
+    }
+    // Add to an existing deposit
+    else {
+        eosio::check( status_it->total_deposited.amount + quantity.amount <= LOCKUP_TOTAL, "You cannot deposit more that what is required" );
+        statustable.modify( status_it, same_payer, [&]( auto& s ) {
+            s.balance += quantity;
+            s.total_deposited += quantity;
+        });
+    }
 
     // Pull in the IQ from the user 
     action(
         permission_level{ EP_ACCOUNT, name("active") }, 
         name("everipediaiq"), name("transfer"),
-        std::make_tuple( EP_ACCOUNT, LOCKUP_CONTRACT, quantity, std::string("Initial deposit"))
+        std::make_tuple( EP_ACCOUNT, LOCKUP_CONTRACT, quantity, std::string("Deposit"))
     ).send();
 
 }
@@ -49,9 +59,9 @@ void iqlockupctcr::cleanout()
     statustbl statustable( _self, sym.raw() );
     auto status_it = statustable.find( sym.raw() );
     eosio::check( status_it != statustable.end(), "No deposit found" );
-    const auto& st = *existing;
+    const auto& st = *status_it;
 
-    eosio::check( st.balance > 0, "balance is zero" );
+    eosio::check( st.balance > 0, "Balance is zero" );
 
     // Withdraw all of the IQ tokens
     action(
@@ -72,10 +82,13 @@ void iqlockupctcr::gettranches()
     statustbl statustable( _self, sym.raw() );
     auto status_it = statustable.find( sym.raw() );
     eosio::check( status_it != statustable.end(), "No deposit found" );
-    const auto& st = *existing;
+    const auto& st = *status_it;
+
+    // Make sure that the deposit has been fully funded 
+    eosio::check( st.total_deposited >= LOCKUP_TOTAL, "You haven't fully deposited all the IQ yet" );
 
     // Make sure that you didn't already get all of the tranches 
-    eosio::check( st.num_tranches_collected < TOTAL_TRANCHES, "you have already collected all of the tranches" );
+    eosio::check( st.num_tranches_collected < TOTAL_TRANCHES, "You have already collected all of the tranches" );
 
     // Get some time points, to be used later 
     uint32_t current_time = eosio::current_time_point().sec_since_epoch();
@@ -83,7 +96,7 @@ void iqlockupctcr::gettranches()
 
     // Check for the cliff first
     uint32_t time_since_cliff = elapsed_time - CLIFF_DELAY;
-    eosio::check( time_since_cliff >= 0, "you have not reached the cliff yet" );
+    eosio::check( time_since_cliff >= 0, "You have not reached the cliff yet" );
 
     // Calculate the number of possible tranches
     uint32_t possible_tranches = 1 + (time_since_cliff / TRANCHE_PERIOD) - st.num_tranches_collected; // This will be trunc'd down to the nearest int

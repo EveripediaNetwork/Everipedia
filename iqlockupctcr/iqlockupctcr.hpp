@@ -44,10 +44,9 @@ class [[eosio::contract("iqlockupctcr")]] iqlockupctcr : public contract {
 
   private:
     struct [[eosio::table]] status {
-        asset balance;
-        bool deposit_complete = 0; // Initial deposit done? 
-        uint32_t num_tranches_collected; // 1 to TOTAL_TRANCHES
-        uint32_t final_tranche_available_time; // Timestamp when the last tranche can be collected
+        asset balance = 0;
+        asset total_deposited = 0;
+        uint32_t num_tranches_collected = 0; // 1 to TOTAL_TRANCHES
 
         uint64_t primary_key()const { return balance.symbol.code().raw(); }
     };
