@@ -7,20 +7,34 @@ void iqlockupctcr::deposit(asset quantity)
 {
     require_auth(EP_ACCOUNT);
 
+    // Check the input 
     auto sym = quantity.symbol;
     eosio::check( sym.is_valid(), "invalid symbol name" );
     eosio::check( quantity.is_valid(), "invalid quantity" );
     eosio::check( quantity.amount == , "must deposit exactly " + LOCKUP_TOTAL + " IQ TOKENS");
 
+    // Make sure a deposit doesn't already exist 
     auto sym = quantity.symbol.code();
     statustbl statustable( _self, sym.raw() );
-    const auto& st = statstable.get( sym.raw() );
+    auto status_it = statustable.find( sym.raw() );
+    eosio::check( status_it == statustable.end(), "There has already been an initial deposit" );
 
-    statstable.emplace( _self, [&]( auto& s ) {
-       s.supply.symbol = maximum_supply.symbol;
-       s.max_supply    = maximum_supply;
-       s.issuer        = issuer;
+    // Initialize the deposit status table
+    statustable.emplace( _self, [&]( auto& s ) {
+       s.balance = quantity;
+       s.deposit_time = eosio::current_time_point().sec_since_epoch();
+       s.num_tranches_collected = 0;
+       s.last_tranche_collection_time = 0;
+       s.final_tranche_available_time = eosio::current_time_point().sec_since_epoch() + (TRANCHE_PERIOD * TOTAL_TRANCHES);
     });
+
+    // Pull in the IQ from the user 
+    action(
+        permission_level{ EP_ACCOUNT, name("active") }, 
+        name("everipediaiq"), name("transfer"),
+        std::make_tuple( EP_ACCOUNT, LOCKUP_CONTRACT, quantity, std::string("Initial deposit"))
+    ).send();
+
 }
 
 [[eosio::action]]

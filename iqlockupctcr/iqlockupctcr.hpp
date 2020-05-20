@@ -14,6 +14,7 @@ using namespace eosio;
 using std::string;
 
 const uint64_t LOCKUP_TOTAL = 10000000;
+const name LOCKUP_CONTRACT = name("iqlockupctcr");
 const name CUSTODIAN_ACCOUNT = name("123abcabc321");
 const name EP_ACCOUNT = name("ytehekdmilty");
 const name EP_ACCOUNT = name("ytehekdmilty");
