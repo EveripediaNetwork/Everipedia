@@ -9,7 +9,7 @@ ctrl_c () {
     exit 11;
 }
 
-BUILD=01 # KEEP AT 1!. Rebuild everipedia contracts, changing the variables for the test
+BUILD=1 # KEEP AT 1!. Rebuild everipedia contracts, changing the variables for the test
 BOOTSTRAP=0 # 1 if chain bootstrapping (bios, system contract, etc.) is needed, else 0
 RECOMPILE_AND_RESET_EOSIO_CONTRACTS=0
 
