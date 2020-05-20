@@ -97,9 +97,14 @@ if [ $BUILD -eq 1 ]; then
     sed -i -e 's/CLIFF_DELAY = 15897600/CLIFF_DELAY = 5/g' ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e 's/TRANCHE_PERIOD = 7776000/TRANCHE_PERIOD = 3/g' ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e 's/TOTAL_TRANCHES = 8/TOTAL_TRANCHES = 3/g' ../iqlockupctcr/iqlockupctcr.hpp
-    sed -i -e 's/START_DATE = 1588550400/START_DATE = ${CURR_TIMESTAMP}/g' ../iqlockupctcr/iqlockupctcr.hpp
+    sed -i -e "s/START_DATE = 1588550400/START_DATE = $CURR_TIMESTAMP/g" ../iqlockupctcr/iqlockupctcr.hpp
     cd ..
-    bash build.sh
+    echo "Deleting old iqlockupctcr files..."
+    cd iqlockupctcr
+    rm -rf iqlockupctcr.abi iqlockupctcr.wasm iqlockupctcr.wast
+    echo "Building iqlockupctcr..."
+    eosio-cpp iqlockupctcr.cpp -O=3 -lto-opt=O3 -stack-size=16384 -abigen -o iqlockupctcr.wasm -I iqlockupctcr.clauses.md -I iqlockupctcr.contracts.md
+    cd ..
     cd test
     sed -i -e 's/LOCKUP_TOTAL = asset(1000/LOCKUP_TOTAL = asset(157498335497/g' ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e 's/CUSTODIAN_ACCOUNT = name(\"eptestusersb\")/CUSTODIAN_ACCOUNT = name(\"123abcabc321\")/g' ../iqlockupctcr/iqlockupctcr.hpp
@@ -107,20 +112,30 @@ if [ $BUILD -eq 1 ]; then
     sed -i -e 's/CLIFF_DELAY = 5/CLIFF_DELAY = 15897600/g' ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e 's/TRANCHE_PERIOD = 3/TRANCHE_PERIOD = 7776000/g' ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e 's/TOTAL_TRANCHES = 3/TOTAL_TRANCHES = 8/g' ../iqlockupctcr/iqlockupctcr.hpp
-    sed -i -e 's/START_DATE = ${CURR_TIMESTAMP}/START_DATE = 1588550400/g' ../iqlockupctcr/iqlockupctcr.hpp
+    sed -i -e  "s/START_DATE = $CURR_TIMESTAMP/START_DATE = 1588550400/g" ../iqlockupctcr/iqlockupctcr.hpp
 fi
 
 if [ $BOOTSTRAP -eq 1 ]; then
     bash bootstrap.sh
 fi
 
-exit 0
+# echo -e "${CYAN}-----------------------DEPLOYING LOCKUP CONTRACT AGAIN-----------------------${NC}"
+# cleos set account permission everipediaiq active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p everipediaiq
 
 ## Deploy contracts
 echo -e "${CYAN}-----------------------DEPLOYING LOCKUP CONTRACT AGAIN-----------------------${NC}"
 cleos set contract iqlockupctcr ../iqlockupctcr/
 
-# No transfer fees for privileged accounts
+OLD_BALANCE1=$(balance eptestusersa)
+
+# Test IQ transfers
+echo -e "${CYAN}-----------------------SEED THE ACCOUNT WITH TOKENS -----------------------${NC}"
+cleos push action everipediaiq transfer '["everipediaiq", "eptestusersa", "100000.000 IQ", "test"]' -p everipediaiq
+assert $(bc <<< "$? == 0")
+
+NEW_BALANCE1=$(balance eptestusersa)
+assert $(bc <<< "$NEW_BALANCE1 - $OLD_BALANCE1 == 100000")
+
 OLD_BALANCE1=$(balance eptestusersa)
 
 # Test IQ transfers

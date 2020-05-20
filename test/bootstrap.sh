@@ -11,7 +11,7 @@ ctrl_c () {
 
 RECOMPILE_AND_RESET_EOSIO_CONTRACTS=0
 REBUILD_EVERIPEDIA_CONTRACTS=1
-RESET_NODEOS=0
+RESET_NODEOS=1
 # EOSIO_CONTRACTS_ROOT=/home/kedar/eosio.contracts/build/contracts/
 EOSIO_CONTRACTS_ROOT="/home/${USER}/Programs/contracts/eosio.contracts/build/contracts"
 NODEOS_HOST="127.0.0.1"
@@ -124,6 +124,7 @@ cleos push action eosio init '[0, "4,SYS"]' -p eosio@active
 echo -e "${CYAN}-----------------------USER KEYS-----------------------${NC}"
 cleos wallet import --private-key 5JVvgRBGKXSzLYMHgyMFH5AHjDzrMbyEPRdj8J6EVrXJs8adFpK # everipediaiq
 cleos wallet import --private-key 5KBhzoszXcrphWPsuyTxoKJTtMMcPhQYwfivXxma8dDeaLG7Hsq # eparticlectr
+cleos wallet import --private-key 5HxFCYxtPFgKNTZUREkPRQybM3uA7EmJa5xmFY6xAjZ25DdXatz # iqlockupctcr
 cleos wallet import --private-key 5J9UYL9VcDfykAB7mcx9nFfRKki5djG9AXGV6DJ8d5XPYDJDyUy # eptestusersa
 cleos wallet import --private-key 5HtnwWCbMpR1ATYoXY4xb1E4HAU9mzGvDrawyK5May68cYrJR7r # eptestusersb
 cleos wallet import --private-key 5Jjx6z5SJ7WhVU2bgG2si6Y1up1JTXHj7qhC9kKUXPXb1K1Xnj6 # eptestusersc
@@ -136,6 +137,7 @@ cleos wallet import --private-key 5JU8qQMV3cD4HzA14meGEBWwWxNWAk9QAebSkQotv4wXHk
 echo -e "${CYAN}-----------------------USER ACCOUNTS-----------------------${NC}"
 cleos create account eosio everipediaiq EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP
 cleos create account eosio eparticlectr EOS8dYVzNktdam3Vn31mSXcmbj7J7MzGNudqKb3MLW1wdxWJpEbrw
+cleos create account eosio iqlockupctcr EOS8FDwECUbMgHVEiwbaj1RwEw9gniFi5BaLnuG3jRWYCvo1T2Axb
 cleos create account eosio eptestusersa EOS6HfoynFKZ1Msq1bKNwtSTTpEu8NssYMcgsy6nHqhRp3mz7tNkB
 cleos create account eosio eptestusersb EOS68s2PrHPDeGWTKczrNZCn4MDMgoW6SFHuTQhXYUNLT1hAmJei8
 cleos create account eosio eptestusersc EOS7LpZDPKwWWXgJnNYnX6LCBgNqCEqugW9oUQr7XqcSfz7aSFk8o
@@ -193,6 +195,7 @@ fi
 echo -e "${CYAN}-----------------------DEPLOYING EVERIPEDIA CONTRACTS-----------------------${NC}"
 cleos set account permission everipediaiq active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p everipediaiq
 cleos set account permission eparticlectr active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p eparticlectr
+cleos set account permission eptestusersa active '{ "threshold": 1, "keys": [{ "key": "EOS6HfoynFKZ1Msq1bKNwtSTTpEu8NssYMcgsy6nHqhRp3mz7tNkB", "weight": 1 }], "accounts": [{ "permission": { "actor":"iqlockupctcr","permission":"eosio.code" }, "weight":1 }] }' owner -p eptestusersa
 cleos set contract everipediaiq ../everipediaiq/
 cleos set contract eparticlectr ../eparticlectr/
 

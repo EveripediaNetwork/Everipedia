@@ -10,28 +10,27 @@ void iqlockupctcr::deposit(asset quantity)
     // Check the input 
     auto sym = quantity.symbol;
     eosio::check( sym.is_valid(), "Invalid symbol name" );
-    eosio::check( sym.raw() == IQSYMBOL.code().raw(), "Symbol in asset is not IQ" );
+    eosio::check( sym.raw() == IQSYMBOL.raw(), "Symbol in asset is not IQ" );
     eosio::check( quantity.is_valid(), "Invalid quantity" );
-    eosio::check( quantity.amount == , "Must deposit exactly " + LOCKUP_TOTAL.amount);
+    eosio::check( quantity.amount > 0, "Deposit must be positive");
 
     // Fetch the deposit entry
-    auto raw_iq_str = IQSYMBOL.code().raw();
+    auto raw_iq_str = IQSYMBOL.raw();
     statustbl statustable( _self, raw_iq_str );
     auto status_it = statustable.find( raw_iq_str );
 
     // Initialize the table if it isn't already
     if (status_it == statustable.end()){
         // Initialize the deposit status table
-        statustable.emplace( _self, [&]( auto& s ) {
+        statustable.emplace( EP_ACCOUNT, [&]( auto& s ) {
             s.balance = quantity;
             s.total_deposited = quantity;
             s.num_tranches_collected = 0;
-            s.most_recent_tranche_collected_time = 0;
         });
     }
     // Add to an existing deposit
     else {
-        eosio::check( status_it->total_deposited.amount + quantity.amount <= LOCKUP_TOTAL, "You cannot deposit more that what is required" );
+        eosio::check( status_it->total_deposited.amount + quantity.amount <= LOCKUP_TOTAL.amount, "You cannot deposit more that what is required" );
         statustable.modify( status_it, same_payer, [&]( auto& s ) {
             s.balance += quantity;
             s.total_deposited += quantity;
@@ -61,11 +60,11 @@ void iqlockupctcr::cleanout()
     eosio::check( status_it != statustable.end(), "No deposit found" );
     const auto& st = *status_it;
 
-    eosio::check( st.balance > 0, "Balance is zero" );
+    eosio::check( st.balance.amount > 0, "Balance is zero" );
 
     // Withdraw all of the IQ tokens
     action(
-        permission_level{ _self, name("active") }, 
+        permission_level{ EP_ACCOUNT, name("active") }, 
         name("everipediaiq"), name("transfer"),
         std::make_tuple( _self, EP_ACCOUNT, st.balance, std::string("Cleanout withdrawal"))
     ).send();
@@ -106,7 +105,7 @@ void iqlockupctcr::gettranches()
     asset tranche_amount = asset(possible_tranches * (LOCKUP_TOTAL.amount / TOTAL_TRANCHES), IQSYMBOL);
 
     // Update the status table
-    statustable.modify( st, same_payer, [&]( auto& s ) {
+    statustable.modify( status_it, same_payer, [&]( auto& s ) {
        s.balance -= tranche_amount;
        s.num_tranches_collected += possible_tranches;
     });
