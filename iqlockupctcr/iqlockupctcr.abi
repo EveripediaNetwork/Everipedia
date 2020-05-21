@@ -61,7 +61,7 @@
     ],
     "tables": [
         {
-            "name": "status",
+            "name": "tranchestats",
             "type": "status",
             "index_type": "i64",
             "key_names": [],

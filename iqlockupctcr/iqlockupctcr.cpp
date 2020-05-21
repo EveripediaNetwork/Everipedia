@@ -6,23 +6,23 @@
 void iqlockupctcr::deposit(asset quantity)
 {
     require_auth(EP_ACCOUNT);
-
     // Check the input 
     auto sym = quantity.symbol;
     eosio::check( sym.is_valid(), "Invalid symbol name" );
-    eosio::check( sym.raw() == IQSYMBOL.raw(), "Symbol in asset is not IQ" );
+    eosio::check( sym.code().raw() == IQSYMBOL.code().raw(), "Symbol in asset is not IQ" );
     eosio::check( quantity.is_valid(), "Invalid quantity" );
     eosio::check( quantity.amount > 0, "Deposit must be positive");
 
     // Fetch the deposit entry
-    auto raw_iq_str = IQSYMBOL.raw();
+    auto raw_iq_str = IQSYMBOL.code().raw();
+
     statustbl statustable( _self, raw_iq_str );
     auto status_it = statustable.find( raw_iq_str );
 
     // Initialize the table if it isn't already
     if (status_it == statustable.end()){
         // Initialize the deposit status table
-        statustable.emplace( EP_ACCOUNT, [&]( auto& s ) {
+        statustable.emplace( _self, [&]( auto& s ) {
             s.balance = quantity;
             s.total_deposited = quantity;
             s.num_tranches_collected = 0;
@@ -30,7 +30,7 @@ void iqlockupctcr::deposit(asset quantity)
     }
     // Add to an existing deposit
     else {
-        eosio::check( status_it->total_deposited.amount + quantity.amount <= LOCKUP_TOTAL.amount, "You cannot deposit more that what is required" );
+        // eosio::check( status_it->total_deposited.amount + quantity.amount <= LOCKUP_TOTAL.amount, "You cannot deposit more that what is required" );
         statustable.modify( status_it, same_payer, [&]( auto& s ) {
             s.balance += quantity;
             s.total_deposited += quantity;
@@ -54,9 +54,9 @@ void iqlockupctcr::cleanout()
     require_auth(EP_ACCOUNT);
 
     // Get the status 
-    auto sym = IQSYMBOL.code();
-    statustbl statustable( _self, sym.raw() );
-    auto status_it = statustable.find( sym.raw() );
+    auto sym = IQSYMBOL;
+    statustbl statustable( _self, sym.code().raw() );
+    auto status_it = statustable.find( sym.code().raw() );
     eosio::check( status_it != statustable.end(), "No deposit found" );
     const auto& st = *status_it;
 
@@ -77,9 +77,9 @@ void iqlockupctcr::gettranches()
     require_auth(EP_ACCOUNT);
 
     // Get the status 
-    auto sym = IQSYMBOL.code();
-    statustbl statustable( _self, sym.raw() );
-    auto status_it = statustable.find( sym.raw() );
+    auto sym = IQSYMBOL;
+    statustbl statustable( _self, sym.code().raw() );
+    auto status_it = statustable.find( sym.code().raw() );
     eosio::check( status_it != statustable.end(), "No deposit found" );
     const auto& st = *status_it;
 
@@ -92,6 +92,7 @@ void iqlockupctcr::gettranches()
     // Get some time points, to be used later 
     uint32_t current_time = eosio::current_time_point().sec_since_epoch();
     uint32_t elapsed_time = current_time - START_DATE;
+    eosio::print("START_DATE: ", START_DATE);
 
     // Check for the cliff first
     uint32_t time_since_cliff = elapsed_time - CLIFF_DELAY;

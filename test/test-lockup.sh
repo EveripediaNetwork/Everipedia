@@ -88,14 +88,13 @@ if [ $CHAIN_ID = "aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e9
 fi
 
 CURR_TIMESTAMP=$(date '+%s');
-
 # Build
 if [ $BUILD -eq 1 ]; then
     sed -i -e 's/LOCKUP_TOTAL = asset(157498335497/LOCKUP_TOTAL = asset(1000/g' ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e 's/CUSTODIAN_ACCOUNT = name(\"123abcabc321\")/CUSTODIAN_ACCOUNT = name(\"eptestusersb\")/g' ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e 's/EP_ACCOUNT = name(\"ytehekdmilty\")/EP_ACCOUNT = name(\"eptestusersa\")/g' ../iqlockupctcr/iqlockupctcr.hpp
-    sed -i -e 's/CLIFF_DELAY = 15897600/CLIFF_DELAY = 5/g' ../iqlockupctcr/iqlockupctcr.hpp
-    sed -i -e 's/TRANCHE_PERIOD = 7776000/TRANCHE_PERIOD = 3/g' ../iqlockupctcr/iqlockupctcr.hpp
+    sed -i -e 's/CLIFF_DELAY = 15897600/CLIFF_DELAY = 10/g' ../iqlockupctcr/iqlockupctcr.hpp
+    sed -i -e 's/TRANCHE_PERIOD = 7776000/TRANCHE_PERIOD = 5/g' ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e 's/TOTAL_TRANCHES = 8/TOTAL_TRANCHES = 3/g' ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e "s/START_DATE = 1588550400/START_DATE = $CURR_TIMESTAMP/g" ../iqlockupctcr/iqlockupctcr.hpp
     cd ..
@@ -109,8 +108,8 @@ if [ $BUILD -eq 1 ]; then
     sed -i -e 's/LOCKUP_TOTAL = asset(1000/LOCKUP_TOTAL = asset(157498335497/g' ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e 's/CUSTODIAN_ACCOUNT = name(\"eptestusersb\")/CUSTODIAN_ACCOUNT = name(\"123abcabc321\")/g' ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e 's/EP_ACCOUNT = name(\"eptestusersa\")/EP_ACCOUNT = name(\"ytehekdmilty\")/g' ../iqlockupctcr/iqlockupctcr.hpp
-    sed -i -e 's/CLIFF_DELAY = 5/CLIFF_DELAY = 15897600/g' ../iqlockupctcr/iqlockupctcr.hpp
-    sed -i -e 's/TRANCHE_PERIOD = 3/TRANCHE_PERIOD = 7776000/g' ../iqlockupctcr/iqlockupctcr.hpp
+    sed -i -e 's/CLIFF_DELAY = 10/CLIFF_DELAY = 15897600/g' ../iqlockupctcr/iqlockupctcr.hpp
+    sed -i -e 's/TRANCHE_PERIOD = 5/TRANCHE_PERIOD = 7776000/g' ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e 's/TOTAL_TRANCHES = 3/TOTAL_TRANCHES = 8/g' ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e  "s/START_DATE = $CURR_TIMESTAMP/START_DATE = 1588550400/g" ../iqlockupctcr/iqlockupctcr.hpp
 fi
@@ -118,6 +117,7 @@ fi
 if [ $BOOTSTRAP -eq 1 ]; then
     bash bootstrap.sh
 fi
+
 
 # echo -e "${CYAN}-----------------------DEPLOYING LOCKUP CONTRACT AGAIN-----------------------${NC}"
 # cleos set account permission everipediaiq active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p everipediaiq
@@ -149,37 +149,32 @@ assert $(bc <<< "$? == 0")
 
 NEW_BALANCE1=$(balance eptestusersa)
 
-assert $(bc <<< "$NEW_BALANCE1 - $OLD_BALANCE1 == 1000")
+assert $(bc <<< "$NEW_BALANCE1 - $OLD_BALANCE1 == -1000")
 
-# Failed deposit (should fail)
-echo -e "${CYAN}-----------------------TRY TO DEPOSIT TOO MUCH (SHOULD FAIL)-----------------------${NC}"
-cleos push action iqlockupctcr transfer '["eptestusersa", "eptestusersb", "100.000 IQ", "test"]' -p eptestusersa
-assert $(bc <<< "$? == 1")
-
-echo -e "${CYAN}Wait 2 seconds...${NC}"
-sleep 2
+echo -e "${CYAN}Wait 1 second...${NC}"
+sleep 1
 
 # Try to get a tranche before the cliff (should fail)
 echo -e "${CYAN}-----------------------TRY TO GET A TRANCHE BEFORE THE CLIFF (SHOULD FAIL)-----------------------${NC}"
-cleos push action iqlockupctcr gettranches -p eptestusersa
+cleos push action iqlockupctcr gettranches '[]' -p eptestusersa
 assert $(bc <<< "$? == 1")
 
-echo -e "${CYAN}Wait 3 seconds...${NC}"
-sleep 3
+echo -e "${CYAN}Wait 5 seconds...${NC}"
+sleep 5
 
 # Mark the old balance
 OLD_BALANCE1=$(balance eptestusersa)
 
 # Try to get the first tranche
 echo -e "${CYAN}-----------------------GET THE FIRST TRANCHE-----------------------${NC}"
-cleos push action iqlockupctcr gettranches -p eptestusersa
+cleos push action iqlockupctcr gettranches '[]' -p eptestusersa
 assert $(bc <<< "$? == 0")
 
 NEW_BALANCE1=$(balance eptestusersa)
 assert $(bc <<< "$NEW_BALANCE1 - $OLD_BALANCE1 == 333.333")
 
 echo -e "${CYAN}-----------------------TRY TO GET ANOTHER TRANCHE PREMATURELY (SHOULD FAIL)-----------------------${NC}"
-cleos push action iqlockupctcr gettranches -p eptestusersa
+cleos push action iqlockupctcr gettranches '[]' -p eptestusersa
 assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}Wait 3 seconds for the next tranche...${NC}"
@@ -190,7 +185,7 @@ OLD_BALANCE1=$(balance eptestusersa)
 
 # Try to get the second tranche
 echo -e "${CYAN}-----------------------GET THE SECOND TRANCHE-----------------------${NC}"
-cleos push action iqlockupctcr gettranches -p eptestusersa
+cleos push action iqlockupctcr gettranches '[]' -p eptestusersa
 assert $(bc <<< "$? == 0")
 
 NEW_BALANCE1=$(balance eptestusersa)
@@ -204,21 +199,21 @@ OLD_BALANCE1=$(balance eptestusersa)
 
 # Try to get the third tranche
 echo -e "${CYAN}-----------------------GET THE THIRD TRANCHE-----------------------${NC}"
-cleos push action iqlockupctcr gettranches -p eptestusersa
+cleos push action iqlockupctcr gettranches '[]' -p eptestusersa
 assert $(bc <<< "$? == 0")
 
 NEW_BALANCE1=$(balance eptestusersa)
 assert $(bc <<< "$NEW_BALANCE1 - $OLD_BALANCE1 == 333.333")
 
 echo -e "${CYAN}-----------------------TRY TO GET ANOTHER TRANCHE (SHOULD FAIL)-----------------------${NC}"
-cleos push action iqlockupctcr gettranches -p eptestusersa
+cleos push action iqlockupctcr gettranches '[]' -p eptestusersa
 assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}Wait 3 seconds just to make sure...${NC}"
 sleep 3
 
 echo -e "${CYAN}-----------------------TRY TO GET ANOTHER TRANCHE AGAIN (SHOULD FAIL)-----------------------${NC}"
-cleos push action iqlockupctcr gettranches -p eptestusersa
+cleos push action iqlockupctcr gettranches '[]' -p eptestusersa
 assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}-----------------------COMPLETE-----------------------${NC}"

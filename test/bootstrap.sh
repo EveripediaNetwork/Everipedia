@@ -154,7 +154,7 @@ cleos push action eosio setpriv '["eosio.wrap", 1]' -p eosio@active
 cleos set contract eosio.wrap $EOSIO_CONTRACTS_ROOT/eosio.wrap/
 
 # Transfer EOS to testing accounts
-echo -e "${CYAN}-----------------------TRANSFERRING IQ-----------------------${NC}"
+echo -e "${CYAN}-----------------------TRANSFERRING EOS-----------------------${NC}"
 cleos transfer eosio eptestusersa "1000 EOS"
 cleos transfer eosio eptestusersb "1000 EOS"
 cleos transfer eosio eptestusersc "1000 EOS"
@@ -196,6 +196,9 @@ echo -e "${CYAN}-----------------------DEPLOYING EVERIPEDIA CONTRACTS-----------
 cleos set account permission everipediaiq active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p everipediaiq
 cleos set account permission eparticlectr active '{ "threshold": 1, "keys": [{ "key": "EOS6XeRbyHP1wkfEvFeHJNccr4NA9QhnAr6cU21Kaar32Y5aHM5FP", "weight": 1 }], "accounts": [{ "permission": { "actor":"eparticlectr","permission":"eosio.code" }, "weight":1 }, { "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p eparticlectr
 cleos set account permission eptestusersa active '{ "threshold": 1, "keys": [{ "key": "EOS6HfoynFKZ1Msq1bKNwtSTTpEu8NssYMcgsy6nHqhRp3mz7tNkB", "weight": 1 }], "accounts": [{ "permission": { "actor":"iqlockupctcr","permission":"eosio.code" }, "weight":1 }] }' owner -p eptestusersa
+cleos set account permission iqlockupctcr active '{ "threshold": 1, "keys": [{ "key": "EOS8FDwECUbMgHVEiwbaj1RwEw9gniFi5BaLnuG3jRWYCvo1T2Axb", "weight": 1 }], "accounts": [{ "permission": { "actor":"iqlockupctcr","permission":"eosio.code" }, "weight":1 }] }' owner -p iqlockupctcr
+# cleos set account permission iqlockupctcr active '{ "threshold": 1, "keys": [{ "key": "EOS8FDwECUbMgHVEiwbaj1RwEw9gniFi5BaLnuG3jRWYCvo1T2Axb", "weight": 1 }], "accounts": [{ "permission": { "actor":"everipediaiq","permission":"eosio.code" }, "weight":1 }] }' owner -p iqlockupctcr
+
 cleos set contract everipediaiq ../everipediaiq/
 cleos set contract eparticlectr ../eparticlectr/
 

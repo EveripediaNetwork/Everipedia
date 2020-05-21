@@ -21,7 +21,7 @@ const name CUSTODIAN_ACCOUNT = name("123abcabc321");
 const name EP_ACCOUNT = name("ytehekdmilty");
 const uint32_t START_DATE = 1588550400; // Monday, May 4, 2020 12:00:00 AM GMT
 const uint32_t END_DATE = 1659571200; // Thursday, August 4, 2022 12:00:00 AM GMT
-const uint64_t CLIFF_DELAY = 15897600; // 184 days, in seconds
+const uint64_t CLIFF_DELAY = 15; // 184 days, in seconds
 const uint64_t TRANCHE_PERIOD = 7776000; // 3 months (assuming a 30 day month for simplicity)
 const uint64_t TOTAL_TRANCHES = 8; // 
 
@@ -51,5 +51,5 @@ class [[eosio::contract("iqlockupctcr")]] iqlockupctcr : public contract {
         uint64_t primary_key()const { return balance.symbol.code().raw(); }
     };
 
-    typedef eosio::multi_index<name("status"), status> statustbl;
+    typedef eosio::multi_index<name("tranchestats"), status> statustbl;
 };
