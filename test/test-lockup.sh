@@ -90,12 +90,12 @@ fi
 CURR_TIMESTAMP=$(date '+%s');
 # Build
 if [ $BUILD -eq 1 ]; then
-    sed -i -e 's/LOCKUP_TOTAL = asset(157498335497/LOCKUP_TOTAL = asset(1000/g' ../iqlockupctcr/iqlockupctcr.hpp
-    sed -i -e 's/CUSTODIAN_ACCOUNT = name(\"123abcabc321\")/CUSTODIAN_ACCOUNT = name(\"eptestusersb\")/g' ../iqlockupctcr/iqlockupctcr.hpp
-    sed -i -e 's/EP_ACCOUNT = name(\"ytehekdmilty\")/EP_ACCOUNT = name(\"eptestusersa\")/g' ../iqlockupctcr/iqlockupctcr.hpp
-    sed -i -e 's/CLIFF_DELAY = 15897600/CLIFF_DELAY = 10/g' ../iqlockupctcr/iqlockupctcr.hpp
-    sed -i -e 's/TRANCHE_PERIOD = 7776000/TRANCHE_PERIOD = 5/g' ../iqlockupctcr/iqlockupctcr.hpp
-    sed -i -e 's/TOTAL_TRANCHES = 8/TOTAL_TRANCHES = 3/g' ../iqlockupctcr/iqlockupctcr.hpp
+    sed -i -e "s/LOCKUP_TOTAL = asset(157498335497/LOCKUP_TOTAL = asset(1000/g" ../iqlockupctcr/iqlockupctcr.hpp
+    sed -i -e "s/CUSTODIAN_ACCOUNT = name(\"123abcabc321\")/CUSTODIAN_ACCOUNT = name(\"eptestusersb\")/g" ../iqlockupctcr/iqlockupctcr.hpp
+    sed -i -e "s/EP_ACCOUNT = name(\"ytehekdmilty\")/EP_ACCOUNT = name(\"eptestusersa\")/g" ../iqlockupctcr/iqlockupctcr.hpp
+    sed -i -e "s/CLIFF_DELAY = 15897600/CLIFF_DELAY = 10/g" ../iqlockupctcr/iqlockupctcr.hpp
+    sed -i -e "s/TRANCHE_PERIOD = 7776000/TRANCHE_PERIOD = 5/g" ../iqlockupctcr/iqlockupctcr.hpp
+    sed -i -e "s/TOTAL_TRANCHES = 8/TOTAL_TRANCHES = 3/g" ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e "s/START_DATE = 1588550400/START_DATE = $CURR_TIMESTAMP/g" ../iqlockupctcr/iqlockupctcr.hpp
     cd ..
     echo "Deleting old iqlockupctcr files..."
@@ -105,12 +105,12 @@ if [ $BUILD -eq 1 ]; then
     eosio-cpp iqlockupctcr.cpp -O=3 -lto-opt=O3 -stack-size=16384 -abigen -o iqlockupctcr.wasm -I iqlockupctcr.clauses.md -I iqlockupctcr.contracts.md
     cd ..
     cd test
-    sed -i -e 's/LOCKUP_TOTAL = asset(1000/LOCKUP_TOTAL = asset(157498335497/g' ../iqlockupctcr/iqlockupctcr.hpp
-    sed -i -e 's/CUSTODIAN_ACCOUNT = name(\"eptestusersb\")/CUSTODIAN_ACCOUNT = name(\"123abcabc321\")/g' ../iqlockupctcr/iqlockupctcr.hpp
-    sed -i -e 's/EP_ACCOUNT = name(\"eptestusersa\")/EP_ACCOUNT = name(\"ytehekdmilty\")/g' ../iqlockupctcr/iqlockupctcr.hpp
-    sed -i -e 's/CLIFF_DELAY = 10/CLIFF_DELAY = 15897600/g' ../iqlockupctcr/iqlockupctcr.hpp
-    sed -i -e 's/TRANCHE_PERIOD = 5/TRANCHE_PERIOD = 7776000/g' ../iqlockupctcr/iqlockupctcr.hpp
-    sed -i -e 's/TOTAL_TRANCHES = 3/TOTAL_TRANCHES = 8/g' ../iqlockupctcr/iqlockupctcr.hpp
+    sed -i -e "s/LOCKUP_TOTAL = asset(1000/LOCKUP_TOTAL = asset(157498335497/g" ../iqlockupctcr/iqlockupctcr.hpp
+    sed -i -e "s/CUSTODIAN_ACCOUNT = name(\"eptestusersb\")/CUSTODIAN_ACCOUNT = name(\"123abcabc321\")/g" ../iqlockupctcr/iqlockupctcr.hpp
+    sed -i -e "s/EP_ACCOUNT = name(\"eptestusersa\")/EP_ACCOUNT = name(\"ytehekdmilty\")/g" ../iqlockupctcr/iqlockupctcr.hpp
+    sed -i -e "s/CLIFF_DELAY = 10/CLIFF_DELAY = 15897600/g" ../iqlockupctcr/iqlockupctcr.hpp
+    sed -i -e "s/TRANCHE_PERIOD = 5/TRANCHE_PERIOD = 7776000/g" ../iqlockupctcr/iqlockupctcr.hpp
+    sed -i -e "s/TOTAL_TRANCHES = 3/TOTAL_TRANCHES = 8/g" ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e  "s/START_DATE = $CURR_TIMESTAMP/START_DATE = 1588550400/g" ../iqlockupctcr/iqlockupctcr.hpp
 fi
 
@@ -177,8 +177,8 @@ echo -e "${CYAN}-----------------------TRY TO GET ANOTHER TRANCHE PREMATURELY (S
 cleos push action iqlockupctcr gettranches '[]' -p eptestusersa
 assert $(bc <<< "$? == 1")
 
-echo -e "${CYAN}Wait 3 seconds for the next tranche...${NC}"
-sleep 3
+echo -e "${CYAN}Wait 5 seconds for the next tranche...${NC}"
+sleep 5
 
 # Mark the old balance
 OLD_BALANCE1=$(balance eptestusersa)
@@ -191,8 +191,8 @@ assert $(bc <<< "$? == 0")
 NEW_BALANCE1=$(balance eptestusersa)
 assert $(bc <<< "$NEW_BALANCE1 - $OLD_BALANCE1 == 333.333")
 
-echo -e "${CYAN}Wait 3 seconds for the last tranche...${NC}"
-sleep 3
+echo -e "${CYAN}Wait 5 seconds for the last tranche...${NC}"
+sleep 5
 
 # Mark the old balance
 OLD_BALANCE1=$(balance eptestusersa)
@@ -209,8 +209,8 @@ echo -e "${CYAN}-----------------------TRY TO GET ANOTHER TRANCHE (SHOULD FAIL)-
 cleos push action iqlockupctcr gettranches '[]' -p eptestusersa
 assert $(bc <<< "$? == 1")
 
-echo -e "${CYAN}Wait 3 seconds just to make sure...${NC}"
-sleep 3
+echo -e "${CYAN}Wait 5 seconds just to make sure...${NC}"
+sleep 5
 
 echo -e "${CYAN}-----------------------TRY TO GET ANOTHER TRANCHE AGAIN (SHOULD FAIL)-----------------------${NC}"
 cleos push action iqlockupctcr gettranches '[]' -p eptestusersa

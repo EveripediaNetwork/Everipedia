@@ -91,15 +91,15 @@ void iqlockupctcr::gettranches()
 
     // Get some time points, to be used later 
     uint32_t current_time = eosio::current_time_point().sec_since_epoch();
-    uint32_t elapsed_time = current_time - START_DATE;
-    eosio::print("START_DATE: ", START_DATE);
+    int32_t elapsed_time = current_time - START_DATE;
+    // eosio::print("START_DATE: ", START_DATE, "\n");
 
     // Check for the cliff first
-    uint32_t time_since_cliff = elapsed_time - CLIFF_DELAY;
+    int32_t time_since_cliff = elapsed_time - CLIFF_DELAY;
     eosio::check( time_since_cliff >= 0, "You have not reached the cliff yet" );
 
     // Calculate the number of possible tranches
-    uint32_t possible_tranches = 1 + (time_since_cliff / TRANCHE_PERIOD) - st.num_tranches_collected; // This will be trunc'd down to the nearest int
+    int32_t possible_tranches = 1 + (time_since_cliff / TRANCHE_PERIOD) - st.num_tranches_collected; // This will be trunc'd down to the nearest int
     eosio::check( possible_tranches > 0, "No new tranches available yet" );
 
     // Create the tranche asset
