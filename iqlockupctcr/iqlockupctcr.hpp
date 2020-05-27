@@ -15,7 +15,7 @@ using std::string;
 
 const int64_t IQ_PRECISION_MULTIPLIER = 1000;
 const eosio::symbol IQSYMBOL = symbol(symbol_code("IQ"), 3);
-const asset LOCKUP_TOTAL = asset(157498335497 * IQ_PRECISION_MULTIPLIER, IQSYMBOL); // Be careful with precision here
+const asset LOCKUP_TOTAL = asset(1574983354 * IQ_PRECISION_MULTIPLIER, IQSYMBOL); // Be careful with precision here
 const name LOCKUP_CONTRACT = name("iqlockupctcr");
 const name CUSTODIAN_ACCOUNT = name("123abcabc321");
 const name EP_ACCOUNT = name("ytehekdmilty");
