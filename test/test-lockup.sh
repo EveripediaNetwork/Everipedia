@@ -4,6 +4,9 @@
 CYAN='\033[1;36m'
 NC='\033[0m'
 
+YELLOW='\033[1;33m'
+NY='\033[0m'
+
 trap ctrl_c INT
 ctrl_c () {
     exit 11;
@@ -12,6 +15,7 @@ ctrl_c () {
 BUILD=1 # KEEP AT 1!. Rebuild everipedia contracts, changing the variables for the test
 BOOTSTRAP=0 # 1 if chain bootstrapping (bios, system contract, etc.) is needed, else 0
 RECOMPILE_AND_RESET_EOSIO_CONTRACTS=0
+TRY_CLEANOUT=1
 
 HELP=0
 # EOSIO_CONTRACTS_ROOT=/home/kedar/eosio.contracts/build/contracts/
@@ -90,7 +94,7 @@ fi
 CURR_TIMESTAMP=$(date '+%s');
 # Build
 if [ $BUILD -eq 1 ]; then
-    sed -i -e "s/LOCKUP_TOTAL = asset(157498335497/LOCKUP_TOTAL = asset(1000/g" ../iqlockupctcr/iqlockupctcr.hpp
+    sed -i -e "s/LOCKUP_TOTAL = asset(1574983354/LOCKUP_TOTAL = asset(1000/g" ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e "s/CUSTODIAN_ACCOUNT = name(\"123abcabc321\")/CUSTODIAN_ACCOUNT = name(\"eptestusersb\")/g" ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e "s/EP_ACCOUNT = name(\"ytehekdmilty\")/EP_ACCOUNT = name(\"eptestusersa\")/g" ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e "s/CLIFF_DELAY = 15897600/CLIFF_DELAY = 10/g" ../iqlockupctcr/iqlockupctcr.hpp
@@ -105,7 +109,7 @@ if [ $BUILD -eq 1 ]; then
     eosio-cpp iqlockupctcr.cpp -O=3 -lto-opt=O3 -stack-size=16384 -abigen -o iqlockupctcr.wasm -I iqlockupctcr.clauses.md -I iqlockupctcr.contracts.md
     cd ..
     cd test
-    sed -i -e "s/LOCKUP_TOTAL = asset(1000/LOCKUP_TOTAL = asset(157498335497/g" ../iqlockupctcr/iqlockupctcr.hpp
+    sed -i -e "s/LOCKUP_TOTAL = asset(1000/LOCKUP_TOTAL = asset(1574983354/g" ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e "s/CUSTODIAN_ACCOUNT = name(\"eptestusersb\")/CUSTODIAN_ACCOUNT = name(\"123abcabc321\")/g" ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e "s/EP_ACCOUNT = name(\"eptestusersa\")/EP_ACCOUNT = name(\"ytehekdmilty\")/g" ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e "s/CLIFF_DELAY = 10/CLIFF_DELAY = 15897600/g" ../iqlockupctcr/iqlockupctcr.hpp
@@ -154,66 +158,105 @@ assert $(bc <<< "$NEW_BALANCE1 - $OLD_BALANCE1 == -1000")
 echo -e "${CYAN}Wait 1 second...${NC}"
 sleep 1
 
-# Try to get a tranche before the cliff (should fail)
-echo -e "${CYAN}-----------------------TRY TO GET A TRANCHE BEFORE THE CLIFF (SHOULD FAIL)-----------------------${NC}"
-cleos push action iqlockupctcr gettranches '[]' -p eptestusersa
-assert $(bc <<< "$? == 1")
 
-echo -e "${CYAN}Wait 5 seconds...${NC}"
-sleep 5
 
-# Mark the old balance
-OLD_BALANCE1=$(balance eptestusersa)
+if [ $TRY_CLEANOUT -eq 0 ]; then
+    # Try to get a tranche before the cliff (should fail)
+    echo -e "${CYAN}-----------------------TRY TO GET A TRANCHE BEFORE THE CLIFF (SHOULD FAIL)-----------------------${NC}"
+    cleos push action iqlockupctcr gettranches '[]' -p eptestusersa
+    assert $(bc <<< "$? == 1")
 
-# Try to get the first tranche
-echo -e "${CYAN}-----------------------GET THE FIRST TRANCHE-----------------------${NC}"
-cleos push action iqlockupctcr gettranches '[]' -p eptestusersa
-assert $(bc <<< "$? == 0")
+    echo -e "${CYAN}Wait 5 seconds...${NC}"
+    sleep 5
 
-NEW_BALANCE1=$(balance eptestusersa)
-assert $(bc <<< "$NEW_BALANCE1 - $OLD_BALANCE1 == 333.333")
+    # Mark the old balance
+    OLD_BALANCE1=$(balance eptestusersa)
 
-echo -e "${CYAN}-----------------------TRY TO GET ANOTHER TRANCHE PREMATURELY (SHOULD FAIL)-----------------------${NC}"
-cleos push action iqlockupctcr gettranches '[]' -p eptestusersa
-assert $(bc <<< "$? == 1")
+    # Try to get the first tranche
+    echo -e "${CYAN}-----------------------GET THE FIRST TRANCHE-----------------------${NC}"
+    cleos push action iqlockupctcr gettranches '[]' -p eptestusersa
+    assert $(bc <<< "$? == 0")
 
-echo -e "${CYAN}Wait 5 seconds for the next tranche...${NC}"
-sleep 5
+    NEW_BALANCE1=$(balance eptestusersa)
+    assert $(bc <<< "$NEW_BALANCE1 - $OLD_BALANCE1 == 333.333")
 
-# Mark the old balance
-OLD_BALANCE1=$(balance eptestusersa)
+    echo -e "${CYAN}-----------------------TRY TO GET ANOTHER TRANCHE PREMATURELY (SHOULD FAIL)-----------------------${NC}"
+    cleos push action iqlockupctcr gettranches '[]' -p eptestusersa
+    assert $(bc <<< "$? == 1")
 
-# Try to get the second tranche
-echo -e "${CYAN}-----------------------GET THE SECOND TRANCHE-----------------------${NC}"
-cleos push action iqlockupctcr gettranches '[]' -p eptestusersa
-assert $(bc <<< "$? == 0")
+    echo -e "${CYAN}Wait 5 seconds for the next tranche...${NC}"
+    sleep 5
 
-NEW_BALANCE1=$(balance eptestusersa)
-assert $(bc <<< "$NEW_BALANCE1 - $OLD_BALANCE1 == 333.333")
+    # Mark the old balance
+    OLD_BALANCE1=$(balance eptestusersa)
 
-echo -e "${CYAN}Wait 5 seconds for the last tranche...${NC}"
-sleep 5
+    # Try to get the second tranche
+    echo -e "${CYAN}-----------------------GET THE SECOND TRANCHE-----------------------${NC}"
+    cleos push action iqlockupctcr gettranches '[]' -p eptestusersa
+    assert $(bc <<< "$? == 0")
 
-# Mark the old balance
-OLD_BALANCE1=$(balance eptestusersa)
+    NEW_BALANCE1=$(balance eptestusersa)
+    assert $(bc <<< "$NEW_BALANCE1 - $OLD_BALANCE1 == 333.333")
 
-# Try to get the third tranche
-echo -e "${CYAN}-----------------------GET THE THIRD TRANCHE-----------------------${NC}"
-cleos push action iqlockupctcr gettranches '[]' -p eptestusersa
-assert $(bc <<< "$? == 0")
+    echo -e "${CYAN}Wait 5 seconds for the last tranche...${NC}"
+    sleep 5
 
-NEW_BALANCE1=$(balance eptestusersa)
-assert $(bc <<< "$NEW_BALANCE1 - $OLD_BALANCE1 == 333.333")
+    # Mark the old balance
+    OLD_BALANCE1=$(balance eptestusersa)
 
-echo -e "${CYAN}-----------------------TRY TO GET ANOTHER TRANCHE (SHOULD FAIL)-----------------------${NC}"
-cleos push action iqlockupctcr gettranches '[]' -p eptestusersa
-assert $(bc <<< "$? == 1")
+    # Try to get the third tranche
+    echo -e "${CYAN}-----------------------GET THE THIRD TRANCHE-----------------------${NC}"
+    cleos push action iqlockupctcr gettranches '[]' -p eptestusersa
+    assert $(bc <<< "$? == 0")
 
-echo -e "${CYAN}Wait 5 seconds just to make sure...${NC}"
-sleep 5
+    NEW_BALANCE1=$(balance eptestusersa)
+    assert $(bc <<< "$NEW_BALANCE1 - $OLD_BALANCE1 == 333.333")
 
-echo -e "${CYAN}-----------------------TRY TO GET ANOTHER TRANCHE AGAIN (SHOULD FAIL)-----------------------${NC}"
-cleos push action iqlockupctcr gettranches '[]' -p eptestusersa
-assert $(bc <<< "$? == 1")
+    echo -e "${CYAN}-----------------------TRY TO GET ANOTHER TRANCHE (SHOULD FAIL)-----------------------${NC}"
+    cleos push action iqlockupctcr gettranches '[]' -p eptestusersa
+    assert $(bc <<< "$? == 1")
+
+    echo -e "${CYAN}Wait 5 seconds just to make sure...${NC}"
+    sleep 5
+
+    echo -e "${CYAN}-----------------------TRY TO GET ANOTHER TRANCHE AGAIN (SHOULD FAIL)-----------------------${NC}"
+    cleos push action iqlockupctcr gettranches '[]' -p eptestusersa
+    assert $(bc <<< "$? == 1")
+else
+    # Mark the old balance of the soon-to-be cleanout recipient
+    OLD_BALANCE1=$(balance eptestusersa)
+
+    PROPOSAL_NAME=$(accountgen)
+
+    # Try to out the remaining balance
+    echo -e "${CYAN}-----------------------SETTING THE CLEANOUT PROPOSAL-----------------------${NC}"
+    cleos multisig propose $PROPOSAL_NAME '[{"actor": "eptestusersa", "permission": "active"}, {"actor": "eptestusersb", "permission": "active"}]' '[{"actor": "eptestusersa", "permission": "active"}, {"actor": "eptestusersb", "permission": "active"}]' iqlockupctcr cleanout '{}' -p eptestusersa
+    assert $(bc <<< "$? == 0")
+
+    echo -e "${CYAN}-----------------------REVIEWING CLEANOUT PROPOSAL-----------------------${NC}"
+    cleos multisig review eptestusersa $PROPOSAL_NAME
+    assert $(bc <<< "$? == 0")
+
+    echo -e "${CYAN}-----------------------ACCEPTING CLEANOUT PROPOSAL-----------------------${NC}"
+    cleos multisig approve eptestusersa $PROPOSAL_NAME '{"actor": "eptestusersa", "permission": "active"}' -p eptestusersa
+    assert $(bc <<< "$? == 0")
+
+    cleos multisig approve eptestusersa $PROPOSAL_NAME '{"actor": "eptestusersb", "permission": "active"}' -p eptestusersb
+    assert $(bc <<< "$? == 0")
+
+    echo -e "${CYAN}-----------------------EXECUTING CLEANOUT PROPOSAL-----------------------${NC}"
+    cleos multisig exec eptestusersa $PROPOSAL_NAME -p eptestusersa
+    assert $(bc <<< "$? == 0")
+
+    NEW_BALANCE1=$(balance eptestusersa)
+    echo $(bc <<< "$NEW_BALANCE1 - $OLD_BALANCE1")
+    assert $(bc <<< "$NEW_BALANCE1 - $OLD_BALANCE1 == 1000")
+fi
+
+
+
 
 echo -e "${CYAN}-----------------------COMPLETE-----------------------${NC}"
+if [ $TRY_CLEANOUT -eq 0 ]; then
+    echo -e "${YELLOW}DO NOT FORGET TO TRY THE CLEANOUT ROUTE! SET TRY_CLEANOUT TO 1${NY}"
+fi

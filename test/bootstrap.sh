@@ -19,17 +19,21 @@ NODEOS_PROTOCOL="http"
 NODEOS_PORT="8888"
 NODEOS_LOCATION="${NODEOS_PROTOCOL}://${NODEOS_HOST}:${NODEOS_PORT}"
 
+
+alias cleos="cleos --url=${NODEOS_LOCATION}"
+
 if [ $RESET_NODEOS -eq 1 ]; then
     echo -e "${CYAN}-----------------------PURGING NODEOS-----------------------${NC}"
     rm -rf ~/.local/share/eosio/nodeos
     pkill -f nodeos
-    gnome-terminal --tab -e "nodeos -e -p eosio --plugin eosio::producer_plugin --plugin eosio::chain_api_plugin --plugin eosio::http_plugin --plugin eosio::history_plugin --plugin eosio::history_api_plugin --access-control-allow-origin='*' --contracts-console --http-validate-host=false --verbose-http-errors --filter-on='*' --http-server-address='0.0.0.0:8888'"
+    gnome-terminal --tab -e "nodeos -e -p eosio --plugin eosio::producer_api_plugin --plugin eosio::producer_plugin --plugin eosio::chain_api_plugin --plugin eosio::http_plugin --plugin eosio::history_plugin --plugin eosio::history_api_plugin --access-control-allow-origin='*' --contracts-console --http-validate-host=false --verbose-http-errors --filter-on='*' --http-server-address='0.0.0.0:8888'"
     echo -e "${CYAN}RESTARTING NODEOS${NC}"
     sleep 5
+    curl -X POST $NODEOS_LOCATION/v1/producer/schedule_protocol_feature_activations -d '{"protocol_features_to_activate": ["0ec7e080177b2c02b278d5088611686b49d739925a92d9bfcacd7fc6b74053bd"]}'
+    cleos push action eosio activate '["299dcb6af692324b899b39f16d5a530a33062804e41f09dc97e9f156b4476707"]' -p eosio
 fi
 
 
-alias cleos="cleos --url=${NODEOS_LOCATION}"
 
 #######################################
 ## HELPERS

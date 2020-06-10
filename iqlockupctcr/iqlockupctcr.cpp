@@ -62,7 +62,7 @@ void iqlockupctcr::cleanout()
 
     eosio::check( st.balance.amount > 0, "Balance is zero" );
 
-    // Withdraw all of the IQ tokens
+    Withdraw all of the IQ tokens
     action(
         permission_level{ EP_ACCOUNT, name("active") }, 
         name("everipediaiq"), name("transfer"),
