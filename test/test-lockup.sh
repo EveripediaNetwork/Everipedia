@@ -15,7 +15,7 @@ ctrl_c () {
 BUILD=1 # KEEP AT 1!. Rebuild everipedia contracts, changing the variables for the test
 BOOTSTRAP=0 # 1 if chain bootstrapping (bios, system contract, etc.) is needed, else 0
 RECOMPILE_AND_RESET_EOSIO_CONTRACTS=0
-TRY_CLEANOUT=1
+TRY_CLEANOUT=0
 
 HELP=0
 # EOSIO_CONTRACTS_ROOT=/home/kedar/eosio.contracts/build/contracts/
@@ -91,7 +91,7 @@ if [ $CHAIN_ID = "aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e9
     exit 1
 fi
 
-CURR_TIMESTAMP=$(date '+%s');
+CURR_TIMESTAMP=$(date -u '+%s');
 # Build
 if [ $BUILD -eq 1 ]; then
     sed -i -e "s/LOCKUP_TOTAL = asset(1574983354/LOCKUP_TOTAL = asset(1000/g" ../iqlockupctcr/iqlockupctcr.hpp

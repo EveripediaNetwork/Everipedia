@@ -13,6 +13,7 @@ RECOMPILE_AND_RESET_EOSIO_CONTRACTS=0
 REBUILD_EVERIPEDIA_CONTRACTS=1
 RESET_NODEOS=1
 # EOSIO_CONTRACTS_ROOT=/home/kedar/eosio.contracts/build/contracts/
+EOSIO_OLD_CONTRACTS_ROOT="/home/${USER}/Programs/contracts/eosio.contracts.old/build/contracts"
 EOSIO_CONTRACTS_ROOT="/home/${USER}/Programs/contracts/eosio.contracts/build/contracts"
 NODEOS_HOST="127.0.0.1"
 NODEOS_PROTOCOL="http"
@@ -30,7 +31,6 @@ if [ $RESET_NODEOS -eq 1 ]; then
     echo -e "${CYAN}RESTARTING NODEOS${NC}"
     sleep 5
     curl -X POST $NODEOS_LOCATION/v1/producer/schedule_protocol_feature_activations -d '{"protocol_features_to_activate": ["0ec7e080177b2c02b278d5088611686b49d739925a92d9bfcacd7fc6b74053bd"]}'
-    cleos push action eosio activate '["299dcb6af692324b899b39f16d5a530a33062804e41f09dc97e9f156b4476707"]' -p eosio
 fi
 
 
@@ -116,6 +116,7 @@ echo -e "      EOS TOKEN CREATED"
 cleos push action eosio.token issue '[ "eosio", "1000000000.0000 EOS", "memo" ]' -p eosio
 cleos push action eosio.token issue '[ "eosio", "1000000000.0000 SYS", "memo" ]' -p eosio
 echo -e "      EOS TOKEN ISSUED"
+cleos push action eosio activate '["299dcb6af692324b899b39f16d5a530a33062804e41f09dc97e9f156b4476707"]' -p eosio
 cleos set contract eosio $EOSIO_CONTRACTS_ROOT/eosio.bios/
 echo -e "      BIOS SET"
 cleos set contract eosio $EOSIO_CONTRACTS_ROOT/eosio.system/
