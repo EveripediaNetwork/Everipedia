@@ -95,7 +95,7 @@ CURR_TIMESTAMP=$(date -u '+%s');
 # Build
 if [ $BUILD -eq 1 ]; then
     sed -i -e "s/LOCKUP_TOTAL = asset(1574983354/LOCKUP_TOTAL = asset(1000/g" ../iqlockupctcr/iqlockupctcr.hpp
-    sed -i -e "s/CUSTODIAN_ACCOUNT = name(\"123abcabc321\")/CUSTODIAN_ACCOUNT = name(\"eptestusersb\")/g" ../iqlockupctcr/iqlockupctcr.hpp
+    sed -i -e "s/CUSTODIAN_ACCOUNT = name(\"binancestake\")/CUSTODIAN_ACCOUNT = name(\"eptestusersb\")/g" ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e "s/EP_ACCOUNT = name(\"ytehekdmilty\")/EP_ACCOUNT = name(\"eptestusersa\")/g" ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e "s/CLIFF_DELAY = 15897600/CLIFF_DELAY = 10/g" ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e "s/TRANCHE_PERIOD = 7776000/TRANCHE_PERIOD = 5/g" ../iqlockupctcr/iqlockupctcr.hpp
@@ -110,7 +110,7 @@ if [ $BUILD -eq 1 ]; then
     cd ..
     cd test
     sed -i -e "s/LOCKUP_TOTAL = asset(1000/LOCKUP_TOTAL = asset(1574983354/g" ../iqlockupctcr/iqlockupctcr.hpp
-    sed -i -e "s/CUSTODIAN_ACCOUNT = name(\"eptestusersb\")/CUSTODIAN_ACCOUNT = name(\"123abcabc321\")/g" ../iqlockupctcr/iqlockupctcr.hpp
+    sed -i -e "s/CUSTODIAN_ACCOUNT = name(\"eptestusersb\")/CUSTODIAN_ACCOUNT = name(\"binancestake\")/g" ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e "s/EP_ACCOUNT = name(\"eptestusersa\")/EP_ACCOUNT = name(\"ytehekdmilty\")/g" ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e "s/CLIFF_DELAY = 10/CLIFF_DELAY = 15897600/g" ../iqlockupctcr/iqlockupctcr.hpp
     sed -i -e "s/TRANCHE_PERIOD = 5/TRANCHE_PERIOD = 7776000/g" ../iqlockupctcr/iqlockupctcr.hpp
