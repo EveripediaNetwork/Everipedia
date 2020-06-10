@@ -20,7 +20,7 @@ class [[eosio::contract("epnewsletter")]] epnewsletter : public contract {
 		using ipfshash_t = std::string;
 
 		[[eosio::action]]
-		void deposit(    
+		void signup(    
 			std::string email,
 			std::string enrollee,
 			std::string s_type,

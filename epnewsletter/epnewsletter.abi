@@ -4,70 +4,36 @@
     "types": [],
     "structs": [
         {
-            "name": "cleanout",
-            "base": "",
-            "fields": []
-        },
-        {
-            "name": "deposit",
+            "name": "signup",
             "base": "",
             "fields": [
                 {
-                    "name": "quantity",
-                    "type": "asset"
-                }
-            ]
-        },
-        {
-            "name": "gettranches",
-            "base": "",
-            "fields": []
-        },
-        {
-            "name": "status",
-            "base": "",
-            "fields": [
-                {
-                    "name": "balance",
-                    "type": "asset"
+                    "name": "email",
+                    "type": "string"
                 },
                 {
-                    "name": "total_deposited",
-                    "type": "asset"
+                    "name": "enrollee",
+                    "type": "string"
                 },
                 {
-                    "name": "num_tranches_collected",
-                    "type": "uint32"
+                    "name": "s_type",
+                    "type": "string"
+                },
+                {
+                    "name": "s_uname",
+                    "type": "string"
                 }
             ]
         }
     ],
     "actions": [
         {
-            "name": "cleanout",
-            "type": "cleanout",
-            "ricardian_contract": ""
-        },
-        {
-            "name": "deposit",
-            "type": "deposit",
-            "ricardian_contract": ""
-        },
-        {
-            "name": "gettranches",
-            "type": "gettranches",
+            "name": "signup",
+            "type": "signup",
             "ricardian_contract": ""
         }
     ],
-    "tables": [
-        {
-            "name": "tranchestats",
-            "type": "status",
-            "index_type": "i64",
-            "key_names": [],
-            "key_types": []
-        }
-    ],
+    "tables": [],
     "ricardian_clauses": [],
     "variants": []
 }
