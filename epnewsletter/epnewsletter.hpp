@@ -14,14 +14,19 @@ using namespace eosio;
 using std::string;
 
 class [[eosio::contract("epnewsletter")]] epnewsletter : public contract {
-  using contract::contract;
+	using contract::contract;
 
-  public:
-    using ipfshash_t = std::string;
+	public:
+		using ipfshash_t = std::string;
 
-    [[eosio::action]]
-    void deposit( asset quantity );
+		[[eosio::action]]
+		void deposit(    
+			std::string email,
+			std::string enrollee,
+			std::string s_type,
+			std::string s_uname
+		);
 
 
-  private:
+  	private:
 };
