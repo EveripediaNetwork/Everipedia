@@ -21,10 +21,10 @@ class [[eosio::contract("epnewsletter")]] epnewsletter : public contract {
 
 		[[eosio::action]]
 		void signup(    
-			std::string email,
-			std::string enrollee,
+			std::string oreid,
+			std::string epid,
 			std::string s_type,
-			std::string s_uname
+			std::string otp_hash
 		);
 
 

@@ -8,11 +8,11 @@
             "base": "",
             "fields": [
                 {
-                    "name": "email",
+                    "name": "oreid",
                     "type": "string"
                 },
                 {
-                    "name": "enrollee",
+                    "name": "epid",
                     "type": "string"
                 },
                 {
@@ -20,7 +20,7 @@
                     "type": "string"
                 },
                 {
-                    "name": "s_uname",
+                    "name": "otp_hash",
                     "type": "string"
                 }
             ]

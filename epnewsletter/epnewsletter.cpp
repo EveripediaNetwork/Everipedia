@@ -4,10 +4,10 @@
 
 [[eosio::action]]
 void epnewsletter::signup(
-    std::string email,
-    std::string enrollee,
+    std::string oreid,
+    std::string epid,
     std::string s_type,
-    std::string s_uname
+    std::string otp_hash
 )
 {
     
