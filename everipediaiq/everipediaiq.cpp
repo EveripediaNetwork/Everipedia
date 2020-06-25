@@ -173,7 +173,8 @@ void everipediaiq::epartpropose(
     std::string comment, 
     std::string memo, 
     name permission,
-    std::string proxied_for 
+    std::string proxied_for,
+    std::string extra_note,
 ) { 
     require_auth(proposer);
     
@@ -183,15 +184,15 @@ void everipediaiq::epartpropose(
     asset iqAssetPack = asset(EDIT_PROPOSE_IQ * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
     action(
         permission_level{ proposer , permission }, 
-        _self , name("transfer"),
-        std::make_tuple( proposer, ARTICLE_CONTRACT, iqAssetPack, std::string("stake for vote"))
+        _self , name("transfrextra"),
+        std::make_tuple( proposer, ARTICLE_CONTRACT, iqAssetPack, std::string("stake for vote"), proxied_for, std::string("stake for vote: "), + ipfs_hash, std::string("lang_") + lang_code + std::string("/") + slug)
     ).send();
 
     // Make the proposal to the article contract
     action(
         permission_level{ ARTICLE_CONTRACT, name("active") }, 
-        ARTICLE_CONTRACT, name("propose2"),
-        std::make_tuple( proposer, slug, ipfs_hash, lang_code, group_id, comment, memo )
+        ARTICLE_CONTRACT, name("propose3"),
+        std::make_tuple( proposer, slug, ipfs_hash, lang_code, group_id, comment, memo, proxied_for, extra_note )
     ).send();
 }
 

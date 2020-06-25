@@ -318,6 +318,17 @@ public:
                   std::string memo );
 
     [[eosio::action]]
+    void propose3( name proposer, 
+                  std::string slug, 
+                  ipfshash_t ipfs_hash, 
+                  std::string lang_code,
+                  int64_t group_id,
+                  std::string comment, 
+                  std::string memo,
+                  std::string proxied_for,
+                  std::string extra_note );
+
+    [[eosio::action]]
     void vote( name voter,
                uint64_t proposal_id,
                bool approve,
