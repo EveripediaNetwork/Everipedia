@@ -454,7 +454,7 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
 [[eosio::action]]
 void eparticlectr::finalizeextr( uint64_t proposal_id ) {
     // Verify proposal exists
-    propstbl proptable( _self, _self.value );
+    propstblex proptable( _self, _self.value );
     auto prop_it = proptable.find( proposal_id );
     eosio::check( prop_it != proptable.end(), "Proposal not found" );
 
@@ -462,7 +462,7 @@ void eparticlectr::finalizeextr( uint64_t proposal_id ) {
     eosio::check( eosio::current_time_point().sec_since_epoch() > prop_it->endtime, "Voting period is not over yet");
 
     // Retrieve votes from DB
-    votestbl votetbl( _self, proposal_id );
+    votestblex votetbl( _self, proposal_id );
     auto vote_it = votetbl.begin();
     eosio::check( vote_it != votetbl.end(), "No votes found for proposal");
 
@@ -499,8 +499,8 @@ void eparticlectr::finalizeextr( uint64_t proposal_id ) {
     // Make sure no weird bugs cause the slash reward to under/overflow
     eosio::check( slash_ratio >= 0.0f && slash_ratio <= 1.0f, "Slash ratio out of bounds");
 
-    rewardstbl rewardstable( _self, _self.value );
-    staketbl staketable(_self, _self.value);
+    rewardstblex rewardstable( _self, _self.value );
+    staketblex staketable(_self, _self.value);
 
     // Slash / reward votes
     // Tally vote points

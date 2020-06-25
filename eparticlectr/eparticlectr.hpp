@@ -349,7 +349,7 @@ public:
 		indexed_by< name("byfinalper"), const_mem_fun<rewardhistex, uint64_t, &rewardhistex::get_finalize_period>>,
 		indexed_by< name("byproposal"), const_mem_fun<rewardhistex, uint64_t, &rewardhistex::get_proposal>>,
 		indexed_by< name("byproxiedusr"), const_mem_fun<rewardhistex, fixed_bytes<32>, &rewardhistex::hash_proxied_for>>
-	> rewardstbl;
+	> rewardstblex;
 
 	// period rewards table
 	typedef eosio::multi_index<name("perrwdstbl2"), periodreward> perrwdstbl;
