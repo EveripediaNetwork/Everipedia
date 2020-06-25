@@ -313,6 +313,46 @@
             ]
         },
         {
+            "name": "migrateprops",
+            "base": "",
+            "fields": [
+                {
+                    "name": "loop_limit",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "migraterwds",
+            "base": "",
+            "fields": [
+                {
+                    "name": "loop_limit",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "migratestkes",
+            "base": "",
+            "fields": [
+                {
+                    "name": "loop_limit",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "migratevotes",
+            "base": "",
+            "fields": [
+                {
+                    "name": "loop_limit",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
             "name": "mkreferendum",
             "base": "",
             "fields": [
@@ -324,6 +364,20 @@
         },
         {
             "name": "oldvotepurge",
+            "base": "",
+            "fields": [
+                {
+                    "name": "proposal_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "loop_limit",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "oldvteprgeex",
             "base": "",
             "fields": [
                 {
@@ -915,6 +969,26 @@
             "ricardian_contract": "Log proposal results."
         },
         {
+            "name": "migrateprops",
+            "type": "migrateprops",
+            "ricardian_contract": "Migrate old proposals to the new version"
+        },
+        {
+            "name": "migraterwds",
+            "type": "migraterwds",
+            "ricardian_contract": "Migrate old rewards to the new version"
+        },
+        {
+            "name": "migratestkes",
+            "type": "migratestkes",
+            "ricardian_contract": "Migrate old stakes to the new version"
+        },
+        {
+            "name": "migratevotes",
+            "type": "migratevotes",
+            "ricardian_contract": "Migrate old votes to the new version"
+        },
+        {
             "name": "mkreferendum",
             "type": "mkreferendum",
             "ricardian_contract": "Mark a proposal as a referendum"
@@ -923,6 +997,11 @@
             "name": "oldvotepurge",
             "type": "oldvotepurge",
             "ricardian_contract": "Purge old votes to free up RAM."
+        },
+        {
+            "name": "oldvteprgeex",
+            "type": "oldvteprgeex",
+            "ricardian_contract": "Purge old votes to free up RAM. New Version"
         },
         {
             "name": "propose2",

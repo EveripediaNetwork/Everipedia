@@ -758,8 +758,33 @@ void eparticlectr::curatelist( name user, std::string title, std::string descrip
 
 
 [[eosio::action]]
-void eparticlectr::migratestakes( uint32_t loop_limit ) {
+void eparticlectr::migratestkes( uint32_t loop_limit ) {
+    require_auth( name("evrpdcronjob") );
 
+    // Initialize the two tables 
+    staketbl stakestable( _self, _self.value );
+    staketblex stakestable_extra( _self, _self.value );
+
+    // Loop through the old proposals 
+    uint32_t counter = 0;
+    for ( auto stakes_it = stakestable.begin(); stakes_it != stakestable.end() && counter < loop_limit; stakes_it++ ) {
+        // Copy the old reward over to the new format
+        stakestable_extra.emplace( _self, [&]( auto& s ) {
+            s.id = stakes_it->id;
+            s.user = stakes_it->user;
+            s.amount = stakes_it->amount;
+            s.timestamp = stakes_it->timestamp;
+            s.completion_time = stakes_it->completion_time;
+            s.proxied_for = "";
+            s.extra_note = "";
+        });
+
+        // Delete the old stakes
+        // stakestable.erase(stakes_it);
+        
+        // Increase the count
+        counter++;
+    }
 }
 
 [[eosio::action]]
@@ -772,7 +797,7 @@ void eparticlectr::migratevotes( uint32_t loop_limit ) {
 
     // Loop through the old proposals 
     uint32_t counter = 0;
-    for ( auto votes_it = votestable.begin(); votes_it != idx.end() && counter < loop_limit; votes_it++ ) {
+    for ( auto votes_it = votestable.begin(); votes_it != votestable.end() && counter < loop_limit; votes_it++ ) {
         // Copy the old vote over to the new format
         votestable_extra.emplace( _self, [&]( auto& v ) {
             v.id = votes_it->id;
@@ -806,7 +831,7 @@ void eparticlectr::migrateprops( uint32_t loop_limit ) {
 
     // Loop through the old proposals 
     uint32_t counter = 0;
-    for ( auto props_it = propstable.begin(); props_it != idx.end() && counter < loop_limit; props_it++ ) {
+    for ( auto props_it = propstable.begin(); props_it != propstable.end() && counter < loop_limit; props_it++ ) {
         // Copy the old proposal over to the new format
         propstable_extra.emplace( _self, [&]( auto& p ) {
             p.id = props_it->id;
@@ -842,20 +867,20 @@ void eparticlectr::migraterwds( uint32_t loop_limit ) {
 
     // Loop through the old proposals 
     uint32_t counter = 0;
-    for ( auto rewards_it = rewardstable.begin(); rewards_it != idx.end() && counter < loop_limit; rewards_it++ ) {
+    for ( auto rewards_it = rewardstable.begin(); rewards_it != rewardstable.end() && counter < loop_limit; rewards_it++ ) {
         // Copy the old reward over to the new format
         rewardstable_extra.emplace( _self, [&]( auto& r ) {
-            r.id = r->id;
-            r.user = r->user;
-            r.vote_points = r->vote_points;
-            r.edit_points = r->edit_points;
-            r.proposal_id = r->proposal_id;
-            r.proposal_finalize_time = r->proposal_finalize_time;
-            r.proposal_finalize_period = r->proposal_finalize_period;
-            r.proposalresult = r->proposalresult;
-            r.is_editor = r->is_editor;
-            r.is_tie = r->is_tie;
-            r.memo = r->memo;
+            r.id = rewards_it->id;
+            r.user = rewards_it->user;
+            r.vote_points = rewards_it->vote_points;
+            r.edit_points = rewards_it->edit_points;
+            r.proposal_id = rewards_it->proposal_id;
+            r.proposal_finalize_time = rewards_it->proposal_finalize_time;
+            r.proposal_finalize_period = rewards_it->proposal_finalize_period;
+            r.proposalresult = rewards_it->proposalresult;
+            r.is_editor = rewards_it->is_editor;
+            r.is_tie = rewards_it->is_tie;
+            r.memo = rewards_it->memo;
             r.proxied_for = "";
             r.extra_note = "";
         });
@@ -871,4 +896,4 @@ void eparticlectr::migraterwds( uint32_t loop_limit ) {
 
 
 
-EOSIO_DISPATCH( eparticlectr, (brainclmid)(brainclmidex)(slashnotify)(slashnotifex)(finalize)(finalizeextr)(oldvotepurge)(oldvteprgeex)(propose2)(proposeextra)(rewardclmid)(vote)(voteextra)(logpropres)(migratestakes)(migratevotes)(migrateprops)(migraterwds)(logpropinfo)(logpropinfex)(mkreferendum)(curatelist) )
+EOSIO_DISPATCH( eparticlectr, (brainclmid)(brainclmidex)(slashnotify)(slashnotifex)(finalize)(finalizeextr)(oldvotepurge)(oldvteprgeex)(propose2)(proposeextra)(rewardclmid)(vote)(voteextra)(logpropres)(migratestkes)(migratevotes)(migrateprops)(migraterwds)(logpropinfo)(logpropinfex)(mkreferendum)(curatelist) )

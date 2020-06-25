@@ -396,7 +396,7 @@ public:
 					   uint32_t loop_limit);
 
 	[[eosio::action]]
-	void migratestakes( uint32_t loop_limit );
+	void migratestkes( uint32_t loop_limit );
 
 	[[eosio::action]]
 	void migratevotes( uint32_t loop_limit );

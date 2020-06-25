@@ -38,11 +38,11 @@ Log proposal information. New Version
 Mark a proposal as a referendum
 <h1 class="contract">curatelist</h1>
 Publish a curated list
-<h1 class="contract">migratestakes</h1>
+<h1 class="contract">migratestkes</h1>
 Migrate old stakes to the new version
 <h1 class="contract">migratevotes</h1>
 Migrate old votes to the new version
-<h1 class="contract">migrateproposals</h1>
+<h1 class="contract">migrateprops</h1>
 Migrate old proposals to the new version
-<h1 class="contract">migraterewards</h1>
+<h1 class="contract">migraterwds</h1>
 Migrate old rewards to the new version
