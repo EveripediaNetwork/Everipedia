@@ -330,11 +330,21 @@ public:
 
     [[eosio::action]]
     void vote( name voter,
-               uint64_t proposal_id,
-               bool approve,
-               uint64_t amount,
-               std::string comment,
-               std::string memo );
+                uint64_t proposal_id,
+                bool approve,
+                uint64_t amount,
+                std::string comment,
+                std::string memo );
+
+    [[eosio::action]]
+    void vote2( name voter,
+                uint64_t proposal_id,
+                bool approve,
+                uint64_t amount,
+                std::string comment,
+                std::string memo,
+                std::string proxied_for,
+                std::string extra_note );
 
     [[eosio::action]]
     void rewardclmid ( uint64_t reward_id );

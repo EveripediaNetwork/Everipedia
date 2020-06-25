@@ -164,7 +164,27 @@ void everipediaiq::add_balance( name owner, asset value, name ram_payer )
 }
 
 [[eosio::action]]
-void everipediaiq::epartpropose( 
+void everipediaiq::epartpropose( name proposer, std::string slug, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo, name permission) { 
+    require_auth(proposer);
+
+    // Transfer the IQ to the eparticlectr contract for staking
+    asset iqAssetPack = asset(EDIT_PROPOSE_IQ * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
+    action(
+        permission_level{ proposer , permission }, 
+        _self , name("transfer"),
+        std::make_tuple( proposer, ARTICLE_CONTRACT, iqAssetPack, std::string("stake for vote"))
+    ).send();
+
+    // Make the proposal to the article contract
+    action(
+        permission_level{ ARTICLE_CONTRACT, name("active") }, 
+        ARTICLE_CONTRACT, name("propose2"),
+        std::make_tuple( proposer, slug, ipfs_hash, lang_code, group_id, comment, memo )
+    ).send();
+}
+
+[[eosio::action]]
+void everipediaiq::epartpropos2( 
     name proposer, 
     std::string slug, 
     ipfshash_t ipfs_hash, 
@@ -174,18 +194,19 @@ void everipediaiq::epartpropose(
     std::string memo, 
     name permission,
     std::string proxied_for,
-    std::string extra_note,
+    std::string extra_note
 ) { 
     require_auth(proposer);
     
     eosio::check( proxied_for.size() <= 256, "proxied_for has more than 256 bytes" );
+    eosio::check( extra_note.size() <= 256, "extra_note has more than 256 bytes" );
 
     // Transfer the IQ to the eparticlectr contract for staking
     asset iqAssetPack = asset(EDIT_PROPOSE_IQ * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
     action(
         permission_level{ proposer , permission }, 
         _self , name("transfrextra"),
-        std::make_tuple( proposer, ARTICLE_CONTRACT, iqAssetPack, std::string("stake for vote"), proxied_for, std::string("stake for vote: "), + ipfs_hash, std::string("lang_") + lang_code + std::string("/") + slug)
+        std::make_tuple( proposer, ARTICLE_CONTRACT, iqAssetPack, std::string("stake for vote"), proxied_for, ipfs_hash +  std::string("|lang_") + lang_code + std::string("/") + slug, extra_note)
     ).send();
 
     // Make the proposal to the article contract
@@ -197,20 +218,10 @@ void everipediaiq::epartpropose(
 }
 
 [[eosio::action]]
-void everipediaiq::epartvote( 
-    name voter, 
-    uint64_t proposal_id, 
-    bool approve, 
-    uint64_t amount, 
-    std::string comment, 
-    std::string memo, 
-    name permission,
-    std::string proxied_for
-) {
+void everipediaiq::epartvote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string comment, std::string memo, name permission) {
     require_auth(voter);
 
     eosio::check(amount > 0, "must transfer a positive amount");
-    eosio::check( proxied_for.size() <= 256, "proxied_for has more than 256 bytes" );
 
     // Transfer the IQ to the eparticlectr contract for staking
     asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
@@ -228,5 +239,39 @@ void everipediaiq::epartvote(
     ).send();
 }
 
+[[eosio::action]]
+void everipediaiq::epartvote2( 
+    name voter, 
+    uint64_t proposal_id, 
+    bool approve, 
+    uint64_t amount, 
+    std::string comment, 
+    std::string memo, 
+    name permission,
+    std::string proxied_for,
+    std::string extra_note
+) {
+    require_auth(voter);
 
-EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(transfer)(transfrextra)(epartpropose)(epartvote) )
+    eosio::check(amount > 0, "must transfer a positive amount");
+    eosio::check( proxied_for.size() <= 256, "proxied_for has more than 256 bytes" );
+    eosio::check( extra_note.size() <= 256, "extra_note has more than 256 bytes" );
+
+    // Transfer the IQ to the eparticlectr contract for staking
+    asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
+    action(
+        permission_level{ voter , permission }, 
+        _self , name("transfrextra"),
+        std::make_tuple( voter, ARTICLE_CONTRACT, iqAssetPack, std::string("stake for vote"), proxied_for, proposal_id, extra_note)
+    ).send();
+
+    // Create the vote in the eparticlectr contract
+    action(
+        permission_level{ ARTICLE_CONTRACT, name("active") }, 
+        ARTICLE_CONTRACT, name("vote2"),
+        std::make_tuple( voter, proposal_id, approve, amount, comment, memo, proxied_for, extra_note )
+    ).send();
+}
+
+
+EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(transfer)(transfrextra)(epartpropose)(epartpropos2)(epartvote)(epartvote2) )

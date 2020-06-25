@@ -62,7 +62,28 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
                      string proxied_for );
 
     [[eosio::action]]
+    void epartvote2( name voter, 
+                     uint64_t proposal_id,
+                     bool approve,
+                     uint64_t amount,
+                     std::string comment, 
+                     std::string memo,
+                     name permission,
+                     string proxied_for );
+
+    [[eosio::action]]
     void epartpropose( name proposer, 
+                        std::string slug,
+                        ipfshash_t ipfs_hash,
+                        std::string lang_code,
+                        int64_t group_id,
+                        std::string comment,
+                        std::string memo, 
+                        name permission,
+                        string proxied_for );
+
+    [[eosio::action]]
+    void epartpropos2( name proposer, 
                         std::string slug,
                         ipfshash_t ipfs_hash,
                         std::string lang_code,
