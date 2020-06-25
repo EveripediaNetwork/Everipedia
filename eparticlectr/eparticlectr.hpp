@@ -364,6 +364,9 @@ public:
 	void brainclmid( uint64_t stakeid );
 
 	[[eosio::action]]
+	void brainclmidex( uint64_t stakeid );
+
+	[[eosio::action]]
 	void slashnotify( name slashee,
 					  uint64_t amount,
 					  uint32_t seconds, 
@@ -395,7 +398,7 @@ public:
 				  string memo );
 
 	[[eosio::action]]
-	void proposeextr( name proposer, 
+	void proposeextra( name proposer, 
 				  string slug, 
 				  ipfshash_t ipfs_hash, 
 				  string lang_code,
