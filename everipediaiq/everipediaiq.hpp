@@ -58,8 +58,7 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
                      uint64_t amount,
                      std::string comment, 
                      std::string memo,
-                     name permission,
-                     string proxied_for );
+                     name permission );
 
     [[eosio::action]]
     void epartvote2( name voter, 
@@ -69,7 +68,8 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
                      std::string comment, 
                      std::string memo,
                      name permission,
-                     string proxied_for );
+                     string proxied_for,
+                     string extra_note );
 
     [[eosio::action]]
     void epartpropose( name proposer, 
@@ -79,8 +79,7 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
                         int64_t group_id,
                         std::string comment,
                         std::string memo, 
-                        name permission,
-                        string proxied_for );
+                        name permission );
 
     [[eosio::action]]
     void epartpropos2( name proposer, 
@@ -91,7 +90,8 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
                         std::string comment,
                         std::string memo, 
                         name permission,
-                        string proxied_for );
+                        string proxied_for,
+                        string extra_note );
 
     inline asset get_supply( symbol_code sym )const;
 
