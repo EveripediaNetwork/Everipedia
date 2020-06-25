@@ -71,6 +71,15 @@ public:
 	// ==================================================
 	// Helper functions
 	// fixed_bytes<32> is the same as checksum256
+	static fixed_bytes<32> sha256_proxied_for(std::string proxied_for) {
+		eosio::check(proxied_for.size() <= 256, "proxied_for max size is 32 bytes");
+		std::string padded_proxied_for = proxied_for;
+		while (proxied_for.size() < 256)
+			proxied_for.append(" ");
+
+		return sha256(padded_proxied_for.c_str(), padded_proxied_for.size());
+	}
+
 	static fixed_bytes<32> sha256_slug_lang(std::string slug, std::string lang_code) {
 		eosio::check(slug.size() <= MAX_SLUG_SIZE, "slug max size is 32 bytes");
 		eosio::check(lang_code.size() <= MAX_LANG_CODE_SIZE, "lang_code max size is 8 bytes");
@@ -150,6 +159,7 @@ public:
 
 		uint64_t primary_key()const { return id; }
 		uint64_t get_user()const { return user.value; }
+		fixed_bytes<32> hash_proxied_for () const { return sha256_proxied_for(proxied_for); }
 	};
 
 
@@ -184,6 +194,7 @@ public:
 		string proxied_for;
 		string extra_note;
 		uint64_t primary_key()const { return id; }
+		fixed_bytes<32> hash_proxied_for () const { return sha256_proxied_for(proxied_for); }
 	};
 
 	// Edit Proposals
@@ -220,6 +231,7 @@ public:
 		string extra_note;
 
 		uint64_t primary_key () const { return id; }
+		fixed_bytes<32> hash_proxied_for () const { return sha256_proxied_for(proxied_for); }
 	};
 
 	// Internal struct for history of success rewards and reject slashes
@@ -262,6 +274,7 @@ public:
 		uint64_t get_user()const { return user.value; }
 		uint64_t get_proposal()const { return proposal_id; }
 		uint64_t get_finalize_period()const { return proposal_finalize_period; }
+		fixed_bytes<32> hash_proxied_for () const { return sha256_proxied_for(proxied_for); }
 	};
 
 	struct [[eosio::table]] periodreward {
@@ -302,7 +315,8 @@ public:
 
 	// stake table extra
 	typedef eosio::multi_index<name("staketblex"), stakeextra,
-		indexed_by< name("byuser"), const_mem_fun<stakeextra, uint64_t, &stakeextra::get_user >>
+		indexed_by< name("byuser"), const_mem_fun<stakeextra, uint64_t, &stakeextra::get_user>>,
+		indexed_by< name("byproxiedusr"), const_mem_fun<stakeextra, fixed_bytes<32>, &stakeextra::hash_proxied_for>>
 	> staketblex;
 
 	// votes table
@@ -310,26 +324,31 @@ public:
 	typedef eosio::multi_index<name("votestbl2"), vote_t > votestbl; // EOS table for the votes
 
 	// scoped by proposal (new)
-	typedef eosio::multi_index<name("votestblex"), voteextra_t > votestblex; // EOS table for the votes
+	typedef eosio::multi_index<name("votestblex"), voteextra_t,
+		indexed_by< name("byproxiedusr"), const_mem_fun<voteextra_t, fixed_bytes<32>, &voteextra_t::hash_proxied_for>>
+	 > votestblex; // EOS table for the votes
 
 	// edit proposals table
 	typedef eosio::multi_index<name("propstbl2"), editproposal> propstbl; // EOS table for the edit proposals
 
 	// edit proposals table (new)
-	typedef eosio::multi_index<name("propstblex"), editpropslex> propstblex; // EOS table for the edit proposals
+	typedef eosio::multi_index<name("propstblex"), editpropslex, 
+		indexed_by< name("byproxiedusr"), const_mem_fun<editpropslex, fixed_bytes<32>, &editpropslex::hash_proxied_for>>
+	> propstblex; // EOS table for the edit proposals
 
 	// rewards history table
 	typedef eosio::multi_index<name("rewardstbl2"), rewardhistory,
 		indexed_by< name("byuser"), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_user>>,
-		indexed_by< name("byfinalper"), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_finalize_period >>,
-		indexed_by< name("byproposal"), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_proposal >>
+		indexed_by< name("byfinalper"), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_finalize_period>>,
+		indexed_by< name("byproposal"), const_mem_fun<rewardhistory, uint64_t, &rewardhistory::get_proposal>>
 	> rewardstbl;
 
 	// rewards history table extra
 	typedef eosio::multi_index<name("rewardstblex"), rewardhistex,
 		indexed_by< name("byuser"), const_mem_fun<rewardhistex, uint64_t, &rewardhistex::get_user>>,
-		indexed_by< name("byfinalper"), const_mem_fun<rewardhistex, uint64_t, &rewardhistex::get_finalize_period >>,
-		indexed_by< name("byproposal"), const_mem_fun<rewardhistex, uint64_t, &rewardhistex::get_proposal >>
+		indexed_by< name("byfinalper"), const_mem_fun<rewardhistex, uint64_t, &rewardhistex::get_finalize_period>>,
+		indexed_by< name("byproposal"), const_mem_fun<rewardhistex, uint64_t, &rewardhistex::get_proposal>>,
+		indexed_by< name("byproxiedusr"), const_mem_fun<rewardhistex, fixed_bytes<32>, &rewardhistex::hash_proxied_for>>
 	> rewardstbl;
 
 	// period rewards table
@@ -351,6 +370,15 @@ public:
 					  string memo );
 
 	[[eosio::action]]
+	void slashnotifex( name slashee,
+					  uint64_t amount,
+					  uint32_t seconds, 
+					  string memo,
+					  string proxied_for;
+					  string extra_note;
+					);
+
+	[[eosio::action]]
 	void finalize( uint64_t proposal_id );
 
 	[[eosio::action]]
@@ -367,7 +395,7 @@ public:
 				  string memo );
 
 	[[eosio::action]]
-	void propose3( name proposer, 
+	void proposeextr( name proposer, 
 				  string slug, 
 				  ipfshash_t ipfs_hash, 
 				  string lang_code,
@@ -386,7 +414,7 @@ public:
 				string memo );
 
 	[[eosio::action]]
-	void vote2( name voter,
+	void voteextra( name voter,
 				uint64_t proposal_id,
 				bool approve,
 				uint64_t amount,
