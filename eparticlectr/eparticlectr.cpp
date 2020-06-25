@@ -294,8 +294,8 @@ void eparticlectr::proposeextra( name proposer, string slug, ipfshash_t ipfs_has
 
     action(
         permission_level { _self, name("active") },
-        _self, name("logpropinfo"),
-        std::make_tuple( proposal_id, proposer, wiki_id, slug, ipfs_hash, lang_code, group_id, comment, memo, starttime, endtime )
+        _self, name("logpropinfex"),
+        std::make_tuple( proposal_id, proposer, wiki_id, slug, ipfs_hash, lang_code, group_id, comment, memo, starttime, endtime, proxied_for, extra_note )
     ).send();
 
     // Place the default vote
@@ -308,6 +308,151 @@ void eparticlectr::proposeextra( name proposer, string slug, ipfshash_t ipfs_has
 
 [[eosio::action]]
 void eparticlectr::finalize( uint64_t proposal_id ) {
+    // Verify proposal exists
+    propstbl proptable( _self, _self.value );
+    auto prop_it = proptable.find( proposal_id );
+    eosio::check( prop_it != proptable.end(), "Proposal not found" );
+
+    // Verify voting period is complete
+    eosio::check( eosio::current_time_point().sec_since_epoch() > prop_it->endtime, "Voting period is not over yet");
+
+    // Retrieve votes from DB
+    votestbl votetbl( _self, proposal_id );
+    auto vote_it = votetbl.begin();
+    eosio::check( vote_it != votetbl.end(), "No votes found for proposal");
+
+    // Tally votes
+    uint64_t yes_votes = 0;
+    uint64_t no_votes = 0;
+    while(vote_it->proposal_id == proposal_id && vote_it != votetbl.end()) {
+        if (vote_it->approve)
+            yes_votes += vote_it->amount;
+        else
+            no_votes += vote_it->amount;
+        vote_it++;
+    }
+
+    // Determine slashing conditions
+    vote_it = votetbl.begin();
+    bool approved = 0;
+    bool istie = 0;
+    float totalVotes = yes_votes + no_votes;
+    if ((yes_votes / totalVotes) >= TIER_ONE_THRESHOLD){
+        approved = 1;
+        if ((yes_votes / totalVotes) == TIER_ONE_THRESHOLD){
+            istie = 1;
+        }
+    }
+    float slash_ratio = 0.0f;
+    if (approved){
+        slash_ratio = (yes_votes - no_votes) / totalVotes;
+    }
+    else{
+        slash_ratio = (no_votes - yes_votes) / totalVotes;
+    }
+
+    // Make sure no weird bugs cause the slash reward to under/overflow
+    eosio::check( slash_ratio >= 0.0f && slash_ratio <= 1.0f, "Slash ratio out of bounds");
+
+    rewardstbl rewardstable( _self, _self.value );
+    staketbl staketable(_self, _self.value);
+
+    // Slash / reward votes
+    // Tally vote points
+    uint64_t total_vote_points = 0;
+    while(vote_it != votetbl.end() && istie == 0) {
+        uint32_t extraSecsSlash = uint32_t((float)STAKING_DURATION * slash_ratio);
+        
+        // Refund winning editor stake immediately
+        if (approved && vote_it->is_editor) {
+            auto stake_it = staketable.find(vote_it->stake_id);
+            staketable.modify( stake_it, same_payer, [&]( auto& a ) {
+                a.completion_time = eosio::current_time_point().sec_since_epoch();
+            });
+        }
+        // Reduce staking time for vote winners to 5 days
+        else if (approved && !vote_it->is_editor) {
+            auto stake_it = staketable.find(vote_it->stake_id);
+            staketable.modify( stake_it, same_payer, [&]( auto& a ) {
+                a.completion_time = a.timestamp + WINNING_VOTE_STAKE_TIME;
+            });
+        }
+
+        
+        // Slash losers
+        if (vote_it->approve != approved) {
+            auto stake_it = staketable.find(vote_it->stake_id);
+            staketable.modify( stake_it, same_payer, [&]( auto& a ) {
+                a.completion_time += extraSecsSlash;
+            });
+
+            action( 
+                permission_level { _self, name("active") },
+                _self, name("slashnotify"),
+                std::make_tuple( vote_it->voter, vote_it->amount, extraSecsSlash, vote_it->memo )
+            ).send();
+        }
+        // Reward the winners
+        else{
+            rewardstable.emplace( _self,  [&]( auto& a ) {
+                a.id = rewardstable.available_primary_key();
+                a.user = vote_it->voter;
+                a.vote_points = vote_it->amount;
+                if (approved && vote_it->is_editor)
+                    a.edit_points = (yes_votes - no_votes);
+                else
+                    a.edit_points = 0;
+                a.proposal_id = proposal_id;
+                a.proposal_finalize_time = eosio::current_time_point().sec_since_epoch();
+                a.proposal_finalize_period = uint32_t(eosio::current_time_point().sec_since_epoch() / REWARD_INTERVAL);
+                a.proposalresult = approved;
+                a.is_editor = vote_it->is_editor;
+                a.is_tie = istie;
+                a.memo = vote_it->memo;
+            });
+            total_vote_points += vote_it->amount;
+        }
+        vote_it++;
+    }
+
+    // Update rewards table
+    uint64_t current_period = eosio::current_time_point().sec_since_epoch() / REWARD_INTERVAL;
+    perrwdstbl perrewards( _self, _self.value );
+    auto period_it = perrewards.find( current_period );
+    uint64_t edit_points = approved ? (yes_votes - no_votes) : 0;
+    if (period_it == perrewards.end()) {
+        perrewards.emplace( _self, [&]( auto& p ) {
+            p.period = current_period;
+            p.curation_sum = total_vote_points;
+            p.editor_sum = edit_points;
+        });
+    }
+    else {
+        perrewards.modify( period_it, same_payer, [&]( auto& p ) {
+            p.curation_sum += total_vote_points;
+            p.editor_sum += edit_points;
+        });
+    }
+
+    // Log proposal result and new wiki id
+    action(
+        permission_level { _self, name("active") },
+        _self, name("logpropres"),
+        std::make_tuple( prop_it->id, approved, yes_votes, no_votes )
+    ).send();
+
+    // delete proposal if it's not the most current one
+    // deleting the most current proposal screws up the ID auto-increment
+    if (prop_it->id == proptable.available_primary_key() - 1)
+        proptable.modify( prop_it, same_payer, [&]( auto& p ) {
+            p.finalized = true;
+        });
+    else
+        proptable.erase( prop_it );
+}
+
+[[eosio::action]]
+void eparticlectr::finalizeextr( uint64_t proposal_id ) {
     // Verify proposal exists
     propstbl proptable( _self, _self.value );
     auto prop_it = proptable.find( proposal_id );
@@ -552,12 +697,22 @@ void eparticlectr::slashnotify( name slashee, uint64_t amount, uint32_t seconds,
 }
 
 [[eosio::action]]
+void eparticlectr::slashnotifex( name slashee, uint64_t amount, uint32_t seconds, string memo, string proxied_for, string extra_note ){
+    require_auth( _self );
+}
+
+[[eosio::action]]
 void eparticlectr::logpropres( uint64_t proposal_id, bool approved, uint64_t yes_votes, uint64_t no_votes ) {
     require_auth( _self );
 }
 
 [[eosio::action]]
 void eparticlectr::logpropinfo( uint64_t proposal_id, name proposer, uint64_t wiki_id, string slug, ipfshash_t ipfs_hash, string lang_code, uint64_t group_id, string comment, string memo, uint32_t starttime, uint32_t endtime) {
+    require_auth( _self );
+}
+
+[[eosio::action]]
+void eparticlectr::logpropinfex( uint64_t proposal_id, name proposer, uint64_t wiki_id, string slug, ipfshash_t ipfs_hash, string lang_code, uint64_t group_id, string comment, string memo, uint32_t starttime, uint32_t endtime, string proxied_for, string extra_note) {
     require_auth( _self );
 }
 
@@ -572,4 +727,4 @@ void eparticlectr::curatelist( name user, string title, string description, std:
 //    require_auth( _self );
 //}
 
-EOSIO_DISPATCH( eparticlectr, (brainclmid)(brainclmidex)(slashnotify)(slashnotifex)(finalize)(oldvotepurge)(propose2)(proposeextra)(rewardclmid)(vote)(voteextra)(logpropres)(logpropinfo)(mkreferendum)(curatelist) )
+EOSIO_DISPATCH( eparticlectr, (brainclmid)(brainclmidex)(slashnotify)(slashnotifex)(finalize)(finalizeextr)(oldvotepurge)(propose2)(proposeextra)(rewardclmid)(vote)(voteextra)(logpropres)(logpropinfo)(logpropinfex)(mkreferendum)(curatelist) )

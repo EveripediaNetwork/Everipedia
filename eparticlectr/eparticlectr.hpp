@@ -385,6 +385,9 @@ public:
 	void finalize( uint64_t proposal_id );
 
 	[[eosio::action]]
+	void finalizeextr( uint64_t proposal_id );
+
+	[[eosio::action]]
 	void oldvotepurge( uint64_t proposal_id,
 					   uint32_t loop_limit);
 
@@ -447,6 +450,21 @@ public:
 					  string memo,
 					  uint32_t starttime,
 					  uint32_t endtime );
+
+	[[eosio::action]]
+	void logpropinfex( uint64_t proposal_id,
+					  name proposer,
+					  uint64_t wiki_id,
+					  string slug,
+					  ipfshash_t ipfs_hash,
+					  string lang_code,
+					  uint64_t group_id,
+					  string comment,
+					  string memo,
+					  uint32_t starttime,
+					  uint32_t endtime,
+					  string proxied_for,
+				  	  string extra_note );
 
 	[[eosio::action]]
 	void mkreferendum( uint64_t proposal_id );
