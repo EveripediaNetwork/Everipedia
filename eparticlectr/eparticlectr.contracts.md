@@ -22,6 +22,8 @@ Propose an edit (uses IQ, only callable by everipediaiq::epartpropose).
 Propose an edit (uses IQ, only callable by everipediaiq::epartpropsex). New Version
 <h1 class="contract">oldvotepurge</h1>
 Purge old votes to free up RAM.
+<h1 class="contract">oldvteprgeex</h1>
+Purge old votes to free up RAM. New Version
 <h1 class="contract">vote</h1>
 Vote on a proposal (uses IQ, only callable by everipediaiq::epartvote).
 <h1 class="contract">voteextra</h1>
@@ -36,3 +38,11 @@ Log proposal information. New Version
 Mark a proposal as a referendum
 <h1 class="contract">curatelist</h1>
 Publish a curated list
+<h1 class="contract">migratestakes</h1>
+Migrate old stakes to the new version
+<h1 class="contract">migratevotes</h1>
+Migrate old votes to the new version
+<h1 class="contract">migrateproposals</h1>
+Migrate old proposals to the new version
+<h1 class="contract">migraterewards</h1>
+Migrate old rewards to the new version

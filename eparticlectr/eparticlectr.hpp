@@ -159,7 +159,7 @@ public:
 
 		uint64_t primary_key()const { return id; }
 		uint64_t get_user()const { return user.value; }
-		fixed_bytes<32> hash_proxied_for () const { return sha256_proxied_for(proxied_for); }
+		fixed_bytes<32> hash_proxied_for()const { return sha256_proxied_for(proxied_for); }
 	};
 
 
@@ -194,7 +194,7 @@ public:
 		std::string proxied_for;
 		std::string extra_note;
 		uint64_t primary_key()const { return id; }
-		fixed_bytes<32> hash_proxied_for () const { return sha256_proxied_for(proxied_for); }
+		fixed_bytes<32> hash_proxied_for()const { return sha256_proxied_for(proxied_for); }
 	};
 
 	// Edit Proposals
@@ -389,6 +389,10 @@ public:
 
 	[[eosio::action]]
 	void oldvotepurge( uint64_t proposal_id,
+					   uint32_t loop_limit);
+
+	[[eosio::action]]
+	void oldvteprgeex( uint64_t proposal_id,
 					   uint32_t loop_limit);
 
 	[[eosio::action]]

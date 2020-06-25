@@ -533,8 +533,8 @@ void eparticlectr::finalizeextr( uint64_t proposal_id ) {
 
             action( 
                 permission_level { _self, name("active") },
-                _self, name("slashnotify"),
-                std::make_tuple( vote_it->voter, vote_it->amount, extraSecsSlash, vote_it->memo )
+                _self, name("slashnotifex"),
+                std::make_tuple( vote_it->voter, vote_it->amount, extraSecsSlash, vote_it->memo, vote_it->proxied_for, vote_it->extra_note )
             ).send();
         }
         // Reward the winners
@@ -675,6 +675,34 @@ void eparticlectr::oldvotepurge( uint64_t proposal_id, uint32_t loop_limit ) {
 }
 
 [[eosio::action]]
+void eparticlectr::oldvteprgeex( uint64_t proposal_id, uint32_t loop_limit ) {
+    // Get the proposal object
+    propstblex proptable( _self, _self.value );
+    auto prop_it = proptable.find(proposal_id);
+    eosio::check( prop_it == proptable.end() || prop_it->finalized, "Proposal not finalized yet!");
+
+    // If it is an undeleted proposal, make sure it's no longer the most current proposal
+    // so the auto-increment doesn't get screwed up
+    // If it isn't delete it
+    if ( prop_it != proptable.end() ) {
+        eosio::check( prop_it->id != proptable.available_primary_key() - 1, "Cannot delete most recent proposal" );
+        proptable.erase( prop_it );
+    }
+
+    // Retrieve votes from DB
+    votestblex votetbl( _self, proposal_id );
+    auto vote_it = votetbl.begin();
+    eosio::check( vote_it != votetbl.end(), "No votes found for proposal!");
+
+    // Free up RAM
+    uint32_t count = 0;
+    while(count < loop_limit && vote_it != votetbl.end()) {
+        vote_it = votetbl.erase(vote_it);
+        count++;
+    }
+}
+
+[[eosio::action]]
 void eparticlectr::mkreferendum( uint64_t proposal_id ) {
     propstbl proptable( _self, _self.value );
 
@@ -724,4 +752,57 @@ void eparticlectr::curatelist( name user, std::string title, std::string descrip
 }
 
 
-EOSIO_DISPATCH( eparticlectr, (brainclmid)(brainclmidex)(slashnotify)(slashnotifex)(finalize)(finalizeextr)(oldvotepurge)(propose2)(proposeextra)(rewardclmid)(vote)(voteextra)(logpropres)(logpropinfo)(logpropinfex)(mkreferendum)(curatelist) )
+[[eosio::action]]
+void eparticlectr::migratestakes( uint32_t loop_limit ) {
+
+}
+
+[[eosio::action]]
+void eparticlectr::migratevotes( uint32_t loop_limit ) {
+
+}
+
+[[eosio::action]]
+void eparticlectr::migrateprops( uint32_t loop_limit ) {
+
+    // Initialize the two tables 
+    propstbl propstable( _self, _self.value );
+    propstblex propstable_extra( _self, _self.value );
+
+    // Loop through the old proposals 
+    uint32_t counter = 0;
+    for ( auto props_it = propstable.begin(); props_it != idx.end() && counter < loop_limit; props_it++ ) {
+        // Copy the old proposal over to the new format
+        propstable_extra.emplace( _self, [&]( auto& p ) {
+            p.id = props_it->proposal_id;
+            p.wiki_id = props_it->wiki_id;
+            p.slug = props_it->slug;
+            p.group_id = props_it->group_id;
+            p.lang_code = props_it->lang_code;
+            p.ipfs_hash = props_it->ipfs_hash;
+            p.proposer = props_it->proposer;
+            p.starttime = props_it->starttime;
+            p.endtime = props_it->endtime;
+            p.memo = props_it->memo;
+            p.finalized = props_it->finalized;
+            p.proxied_for = "";
+            p.extra_note = "";
+        });
+
+        // Delete the old proposal
+        // votetbl.erase(vote_it);
+        
+        // Increase the count
+        counter++;
+    }
+}
+
+[[eosio::action]]
+void eparticlectr::migraterwds( uint32_t loop_limit ) {
+
+}
+
+
+
+
+EOSIO_DISPATCH( eparticlectr, (brainclmid)(brainclmidex)(slashnotify)(slashnotifex)(finalize)(finalizeextr)(oldvotepurge)(oldvteprgeex)(propose2)(proposeextra)(rewardclmid)(vote)(voteextra)(logpropres)(migratestakes)(migratevotes)(migrateprops)(migraterwds)(logpropinfo)(logpropinfex)(mkreferendum)(curatelist) )
