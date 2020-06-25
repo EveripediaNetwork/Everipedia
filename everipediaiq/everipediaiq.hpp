@@ -56,8 +56,8 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
                      uint64_t proposal_id,
                      bool approve,
                      uint64_t amount,
-                     std::string comment, 
-                     std::string memo,
+                     string comment, 
+                     string memo,
                      name permission );
 
     [[eosio::action]]
@@ -65,30 +65,30 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
                      uint64_t proposal_id,
                      bool approve,
                      uint64_t amount,
-                     std::string comment, 
-                     std::string memo,
+                     string comment, 
+                     string memo,
                      name permission,
                      string proxied_for,
                      string extra_note );
 
     [[eosio::action]]
     void epartpropose( name proposer, 
-                        std::string slug,
+                        string slug,
                         ipfshash_t ipfs_hash,
-                        std::string lang_code,
+                        string lang_code,
                         int64_t group_id,
-                        std::string comment,
-                        std::string memo, 
+                        string comment,
+                        string memo, 
                         name permission );
 
     [[eosio::action]]
     void epartpropos2( name proposer, 
-                        std::string slug,
+                        string slug,
                         ipfshash_t ipfs_hash,
-                        std::string lang_code,
+                        string lang_code,
                         int64_t group_id,
-                        std::string comment,
-                        std::string memo, 
+                        string comment,
+                        string memo, 
                         name permission,
                         string proxied_for,
                         string extra_note );
