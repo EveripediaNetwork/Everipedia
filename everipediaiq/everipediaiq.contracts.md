@@ -12,9 +12,11 @@ Stake IQ for Brainpower.
 Create a token.
 <h1 class="contract">epartpropose</h1>
 User-facing action for creating a proposal. 
-<h1 class="contract">epartprops2</h1>
+<h1 class="contract">epartpropsex</h1>
 User-facing action for creating a proposal. New version
 <h1 class="contract">epartvote</h1>
 User-facing action for voting on a proposal
-<h1 class="contract">epartvote2</h1>
+<h1 class="contract">epartvotex</h1>
 User-facing action for voting on a proposal. New version
+
+

@@ -61,7 +61,7 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
                      name permission );
 
     [[eosio::action]]
-    void epartvote2( name voter, 
+    void epartvotex( name voter, 
                      uint64_t proposal_id,
                      bool approve,
                      uint64_t amount,
@@ -82,7 +82,7 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
                         name permission );
 
     [[eosio::action]]
-    void epartpropos2( name proposer, 
+    void epartpropsex( name proposer, 
                         string slug,
                         ipfshash_t ipfs_hash,
                         string lang_code,

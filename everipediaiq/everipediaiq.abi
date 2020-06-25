@@ -103,9 +103,51 @@
                 {
                     "name": "permission",
                     "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "epartpropsex",
+            "base": "",
+            "fields": [
+                {
+                    "name": "proposer",
+                    "type": "name"
+                },
+                {
+                    "name": "slug",
+                    "type": "string"
+                },
+                {
+                    "name": "ipfs_hash",
+                    "type": "ipfshash_t"
+                },
+                {
+                    "name": "lang_code",
+                    "type": "string"
+                },
+                {
+                    "name": "group_id",
+                    "type": "int64"
+                },
+                {
+                    "name": "comment",
+                    "type": "string"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                },
+                {
+                    "name": "permission",
+                    "type": "name"
                 },
                 {
                     "name": "proxied_for",
+                    "type": "string"
+                },
+                {
+                    "name": "extra_note",
                     "type": "string"
                 }
             ]
@@ -141,9 +183,47 @@
                 {
                     "name": "permission",
                     "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "epartvotex",
+            "base": "",
+            "fields": [
+                {
+                    "name": "voter",
+                    "type": "name"
+                },
+                {
+                    "name": "proposal_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "approve",
+                    "type": "bool"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint64"
+                },
+                {
+                    "name": "comment",
+                    "type": "string"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                },
+                {
+                    "name": "permission",
+                    "type": "name"
                 },
                 {
                     "name": "proxied_for",
+                    "type": "string"
+                },
+                {
+                    "name": "extra_note",
                     "type": "string"
                 }
             ]
@@ -240,9 +320,19 @@
             "ricardian_contract": "User-facing action for creating a proposal."
         },
         {
+            "name": "epartpropsex",
+            "type": "epartpropsex",
+            "ricardian_contract": "User-facing action for creating a proposal. New version"
+        },
+        {
             "name": "epartvote",
             "type": "epartvote",
             "ricardian_contract": "User-facing action for voting on a proposal"
+        },
+        {
+            "name": "epartvotex",
+            "type": "epartvotex",
+            "ricardian_contract": "User-facing action for voting on a proposal. New version"
         },
         {
             "name": "issue",

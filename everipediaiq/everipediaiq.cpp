@@ -25,7 +25,7 @@ void everipediaiq::create( name issuer,
 }
 
 [[eosio::action]]
-void everipediaiq::issue( name to, asset quantity, string memo )
+void everipediaiq::issue( name to, asset quantity, std::string memo )
 {
     auto sym = quantity.symbol;
     eosio::check( sym.is_valid(), "invalid symbol name" );
@@ -59,7 +59,7 @@ void everipediaiq::issue( name to, asset quantity, string memo )
 void everipediaiq::transfer( name from,
                       name to,
                       asset        quantity,
-                      string       memo )
+                      std::string       memo )
 {
     eosio::check( from != to, "cannot transfer to self" );
     require_auth( from );
@@ -85,10 +85,10 @@ void everipediaiq::transfrextra(
                       name from,
                       name to,
                       asset quantity,
-                      string memo, 
-                      string proxied_for,
-                      string purpose,
-                      string extra_note
+                      std::string memo, 
+                      std::string proxied_for,
+                      std::string purpose,
+                      std::string extra_note
                       )
 {
     require_auth(from);
@@ -108,7 +108,7 @@ void everipediaiq::transfrextra(
 }
 
 [[eosio::action]]
-void everipediaiq::burn( name from, asset quantity, string memo )
+void everipediaiq::burn( name from, asset quantity, std::string memo )
 {
      require_auth( from );
      auto sym = quantity.symbol;
@@ -184,7 +184,7 @@ void everipediaiq::epartpropose( name proposer, std::string slug, ipfshash_t ipf
 }
 
 [[eosio::action]]
-void everipediaiq::epartpropos2( 
+void everipediaiq::epartpropsex( 
     name proposer, 
     std::string slug, 
     ipfshash_t ipfs_hash, 
@@ -212,7 +212,7 @@ void everipediaiq::epartpropos2(
     // Make the proposal to the article contract
     action(
         permission_level{ ARTICLE_CONTRACT, name("active") }, 
-        ARTICLE_CONTRACT, name("propose3"),
+        ARTICLE_CONTRACT, name("proposeextra"),
         std::make_tuple( proposer, slug, ipfs_hash, lang_code, group_id, comment, memo, proxied_for, extra_note )
     ).send();
 }
@@ -240,7 +240,7 @@ void everipediaiq::epartvote( name voter, uint64_t proposal_id, bool approve, ui
 }
 
 [[eosio::action]]
-void everipediaiq::epartvote2( 
+void everipediaiq::epartvotex( 
     name voter, 
     uint64_t proposal_id, 
     bool approve, 
@@ -268,10 +268,10 @@ void everipediaiq::epartvote2(
     // Create the vote in the eparticlectr contract
     action(
         permission_level{ ARTICLE_CONTRACT, name("active") }, 
-        ARTICLE_CONTRACT, name("vote2"),
+        ARTICLE_CONTRACT, name("voteextra"),
         std::make_tuple( voter, proposal_id, approve, amount, comment, memo, proxied_for, extra_note )
     ).send();
 }
 
 
-EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(transfer)(transfrextra)(epartpropose)(epartpropos2)(epartvote)(epartvote2) )
+EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(transfer)(transfrextra)(epartpropose)(epartpropsex)(epartvote)(epartvotex) )

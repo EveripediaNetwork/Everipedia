@@ -84,7 +84,7 @@ void eparticlectr::brainclmidex( uint64_t stakeid ) {
 // Place a vote using the IPFS hash
 // Users have to trigger this action through the everipediaiq::epartvote action
 [[eosio::action]]
-void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, string comment, string memo ) {
+void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string comment, std::string memo ) {
     // validate inputs
     eosio::check(comment.size() < MAX_COMMENT_SIZE, "Comment must be less than 256 bytes");
     eosio::check(memo.size() < MAX_MEMO_SIZE, "Memo must be less than 32 bytes");
@@ -134,7 +134,7 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
 // Place a vote using the IPFS hash
 // Users have to trigger this action through the everipediaiq::epartvote action
 [[eosio::action]]
-void eparticlectr::voteextra( name voter, uint64_t proposal_id, bool approve, uint64_t amount, string comment, string memo, string proxied_for, string extra_note ) {
+void eparticlectr::voteextra( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string comment, std::string memo, std::string proxied_for, std::string extra_note ) {
     // validate inputs
     eosio::check( comment.size() < MAX_COMMENT_SIZE, "Comment must be less than 256 bytes" );
     eosio::check( memo.size() < MAX_MEMO_SIZE, "Memo must be less than 32 bytes" );
@@ -190,7 +190,7 @@ void eparticlectr::voteextra( name voter, uint64_t proposal_id, bool approve, ui
 // Logic for proposing an edit for an article
 // Users have to trigger this action through the everipediaiq::epartpropose action
 [[eosio::action]]
-void eparticlectr::propose2( name proposer, string slug, ipfshash_t ipfs_hash, string lang_code, int64_t group_id, string comment, string memo ) {
+void eparticlectr::propose2( name proposer, std::string slug, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo ) {
     require_auth( _self );
 
     // Table definition
@@ -248,7 +248,7 @@ void eparticlectr::propose2( name proposer, string slug, ipfshash_t ipfs_hash, s
 // Logic for proposing an edit for an article
 // Users have to trigger this action through the everipediaiq::epartpropose action
 [[eosio::action]]
-void eparticlectr::proposeextra( name proposer, string slug, ipfshash_t ipfs_hash, string lang_code, int64_t group_id, string comment, string memo, string proxied_for, string extra_note ) {
+void eparticlectr::proposeextra( name proposer, std::string slug, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo, std::string proxied_for, std::string extra_note ) {
     require_auth( _self );
 
     // Table definition
@@ -302,7 +302,7 @@ void eparticlectr::proposeextra( name proposer, string slug, ipfshash_t ipfs_has
     action(
         permission_level { _self , name("active") },
         _self, name("voteextra"),
-        std::make_tuple( proposer, proposal_id, true, EDIT_PROPOSE_IQ_EPARTICLECTR, std::string("editor initial vote"), memo, proxied_for, string extra_note )
+        std::make_tuple( proposer, proposal_id, true, EDIT_PROPOSE_IQ_EPARTICLECTR, std::string("editor initial vote"), memo, proxied_for, extra_note )
     ).send();
 }
 
@@ -620,7 +620,7 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
     if (curation_reward == 0) // Minimum reward of 0.001 IQ to prevent unclaimable rewards
         curation_reward = 1;
     asset curation_quantity = asset(curation_reward, IQSYMBOL);
-    string memo = std::string("Curation IQ reward:" + reward_it->memo);
+    std::string memo = std::string("Curation IQ reward:" + reward_it->memo);
     action(
         permission_level { TOKEN_CONTRACT, name("active") },
         TOKEN_CONTRACT, name("issue"),
@@ -634,7 +634,7 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
             editor_reward = 1;
         eosio::check(editor_reward <= PERIOD_EDITOR_REWARD, "System logic error. Too much IQ calculated for editor reward.");
         asset editor_quantity = asset(editor_reward, IQSYMBOL);
-        string memo = std::string("Editor IQ reward:" + reward_it->memo);
+        std::string memo = std::string("Editor IQ reward:" + reward_it->memo);
         action(
             permission_level { TOKEN_CONTRACT, name("active") },
             TOKEN_CONTRACT, name("issue"),
@@ -692,12 +692,12 @@ void eparticlectr::mkreferendum( uint64_t proposal_id ) {
 }
 
 [[eosio::action]]
-void eparticlectr::slashnotify( name slashee, uint64_t amount, uint32_t seconds, string memo ){
+void eparticlectr::slashnotify( name slashee, uint64_t amount, uint32_t seconds, std::string memo ){
     require_auth( _self );
 }
 
 [[eosio::action]]
-void eparticlectr::slashnotifex( name slashee, uint64_t amount, uint32_t seconds, string memo, string proxied_for, string extra_note ){
+void eparticlectr::slashnotifex( name slashee, uint64_t amount, uint32_t seconds, std::string memo, std::string proxied_for, std::string extra_note ){
     require_auth( _self );
 }
 
@@ -707,24 +707,21 @@ void eparticlectr::logpropres( uint64_t proposal_id, bool approved, uint64_t yes
 }
 
 [[eosio::action]]
-void eparticlectr::logpropinfo( uint64_t proposal_id, name proposer, uint64_t wiki_id, string slug, ipfshash_t ipfs_hash, string lang_code, uint64_t group_id, string comment, string memo, uint32_t starttime, uint32_t endtime) {
+void eparticlectr::logpropinfo( uint64_t proposal_id, name proposer, uint64_t wiki_id, std::string slug, ipfshash_t ipfs_hash, std::string lang_code, uint64_t group_id, std::string comment, std::string memo, uint32_t starttime, uint32_t endtime) {
     require_auth( _self );
 }
 
 [[eosio::action]]
-void eparticlectr::logpropinfex( uint64_t proposal_id, name proposer, uint64_t wiki_id, string slug, ipfshash_t ipfs_hash, string lang_code, uint64_t group_id, string comment, string memo, uint32_t starttime, uint32_t endtime, string proxied_for, string extra_note) {
+void eparticlectr::logpropinfex( uint64_t proposal_id, name proposer, uint64_t wiki_id, std::string slug, ipfshash_t ipfs_hash, std::string lang_code, uint64_t group_id, std::string comment, std::string memo, uint32_t starttime, uint32_t endtime, std::string proxied_for, std::string extra_note) {
     require_auth( _self );
 }
 
 [[eosio::action]]
-void eparticlectr::curatelist( name user, string title, string description, std::vector<std::string> wikis, bool ranked ) {
+void eparticlectr::curatelist( name user, std::string title, std::string description, std::vector<std::string> wikis, bool ranked ) {
     require_auth(user);
     check(title.size() < 100, "Title is too long. Max 100 chars");
     check(description.size() < 300, "Description is too long. Max 300 chars");
 }
 
-//void eparticlectr::logboostinv( uint64_t boost_id, name booster, string slug, string lang_code, uint64_t amount, string memo, uint32_t timestamp) {
-//    require_auth( _self );
-//}
 
 EOSIO_DISPATCH( eparticlectr, (brainclmid)(brainclmidex)(slashnotify)(slashnotifex)(finalize)(finalizeextr)(oldvotepurge)(propose2)(proposeextra)(rewardclmid)(vote)(voteextra)(logpropres)(logpropinfo)(logpropinfex)(mkreferendum)(curatelist) )
