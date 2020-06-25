@@ -85,6 +85,8 @@ void eparticlectr::brainclmidex( uint64_t stakeid ) {
 // Users have to trigger this action through the everipediaiq::epartvote action
 [[eosio::action]]
 void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string comment, std::string memo ) {
+    require_auth( _self );
+    
     // validate inputs
     eosio::check(comment.size() < MAX_COMMENT_SIZE, "Comment must be less than 256 bytes");
     eosio::check(memo.size() < MAX_MEMO_SIZE, "Memo must be less than 32 bytes");
@@ -135,6 +137,8 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
 // Users have to trigger this action through the everipediaiq::epartvote action
 [[eosio::action]]
 void eparticlectr::voteextra( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string comment, std::string memo, std::string proxied_for, std::string extra_note ) {
+    require_auth( _self );
+    
     // validate inputs
     eosio::check( comment.size() < MAX_COMMENT_SIZE, "Comment must be less than 256 bytes" );
     eosio::check( memo.size() < MAX_MEMO_SIZE, "Memo must be less than 32 bytes" );
@@ -704,6 +708,7 @@ void eparticlectr::oldvteprgeex( uint64_t proposal_id, uint32_t loop_limit ) {
 
 [[eosio::action]]
 void eparticlectr::mkreferendum( uint64_t proposal_id ) {
+    require_auth( _self );
     propstbl proptable( _self, _self.value );
 
     // Validate proposal
@@ -759,11 +764,41 @@ void eparticlectr::migratestakes( uint32_t loop_limit ) {
 
 [[eosio::action]]
 void eparticlectr::migratevotes( uint32_t loop_limit ) {
+    require_auth( name("evrpdcronjob") );
 
+    // Initialize the two tables 
+    votestbl votestable( _self, _self.value );
+    votestblex votestable_extra( _self, _self.value );
+
+    // Loop through the old proposals 
+    uint32_t counter = 0;
+    for ( auto votes_it = votestable.begin(); votes_it != idx.end() && counter < loop_limit; votes_it++ ) {
+        // Copy the old vote over to the new format
+        votestable_extra.emplace( _self, [&]( auto& v ) {
+            v.id = votes_it->id;
+            v.proposal_id = votes_it->proposal_id;
+            v.approve = votes_it->approve;
+            v.is_editor = votes_it->is_editor;
+            v.amount = votes_it->amount;
+            v.voter = votes_it->voter;
+            v.timestamp = votes_it->timestamp;
+            v.stake_id = votes_it->stake_id;
+            v.memo = votes_it->memo;
+            v.proxied_for = "";
+            v.extra_note = "";
+        });
+
+        // Delete the old proposal
+        // votestable.erase(votes_it);
+        
+        // Increase the count
+        counter++;
+    }
 }
 
 [[eosio::action]]
 void eparticlectr::migrateprops( uint32_t loop_limit ) {
+    require_auth( name("evrpdcronjob") );
 
     // Initialize the two tables 
     propstbl propstable( _self, _self.value );
@@ -774,7 +809,7 @@ void eparticlectr::migrateprops( uint32_t loop_limit ) {
     for ( auto props_it = propstable.begin(); props_it != idx.end() && counter < loop_limit; props_it++ ) {
         // Copy the old proposal over to the new format
         propstable_extra.emplace( _self, [&]( auto& p ) {
-            p.id = props_it->proposal_id;
+            p.id = props_it->id;
             p.wiki_id = props_it->wiki_id;
             p.slug = props_it->slug;
             p.group_id = props_it->group_id;
@@ -790,7 +825,7 @@ void eparticlectr::migrateprops( uint32_t loop_limit ) {
         });
 
         // Delete the old proposal
-        // votetbl.erase(vote_it);
+        // propstable.erase(props_it);
         
         // Increase the count
         counter++;
@@ -799,7 +834,38 @@ void eparticlectr::migrateprops( uint32_t loop_limit ) {
 
 [[eosio::action]]
 void eparticlectr::migraterwds( uint32_t loop_limit ) {
+    require_auth( name("evrpdcronjob") );
 
+    // Initialize the two tables 
+    rewardstbl rewardstable( _self, _self.value );
+    rewardstblex rewardstable_extra( _self, _self.value );
+
+    // Loop through the old proposals 
+    uint32_t counter = 0;
+    for ( auto rewards_it = rewardstable.begin(); rewards_it != idx.end() && counter < loop_limit; rewards_it++ ) {
+        // Copy the old reward over to the new format
+        rewardstable_extra.emplace( _self, [&]( auto& r ) {
+            r.id = r->id;
+            r.user = r->user;
+            r.vote_points = r->vote_points;
+            r.edit_points = r->edit_points;
+            r.proposal_id = r->proposal_id;
+            r.proposal_finalize_time = r->proposal_finalize_time;
+            r.proposal_finalize_period = r->proposal_finalize_period;
+            r.proposalresult = r->proposalresult;
+            r.is_editor = r->is_editor;
+            r.is_tie = r->is_tie;
+            r.memo = r->memo;
+            r.proxied_for = "";
+            r.extra_note = "";
+        });
+
+        // Delete the old reward
+        // rewardstable.erase(rewards_it);
+        
+        // Increase the count
+        counter++;
+    }
 }
 
 

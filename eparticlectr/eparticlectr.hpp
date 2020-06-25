@@ -396,6 +396,18 @@ public:
 					   uint32_t loop_limit);
 
 	[[eosio::action]]
+	void migratestakes( uint32_t loop_limit );
+
+	[[eosio::action]]
+	void migratevotes( uint32_t loop_limit );
+
+	[[eosio::action]]
+	void migrateprops( uint32_t loop_limit );
+
+	[[eosio::action]]
+	void migraterwds( uint32_t loop_limit );
+
+	[[eosio::action]]
 	void propose2( name proposer, 
 				  std::string slug, 
 				  ipfshash_t ipfs_hash, 
