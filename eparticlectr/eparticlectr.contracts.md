@@ -16,6 +16,8 @@ Logging action to notify users of slashes. New Version
 Process rewards from finalized proposals.
 <h1 class="contract">rewardclmid</h1>
 Claim editor and curator IQ rewards by reward id.
+<h1 class="contract">rewrdclmidex</h1>
+Claim editor and curator IQ rewards by reward id. New Version
 <h1 class="contract">propose2</h1>
 Propose an edit (uses IQ, only callable by everipediaiq::epartpropose).
 <h1 class="contract">proposeextra</h1>

@@ -621,6 +621,16 @@
             ]
         },
         {
+            "name": "rewrdclmidex",
+            "base": "",
+            "fields": [
+                {
+                    "name": "reward_id",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
             "name": "slashnotifex",
             "base": "",
             "fields": [
@@ -1019,6 +1029,11 @@
             "ricardian_contract": "Claim editor and curator IQ rewards by reward id."
         },
         {
+            "name": "rewrdclmidex",
+            "type": "rewrdclmidex",
+            "ricardian_contract": "Claim editor and curator IQ rewards by reward id. New Version"
+        },
+        {
             "name": "slashnotifex",
             "type": "slashnotifex",
             "ricardian_contract": "Logging action to notify users of slashes. New Version"
@@ -1042,6 +1057,13 @@
     "tables": [
         {
             "name": "perrwdstbl2",
+            "type": "periodreward",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "perrwdstblex",
             "type": "periodreward",
             "index_type": "i64",
             "key_names": [],

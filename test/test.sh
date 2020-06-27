@@ -90,7 +90,7 @@ fi
 # Build
 if [ $BUILD -eq 1 ]; then
     sed -i -e 's/REWARD_INTERVAL = 1800/REWARD_INTERVAL = 5/g' ../eparticlectr/eparticlectr.hpp
-    sed -i -e 's/DEFAULT_VOTING_TIME = 43200/DEFAULT_VOTING_TIME = 3/g' ../eparticlectr/eparticlectr.hpp
+    sed -i -e 's/DEFAULT_VOTING_TIME = 43200/DEFAULT_VOTING_TIME = 7/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e 's/STAKING_DURATION = 21 \* 86400/STAKING_DURATION = 5/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e 's/WINNING_VOTE_STAKE_TIME = 5 \* 86400/WINNING_VOTE_STAKE_TIME = 5/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e 's/BOOST_TRANSFER_WAITING_PERIOD = 14\*86400/BOOST_TRANSFER_WAITING_PERIOD = 5/g' ../eparticlectr/eparticlectr.hpp
@@ -98,7 +98,7 @@ if [ $BUILD -eq 1 ]; then
     bash build.sh
     cd test
     sed -i -e 's/REWARD_INTERVAL = 5/REWARD_INTERVAL = 1800/g' ../eparticlectr/eparticlectr.hpp
-    sed -i -e 's/DEFAULT_VOTING_TIME = 3/DEFAULT_VOTING_TIME = 43200/g' ../eparticlectr/eparticlectr.hpp
+    sed -i -e 's/DEFAULT_VOTING_TIME = 7/DEFAULT_VOTING_TIME = 43200/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e 's/STAKING_DURATION = 5/STAKING_DURATION = 21 \* 86400/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e 's/WINNING_VOTE_STAKE_TIME = 5/WINNING_VOTE_STAKE_TIME = 5 \* 86400/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e 's/BOOST_TRANSFER_WAITING_PERIOD = 5/BOOST_TRANSFER_WAITING_PERIOD = 14\*86400/g' ../eparticlectr/eparticlectr.hpp
@@ -537,9 +537,8 @@ NEW_VOTE_BALANCE5=$(balance eptestuserse)
 NEW_VOTE_BALANCE6=$(balance eptestusersf)
 NEW_VOTE_BALANCE7=$(balance eptestusersg)
 
-
 assert $(bc <<< "$OLD_VOTE_BALANCE2 - $NEW_VOTE_BALANCE2 == 150.000")
-assert $(bc <<< "$OLD_VOTE_BALANCE3 - $NEW_VOTE_BALANCE3 == 740.000")
+assert $(bc <<< "$OLD_VOTE_BALANCE3 - $NEW_VOTE_BALANCE3 == 720.000")
 assert $(bc <<< "$OLD_VOTE_BALANCE4 - $NEW_VOTE_BALANCE4 == 2180.000")
 assert $(bc <<< "$OLD_VOTE_BALANCE5 - $NEW_VOTE_BALANCE5 == 3220.000")
 assert $(bc <<< "$OLD_VOTE_BALANCE6 - $NEW_VOTE_BALANCE6 == 910.000")
@@ -558,7 +557,7 @@ cleos push action eparticlectr finalizeextr "[ $PROPEXTRAID4 ]" -p eptestuserse
 assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}WAITING FOR VOTING PERIOD TO END...${NC}"
-sleep 4 # wait for test voting period to end
+sleep 7 # wait for test voting period to end
 
 
 # Bad vote
@@ -620,7 +619,7 @@ assert $(bc <<< "$? == 1")
 echo -e "${CYAN}-----------------------TODO: TEST SLASHES-----------------------${NC}"
 
 echo -e "${CYAN}WAITING FOR REWARDS PERIOD TO END...${NC}"
-sleep 5
+sleep 6
 
 CURATION_REWARD_SUM=$(cleos get table eparticlectr eparticlectr perrwdstbl2 -r | jq ".rows[0].curation_sum")
 EDITOR_REWARD_SUM=$(cleos get table eparticlectr eparticlectr perrwdstbl2 -r | jq ".rows[0].editor_sum")
@@ -632,8 +631,8 @@ assert $(bc <<< "$CURATION_REWARD_SUM == 2470")
 assert $(bc <<< "$EDITOR_REWARD_SUM == 530")
 
 
-CURATION_REWARD_EXTRA_SUM=$(cleos get table eparticlectr eparticlectr rewardstblex -r | jq ".rows[0].curation_sum")
-EDITOR_REWARD_EXTRA_SUM=$(cleos get table eparticlectr eparticlectr rewardstblex -r | jq ".rows[0].editor_sum")
+CURATION_REWARD_EXTRA_SUM=$(cleos get table eparticlectr eparticlectr perrwdstblex -r | jq ".rows[0].curation_sum")
+EDITOR_REWARD_EXTRA_SUM=$(cleos get table eparticlectr eparticlectr perrwdstblex -r | jq ".rows[0].editor_sum")
 
 echo -e "   ${CYAN}CURATION EXTRA REWARD SUM: ${CURATION_REWARD_EXTRA_SUM}${NC}"
 echo -e "   ${CYAN}EDITOR EXTRA REWARD SUM: ${EDITOR_REWARD_EXTRA_SUM}${NC}"
