@@ -566,7 +566,7 @@ void eparticlectr::finalizeextr( uint64_t proposal_id ) {
 
     // Update rewards table
     uint64_t current_period = eosio::current_time_point().sec_since_epoch() / REWARD_INTERVAL;
-    perrwdstbl perrewards( _self, _self.value );
+    perrwdstblex perrewards( _self, _self.value );
     auto period_it = perrewards.find( current_period );
     uint64_t edit_points = approved ? (yes_votes - no_votes) : 0;
     if (period_it == perrewards.end()) {
@@ -606,6 +606,55 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
     // prep tables
     perrwdstbl perrewards( _self, _self.value );
     rewardstbl rewardstable( _self, _self.value );
+
+    // check if user rewards exist
+    auto reward_it = rewardstable.find( reward_id );
+    eosio::check( reward_it != rewardstable.end(), "reward doesn't exist in database");
+
+    // Make sure period is complete before processing
+    uint64_t reward_period = reward_it->proposal_finalize_period;
+    uint64_t current_period = eosio::current_time_point().sec_since_epoch() / REWARD_INTERVAL;
+    auto period_it = perrewards.find( reward_period );
+    eosio::check(period_it != perrewards.end(), "PROTOCOL ERROR: This period should exist");
+    eosio::check(current_period > reward_period, "Reward period must complete before claiming rewards");
+
+    // Send curation reward
+    int64_t curation_reward = reward_it->vote_points * PERIOD_CURATION_REWARD / period_it->curation_sum;
+    eosio::check(curation_reward <= PERIOD_CURATION_REWARD, "System logic error. Too much IQ calculated for curation reward.");
+    if (curation_reward == 0) // Minimum reward of 0.001 IQ to prevent unclaimable rewards
+        curation_reward = 1;
+    asset curation_quantity = asset(curation_reward, IQSYMBOL);
+    std::string memo = std::string("Curation IQ reward:" + reward_it->memo);
+    action(
+        permission_level { TOKEN_CONTRACT, name("active") },
+        TOKEN_CONTRACT, name("issue"),
+        std::make_tuple( reward_it->user, curation_quantity, memo )
+    ).send();
+
+    // Send editor reward
+    if (reward_it->is_editor && reward_it->proposalresult) {
+        int64_t editor_reward = reward_it->edit_points * PERIOD_EDITOR_REWARD / period_it->editor_sum;
+        if (editor_reward == 0) // Minimum reward of 0.001 IQ to prevent unclaimable rewards
+            editor_reward = 1;
+        eosio::check(editor_reward <= PERIOD_EDITOR_REWARD, "System logic error. Too much IQ calculated for editor reward.");
+        asset editor_quantity = asset(editor_reward, IQSYMBOL);
+        std::string memo = std::string("Editor IQ reward:" + reward_it->memo);
+        action(
+            permission_level { TOKEN_CONTRACT, name("active") },
+            TOKEN_CONTRACT, name("issue"),
+            std::make_tuple( reward_it->user, editor_quantity, memo )
+        ).send();
+    }
+
+    // delete reward after claiming
+    rewardstable.erase( reward_it );
+}
+
+[[eosio::action]]
+void eparticlectr::rewrdclmidex ( uint64_t reward_id ) {
+    // prep tables
+    perrwdstblex perrewards( _self, _self.value );
+    rewardstblex rewardstable( _self, _self.value );
 
     // check if user rewards exist
     auto reward_it = rewardstable.find( reward_id );
@@ -896,4 +945,4 @@ void eparticlectr::migraterwds( uint32_t loop_limit ) {
 
 
 
-EOSIO_DISPATCH( eparticlectr, (brainclmid)(brainclmidex)(slashnotify)(slashnotifex)(finalize)(finalizeextr)(oldvotepurge)(oldvteprgeex)(propose2)(proposeextra)(rewardclmid)(vote)(voteextra)(logpropres)(migratestkes)(migratevotes)(migrateprops)(migraterwds)(logpropinfo)(logpropinfex)(mkreferendum)(curatelist) )
+EOSIO_DISPATCH( eparticlectr, (brainclmid)(brainclmidex)(slashnotify)(slashnotifex)(finalize)(finalizeextr)(oldvotepurge)(oldvteprgeex)(propose2)(proposeextra)(rewardclmid)(rewrdclmidex)(vote)(voteextra)(logpropres)(migratestkes)(migratevotes)(migrateprops)(migraterwds)(logpropinfo)(logpropinfex)(mkreferendum)(curatelist) )

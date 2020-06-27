@@ -354,6 +354,9 @@ public:
 	// period rewards table
 	typedef eosio::multi_index<name("perrwdstbl2"), periodreward> perrwdstbl;
 
+	// period rewards table extra
+	typedef eosio::multi_index<name("perrwdstblex"), periodreward> perrwdstblex;
+
 
 	//  ==================================================
 	//  ==================================================
@@ -447,6 +450,9 @@ public:
 
 	[[eosio::action]]
 	void rewardclmid ( uint64_t reward_id );
+
+	[[eosio::action]]
+	void rewrdclmidex ( uint64_t reward_id );
 
 	[[eosio::action]]
 	void logpropres( uint64_t proposal_id,

@@ -219,6 +219,15 @@ assert $(bc <<< "$? == 1")
 cleos push action everipediaiq transfer '["eptestusersa", "eptestusersb", "-100.000 IQ", "test"]' -p eptestusersa
 assert $(bc <<< "$? == 1")
 
+# Failed transfers
+echo -e "${CYAN}-----------------------NEXT THREE TRANSFREXTRAS SHOULD FAIL-----------------------${NC}"
+cleos push action everipediaiq transfrextra '["eptestusersa", "eptestusersb", "10000000.000 IQ", "test", "epid-abc", "withdrawal", "Note1"]' -p eptestusersa
+assert $(bc <<< "$? == 1")
+cleos push action everipediaiq transfrextra '["eptestusersa", "eptestusersb", "0.000 IQ", "test", "epid-abc", "withdrawal", "Note1"]' -p eptestusersa
+assert $(bc <<< "$? == 1")
+cleos push action everipediaiq transfrextra '["eptestusersa", "eptestusersb", "-100.000 IQ", "test", "epid-abc", "withdrawal", "Note1"]' -p eptestusersa
+assert $(bc <<< "$? == 1")
+
 # Burns
 echo -e "${CYAN}-----------------------TESTING BURNS-----------------------${NC}"
 OLD_SUPPLY=$(cleos get table everipediaiq IQ stat | jq ".rows[0].supply" | tr -d '"' | awk '{print $1}')
@@ -278,40 +287,71 @@ assert $(bc <<< "$? == 0")
 cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"$SLUG2\", \"$IPFS5\", \"kr\", 5, \"update hash\", \"memoing\", \"active\", \"\" ]" -p eptestusersf
 assert $(bc <<< "$? == 0")
 
-## Testing boosts
-#echo -e "${CYAN}-----------------------INITIATE A BOOST-----------------------${NC}"
-#cleos push action everipediaiq epartboost "[ \"eptestusersb\", 1000, \"$SLUG1\", \"en\", \"active\"]" -p eptestusersb
-#assert $(bc <<< "$? == 0")
-#
-#echo -e "${CYAN}-----------------------FAILED BOOSTS-----------------------${NC}"
-## not enough IQ
-#cleos push action everipediaiq epartboost "[ \"eptestusersb\", 10000000, \"$SLUG1\", \"en\", \"active\"]" -p eptestusersb
-#assert $(bc <<< "$? == 1")
-## empty slug
-#cleos push action everipediaiq epartboost "[ \"eptestusersb\", 1000, \"\", \"en\", \"active\"]" -p eptestusersb
-#assert $(bc <<< "$? == 1")
-## empty lang code
-#cleos push action everipediaiq epartboost "[ \"eptestusersb\", 1000, \"$SLUG1\", \"\", \"active\"]" -p eptestusersb
-#assert $(bc <<< "$? == 1")
-#
-#echo -e "${CYAN}-----------------------BOOST TRANSFER SHOULD FAIL (TOO EARLY)-----------------------${NC}"
-#WIKI_ID1=$(cleos get table eparticlectr eparticlectr propstbl2 -r | jq ".rows[5].wiki_id")
-#cleos push action eparticlectr boosttxfr "[ \"eptestusersb\",  \"eptestusersc\", 250, \"$SLUG1\", \"en\", \"$SLUG2\", \"kr\"]" -p eptestusersb
-#assert $(bc <<< "$? == 1")
+
+# Proposals
+echo -e "${CYAN}-----------------------TEST EXTRA PROPOSALS-----------------------${NC}"
+IPFS9=$(ipfsgen)
+IPFS10=$(ipfsgen)
+IPFS11=$(ipfsgen)
+IPFS12=$(ipfsgen)
+IPFS13=$(ipfsgen)
+IPFS14=$(ipfsgen)
+IPFS15=$(ipfsgen)
+IPFS16=$(ipfsgen)
+
+SLUG9=$(titlegen)
+SLUG10=$(titlegen)
+SLUG11=$(titlegen)
+SLUG12=$(titlegen)
+SLUG13=$(titlegen)
+SLUG14=$(titlegen)
+SLUG15=$(titlegen)
+SLUG16=$(titlegen)
+
+cleos push action everipediaiq epartpropsex "[ \"eptestusersa\", \"$SLUG9\", \"$IPFS9\", \"en\", -1, \"new wiki\", \"memoing\", \"active\", \"\", \"epid-abc\", \"proposal\" ]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartpropsex "[ \"eptestusersb\", \"$SLUG10\", \"$IPFS10\", \"kr\", -1, \"new wiki\", \"memoing\", \"active\", \"\", \"epid-abc\", \"proposal\" ]" -p eptestusersb
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartpropsex "[ \"eptestusersc\", \"$SLUG11\", \"$IPFS11\", \"zh-Hans\", -1, \"new wiki\", \"memoing\", \"active\", \"\", \"epid-abc\", \"proposal\" ]" -p eptestusersc
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartpropsex "[ \"eptestusersd\", \"$SLUG12\", \"$IPFS12\", \"en\", 2, \"new wiki. existing group\", \"memoing\", \"active\", \"\", \"epid-abc\", \"proposal\" ]" -p eptestusersd
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartpropsex "[ \"eptestusersf\", \"$SLUG13\", \"$IPFS13\", \"kr\", 0, \"update lang code\", \"memoing\", \"active\", \"\", \"epid-abc\", \"proposal\" ]" -p eptestusersf
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartpropsex "[ \"eptestusersf\", \"$SLUG14\", \"$IPFS14\", \"kr\", 5, \"update hash\", \"memoing\", \"active\", \"\", \"epid-abc\", \"proposal\" ]" -p eptestusersf
+assert $(bc <<< "$? == 0")
 
 # Failed proposals
 echo -e "${CYAN}-----------------------NEXT SET OF PROPOSALS SHOULD FAIL-----------------------${NC}"
 cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"7-Dwarfs-of Christmas-have-too-long-a-title-matesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\", \"active\" ]" -p eptestusersf
 assert $(bc <<< "$? == 1")
-cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"$SLUG8\", \"$IPFS1\", \"en\", -2, \"specifying a group ID below -1\", \"memoing\", \"active\", \"\" ]" -p eptestusersf
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"$SLUG7\", \"$IPFS9\", \"en\", -2, \"specifying a group ID below -1\", \"memoing\", \"active\", \"\" ]" -p eptestusersf
 assert $(bc <<< "$? == 1")
-cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"$SLUG8\", \"$IPFS1\", \"zh-Hans 02\", -1, \"too long a lang code\", \"memoing\", \"active\", \"\" ]" -p eptestusersf
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"$SLUG7\", \"$IPFS9\", \"zh-Hans 02\", -1, \"too long a lang code\", \"memoing\", \"active\", \"\" ]" -p eptestusersf
 assert $(bc <<< "$? == 1")
-cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"$SLUG8\", \"$IPFS2 $IPFS1\", \"zh\", -1, \"too long an IPFS string\", \"memoing\", \"active\", \"\" ]" -p eptestusersf
+cleos push action everipediaiq epartpropose "[ \"eptestusersf\", \"$SLUG7\", \"$IPFS10 $IPFS9\", \"zh\", -1, \"too long an IPFS string\", \"memoing\", \"active\", \"\" ]" -p eptestusersf
 assert $(bc <<< "$? == 1")
-cleos push action everipediaiq epartpropose "[ \"eptestuserse\", \"$SLUG8\", \"$IPFS6\", \"en\", 100038, \"wrong authorization\", \"memoing\", \"active\", \"\" ]" -p eptestusersf
+cleos push action everipediaiq epartpropose "[ \"eptestuserse\", \"$SLUG7\", \"$IPFS14\", \"en\", 100038, \"wrong authorization\", \"memoing\", \"active\", \"\" ]" -p eptestusersf
 assert $(bc <<< "$? == 1")
 cleos push action everipediaiq epartpropose "[ \"eptestuserse\", \"\", \"$IPFS6\", \"en\", 100038, \"empty slug\", \"memoing\", \"active\", \"\" ]" -p eptestuserse
+assert $(bc <<< "$? == 1")
+
+echo -e "${CYAN}Wait for proposals to be mined...${NC}"
+sleep 1
+
+# Failed proposals
+echo -e "${CYAN}-----------------------NEXT SET OF PROPOSAL EXTRAS SHOULD FAIL-----------------------${NC}"
+cleos push action everipediaiq epartpropsex "[ \"eptestusersf\", \"7-Dwarfs-of Christmas-have-too-long-a-title-matesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss\", \"$IPFS1\", \"en\", -1, \"commenting\", \"memoing\", \"active\", \"epid-abc\", \"proposal\" ]" -p eptestusersf
+assert $(bc <<< "$? == 1")
+cleos push action everipediaiq epartpropsex "[ \"eptestusersf\", \"$SLUG15\", \"$IPFS9\", \"en\", -2, \"specifying a group ID below -1\", \"memoing\", \"active\", \"\", \"epid-abc\", \"proposal\" ]" -p eptestusersf
+assert $(bc <<< "$? == 1")
+cleos push action everipediaiq epartpropsex "[ \"eptestusersf\", \"$SLUG15\", \"$IPFS9\", \"zh-Hans 02\", -1, \"too long a lang code\", \"memoing\", \"active\", \"\", \"epid-abc\", \"proposal\" ]" -p eptestusersf
+assert $(bc <<< "$? == 1")
+cleos push action everipediaiq epartpropsex "[ \"eptestusersf\", \"$SLUG15\", \"$IPFS10 $IPFS9\", \"zh\", -1, \"too long an IPFS string\", \"memoing\", \"active\", \"\", \"epid-abc\", \"proposal\" ]" -p eptestusersf
+assert $(bc <<< "$? == 1")
+cleos push action everipediaiq epartpropsex "[ \"eptestuserse\", \"$SLUG15\", \"$IPFS14\", \"en\", 100038, \"wrong authorization\", \"memoing\", \"active\", \"\", \"epid-abc\", \"proposal\" ]" -p eptestusersf
+assert $(bc <<< "$? == 1")
+cleos push action everipediaiq epartpropsex "[ \"eptestuserse\", \"\", \"$IPFS14\", \"en\", 100038, \"empty slug\", \"memoing\", \"active\", \"\", \"epid-abc\", \"proposal\" ]" -p eptestuserse
 assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}Wait for proposals to be mined...${NC}"
@@ -325,6 +365,14 @@ PROPID4=$(echo $PROPS | jq ".[2].id")
 PROPID3=$(echo $PROPS | jq ".[3].id")
 PROPID2=$(echo $PROPS | jq ".[4].id")
 PROPID1=$(echo $PROPS | jq ".[5].id")
+
+PROPEXTRAS=$(cleos get table eparticlectr eparticlectr propstblex -r | jq ".rows")
+PROPEXTRAID6=$(echo $PROPEXTRAS | jq ".[0].id")
+PROPEXTRAID5=$(echo $PROPEXTRAS | jq ".[1].id")
+PROPEXTRAID4=$(echo $PROPEXTRAS | jq ".[2].id")
+PROPEXTRAID3=$(echo $PROPEXTRAS | jq ".[3].id")
+PROPEXTRAID2=$(echo $PROPEXTRAS | jq ".[4].id")
+PROPEXTRAID1=$(echo $PROPEXTRAS | jq ".[5].id")
 
 # Mark pre-vote balances
 OLD_VOTE_BALANCE1=$(balance eptestusersa)
@@ -350,6 +398,21 @@ assert $(bc <<< "$? == 0")
 cleos push action everipediaiq epartvote "[ \"eptestusersg\", $PROPID1, 0, 80, \"vote comment\", \"votememo\", \"active\", \"\"]" -p eptestusersg
 assert $(bc <<< "$? == 0")
 
+# Win Extra
+echo -e "${CYAN}-----------------------SETTING WINNING VOTES (PROPOSAL EXTRA)-----------------------${NC}"
+cleos push action everipediaiq epartvotex "[ \"eptestusersb\", $PROPEXTRAID1, 1, 50, \"vote comment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestusersb
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartvotex "[ \"eptestusersc\", $PROPEXTRAID1, 1, 100,\"vote comment\",  \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestusersc
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartvotex "[ \"eptestusersd\", $PROPEXTRAID1, 0, 50, \"vote comment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestusersd
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartvotex "[ \"eptestuserse\", $PROPEXTRAID1, 1, 500,\"vote comment\",  \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestuserse
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartvotex "[ \"eptestusersf\", $PROPEXTRAID1, 0, 350,\"vote comment\",  \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestusersf
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartvotex "[ \"eptestusersg\", $PROPEXTRAID1, 0, 80, \"vote comment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestusersg
+assert $(bc <<< "$? == 0")
+
 # Lose
 echo -e "${CYAN}-----------------------SETTING LOSING VOTES-----------------------${NC}"
 cleos push action everipediaiq epartvote "[ \"eptestusersb\", $PROPID2, 1, 5, \"vote comment\", \"votememo\", \"active\", \"\"]" -p eptestusersb
@@ -363,6 +426,21 @@ assert $(bc <<< "$? == 0")
 cleos push action everipediaiq epartvote "[ \"eptestusersf\", $PROPID2, 1, 35, \"vote comment\", \"votememo\", \"active\", \"\"]" -p eptestusersf
 assert $(bc <<< "$? == 0")
 cleos push action everipediaiq epartvote "[ \"eptestusersg\", $PROPID2, 0, 800, \"vote comment\", \"votememo\", \"active\", \"\"]" -p eptestusersg
+assert $(bc <<< "$? == 0")
+
+# Lose Extra
+echo -e "${CYAN}-----------------------SETTING LOSING VOTES (VOTES EXTRA)-----------------------${NC}"
+cleos push action everipediaiq epartvotex "[ \"eptestusersb\", $PROPEXTRAID2, 1, 5, \"vote comment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestusersb
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartvotex "[ \"eptestusersc\", $PROPEXTRAID2, 0, 100, \"vote comment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestusersc
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartvotex "[ \"eptestusersd\", $PROPEXTRAID2, 1, 500, \"vote comment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestusersd
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartvotex "[ \"eptestuserse\", $PROPEXTRAID2, 0, 500, \"vote comment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestuserse
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartvotex "[ \"eptestusersf\", $PROPEXTRAID2, 1, 35, \"vote comment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestusersf
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartvotex "[ \"eptestusersg\", $PROPEXTRAID2, 0, 800, \"vote comment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestusersg
 assert $(bc <<< "$? == 0")
 
 # Tie (net votes dont't sum to 0 because proposer auto-votes 50 in favor)
@@ -380,6 +458,21 @@ assert $(bc <<< "$? == 0")
 cleos push action everipediaiq epartvote "[ \"eptestusersg\", $PROPID3, 1, 60, \"vote comment\", \"votememo\", \"active\", \"\"]" -p eptestusersg
 assert $(bc <<< "$? == 0")
 
+# Tie (net votes dont't sum to 0 because proposer auto-votes 50 in favor)
+echo -e "${CYAN}-----------------------SETTING TIE VOTES (VOTES EXTRA)-----------------------${NC}"
+cleos push action everipediaiq epartvotex "[ \"eptestusersb\", $PROPEXTRAID3, 1, 15, \"vote comment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestusersb
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartvotex "[ \"eptestusersc\", $PROPEXTRAID3, 0, 150,\"vote comment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestusersc
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartvotex "[ \"eptestusersd\", $PROPEXTRAID3, 1, 490,\"vote comment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestusersd
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartvotex "[ \"eptestuserse\", $PROPEXTRAID3, 0, 500,\"vote comment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestuserse
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartvotex "[ \"eptestusersf\", $PROPEXTRAID3, 1, 35, \"vote comment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestusersf
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartvotex "[ \"eptestusersg\", $PROPEXTRAID3, 1, 60, \"vote comment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestusersg
+assert $(bc <<< "$? == 0")
+
 # Unanimous win
 echo -e "${CYAN}-----------------------UNANIMOUS VOTES-----------------------${NC}"
 cleos push action everipediaiq epartvote "[ \"eptestusersb\", $PROPID4, 1, 5, \"vote comment\", \"votememo\", \"active\", \"\"]" -p eptestusersb
@@ -395,9 +488,29 @@ assert $(bc <<< "$? == 0")
 cleos push action everipediaiq epartvote "[ \"eptestusersg\", $PROPID4, 1, 60,\"vote comment\", \"votememo\", \"active\", \"\"]" -p eptestusersg
 assert $(bc <<< "$? == 0")
 
+# Unanimous win
+echo -e "${CYAN}-----------------------UNANIMOUS VOTES (VOTES EXTRA)-----------------------${NC}"
+cleos push action everipediaiq epartvotex "[ \"eptestusersb\", $PROPEXTRAID4, 1, 5, \"vote comment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestusersb
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartvotex "[ \"eptestusersc\", $PROPEXTRAID4, 1, 10,\"vote comment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestusersc
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartvotex "[ \"eptestusersd\", $PROPEXTRAID4, 1, 50,\"vote comment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestusersd
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartvotex "[ \"eptestuserse\", $PROPEXTRAID4, 1, 50,\"vote comment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestuserse
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartvotex "[ \"eptestusersf\", $PROPEXTRAID4, 1, 35,\"vote comment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestusersf
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartvotex "[ \"eptestusersg\", $PROPEXTRAID4, 1, 60,\"vote comment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestusersg
+assert $(bc <<< "$? == 0")
+
 # User votes against himself
 echo -e "${CYAN}-----------------------USER VOTES AGAINST HIMSELF-----------------------${NC}"
 cleos push action everipediaiq epartvote "[ \"eptestuserse\", $PROPID5, 0, 60, \"vote comment\", \"votememo\", \"active\", \"\"]" -p eptestuserse
+assert $(bc <<< "$? == 0")
+
+# User votes against himself
+echo -e "${CYAN}-----------------------USER VOTES AGAINST HIMSELF (VOTES EXTRA)-----------------------${NC}"
+cleos push action everipediaiq epartvotex "[ \"eptestuserse\", $PROPEXTRAID5, 0, 60, \"vote comment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestuserse
 assert $(bc <<< "$? == 0")
 
 # Bad votes
@@ -405,6 +518,13 @@ echo -e "${CYAN}-----------------------NEXT TWO VOTE ATTEMPTS SHOULD FAIL-------
 cleos push action everipediaiq epartvote "[ \"eptestusersg\", $PROPID4, 1, 500000000, \"vote comment\", \"votememo\", \"active\", \"\"]" -p eptestusersg
 assert $(bc <<< "$? == 1")
 cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID4, 1, 500, \"vote comment\", \"votememo\", \"active\", \"\"]" -p eptestusersg
+assert $(bc <<< "$? == 1")
+
+# Bad votes
+echo -e "${CYAN}-----------------------NEXT TWO VOTE ATTEMPTS SHOULD FAIL (VOTES EXTRA)-----------------------${NC}"
+cleos push action everipediaiq epartvotex "[ \"eptestusersg\", $PROPEXTRAID4, 1, 500000000, \"vote comment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestusersg
+assert $(bc <<< "$? == 1")
+cleos push action everipediaiq epartvotex "[ \"eptestusersc\", $PROPEXTRAID4, 1, 500, \"vote comment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\"]" -p eptestusersg
 assert $(bc <<< "$? == 1")
 
 # Post-vote balances
@@ -418,12 +538,12 @@ NEW_VOTE_BALANCE6=$(balance eptestusersf)
 NEW_VOTE_BALANCE7=$(balance eptestusersg)
 
 
-assert $(bc <<< "$OLD_VOTE_BALANCE2 - $NEW_VOTE_BALANCE2 == 75.000")
-assert $(bc <<< "$OLD_VOTE_BALANCE3 - $NEW_VOTE_BALANCE3 == 360.000")
-assert $(bc <<< "$OLD_VOTE_BALANCE4 - $NEW_VOTE_BALANCE4 == 1090.000")
-assert $(bc <<< "$OLD_VOTE_BALANCE5 - $NEW_VOTE_BALANCE5 == 1610.000")
-assert $(bc <<< "$OLD_VOTE_BALANCE6 - $NEW_VOTE_BALANCE6 == 455.000")
-assert $(bc <<< "$OLD_VOTE_BALANCE7 - $NEW_VOTE_BALANCE7 == 1000.000")
+assert $(bc <<< "$OLD_VOTE_BALANCE2 - $NEW_VOTE_BALANCE2 == 150.000")
+assert $(bc <<< "$OLD_VOTE_BALANCE3 - $NEW_VOTE_BALANCE3 == 740.000")
+assert $(bc <<< "$OLD_VOTE_BALANCE4 - $NEW_VOTE_BALANCE4 == 2180.000")
+assert $(bc <<< "$OLD_VOTE_BALANCE5 - $NEW_VOTE_BALANCE5 == 3220.000")
+assert $(bc <<< "$OLD_VOTE_BALANCE6 - $NEW_VOTE_BALANCE6 == 910.000")
+assert $(bc <<< "$OLD_VOTE_BALANCE7 - $NEW_VOTE_BALANCE7 == 2000.000")
 echo "All balances are properly accounted"
 
 
@@ -432,17 +552,22 @@ echo -e "${CYAN}-----------------------EARLY FINALIZE SHOULD FAIL---------------
 cleos push action eparticlectr finalize "[ $PROPID4 ]" -p eptestuserse
 assert $(bc <<< "$? == 1")
 
+# Finalize
+echo -e "${CYAN}-----------------------EARLY FINALIZE SHOULD FAIL (FINALIZE EXTRA)-----------------------${NC}"
+cleos push action eparticlectr finalizeextr "[ $PROPEXTRAID4 ]" -p eptestuserse
+assert $(bc <<< "$? == 1")
+
 echo -e "${CYAN}WAITING FOR VOTING PERIOD TO END...${NC}"
 sleep 4 # wait for test voting period to end
 
-#echo -e "${CYAN}-----------------------BOOST TRANSFER SHOULD WORK NOW-----------------------${NC}"
-#WIKI_ID1=$(cleos get table eparticlectr eparticlectr propstbl2 -r | jq ".rows[5].wiki_id")
-#cleos push action eparticlectr boosttxfr "[ \"eptestusersb\",  \"eptestusersc\", 250, \"$SLUG1\", \"en\", \"$SLUG2\", \"kr\"]" -p eptestusersb
-#assert $(bc <<< "$? == 0")
 
 # Bad vote
 echo -e "${CYAN}-----------------------LATE VOTE SHOULD FAIL-----------------------${NC}"
 cleos push action everipediaiq epartvote "[ \"eptestusersc\", $PROPID4, 1, 500, \"votecomment\", \"votememo\", \"active\", \"\" ]" -p eptestusersc
+assert $(bc <<< "$? == 1")
+
+echo -e "${CYAN}-----------------------LATE VOTE SHOULD FAIL (FINALIZE EXTRA)-----------------------${NC}"
+cleos push action everipediaiq epartvotex "[ \"eptestusersc\", $PROPEXTRAID4, 1, 500, \"votecomment\", \"votememo\", \"active\", \"\", \"epid-abc\", \"votes\" ]" -p eptestusersc
 assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}-----------------------FINALIZES-----------------------${NC}"
@@ -459,13 +584,36 @@ assert $(bc <<< "$? == 0")
 cleos push action eparticlectr finalize "[ $PROPID6 ]" -p eptestusersc
 assert $(bc <<< "$? == 0")
 
+echo -e "${CYAN}-----------------------FINALIZES (EXTRAS)-----------------------${NC}"
+cleos push action eparticlectr finalizeextr "[ $PROPEXTRAID1 ]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr finalizeextr "[ $PROPEXTRAID2 ]" -p eptestusersg
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr finalizeextr "[ $PROPEXTRAID3 ]" -p eptestuserse
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr finalizeextr "[ $PROPEXTRAID4 ]" -p eptestusersb
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr finalizeextr "[ $PROPEXTRAID5 ]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr finalizeextr "[ $PROPEXTRAID6 ]" -p eptestusersc
+assert $(bc <<< "$? == 0")
+
 echo -e "${CYAN}-----------------------FINALIZE FAIL (ALREADY FINALIZED)-----------------------${NC}"
 cleos push action --force-unique eparticlectr finalize "[ $PROPID3 ]" -p eptestuserse
+assert $(bc <<< "$? == 1")
+
+echo -e "${CYAN}-----------------------FINALIZE EXTRA FAIL (ALREADY FINALIZED)-----------------------${NC}"
+cleos push action --force-unique eparticlectr finalizeextr "[ $PROPEXTRAID3 ]" -p eptestuserse
 assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}-----------------------EARLY REWARD CLAIM FAIL-----------------------${NC}"
 REWARD_ID1=$(cleos get table eparticlectr eparticlectr rewardstbl2 -r | jq ".rows[0].id")
 cleos push action eparticlectr rewardclmid "[$REWARD_ID1]" -p eptestuserse
+assert $(bc <<< "$? == 1")
+
+echo -e "${CYAN}-----------------------EARLY REWARD EXTRA CLAIM FAIL-----------------------${NC}"
+REWARD_EXTRA_ID1=$(cleos get table eparticlectr eparticlectr rewardstblex -r | jq ".rows[0].id")
+cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID1]" -p eptestuserse
 assert $(bc <<< "$? == 1")
 
 # Slash checks
@@ -483,6 +631,16 @@ echo -e "   ${CYAN}EDITOR REWARD SUM: ${EDITOR_REWARD_SUM}${NC}"
 assert $(bc <<< "$CURATION_REWARD_SUM == 2470")
 assert $(bc <<< "$EDITOR_REWARD_SUM == 530")
 
+
+CURATION_REWARD_EXTRA_SUM=$(cleos get table eparticlectr eparticlectr rewardstblex -r | jq ".rows[0].curation_sum")
+EDITOR_REWARD_EXTRA_SUM=$(cleos get table eparticlectr eparticlectr rewardstblex -r | jq ".rows[0].editor_sum")
+
+echo -e "   ${CYAN}CURATION EXTRA REWARD SUM: ${CURATION_REWARD_EXTRA_SUM}${NC}"
+echo -e "   ${CYAN}EDITOR EXTRA REWARD SUM: ${EDITOR_REWARD_EXTRA_SUM}${NC}"
+
+assert $(bc <<< "$CURATION_REWARD_EXTRA_SUM == 2470")
+assert $(bc <<< "$EDITOR_REWARD_EXTRA_SUM == 530")
+
 # Claim rewards
 OLD_BALANCE1=$(balance eptestusersa)
 OLD_BALANCE2=$(balance eptestusersb)
@@ -498,6 +656,11 @@ REWARD_ID3=$(bc <<< "$REWARD_ID1 - 3")
 REWARD_ID4=$(bc <<< "$REWARD_ID1 - 4")
 REWARD_ID5=$(bc <<< "$REWARD_ID1 - 8") # this one has edit points
 
+REWARD_EXTRA_ID2=$(bc <<< "$REWARD_EXTRA_ID1 - 2")
+REWARD_EXTRA_ID3=$(bc <<< "$REWARD_EXTRA_ID1 - 3")
+REWARD_EXTRA_ID4=$(bc <<< "$REWARD_EXTRA_ID1 - 4")
+REWARD_EXTRA_ID5=$(bc <<< "$REWARD_EXTRA_ID1 - 8") # this one has edit points
+
 echo -e "${CYAN}-----------------------CLAIM REWARDS-----------------------${NC}"
 cleos push action eparticlectr rewardclmid "[$REWARD_ID1]" -p eptestuserse
 assert $(bc <<< "$? == 0")
@@ -508,6 +671,18 @@ assert $(bc <<< "$? == 0")
 cleos push action eparticlectr rewardclmid "[$REWARD_ID4]" -p eptestuserse
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr rewardclmid "[$REWARD_ID5]" -p eptestusersd
+assert $(bc <<< "$? == 0")
+
+echo -e "${CYAN}-----------------------CLAIM REWARDS (EXTRA)-----------------------${NC}"
+cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID1]" -p eptestuserse
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID2]" -p eptestusersg
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID3]" -p eptestusersf
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID4]" -p eptestuserse
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID5]" -p eptestusersd
 assert $(bc <<< "$? == 0")
 
 NEW_BALANCE1=$(balance eptestusersa)
@@ -532,16 +707,23 @@ echo -e "${CYAN}    eptestuserse: $DIFF5${NC}"
 echo -e "${CYAN}    eptestusersf: $DIFF6${NC}"
 echo -e "${CYAN}    eptestusersg: $DIFF7${NC}"
 
-assert $(bc <<< "$DIFF4 == 198.250")
-assert $(bc <<< "$DIFF5 == 2.024")
-assert $(bc <<< "$DIFF6 == 41.176")
-assert $(bc <<< "$DIFF7 == 2.429")
+assert $(bc <<< "$DIFF4 == 396.5")
+assert $(bc <<< "$DIFF5 == 4.048")
+assert $(bc <<< "$DIFF6 == 82.352")
+assert $(bc <<< "$DIFF7 == 4.858")
 
 echo -e "${CYAN}-----------------------NEXT TWO CLAIMS SHOULD FAIL-----------------------${NC}"
 cleos push action --force-unique eparticlectr rewardclmid "[\"$REWARD_ID3\"]" -p eptestusersf
 assert $(bc <<< "$? != 0")
 cleos push action --force-unique eparticlectr rewardclmid "[3249293423]" -p eptestusersf
 assert $(bc <<< "$? != 0")
+
+echo -e "${CYAN}-----------------------NEXT TWO (EXTRA) CLAIMS SHOULD FAIL-----------------------${NC}"
+cleos push action --force-unique eparticlectr rewrdclmidex "[\"$REWARD_EXTRA_ID3\"]" -p eptestusersf
+assert $(bc <<< "$? != 0")
+cleos push action --force-unique eparticlectr rewrdclmidex "[3249293423]" -p eptestusersf
+assert $(bc <<< "$? != 0")
+
 
 echo -e "${CYAN}-----------------------VOTE PURGES BELOW SHOULD PASS-----------------------${NC}"
 cleos push action eparticlectr oldvotepurge "[$PROPID1, 100]" -p eptestusersa
@@ -553,6 +735,18 @@ assert $(bc <<< "$? == 0")
 cleos push action eparticlectr oldvotepurge "[$PROPID4, 5]" -p eptestusersa
 assert $(bc <<< "$? == 0")
 
+echo -e "${CYAN}-----------------------VOTE EXTRA PURGES BELOW SHOULD PASS-----------------------${NC}"
+cleos push action eparticlectr oldvteprgeex "[$PROPEXTRAID1, 100]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr oldvteprgeex "[$PROPEXTRAID2, 100]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr oldvteprgeex "[$PROPEXTRAID3, 2]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr oldvteprgeex "[$PROPEXTRAID4, 5]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+
+
+
 echo -e "${CYAN}-----------------------NEXT THREE VOTE PURGES SHOULD FAIL-----------------------${NC}"
 cleos push action eparticlectr oldvotepurge "[\"$IPFS1\", 100]" -p eptestusersa
 assert $(bc <<< "$? == 1")
@@ -561,6 +755,17 @@ assert $(bc <<< "$? == 1")
 # Cannot delete newest proposal
 cleos push action eparticlectr oldvotepurge "[$PROPID6, 100]" -p eptestusersa
 assert $(bc <<< "$? == 1")
+
+
+echo -e "${CYAN}-----------------------NEXT THREE EXTRA VOTE PURGES SHOULD FAIL-----------------------${NC}"
+cleos push action eparticlectr oldvteprgeex "[\"$IPFS9\", 100]" -p eptestusersa
+assert $(bc <<< "$? == 1")
+cleos push action eparticlectr oldvteprgeex '["gumdrop", 100]' -p eptestusersa
+assert $(bc <<< "$? == 1")
+# Cannot delete newest proposal
+cleos push action eparticlectr oldvteprgeex "[$PROPEXTRAID6, 100]" -p eptestusersa
+assert $(bc <<< "$? == 1")
+
 
 echo -e "${CYAN}-----------------------WINNING EDIT STAKES SHOULD CHANGE COMPLETION TIME-----------------------${NC}"
 STAKE28=$(cleos get table eparticlectr eparticlectr staketbl2 -r -l 28 | jq ".rows[27]")
