@@ -774,11 +774,27 @@ COMPLETION_TIME=$(echo $STAKE28 | jq ".completion_time")
 assert $(bc <<< "$COMPLETION_TIME - $TIMESTAMP != 5")
 echo "Stake time changed properly"
 
+
+echo -e "${CYAN}-----------------------WINNING EDIT STAKE EXTRAS SHOULD CHANGE COMPLETION TIME-----------------------${NC}"
+STAKEEXTRA28=$(cleos get table eparticlectr eparticlectr staketblex -r -l 28 | jq ".rows[27]")
+TIMESTAMP_EXTRA=$(echo $STAKEEXTRA28 | jq ".timestamp")
+COMPLETION_TIME_EXTRA=$(echo $STAKEEXTRA28 | jq ".completion_time")
+assert $(bc <<< "$COMPLETION_TIME_EXTRA - $TIMESTAMP_EXTRA != 5")
+echo "Stake time changed properly"
+
+
 echo -e "${CYAN}-----------------------BELOW CLAIMS SHOULD PASS-----------------------${NC}"
 STAKE_ID1=$(cleos get table eparticlectr eparticlectr staketbl2 -r | jq ".rows[0].id")
 STAKE_ID2=$(bc <<< "$STAKE_ID1 - 1")
 STAKE_ID3=$(bc <<< "$STAKE_ID1 - 2")
 STAKE_ID4=$(bc <<< "$STAKE_ID1 - 3")
+
+echo -e "${CYAN}-----------------------BELOW EXTRA CLAIMS SHOULD PASS-----------------------${NC}"
+STAKE_EXTRA_ID1=$(cleos get table eparticlectr eparticlectr staketblex -r | jq ".rows[0].id")
+STAKE_EXTRA_ID2=$(bc <<< "$STAKE_EXTRA_ID1 - 1")
+STAKE_EXTRA_ID3=$(bc <<< "$STAKE_EXTRA_ID1 - 2")
+STAKE_EXTRA_ID4=$(bc <<< "$STAKE_EXTRA_ID1 - 3")
+
 
 cleos push action eparticlectr brainclmid "[$STAKE_ID1]" -p eptestusersa
 assert $(bc <<< "$? == 0")
@@ -789,8 +805,21 @@ assert $(bc <<< "$? == 0")
 cleos push action eparticlectr brainclmid "[$STAKE_ID4]" -p eptestuserse
 assert $(bc <<< "$? == 0")
 
+cleos push action eparticlectr brainclmidex "[$STAKE_EXTRA_ID1]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr brainclmidex "[$STAKE_EXTRA_ID2]" -p eptestusersg
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr brainclmidex "[$STAKE_EXTRA_ID3]" -p eptestusersb
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr brainclmidex "[$STAKE_EXTRA_ID4]" -p eptestuserse
+assert $(bc <<< "$? == 0")
+
 echo -e "${CYAN}-----------------------THIS CLAIM SHOULD FAIL-----------------------${NC}"
 cleos push action eparticlectr brainclmid "[$STAKE_ID1]" -p eptestusersf
+assert $(bc <<< "$? == 1")
+
+echo -e "${CYAN}-----------------------THIS CLAIM EXTRA SHOULD FAIL-----------------------${NC}"
+cleos push action eparticlectr brainclmidex "[$STAKE_EXTRA_ID1]" -p eptestusersf
 assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}-----------------------MAKE MORE PROPOSALS THEN PURGE THE PREVIOUS ONE-----------------------${NC}"
@@ -799,6 +828,14 @@ assert $(bc <<< "$? == 0")
 cleos push action everipediaiq epartpropose "[ \"eptestusersa\", \"$SLUG8\", \"$IPFS5\", \"en\", -1, \"new wiki\", \"memoing\", \"active\", \"\" ]" -p eptestusersa
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr oldvotepurge "[$PROPID6, 100]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+
+echo -e "${CYAN}-----------------------MAKE MORE PROPOSALS EXTRAS THEN PURGE THE PREVIOUS ONE-----------------------${NC}"
+cleos push action everipediaiq epartpropsex "[ \"eptestusersa\", \"$SLUG16\", \"$IPFS12\", \"en\", -1, \"new wiki\", \"memoing\", \"active\", \"\", \"epid-abc\", \"proposal\" ]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+cleos push action everipediaiq epartpropsex "[ \"eptestusersa\", \"$SLUG16\", \"$IPFS13\", \"en\", -1, \"new wiki\", \"memoing\", \"active\", \"\", \"epid-abc\", \"proposal\" ]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+cleos push action eparticlectr oldvteprgeex "[$PROPID6, 100]" -p eptestusersa
 assert $(bc <<< "$? == 0")
 
 # echo -e "${CYAN}-----------------------MARK REFERENDUMS-----------------------${NC}"
