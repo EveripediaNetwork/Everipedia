@@ -99,6 +99,9 @@ void everipediaiq::transfrextra(
     eosio::check( purpose.size() <= 256, "purpose has more than 256 bytes" );
     eosio::check( extra_note.size() <= 256, "extra_note has more than 256 bytes" );
 
+    // Reject transactions where non-proxy accounts try to specify a proxied_for
+    eosio::check( (from == PROXY_CONTRACT) || (from != PROXY_CONTRACT && proxied_for == ""), "proxied_for must be empty for non-proxy accounts" );
+
     // Transfer the IQ normally
     action(
         permission_level{ from , name("active") }, 
@@ -201,6 +204,10 @@ void everipediaiq::epartpropsex(
     eosio::check( proxied_for.size() <= 256, "proxied_for has more than 256 bytes" );
     eosio::check( extra_note.size() <= 256, "extra_note has more than 256 bytes" );
 
+    // Reject transactions where non-proxy accounts try to specify a proxied_for
+    eosio::check( (proposer == PROXY_CONTRACT) || (proposer != PROXY_CONTRACT && proxied_for == ""), "proxied_for must be empty for non-proxy accounts" );
+
+
     // Transfer the IQ to the eparticlectr contract for staking
     asset iqAssetPack = asset(EDIT_PROPOSE_IQ * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
     action(
@@ -256,6 +263,9 @@ void everipediaiq::epartvotex(
     eosio::check(amount > 0, "must transfer a positive amount");
     eosio::check( proxied_for.size() <= 256, "proxied_for has more than 256 bytes" );
     eosio::check( extra_note.size() <= 256, "extra_note has more than 256 bytes" );
+
+    // Reject transactions where non-proxy accounts try to specify a proxied_for
+    eosio::check( (voter == PROXY_CONTRACT) || (voter != PROXY_CONTRACT && proxied_for == ""), "proxied_for must be empty for non-proxy accounts" );
 
     // Transfer the IQ to the eparticlectr contract for staking
     asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
