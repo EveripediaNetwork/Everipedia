@@ -61,7 +61,7 @@ void everipediaiq::transfer( name from,
                       asset        quantity,
                       std::string       memo )
 {
-    eosio::check( from != to, "cannot transfer to self" );
+    
     require_auth( from );
     eosio::check( is_account( to ), "to account does not exist");
     auto sym = quantity.symbol.code();
@@ -76,8 +76,11 @@ void everipediaiq::transfer( name from,
     eosio::check( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
     eosio::check( memo.size() <= 256, "memo has more than 256 bytes" );
 
-    sub_balance( from, quantity );
-    add_balance( to, quantity, from );
+    if (to != PROXY_CONTRACT){
+        eosio::check( from != to , "cannot transfer to self" );
+        sub_balance( from, quantity );
+        add_balance( to, quantity, from );
+    }
 }
 
 [[eosio::action]]
