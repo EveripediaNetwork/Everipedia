@@ -207,7 +207,6 @@ void everipediaiq::epartpropsex(
     // Reject transactions where non-proxy accounts try to specify a proxied_for
     eosio::check( (proposer == PROXY_CONTRACT) || (proposer != PROXY_CONTRACT && proxied_for == ""), "proxied_for must be empty for non-proxy accounts" );
 
-
     // Transfer the IQ to the eparticlectr contract for staking
     asset iqAssetPack = asset(EDIT_PROPOSE_IQ * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
     action(
