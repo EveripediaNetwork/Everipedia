@@ -76,11 +76,15 @@ void everipediaiq::transfer( name from,
     eosio::check( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
     eosio::check( memo.size() <= 256, "memo has more than 256 bytes" );
 
-    if (to != PROXY_CONTRACT){
+    if ((to == PROXY_CONTRACT) && (from == PROXY_CONTRACT)){
+        // do nothing, but it will be recorded on chain
+    }
+    else {
         eosio::check( from != to , "cannot transfer to self" );
         sub_balance( from, quantity );
         add_balance( to, quantity, from );
     }
+
 }
 
 [[eosio::action]]
