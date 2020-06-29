@@ -100,10 +100,6 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
     eosio::check( eosio::current_time_point().sec_since_epoch() < prop_it->endtime, "Voting period is over");
     eosio::check( !prop_it->finalized, "Proposal is finalized");
 
-    // Default boost is 1 (i.e. no boost)
-    float boost_multiplier = 1.0;
-    //float boost_multiplier = 1.0 + boost_it->amount / BOOST_BASE_CONSTANT;
-
     // Create the stake object
     staketbl staketblobj(_self, _self.value);
     uint64_t stake_id = staketblobj.available_primary_key();
@@ -125,7 +121,7 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
          a.proposal_id = proposal_id;
          a.approve = approve;
          a.is_editor = voterIsProposer;
-         a.amount = round(amount * boost_multiplier);
+         a.amount = amount;
          a.voter = voter;
          a.timestamp = eosio::current_time_point().sec_since_epoch();
          a.stake_id = stake_id;
@@ -154,9 +150,11 @@ void eparticlectr::voteextra( name voter, uint64_t proposal_id, bool approve, ui
     eosio::check( eosio::current_time_point().sec_since_epoch() < prop_it->endtime, "Voting period is over");
     eosio::check( !prop_it->finalized, "Proposal is finalized");
 
-    // Default boost is 1 (i.e. no boost)
-    float boost_multiplier = 1.0;
-    //float boost_multiplier = 1.0 + boost_it->amount / BOOST_BASE_CONSTANT;
+    // Make sure only the proxy account can fill the proxied_for field
+    std::string proxied_for_to_use = proxied_for;
+    if (voter != PROXY_CONTRACT) {
+        proxied_for_to_use = "";
+    }
 
     // Create the stake object
     staketblex staketblobj(_self, _self.value);
@@ -167,7 +165,7 @@ void eparticlectr::voteextra( name voter, uint64_t proposal_id, bool approve, ui
         s.amount = amount;
         s.timestamp = eosio::current_time_point().sec_since_epoch();
         s.completion_time = eosio::current_time_point().sec_since_epoch() + STAKING_DURATION;
-        s.proxied_for = proxied_for;
+        s.proxied_for = proxied_for_to_use;
         s.extra_note = extra_note;
     });
 
@@ -181,12 +179,12 @@ void eparticlectr::voteextra( name voter, uint64_t proposal_id, bool approve, ui
          a.proposal_id = proposal_id;
          a.approve = approve;
          a.is_editor = voterIsProposer;
-         a.amount = round(amount * boost_multiplier);
+         a.amount = amount;
          a.voter = voter;
          a.timestamp = eosio::current_time_point().sec_since_epoch();
          a.stake_id = stake_id;
          a.memo = memo;
-         a.proxied_for = proxied_for;
+         a.proxied_for = proxied_for_to_use;
          a.extra_note = extra_note;
     });
 }
@@ -279,6 +277,12 @@ void eparticlectr::proposeextra( name proposer, std::string slug, ipfshash_t ipf
     uint32_t starttime = eosio::current_time_point().sec_since_epoch();
     uint32_t endtime = eosio::current_time_point().sec_since_epoch() + DEFAULT_VOTING_TIME;
 
+    // Make sure only the proxy account can fill the proxied_for field
+    std::string proxied_for_to_use = proxied_for;
+    if (proposer != PROXY_CONTRACT) {
+        proxied_for_to_use = "";
+    }
+
     // Store the proposal
     proptable.emplace( _self, [&]( auto& p ) {
         p.id = proposal_id;
@@ -292,7 +296,7 @@ void eparticlectr::proposeextra( name proposer, std::string slug, ipfshash_t ipf
         p.endtime = endtime;
         p.memo = memo;
         p.finalized = false;
-        p.proxied_for = proxied_for;
+        p.proxied_for = proxied_for_to_use;
         p.extra_note = extra_note;
     });
 
@@ -543,6 +547,13 @@ void eparticlectr::finalizeextr( uint64_t proposal_id ) {
         }
         // Reward the winners
         else{
+
+            // Make sure only the proxy account can fill the proxied_for field
+            std::string proxied_for_to_use = vote_it->proxied_for;
+            if (vote_it->voter != PROXY_CONTRACT) {
+                proxied_for_to_use = "";
+            }
+
             rewardstable.emplace( _self,  [&]( auto& a ) {
                 a.id = rewardstable.available_primary_key();
                 a.user = vote_it->voter;
@@ -558,6 +569,8 @@ void eparticlectr::finalizeextr( uint64_t proposal_id ) {
                 a.is_editor = vote_it->is_editor;
                 a.is_tie = istie;
                 a.memo = vote_it->memo;
+                a.proxied_for = proxied_for_to_use;
+                a.extra_note = vote_it->extra_note;
             });
             total_vote_points += vote_it->amount;
         }

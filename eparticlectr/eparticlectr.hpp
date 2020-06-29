@@ -37,6 +37,7 @@ using namespace eosio;
 // Constants
 
 const name TOKEN_CONTRACT = name("everipediaiq");
+const name PROXY_CONTRACT = name("epidhotwalla");
 const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
 const uint64_t WINNING_VOTE_STAKE_TIME = 5 * 86400; // 5 days
 const uint64_t EDIT_PROPOSE_IQ_EPARTICLECTR = 50; // 50 IQ
