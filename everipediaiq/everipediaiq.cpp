@@ -278,7 +278,7 @@ void everipediaiq::epartvotex(
     action(
         permission_level{ voter , permission }, 
         _self , name("transfrextra"),
-        std::make_tuple( voter, ARTICLE_CONTRACT, iqAssetPack, std::string("stake for vote"), proxied_for, proposal_id, extra_note)
+        std::make_tuple( voter, ARTICLE_CONTRACT, iqAssetPack, std::string("stake for vote"), proxied_for, std::string("PROPOSAL: ") + std::to_string(proposal_id), extra_note)
     ).send();
 
     // Create the vote in the eparticlectr contract

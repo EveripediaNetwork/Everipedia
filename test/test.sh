@@ -846,19 +846,19 @@ cleos push action eparticlectr oldvteprgeex "[$PROPID6, 100]" -p eptestusersa
 assert $(bc <<< "$? == 0")
 
 echo -e "${CYAN}-----------------------MIGRATE STAKES-----------------------${NC}"
-cleos push action eparticlectr migratestkes "[]" -p eptestusersa
+cleos push action eparticlectr migratestkes "[ 10 ]" -p eptestusersa
 assert $(bc <<< "$? == 0")
 
 echo -e "${CYAN}-----------------------MIGRATE VOTES-----------------------${NC}"
-cleos push action eparticlectr migratevotes "[]" -p eptestusersa
+cleos push action eparticlectr migratevotes "[ 10 ]" -p eptestusersa
 assert $(bc <<< "$? == 0")
 
 echo -e "${CYAN}-----------------------MIGRATE PROPOSALS-----------------------${NC}"
-cleos push action eparticlectr migrateprops "[]" -p eptestusersa
+cleos push action eparticlectr migrateprops "[ 10 ]" -p eptestusersa
 assert $(bc <<< "$? == 0")
 
 echo -e "${CYAN}-----------------------MIGRATE REWARDS-----------------------${NC}"
-cleos push action eparticlectr migraterwds "[]" -p eptestusersa
+cleos push action eparticlectr migraterwds "[ 10 ]" -p eptestusersa
 assert $(bc <<< "$? == 0")
 
 
