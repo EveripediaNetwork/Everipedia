@@ -813,10 +813,10 @@ void eparticlectr::migratestkes( uint32_t loop_limit ) {
     staketbl stakestable( _self, _self.value );
     staketblex stakestable_extra( _self, _self.value );
 
-    // Loop through the old proposals 
-    uint32_t counter = 0;
-    for ( auto stakes_it = stakestable.begin(); stakes_it != stakestable.end() && counter < loop_limit; stakes_it++ ) {
-        // Copy the old reward over to the new format
+    // Loop through the old stakes 
+    auto stakes_it = stakestable.begin();
+    uint32_t count = 0;
+    while(count < loop_limit && stakes_it != stakestable.end()) {
         stakestable_extra.emplace( _self, [&]( auto& s ) {
             s.id = stakes_it->id;
             s.user = stakes_it->user;
@@ -828,10 +828,10 @@ void eparticlectr::migratestkes( uint32_t loop_limit ) {
         });
 
         // Delete the old stakes
-        stakestable.erase(stakes_it);
-        
+        stakes_it = stakestable.erase(stakes_it);
+
         // Increase the count
-        counter++;
+        count++;
     }
 }
 
@@ -843,9 +843,10 @@ void eparticlectr::migratevotes( uint32_t loop_limit ) {
     votestbl votestable( _self, _self.value );
     votestblex votestable_extra( _self, _self.value );
 
-    // Loop through the old proposals 
-    uint32_t counter = 0;
-    for ( auto votes_it = votestable.begin(); votes_it != votestable.end() && counter < loop_limit; votes_it++ ) {
+    // Loop through the old votes 
+    auto votes_it = votestable.begin();
+    uint32_t count = 0;
+    while(count < loop_limit && votes_it != votestable.end()) {
         // Copy the old vote over to the new format
         votestable_extra.emplace( _self, [&]( auto& v ) {
             v.id = votes_it->id;
@@ -862,10 +863,10 @@ void eparticlectr::migratevotes( uint32_t loop_limit ) {
         });
 
         // Delete the old proposal
-        votestable.erase(votes_it);
-        
+        votes_it = votestable.erase(votes_it);
+
         // Increase the count
-        counter++;
+        count++;
     }
 }
 
@@ -878,8 +879,9 @@ void eparticlectr::migrateprops( uint32_t loop_limit ) {
     propstblex propstable_extra( _self, _self.value );
 
     // Loop through the old proposals 
-    uint32_t counter = 0;
-    for ( auto props_it = propstable.begin(); props_it != propstable.end() && counter < loop_limit; props_it++ ) {
+    auto props_it = propstable.begin();
+    uint32_t count = 0;
+    while(count < loop_limit && props_it != propstable.end()) {
         // Copy the old proposal over to the new format
         propstable_extra.emplace( _self, [&]( auto& p ) {
             p.id = props_it->id;
@@ -898,11 +900,12 @@ void eparticlectr::migrateprops( uint32_t loop_limit ) {
         });
 
         // Delete the old proposal
-        propstable.erase(props_it);
-        
+        props_it = propstable.erase(props_it);
+
         // Increase the count
-        counter++;
+        count++;
     }
+
 }
 
 [[eosio::action]]
@@ -913,10 +916,16 @@ void eparticlectr::migraterwds( uint32_t loop_limit ) {
     rewardstbl rewardstable( _self, _self.value );
     rewardstblex rewardstable_extra( _self, _self.value );
 
-    // Loop through the old proposals 
-    uint32_t counter = 0;
-    for ( auto rewards_it = rewardstable.begin(); rewards_it != rewardstable.end() && counter < loop_limit; rewards_it++ ) {
-        // Copy the old reward over to the new format
+    // Return early if nothing to move
+    if (rewardstable.begin() == rewardstable.end()){
+        eosio::print("ALL REWARDS HAVE BEEN MIGRATED");
+        return;
+    }
+
+    // Loop through the old rewards 
+    auto rewards_it = rewardstable.begin();
+    uint32_t count = 0;
+    while(count < loop_limit && rewards_it != rewardstable.end()) {
         rewardstable_extra.emplace( _self, [&]( auto& r ) {
             r.id = rewards_it->id;
             r.user = rewards_it->user;
@@ -934,11 +943,12 @@ void eparticlectr::migraterwds( uint32_t loop_limit ) {
         });
 
         // Delete the old reward
-        rewardstable.erase(rewards_it);
-        
+        rewards_it = rewardstable.erase(rewards_it);
+
         // Increase the count
-        counter++;
+        count++;
     }
+
 }
 
 

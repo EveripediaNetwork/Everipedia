@@ -842,24 +842,52 @@ cleos push action everipediaiq epartpropsex "[ \"eptestusersa\", \"$SLUG16\", \"
 assert $(bc <<< "$? == 0")
 cleos push action everipediaiq epartpropsex "[ \"eptestusersa\", \"$SLUG16\", \"$IPFS13\", \"en\", -1, \"new wiki\", \"memoing\", \"active\", \"epid-coincoin\", \"proposal\" ]" -p eptestusersa
 assert $(bc <<< "$? == 0")
-cleos push action eparticlectr oldvteprgeex "[$PROPID6, 100]" -p eptestusersa
+cleos push action eparticlectr oldvteprgeex "[$PROPEXTRAID6, 100]" -p eptestusersa
 assert $(bc <<< "$? == 0")
 
 echo -e "${CYAN}-----------------------MIGRATE STAKES-----------------------${NC}"
-cleos push action eparticlectr migratestkes "[ 10 ]" -p eptestusersa
+cleos push action eparticlectr migratestkes "[ 15 ]" -p eptestusersa
 assert $(bc <<< "$? == 0")
+sleep .55
+cleos push action eparticlectr migratestkes "[ 15 ]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+sleep .55
+cleos push action eparticlectr migratestkes "[ 15 ]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+sleep .55
 
 echo -e "${CYAN}-----------------------MIGRATE VOTES-----------------------${NC}"
-cleos push action eparticlectr migratevotes "[ 10 ]" -p eptestusersa
+cleos push action eparticlectr migratevotes "[ 15 ]" -p eptestusersa
 assert $(bc <<< "$? == 0")
+sleep .55
+cleos push action eparticlectr migratevotes "[ 15 ]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+sleep .55
+cleos push action eparticlectr migratevotes "[ 15 ]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+sleep .55
 
 echo -e "${CYAN}-----------------------MIGRATE PROPOSALS-----------------------${NC}"
-cleos push action eparticlectr migrateprops "[ 10 ]" -p eptestusersa
+cleos push action eparticlectr migrateprops "[ 15 ]" -p eptestusersa
 assert $(bc <<< "$? == 0")
+sleep .55
+cleos push action eparticlectr migrateprops "[ 15 ]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+sleep .55
+cleos push action eparticlectr migrateprops "[ 15 ]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+sleep .55
 
 echo -e "${CYAN}-----------------------MIGRATE REWARDS-----------------------${NC}"
-cleos push action eparticlectr migraterwds "[ 10 ]" -p eptestusersa
+cleos push action eparticlectr migraterwds "[ 15 ]" -p eptestusersa
 assert $(bc <<< "$? == 0")
+sleep .55
+cleos push action eparticlectr migraterwds "[ 15 ]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+sleep .55
+cleos push action eparticlectr migraterwds "[ 15 ]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+sleep .55
 
 
 # echo -e "${CYAN}-----------------------MARK REFERENDUMS-----------------------${NC}"
