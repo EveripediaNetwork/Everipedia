@@ -34,24 +34,23 @@ void eparticlectr::brainclmid( uint64_t stakeid ) {
 
     // Get the stakes
     staketbl staketable(_self, _self.value);
-    auto stake_it = staketable.find(stakeid);
-    eosio::check( stake_it != staketable.end(), "Stake does not exist in database");
+    const auto& stake_it = staketable.get(stakeid, "Stake does not exist");
 
     // See if the stake is complete
-    eosio::check( eosio::current_time_point().sec_since_epoch() > stake_it->completion_time, "Staking period not over yet");
+    eosio::check( eosio::current_time_point().sec_since_epoch() > stake_it.completion_time, "Staking period not over yet");
 
     // Transfer back the IQ
-    asset iqAssetPack = asset(int64_t(stake_it->amount * IQ_PRECISION_MULTIPLIER), IQSYMBOL);
-    std::string memo = std::string("return stake #") + std::to_string(stake_it->id);
+    asset iqAssetPack = asset(int64_t(stake_it.amount * IQ_PRECISION_MULTIPLIER), IQSYMBOL);
+    std::string memo = std::string("return stake #") + std::to_string(stake_it.id);
     action(
         permission_level{ _self, name("active") },
         TOKEN_CONTRACT, name("transfer"),
-        std::make_tuple(_self, stake_it->user, iqAssetPack, memo)
+        std::make_tuple(_self, stake_it.user, iqAssetPack, memo)
     ).send();
 
     // Delete the stake.
     // Note that the erase() function increments the iterator, then gives it back after the erase is done
-    stake_it = staketable.erase(stake_it);
+    staketable.erase(stake_it);
 }
 
 // Redeem IQ, with a specific stake specified
@@ -60,24 +59,23 @@ void eparticlectr::brainclmidex( uint64_t stakeid ) {
 
     // Get the stakes
     staketblex staketable(_self, _self.value);
-    auto stake_it = staketable.find(stakeid);
-    eosio::check( stake_it != staketable.end(), "Stake does not exist in database");
+    const auto& stake_it = staketable.get(stakeid, "Stake does not exist in database");
 
     // See if the stake is complete
-    eosio::check( eosio::current_time_point().sec_since_epoch() > stake_it->completion_time, "Staking period not over yet");
+    eosio::check( eosio::current_time_point().sec_since_epoch() > stake_it.completion_time, "Staking period not over yet");
 
     // Transfer back the IQ
-    asset iqAssetPack = asset(int64_t(stake_it->amount * IQ_PRECISION_MULTIPLIER), IQSYMBOL);
-    std::string memo = std::string("return stake #") + std::to_string(stake_it->id);
+    asset iqAssetPack = asset(int64_t(stake_it.amount * IQ_PRECISION_MULTIPLIER), IQSYMBOL);
+    std::string memo = std::string("return stake #") + std::to_string(stake_it.id);
     action(
         permission_level{ _self, name("active") },
         TOKEN_CONTRACT, name("transfrextra"),
-        std::make_tuple(_self, stake_it->user, iqAssetPack, memo, stake_it->proxied_for, std::string("return stake #") + std::to_string(stake_it->id), stake_it->extra_note )
+        std::make_tuple(_self, stake_it.user, iqAssetPack, memo, stake_it.proxied_for, std::string("return stake #") + std::to_string(stake_it.id), stake_it.extra_note )
     ).send();
 
     // Delete the stake.
     // Note that the erase() function increments the iterator, then gives it back after the erase is done
-    stake_it = staketable.erase(stake_it);
+    staketable.erase(stake_it);
 }
 
 
@@ -93,12 +91,11 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
 
     // Check if proposal exists
     propstbl proptable( _self, _self.value );
-    auto prop_it = proptable.find( proposal_id );
-    eosio::check( prop_it != proptable.end(), "Proposal not found" );
+    const auto& prop_it = proptable.get(proposal_id, "Proposal not found");
 
     // Verify voting is still in progress
-    eosio::check( eosio::current_time_point().sec_since_epoch() < prop_it->endtime, "Voting period is over");
-    eosio::check( !prop_it->finalized, "Proposal is finalized");
+    eosio::check( eosio::current_time_point().sec_since_epoch() < prop_it.endtime, "Voting period is over");
+    eosio::check( !prop_it.finalized, "Proposal is finalized");
 
     // Create the stake object
     staketbl staketblobj(_self, _self.value);
@@ -143,12 +140,11 @@ void eparticlectr::voteextra( name voter, uint64_t proposal_id, bool approve, ui
 
     // Check if proposal exists
     propstblex proptable( _self, _self.value );
-    auto prop_it = proptable.find( proposal_id );
-    eosio::check( prop_it != proptable.end(), "Proposal not found" );
+    const auto& prop_it = proptable.get(proposal_id, "Proposal not found");
 
     // Verify voting is still in progress
-    eosio::check( eosio::current_time_point().sec_since_epoch() < prop_it->endtime, "Voting period is over");
-    eosio::check( !prop_it->finalized, "Proposal is finalized");
+    eosio::check( eosio::current_time_point().sec_since_epoch() < prop_it.endtime, "Voting period is over");
+    eosio::check( !prop_it.finalized, "Proposal is finalized");
 
     // Create the stake object
     staketblex staketblobj(_self, _self.value);
@@ -306,11 +302,10 @@ void eparticlectr::proposeextra( name proposer, std::string slug, ipfshash_t ipf
 void eparticlectr::finalize( uint64_t proposal_id ) {
     // Verify proposal exists
     propstbl proptable( _self, _self.value );
-    auto prop_it = proptable.find( proposal_id );
-    eosio::check( prop_it != proptable.end(), "Proposal not found" );
+    const auto& prop_it = proptable.get(proposal_id, "Proposal not found");
 
     // Verify voting period is complete
-    eosio::check( eosio::current_time_point().sec_since_epoch() > prop_it->endtime, "Voting period is not over yet");
+    eosio::check( eosio::current_time_point().sec_since_epoch() > prop_it.endtime, "Voting period is not over yet");
 
     // Retrieve votes from DB
     votestbl votetbl( _self, proposal_id );
@@ -434,12 +429,12 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     action(
         permission_level { _self, name("active") },
         _self, name("logpropres"),
-        std::make_tuple( prop_it->id, approved, yes_votes, no_votes )
+        std::make_tuple( prop_it.id, approved, yes_votes, no_votes )
     ).send();
 
     // delete proposal if it's not the most current one
     // deleting the most current proposal screws up the ID auto-increment
-    if (prop_it->id == proptable.available_primary_key() - 1)
+    if (prop_it.id == proptable.available_primary_key() - 1)
         proptable.modify( prop_it, same_payer, [&]( auto& p ) {
             p.finalized = true;
         });
@@ -451,11 +446,10 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
 void eparticlectr::finalizeextr( uint64_t proposal_id ) {
     // Verify proposal exists
     propstblex proptable( _self, _self.value );
-    auto prop_it = proptable.find( proposal_id );
-    eosio::check( prop_it != proptable.end(), "Proposal not found" );
+    const auto& prop_it = proptable.get(proposal_id, "Proposal not found");
 
     // Verify voting period is complete
-    eosio::check( eosio::current_time_point().sec_since_epoch() > prop_it->endtime, "Voting period is not over yet");
+    eosio::check( eosio::current_time_point().sec_since_epoch() > prop_it.endtime, "Voting period is not over yet");
 
     // Retrieve votes from DB
     votestblex votetbl( _self, proposal_id );
@@ -582,12 +576,12 @@ void eparticlectr::finalizeextr( uint64_t proposal_id ) {
     action(
         permission_level { _self, name("active") },
         _self, name("logpropres"),
-        std::make_tuple( prop_it->id, approved, yes_votes, no_votes )
+        std::make_tuple( prop_it.id, approved, yes_votes, no_votes )
     ).send();
 
     // delete proposal if it's not the most current one
     // deleting the most current proposal screws up the ID auto-increment
-    if (prop_it->id == proptable.available_primary_key() - 1)
+    if (prop_it.id == proptable.available_primary_key() - 1)
         proptable.modify( prop_it, same_payer, [&]( auto& p ) {
             p.finalized = true;
         });
@@ -603,41 +597,39 @@ void eparticlectr::rewardclmid ( uint64_t reward_id ) {
     rewardstbl rewardstable( _self, _self.value );
 
     // check if user rewards exist
-    auto reward_it = rewardstable.find( reward_id );
-    eosio::check( reward_it != rewardstable.end(), "reward doesn't exist in database");
+    const auto& reward_it = rewardstable.get(reward_id, "Reward doesn't exist");
 
     // Make sure period is complete before processing
-    uint64_t reward_period = reward_it->proposal_finalize_period;
+    uint64_t reward_period = reward_it.proposal_finalize_period;
     uint64_t current_period = eosio::current_time_point().sec_since_epoch() / REWARD_INTERVAL;
-    auto period_it = perrewards.find( reward_period );
-    eosio::check(period_it != perrewards.end(), "PROTOCOL ERROR: This period should exist");
+    const auto& period_it = perrewards.get(reward_period, "Period doesn't exist");
     eosio::check(current_period > reward_period, "Reward period must complete before claiming rewards");
 
     // Send curation reward
-    int64_t curation_reward = reward_it->vote_points * PERIOD_CURATION_REWARD / period_it->curation_sum;
+    int64_t curation_reward = reward_it.vote_points * PERIOD_CURATION_REWARD / period_it.curation_sum;
     eosio::check(curation_reward <= PERIOD_CURATION_REWARD, "System logic error. Too much IQ calculated for curation reward.");
     if (curation_reward == 0) // Minimum reward of 0.001 IQ to prevent unclaimable rewards
         curation_reward = 1;
     asset curation_quantity = asset(curation_reward, IQSYMBOL);
-    std::string memo = std::string("Curation IQ reward:" + reward_it->memo);
+    std::string memo = std::string("Curation IQ reward:" + reward_it.memo);
     action(
         permission_level { TOKEN_CONTRACT, name("active") },
         TOKEN_CONTRACT, name("issue"),
-        std::make_tuple( reward_it->user, curation_quantity, memo )
+        std::make_tuple( reward_it.user, curation_quantity, memo )
     ).send();
 
     // Send editor reward
-    if (reward_it->is_editor && reward_it->proposalresult) {
-        int64_t editor_reward = reward_it->edit_points * PERIOD_EDITOR_REWARD / period_it->editor_sum;
+    if (reward_it.is_editor && reward_it.proposalresult) {
+        int64_t editor_reward = reward_it.edit_points * PERIOD_EDITOR_REWARD / period_it.editor_sum;
         if (editor_reward == 0) // Minimum reward of 0.001 IQ to prevent unclaimable rewards
             editor_reward = 1;
         eosio::check(editor_reward <= PERIOD_EDITOR_REWARD, "System logic error. Too much IQ calculated for editor reward.");
         asset editor_quantity = asset(editor_reward, IQSYMBOL);
-        std::string memo = std::string("Editor IQ reward:" + reward_it->memo);
+        std::string memo = std::string("Editor IQ reward:" + reward_it.memo);
         action(
             permission_level { TOKEN_CONTRACT, name("active") },
             TOKEN_CONTRACT, name("issue"),
-            std::make_tuple( reward_it->user, editor_quantity, memo )
+            std::make_tuple( reward_it.user, editor_quantity, memo )
         ).send();
     }
 
@@ -652,41 +644,39 @@ void eparticlectr::rewrdclmidex ( uint64_t reward_id ) {
     rewardstblex rewardstable( _self, _self.value );
 
     // check if user rewards exist
-    auto reward_it = rewardstable.find( reward_id );
-    eosio::check( reward_it != rewardstable.end(), "reward doesn't exist in database");
+    const auto& reward_it = rewardstable.get(reward_id, "Reward doesn't exist");
 
     // Make sure period is complete before processing
-    uint64_t reward_period = reward_it->proposal_finalize_period;
+    uint64_t reward_period = reward_it.proposal_finalize_period;
     uint64_t current_period = eosio::current_time_point().sec_since_epoch() / REWARD_INTERVAL;
-    auto period_it = perrewards.find( reward_period );
-    eosio::check(period_it != perrewards.end(), "PROTOCOL ERROR: This period should exist");
+    const auto& period_it = perrewards.get(reward_period, "Period should exist");
     eosio::check(current_period > reward_period, "Reward period must complete before claiming rewards");
 
     // Send curation reward
-    int64_t curation_reward = reward_it->vote_points * PERIOD_CURATION_REWARD / period_it->curation_sum;
+    int64_t curation_reward = reward_it.vote_points * PERIOD_CURATION_REWARD / period_it.curation_sum;
     eosio::check(curation_reward <= PERIOD_CURATION_REWARD, "System logic error. Too much IQ calculated for curation reward.");
     if (curation_reward == 0) // Minimum reward of 0.001 IQ to prevent unclaimable rewards
         curation_reward = 1;
     asset curation_quantity = asset(curation_reward, IQSYMBOL);
-    std::string memo = std::string("Curation IQ reward:" + reward_it->memo);
+    std::string memo = std::string("Curation IQ reward:" + reward_it.memo);
     action(
         permission_level { TOKEN_CONTRACT, name("active") },
         TOKEN_CONTRACT, name("issue"),
-        std::make_tuple( reward_it->user, curation_quantity, memo )
+        std::make_tuple( reward_it.user, curation_quantity, memo )
     ).send();
 
     // Send editor reward
-    if (reward_it->is_editor && reward_it->proposalresult) {
-        int64_t editor_reward = reward_it->edit_points * PERIOD_EDITOR_REWARD / period_it->editor_sum;
+    if (reward_it.is_editor && reward_it.proposalresult) {
+        int64_t editor_reward = reward_it.edit_points * PERIOD_EDITOR_REWARD / period_it.editor_sum;
         if (editor_reward == 0) // Minimum reward of 0.001 IQ to prevent unclaimable rewards
             editor_reward = 1;
         eosio::check(editor_reward <= PERIOD_EDITOR_REWARD, "System logic error. Too much IQ calculated for editor reward.");
         asset editor_quantity = asset(editor_reward, IQSYMBOL);
-        std::string memo = std::string("Editor IQ reward:" + reward_it->memo);
+        std::string memo = std::string("Editor IQ reward:" + reward_it.memo);
         action(
             permission_level { TOKEN_CONTRACT, name("active") },
             TOKEN_CONTRACT, name("issue"),
-            std::make_tuple( reward_it->user, editor_quantity, memo )
+            std::make_tuple( reward_it.user, editor_quantity, memo )
         ).send();
     }
 
@@ -756,12 +746,11 @@ void eparticlectr::mkreferendum( uint64_t proposal_id ) {
     propstbl proptable( _self, _self.value );
 
     // Validate proposal
-    auto prop_it = proptable.find(proposal_id);
-    eosio::check( prop_it != proptable.end(), "Proposal does not exist");
-    eosio::check( !prop_it->finalized, "Proposal is finalized");
-    eosio::check( prop_it->endtime - prop_it->starttime < REFERENDUM_DURATION_SECS, "Proposal has already been marked as a referendum");
+    const auto& prop_it = proptable.get(proposal_id, "Proposal not found");
+    eosio::check( !prop_it.finalized, "Proposal is finalized");
+    eosio::check( prop_it.endtime - prop_it.starttime < REFERENDUM_DURATION_SECS, "Proposal has already been marked as a referendum");
 
-    require_auth(prop_it->proposer);
+    require_auth(prop_it.proposer);
 
     proptable.modify( prop_it, same_payer, [&]( auto& p ) {
         p.endtime = eosio::current_time_point().sec_since_epoch() + REFERENDUM_DURATION_SECS;
