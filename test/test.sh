@@ -95,6 +95,7 @@ if [ $BUILD -eq 1 ]; then
     sed -i -e 's/WINNING_VOTE_STAKE_TIME = 5 \* 86400/WINNING_VOTE_STAKE_TIME = 5/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e 's/BOOST_TRANSFER_WAITING_PERIOD = 14\*86400/BOOST_TRANSFER_WAITING_PERIOD = 5/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e "s/PROXY_CONTRACT = name(\"epidhotwalla\")/PROXY_CONTRACT = name(\"eptestusersa\")/g" ../everipediaiq/everipediaiq.hpp
+    sed -i -e "s/MAINTENANCE_CONTRACT = name(\"evrpdcronjob\")/MAINTENANCE_CONTRACT = name(\"eptestusersa\")/g" ../eparticlectr/eparticlectr.hpp
     cd ..
     bash build.sh
     cd test
@@ -104,6 +105,7 @@ if [ $BUILD -eq 1 ]; then
     sed -i -e 's/WINNING_VOTE_STAKE_TIME = 5/WINNING_VOTE_STAKE_TIME = 5 \* 86400/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e 's/BOOST_TRANSFER_WAITING_PERIOD = 5/BOOST_TRANSFER_WAITING_PERIOD = 14\*86400/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e "s/CUSTODIAN_ACCOUNT = name(\"eptestusersa\")/CUSTODIAN_ACCOUNT = name(\"epidhotwalla\")/g" ../everipediaiq/everipediaiq.hpp
+    sed -i -e "s/MAINTENANCE_CONTRACT = name(\"eptestusersa\")/MAINTENANCE_CONTRACT = name(\"evrpdcronjob\")/g" ../eparticlectr/eparticlectr.hpp
 fi
 
 if [ $BOOTSTRAP -eq 1 ]; then
@@ -842,6 +844,23 @@ cleos push action everipediaiq epartpropsex "[ \"eptestusersa\", \"$SLUG16\", \"
 assert $(bc <<< "$? == 0")
 cleos push action eparticlectr oldvteprgeex "[$PROPID6, 100]" -p eptestusersa
 assert $(bc <<< "$? == 0")
+
+echo -e "${CYAN}-----------------------MIGRATE STAKES-----------------------${NC}"
+cleos push action eparticlectr migratestkes "[]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+
+echo -e "${CYAN}-----------------------MIGRATE VOTES-----------------------${NC}"
+cleos push action eparticlectr migratevotes "[]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+
+echo -e "${CYAN}-----------------------MIGRATE PROPOSALS-----------------------${NC}"
+cleos push action eparticlectr migrateprops "[]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+
+echo -e "${CYAN}-----------------------MIGRATE REWARDS-----------------------${NC}"
+cleos push action eparticlectr migraterwds "[]" -p eptestusersa
+assert $(bc <<< "$? == 0")
+
 
 # echo -e "${CYAN}-----------------------MARK REFERENDUMS-----------------------${NC}"
 # LAST_PROP_ID=$(cleos get table eparticlectr eparticlectr propstbl2 -r | jq ".rows[0].id")

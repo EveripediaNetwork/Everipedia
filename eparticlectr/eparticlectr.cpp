@@ -792,7 +792,7 @@ void eparticlectr::curatelist( name user, std::string title, std::string descrip
 
 [[eosio::action]]
 void eparticlectr::migratestkes( uint32_t loop_limit ) {
-    require_auth( name("evrpdcronjob") );
+    require_auth( MAINTENANCE_CONTRACT );
 
     // Initialize the two tables 
     staketbl stakestable( _self, _self.value );
@@ -813,7 +813,7 @@ void eparticlectr::migratestkes( uint32_t loop_limit ) {
         });
 
         // Delete the old stakes
-        // stakestable.erase(stakes_it);
+        stakestable.erase(stakes_it);
         
         // Increase the count
         counter++;
@@ -822,7 +822,7 @@ void eparticlectr::migratestkes( uint32_t loop_limit ) {
 
 [[eosio::action]]
 void eparticlectr::migratevotes( uint32_t loop_limit ) {
-    require_auth( name("evrpdcronjob") );
+    require_auth( MAINTENANCE_CONTRACT );
 
     // Initialize the two tables 
     votestbl votestable( _self, _self.value );
@@ -847,7 +847,7 @@ void eparticlectr::migratevotes( uint32_t loop_limit ) {
         });
 
         // Delete the old proposal
-        // votestable.erase(votes_it);
+        votestable.erase(votes_it);
         
         // Increase the count
         counter++;
@@ -856,7 +856,7 @@ void eparticlectr::migratevotes( uint32_t loop_limit ) {
 
 [[eosio::action]]
 void eparticlectr::migrateprops( uint32_t loop_limit ) {
-    require_auth( name("evrpdcronjob") );
+    require_auth( MAINTENANCE_CONTRACT );
 
     // Initialize the two tables 
     propstbl propstable( _self, _self.value );
@@ -883,7 +883,7 @@ void eparticlectr::migrateprops( uint32_t loop_limit ) {
         });
 
         // Delete the old proposal
-        // propstable.erase(props_it);
+        propstable.erase(props_it);
         
         // Increase the count
         counter++;
@@ -892,7 +892,7 @@ void eparticlectr::migrateprops( uint32_t loop_limit ) {
 
 [[eosio::action]]
 void eparticlectr::migraterwds( uint32_t loop_limit ) {
-    require_auth( name("evrpdcronjob") );
+    require_auth( MAINTENANCE_CONTRACT );
 
     // Initialize the two tables 
     rewardstbl rewardstable( _self, _self.value );
@@ -919,7 +919,7 @@ void eparticlectr::migraterwds( uint32_t loop_limit ) {
         });
 
         // Delete the old reward
-        // rewardstable.erase(rewards_it);
+        rewardstable.erase(rewards_it);
         
         // Increase the count
         counter++;
