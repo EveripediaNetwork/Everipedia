@@ -36,6 +36,15 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
     void issue( name to, asset quantity, string memo );
 
     [[eosio::action]]
+    void issueextra( 
+      name to, 
+      asset quantity, 
+      string memo,
+      string proxied_for,
+      string extra_note
+    );
+
+    [[eosio::action]]
     void transfer( name from,
                     name to,
                     asset        quantity,

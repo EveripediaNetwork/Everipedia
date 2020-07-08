@@ -247,6 +247,32 @@
             ]
         },
         {
+            "name": "issueextra",
+            "base": "",
+            "fields": [
+                {
+                    "name": "to",
+                    "type": "name"
+                },
+                {
+                    "name": "quantity",
+                    "type": "asset"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                },
+                {
+                    "name": "proxied_for",
+                    "type": "string"
+                },
+                {
+                    "name": "extra_note",
+                    "type": "string"
+                }
+            ]
+        },
+        {
             "name": "transfer",
             "base": "",
             "fields": [
@@ -338,6 +364,11 @@
             "name": "issue",
             "type": "issue",
             "ricardian_contract": "Issue IQ tokens."
+        },
+        {
+            "name": "issueextra",
+            "type": "issueextra",
+            "ricardian_contract": "Issue IQ tokens. New version"
         },
         {
             "name": "transfer",

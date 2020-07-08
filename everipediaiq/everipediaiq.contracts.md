@@ -6,6 +6,8 @@ Transfer the IQ token normally, with extra information recorded. The regular tra
 Burn IQ tokens and take them out of circulation.
 <h1 class="contract">issue</h1>
 Issue IQ tokens.
+<h1 class="contract">issueextra</h1>
+Issue IQ tokens. New version
 <h1 class="contract">brainmeiq</h1>
 Stake IQ for Brainpower.
 <h1 class="contract">create</h1>

@@ -56,6 +56,26 @@ void everipediaiq::issue( name to, asset quantity, std::string memo )
 }
 
 [[eosio::action]]
+void everipediaiq::issueextra( 
+    name to, 
+    asset quantity, 
+    std::string memo,
+    std::string proxied_for,
+    std::string extra_note
+)
+{
+    eosio::check( proxied_for.size() <= 256, "proxied_for has more than 256 bytes" );
+    eosio::check( extra_note.size() <= 256, "extra_note has more than 256 bytes" );
+
+    // Issue the IQ normally
+    action(
+        permission_level{ TOKEN_CONTRACT , name("active") }, 
+        TOKEN_CONTRACT , name("issue"),
+        std::make_tuple( to, quantity, memo)
+    ).send();
+}
+
+[[eosio::action]]
 void everipediaiq::transfer( name from,
                       name to,
                       asset        quantity,
@@ -290,4 +310,4 @@ void everipediaiq::epartvotex(
 }
 
 
-EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(transfer)(transfrextra)(epartpropose)(epartpropsex)(epartvote)(epartvotex) )
+EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(issueextra)(transfer)(transfrextra)(epartpropose)(epartpropsex)(epartvote)(epartvotex) )

@@ -676,8 +676,8 @@ void eparticlectr::rewrdclmidex ( uint64_t reward_id ) {
     std::string memo = std::string("Curation IQ reward:" + reward_it.memo);
     action(
         permission_level { TOKEN_CONTRACT, name("active") },
-        TOKEN_CONTRACT, name("issue"),
-        std::make_tuple( reward_it.user, curation_quantity, memo )
+        TOKEN_CONTRACT, name("issueextra"),
+        std::make_tuple( reward_it.user, curation_quantity, memo, reward_it.proxied_for, reward_it.extra_note )
     ).send();
 
     // Send editor reward
@@ -690,8 +690,8 @@ void eparticlectr::rewrdclmidex ( uint64_t reward_id ) {
         std::string memo = std::string("Editor IQ reward:" + reward_it.memo);
         action(
             permission_level { TOKEN_CONTRACT, name("active") },
-            TOKEN_CONTRACT, name("issue"),
-            std::make_tuple( reward_it.user, editor_quantity, memo )
+            TOKEN_CONTRACT, name("issueextra"),
+            std::make_tuple( reward_it.user, editor_quantity, memo, reward_it.proxied_for, reward_it.extra_note )
         ).send();
     }
 
