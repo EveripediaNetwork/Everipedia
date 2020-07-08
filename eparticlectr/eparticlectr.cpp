@@ -127,7 +127,7 @@ void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_
 }
 
 // Place a vote using the IPFS hash
-// Users have to trigger this action through the everipediaiq::epartvote action
+// Users have to trigger this action through the everipediaiq::epartvotex action
 [[eosio::action]]
 void eparticlectr::voteextra( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string comment, std::string memo, std::string proxied_for, std::string extra_note ) {
     require_auth( _self );
@@ -246,7 +246,7 @@ void eparticlectr::propose2( name proposer, std::string slug, ipfshash_t ipfs_ha
 
 
 // Logic for proposing an edit for an article
-// Users have to trigger this action through the everipediaiq::epartpropose action
+// Users have to trigger this action through the everipediaiq::epartpropsex action
 [[eosio::action]]
 void eparticlectr::proposeextra( name proposer, std::string slug, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo, std::string proxied_for, std::string extra_note ) {
     require_auth( _self );
