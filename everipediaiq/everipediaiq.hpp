@@ -14,7 +14,7 @@ using namespace eosio;
 using std::string;
 
 const uint64_t EDIT_PROPOSE_IQ = 50; // 50 IQ
-const name PROXY_CONTRACT = name("epidhotwalla");
+const name PROXY_CONTRACT = name("epiqrelayhot");
 
 class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
   using contract::contract;

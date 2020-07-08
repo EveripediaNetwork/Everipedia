@@ -94,7 +94,7 @@ if [ $BUILD -eq 1 ]; then
     sed -i -e 's/STAKING_DURATION = 21 \* 86400/STAKING_DURATION = 5/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e 's/WINNING_VOTE_STAKE_TIME = 5 \* 86400/WINNING_VOTE_STAKE_TIME = 5/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e 's/BOOST_TRANSFER_WAITING_PERIOD = 14\*86400/BOOST_TRANSFER_WAITING_PERIOD = 5/g' ../eparticlectr/eparticlectr.hpp
-    sed -i -e "s/PROXY_CONTRACT = name(\"epidhotwalla\")/PROXY_CONTRACT = name(\"eptestusersa\")/g" ../everipediaiq/everipediaiq.hpp
+    sed -i -e "s/PROXY_CONTRACT = name(\"epiqrelayhot\")/PROXY_CONTRACT = name(\"eptestusersa\")/g" ../everipediaiq/everipediaiq.hpp
     sed -i -e "s/MAINTENANCE_CONTRACT = name(\"evrpdcronjob\")/MAINTENANCE_CONTRACT = name(\"eptestusersa\")/g" ../eparticlectr/eparticlectr.hpp
     cd ..
     bash build.sh
@@ -104,7 +104,7 @@ if [ $BUILD -eq 1 ]; then
     sed -i -e 's/STAKING_DURATION = 5/STAKING_DURATION = 21 \* 86400/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e 's/WINNING_VOTE_STAKE_TIME = 5/WINNING_VOTE_STAKE_TIME = 5 \* 86400/g' ../eparticlectr/eparticlectr.hpp
     sed -i -e 's/BOOST_TRANSFER_WAITING_PERIOD = 5/BOOST_TRANSFER_WAITING_PERIOD = 14\*86400/g' ../eparticlectr/eparticlectr.hpp
-    sed -i -e "s/PROXY_CONTRACT = name(\"eptestusersa\")/PROXY_CONTRACT = name(\"epidhotwalla\")/g" ../everipediaiq/everipediaiq.hpp
+    sed -i -e "s/PROXY_CONTRACT = name(\"eptestusersa\")/PROXY_CONTRACT = name(\"epiqrelayhot\")/g" ../everipediaiq/everipediaiq.hpp
     sed -i -e "s/MAINTENANCE_CONTRACT = name(\"eptestusersa\")/MAINTENANCE_CONTRACT = name(\"evrpdcronjob\")/g" ../eparticlectr/eparticlectr.hpp
 fi
 
