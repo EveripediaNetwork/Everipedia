@@ -14,6 +14,7 @@ using namespace eosio;
 using std::string;
 
 const uint64_t EDIT_PROPOSE_IQ = 50; // 50 IQ
+const name PROXY_CONTRACT = name("epidhotwalla");
 
 class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
   using contract::contract;
@@ -35,36 +36,72 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
     void issue( name to, asset quantity, string memo );
 
     [[eosio::action]]
+    void issueextra( 
+      name to, 
+      asset quantity, 
+      string memo,
+      string proxied_for,
+      string extra_note
+    );
+
+    [[eosio::action]]
     void transfer( name from,
                     name to,
                     asset        quantity,
                     string       memo );
 
     [[eosio::action]]
+    void transfrextra( 
+                      name from,
+                      name to,
+                      asset quantity,
+                      string memo, 
+                      string proxied_for,
+                      string purpose,
+                      string extra_note
+                    );
+
+    [[eosio::action]]
     void epartvote( name voter, 
                      uint64_t proposal_id,
                      bool approve,
                      uint64_t amount,
-                     std::string comment, 
-                     std::string memo,
+                     string comment, 
+                     string memo,
                      name permission );
 
     [[eosio::action]]
-    void epartboost( name booster, 
-                      uint64_t amount, 
-                      std::string slug, 
-                      std::string lang_code,
-                      name permission );
+    void epartvotex( name voter, 
+                     uint64_t proposal_id,
+                     bool approve,
+                     uint64_t amount,
+                     string comment, 
+                     string memo,
+                     name permission,
+                     string proxied_for,
+                     string extra_note );
 
     [[eosio::action]]
     void epartpropose( name proposer, 
-                        std::string slug,
+                        string slug,
                         ipfshash_t ipfs_hash,
-                        std::string lang_code,
+                        string lang_code,
                         int64_t group_id,
-                        std::string comment,
-                        std::string memo, 
+                        string comment,
+                        string memo, 
                         name permission );
+
+    [[eosio::action]]
+    void epartpropsex( name proposer, 
+                        string slug,
+                        ipfshash_t ipfs_hash,
+                        string lang_code,
+                        int64_t group_id,
+                        string comment,
+                        string memo, 
+                        name permission,
+                        string proxied_for,
+                        string extra_note );
 
     inline asset get_supply( symbol_code sym )const;
 

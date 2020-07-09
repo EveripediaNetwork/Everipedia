@@ -1,7 +1,7 @@
-trap ctrl_c INT
-function ctrl_c {
-    exit 2;
-}
+# trap ctrl_c INT
+# function ctrl_c {
+#     exit 2;
+# }
 
 if [ ! -e build.sh ]; then
     echo "Building from wrong directory. Must be in project root"

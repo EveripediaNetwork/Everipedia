@@ -25,7 +25,7 @@ void everipediaiq::create( name issuer,
 }
 
 [[eosio::action]]
-void everipediaiq::issue( name to, asset quantity, string memo )
+void everipediaiq::issue( name to, asset quantity, std::string memo )
 {
     auto sym = quantity.symbol;
     eosio::check( sym.is_valid(), "invalid symbol name" );
@@ -56,12 +56,32 @@ void everipediaiq::issue( name to, asset quantity, string memo )
 }
 
 [[eosio::action]]
+void everipediaiq::issueextra( 
+    name to, 
+    asset quantity, 
+    std::string memo,
+    std::string proxied_for,
+    std::string extra_note
+)
+{
+    eosio::check( proxied_for.size() <= 256, "proxied_for has more than 256 bytes" );
+    eosio::check( extra_note.size() <= 256, "extra_note has more than 256 bytes" );
+
+    // Issue the IQ normally
+    action(
+        permission_level{ TOKEN_CONTRACT , name("active") }, 
+        TOKEN_CONTRACT , name("issue"),
+        std::make_tuple( to, quantity, memo)
+    ).send();
+}
+
+[[eosio::action]]
 void everipediaiq::transfer( name from,
                       name to,
                       asset        quantity,
-                      string       memo )
+                      std::string       memo )
 {
-    eosio::check( from != to, "cannot transfer to self" );
+    
     require_auth( from );
     eosio::check( is_account( to ), "to account does not exist");
     auto sym = quantity.symbol.code();
@@ -76,12 +96,49 @@ void everipediaiq::transfer( name from,
     eosio::check( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
     eosio::check( memo.size() <= 256, "memo has more than 256 bytes" );
 
-    sub_balance( from, quantity );
-    add_balance( to, quantity, from );
+    if ((to == PROXY_CONTRACT) && (from == PROXY_CONTRACT)){
+        // do nothing, but it will be recorded on chain
+    }
+    else {
+        eosio::check( from != to , "cannot transfer to self" );
+        sub_balance( from, quantity );
+        add_balance( to, quantity, from );
+    }
+
 }
 
 [[eosio::action]]
-void everipediaiq::burn( name from, asset quantity, string memo )
+void everipediaiq::transfrextra( 
+                      name from,
+                      name to,
+                      asset quantity,
+                      std::string memo, 
+                      std::string proxied_for,
+                      std::string purpose,
+                      std::string extra_note
+                      )
+{
+    require_auth(from);
+    require_recipient(from);
+    require_recipient(to);
+
+    eosio::check( proxied_for.size() <= 256, "proxied_for has more than 256 bytes" );
+    eosio::check( purpose.size() <= 256, "purpose has more than 256 bytes" );
+    eosio::check( extra_note.size() <= 256, "extra_note has more than 256 bytes" );
+
+    // Reject transactions where non-proxy accounts try to specify a proxied_for
+    eosio::check( (from == PROXY_CONTRACT) || (from != PROXY_CONTRACT && proxied_for == ""), "proxied_for must be empty for non-proxy accounts" );
+
+    // Transfer the IQ normally
+    action(
+        permission_level{ from , name("active") }, 
+        _self , name("transfer"),
+        std::make_tuple( from, to, quantity, memo)
+    ).send();
+}
+
+[[eosio::action]]
+void everipediaiq::burn( name from, asset quantity, std::string memo )
 {
      require_auth( from );
      auto sym = quantity.symbol;
@@ -157,27 +214,39 @@ void everipediaiq::epartpropose( name proposer, std::string slug, ipfshash_t ipf
 }
 
 [[eosio::action]]
-void everipediaiq::epartboost( name booster, uint64_t amount, std::string slug, std::string lang_code, name permission ) { 
-    require_auth(booster);
+void everipediaiq::epartpropsex( 
+    name proposer, 
+    std::string slug, 
+    ipfshash_t ipfs_hash, 
+    std::string lang_code, 
+    int64_t group_id, 
+    std::string comment, 
+    std::string memo, 
+    name permission,
+    std::string proxied_for,
+    std::string extra_note
+) { 
+    require_auth(proposer);
+    
+    eosio::check( proxied_for.size() <= 256, "proxied_for has more than 256 bytes" );
+    eosio::check( extra_note.size() <= 256, "extra_note has more than 256 bytes" );
 
-    // Make sure the amount is not negative
-    eosio::check( amount > 0, "boost amount must be a positive integer" );
+    // Reject transactions where non-proxy accounts try to specify a proxied_for
+    eosio::check( (proposer == PROXY_CONTRACT) || (proposer != PROXY_CONTRACT && proxied_for == ""), "proxied_for must be empty for non-proxy accounts" );
 
-    // Burn the amount for the boost
-    // Should automatically check for correct balance
-    std::string memo = std::string("Burning for lang_") + lang_code + std::string("/") + slug + std::string(" boost.");
-    asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
+    // Transfer the IQ to the eparticlectr contract for staking
+    asset iqAssetPack = asset(EDIT_PROPOSE_IQ * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
     action(
-        permission_level { booster , permission }, 
-        _self , name("burn"),
-        std::make_tuple( booster, iqAssetPack, memo)
+        permission_level{ proposer , permission }, 
+        _self , name("transfrextra"),
+        std::make_tuple( proposer, ARTICLE_CONTRACT, iqAssetPack, std::string("stake for vote"), proxied_for, ipfs_hash +  std::string("|lang_") + lang_code + std::string("/") + slug, extra_note)
     ).send();
 
-    // Make the boost increase request to the article contract
+    // Make the proposal to the article contract
     action(
-        permission_level { ARTICLE_CONTRACT , name("active") }, 
-        ARTICLE_CONTRACT , name("boostinvest"),
-        std::make_tuple( booster, amount, slug, lang_code)
+        permission_level{ ARTICLE_CONTRACT, name("active") }, 
+        ARTICLE_CONTRACT, name("proposeextra"),
+        std::make_tuple( proposer, slug, ipfs_hash, lang_code, group_id, comment, memo, proxied_for, extra_note )
     ).send();
 }
 
@@ -203,5 +272,42 @@ void everipediaiq::epartvote( name voter, uint64_t proposal_id, bool approve, ui
     ).send();
 }
 
+[[eosio::action]]
+void everipediaiq::epartvotex( 
+    name voter, 
+    uint64_t proposal_id, 
+    bool approve, 
+    uint64_t amount, 
+    std::string comment, 
+    std::string memo, 
+    name permission,
+    std::string proxied_for,
+    std::string extra_note
+) {
+    require_auth(voter);
 
-EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(transfer)(epartpropose)(epartvote)(epartboost) )
+    eosio::check(amount > 0, "must transfer a positive amount");
+    eosio::check( proxied_for.size() <= 256, "proxied_for has more than 256 bytes" );
+    eosio::check( extra_note.size() <= 256, "extra_note has more than 256 bytes" );
+
+    // Reject transactions where non-proxy accounts try to specify a proxied_for
+    eosio::check( (voter == PROXY_CONTRACT) || (voter != PROXY_CONTRACT && proxied_for == ""), "proxied_for must be empty for non-proxy accounts" );
+
+    // Transfer the IQ to the eparticlectr contract for staking
+    asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
+    action(
+        permission_level{ voter , permission }, 
+        _self , name("transfrextra"),
+        std::make_tuple( voter, ARTICLE_CONTRACT, iqAssetPack, std::string("stake for vote"), proxied_for, std::string("PROPOSAL: ") + std::to_string(proposal_id), extra_note)
+    ).send();
+
+    // Create the vote in the eparticlectr contract
+    action(
+        permission_level{ ARTICLE_CONTRACT, name("active") }, 
+        ARTICLE_CONTRACT, name("voteextra"),
+        std::make_tuple( voter, proposal_id, approve, amount, comment, memo, proxied_for, extra_note )
+    ).send();
+}
+
+
+EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(issueextra)(transfer)(transfrextra)(epartpropose)(epartpropsex)(epartvote)(epartvotex) )

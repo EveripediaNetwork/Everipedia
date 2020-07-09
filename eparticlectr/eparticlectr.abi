@@ -19,6 +19,16 @@
             ]
         },
         {
+            "name": "brainclmidex",
+            "base": "",
+            "fields": [
+                {
+                    "name": "stakeid",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
             "name": "curatelist",
             "base": "",
             "fields": [
@@ -95,12 +105,138 @@
             ]
         },
         {
+            "name": "editpropslex",
+            "base": "",
+            "fields": [
+                {
+                    "name": "id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "wiki_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "proposer",
+                    "type": "name"
+                },
+                {
+                    "name": "slug",
+                    "type": "string"
+                },
+                {
+                    "name": "ipfs_hash",
+                    "type": "ipfshash_t"
+                },
+                {
+                    "name": "group_id",
+                    "type": "int64"
+                },
+                {
+                    "name": "lang_code",
+                    "type": "string"
+                },
+                {
+                    "name": "starttime",
+                    "type": "uint32"
+                },
+                {
+                    "name": "endtime",
+                    "type": "uint32"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                },
+                {
+                    "name": "finalized",
+                    "type": "bool"
+                },
+                {
+                    "name": "proxied_for",
+                    "type": "string"
+                },
+                {
+                    "name": "extra_note",
+                    "type": "string"
+                }
+            ]
+        },
+        {
             "name": "finalize",
             "base": "",
             "fields": [
                 {
                     "name": "proposal_id",
                     "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "finalizeextr",
+            "base": "",
+            "fields": [
+                {
+                    "name": "proposal_id",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "logpropinfex",
+            "base": "",
+            "fields": [
+                {
+                    "name": "proposal_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "proposer",
+                    "type": "name"
+                },
+                {
+                    "name": "wiki_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "slug",
+                    "type": "string"
+                },
+                {
+                    "name": "ipfs_hash",
+                    "type": "ipfshash_t"
+                },
+                {
+                    "name": "lang_code",
+                    "type": "string"
+                },
+                {
+                    "name": "group_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "comment",
+                    "type": "string"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                },
+                {
+                    "name": "starttime",
+                    "type": "uint32"
+                },
+                {
+                    "name": "endtime",
+                    "type": "uint32"
+                },
+                {
+                    "name": "proxied_for",
+                    "type": "string"
+                },
+                {
+                    "name": "extra_note",
+                    "type": "string"
                 }
             ]
         },
@@ -177,6 +313,46 @@
             ]
         },
         {
+            "name": "migrateprops",
+            "base": "",
+            "fields": [
+                {
+                    "name": "loop_limit",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "migraterwds",
+            "base": "",
+            "fields": [
+                {
+                    "name": "loop_limit",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "migratestkes",
+            "base": "",
+            "fields": [
+                {
+                    "name": "loop_limit",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "migratevotes",
+            "base": "",
+            "fields": [
+                {
+                    "name": "loop_limit",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
             "name": "mkreferendum",
             "base": "",
             "fields": [
@@ -188,6 +364,20 @@
         },
         {
             "name": "oldvotepurge",
+            "base": "",
+            "fields": [
+                {
+                    "name": "proposal_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "loop_limit",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "oldvteprgeex",
             "base": "",
             "fields": [
                 {
@@ -271,12 +461,112 @@
             ]
         },
         {
+            "name": "proposeextra",
+            "base": "",
+            "fields": [
+                {
+                    "name": "proposer",
+                    "type": "name"
+                },
+                {
+                    "name": "slug",
+                    "type": "string"
+                },
+                {
+                    "name": "ipfs_hash",
+                    "type": "ipfshash_t"
+                },
+                {
+                    "name": "lang_code",
+                    "type": "string"
+                },
+                {
+                    "name": "group_id",
+                    "type": "int64"
+                },
+                {
+                    "name": "comment",
+                    "type": "string"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                },
+                {
+                    "name": "proxied_for",
+                    "type": "string"
+                },
+                {
+                    "name": "extra_note",
+                    "type": "string"
+                }
+            ]
+        },
+        {
             "name": "rewardclmid",
             "base": "",
             "fields": [
                 {
                     "name": "reward_id",
                     "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "rewardhistex",
+            "base": "",
+            "fields": [
+                {
+                    "name": "id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "user",
+                    "type": "name"
+                },
+                {
+                    "name": "vote_points",
+                    "type": "uint64"
+                },
+                {
+                    "name": "edit_points",
+                    "type": "uint64"
+                },
+                {
+                    "name": "proposal_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "proposal_finalize_time",
+                    "type": "uint32"
+                },
+                {
+                    "name": "proposal_finalize_period",
+                    "type": "uint32"
+                },
+                {
+                    "name": "proposalresult",
+                    "type": "bool"
+                },
+                {
+                    "name": "is_editor",
+                    "type": "bool"
+                },
+                {
+                    "name": "is_tie",
+                    "type": "bool"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                },
+                {
+                    "name": "proxied_for",
+                    "type": "string"
+                },
+                {
+                    "name": "extra_note",
+                    "type": "string"
                 }
             ]
         },
@@ -331,6 +621,46 @@
             ]
         },
         {
+            "name": "rewrdclmidex",
+            "base": "",
+            "fields": [
+                {
+                    "name": "reward_id",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "slashnotifex",
+            "base": "",
+            "fields": [
+                {
+                    "name": "slashee",
+                    "type": "name"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint64"
+                },
+                {
+                    "name": "seconds",
+                    "type": "uint32"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                },
+                {
+                    "name": "proxied_for",
+                    "type": "string"
+                },
+                {
+                    "name": "extra_note",
+                    "type": "string"
+                }
+            ]
+        },
+        {
             "name": "slashnotify",
             "base": "",
             "fields": [
@@ -375,6 +705,40 @@
                 {
                     "name": "completion_time",
                     "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "stakeextra",
+            "base": "",
+            "fields": [
+                {
+                    "name": "id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "user",
+                    "type": "name"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint64"
+                },
+                {
+                    "name": "timestamp",
+                    "type": "uint32"
+                },
+                {
+                    "name": "completion_time",
+                    "type": "uint32"
+                },
+                {
+                    "name": "proxied_for",
+                    "type": "string"
+                },
+                {
+                    "name": "extra_note",
+                    "type": "string"
                 }
             ]
         },
@@ -455,6 +819,98 @@
             ]
         },
         {
+            "name": "voteextra",
+            "base": "",
+            "fields": [
+                {
+                    "name": "voter",
+                    "type": "name"
+                },
+                {
+                    "name": "proposal_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "approve",
+                    "type": "bool"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint64"
+                },
+                {
+                    "name": "comment",
+                    "type": "string"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                },
+                {
+                    "name": "proxied_for",
+                    "type": "string"
+                },
+                {
+                    "name": "extra_note",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "voteextra_t",
+            "base": "",
+            "fields": [
+                {
+                    "name": "id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "proposal_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "ipfs_hash",
+                    "type": "ipfshash_t"
+                },
+                {
+                    "name": "approve",
+                    "type": "bool"
+                },
+                {
+                    "name": "is_editor",
+                    "type": "bool"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint64"
+                },
+                {
+                    "name": "voter",
+                    "type": "name"
+                },
+                {
+                    "name": "timestamp",
+                    "type": "uint32"
+                },
+                {
+                    "name": "stake_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                },
+                {
+                    "name": "proxied_for",
+                    "type": "string"
+                },
+                {
+                    "name": "extra_note",
+                    "type": "string"
+                }
+            ]
+        },
+        {
             "name": "wiki",
             "base": "",
             "fields": [
@@ -488,6 +944,11 @@
             "ricardian_contract": "Claim back IQ that was staked for Brainpower. Must happen after the 21 day staking period."
         },
         {
+            "name": "brainclmidex",
+            "type": "brainclmidex",
+            "ricardian_contract": "Claim back IQ that was staked for Brainpower. Must happen after the 21 day staking period. New Version"
+        },
+        {
             "name": "curatelist",
             "type": "curatelist",
             "ricardian_contract": "Publish a curated list"
@@ -496,6 +957,16 @@
             "name": "finalize",
             "type": "finalize",
             "ricardian_contract": "Finalize a proposal and calculate rewards & slashings."
+        },
+        {
+            "name": "finalizeextr",
+            "type": "finalizeextr",
+            "ricardian_contract": "Finalize a proposal and calculate rewards & slashings. New Version"
+        },
+        {
+            "name": "logpropinfex",
+            "type": "logpropinfex",
+            "ricardian_contract": "Log proposal information. New Version"
         },
         {
             "name": "logpropinfo",
@@ -508,6 +979,26 @@
             "ricardian_contract": "Log proposal results."
         },
         {
+            "name": "migrateprops",
+            "type": "migrateprops",
+            "ricardian_contract": "Migrate old proposals to the new version"
+        },
+        {
+            "name": "migraterwds",
+            "type": "migraterwds",
+            "ricardian_contract": "Migrate old rewards to the new version"
+        },
+        {
+            "name": "migratestkes",
+            "type": "migratestkes",
+            "ricardian_contract": "Migrate old stakes to the new version"
+        },
+        {
+            "name": "migratevotes",
+            "type": "migratevotes",
+            "ricardian_contract": "Migrate old votes to the new version"
+        },
+        {
             "name": "mkreferendum",
             "type": "mkreferendum",
             "ricardian_contract": "Mark a proposal as a referendum"
@@ -518,14 +1009,34 @@
             "ricardian_contract": "Purge old votes to free up RAM."
         },
         {
+            "name": "oldvteprgeex",
+            "type": "oldvteprgeex",
+            "ricardian_contract": "Purge old votes to free up RAM. New Version"
+        },
+        {
             "name": "propose2",
             "type": "propose2",
             "ricardian_contract": "Propose an edit (uses IQ, only callable by everipediaiq::epartpropose)."
         },
         {
+            "name": "proposeextra",
+            "type": "proposeextra",
+            "ricardian_contract": "Propose an edit (uses IQ, only callable by everipediaiq::epartpropsex). New Version"
+        },
+        {
             "name": "rewardclmid",
             "type": "rewardclmid",
             "ricardian_contract": "Claim editor and curator IQ rewards by reward id."
+        },
+        {
+            "name": "rewrdclmidex",
+            "type": "rewrdclmidex",
+            "ricardian_contract": "Claim editor and curator IQ rewards by reward id. New Version"
+        },
+        {
+            "name": "slashnotifex",
+            "type": "slashnotifex",
+            "ricardian_contract": "Logging action to notify users of slashes. New Version"
         },
         {
             "name": "slashnotify",
@@ -536,11 +1047,23 @@
             "name": "vote",
             "type": "vote",
             "ricardian_contract": "Vote on a proposal (uses IQ, only callable by everipediaiq::epartvote)."
+        },
+        {
+            "name": "voteextra",
+            "type": "voteextra",
+            "ricardian_contract": "Vote on a proposal (uses IQ, only callable by everipediaiq::epartvotex). New Version"
         }
     ],
     "tables": [
         {
             "name": "perrwdstbl2",
+            "type": "periodreward",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "perrwdstblex",
             "type": "periodreward",
             "index_type": "i64",
             "key_names": [],
@@ -554,8 +1077,22 @@
             "key_types": []
         },
         {
+            "name": "propstblex",
+            "type": "editpropslex",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
             "name": "rewardstbl2",
             "type": "rewardhistory",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "rewardstblex",
+            "type": "rewardhistex",
             "index_type": "i64",
             "key_names": [],
             "key_types": []
@@ -568,8 +1105,22 @@
             "key_types": []
         },
         {
+            "name": "staketblex",
+            "type": "stakeextra",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
             "name": "votestbl2",
             "type": "vote_t",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "votestblex",
+            "type": "voteextra_t",
             "index_type": "i64",
             "key_names": [],
             "key_types": []

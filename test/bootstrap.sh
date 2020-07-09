@@ -10,10 +10,10 @@ ctrl_c () {
 }
 
 RECOMPILE_AND_RESET_EOSIO_CONTRACTS=0
-REBUILD_EVERIPEDIA_CONTRACTS=0
-RESET_NODEOS=0
-EOSIO_CONTRACTS_ROOT=/home/kedar/eosio.contracts/build/contracts/
-#EOSIO_CONTRACTS_ROOT=/home/travis/Programs/contracts/eosio.contracts/build/contracts
+REBUILD_EVERIPEDIA_CONTRACTS=1
+RESET_NODEOS=1
+# EOSIO_CONTRACTS_ROOT=/home/kedar/eosio.contracts/build/contracts/
+EOSIO_CONTRACTS_ROOT="/home/${USER}/Programs/eosio/contracts/eosio.contracts/build/contracts"
 NODEOS_HOST="127.0.0.1"
 NODEOS_PROTOCOL="http"
 NODEOS_PORT="8888"
