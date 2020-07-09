@@ -127,7 +127,8 @@ void everipediaiq::transfrextra(
     eosio::check( extra_note.size() <= 256, "extra_note has more than 256 bytes" );
 
     // Reject transactions where non-proxy accounts try to specify a proxied_for
-    eosio::check( (from == PROXY_CONTRACT) || (from != PROXY_CONTRACT && proxied_for == ""), "proxied_for must be empty for non-proxy accounts" );
+    bool can_proxy = everipediaiq::is_proxiable(from);
+    eosio::check( can_proxy || (!can_proxy && proxied_for == ""), "proxied_for must be empty for non-proxy accounts" );
 
     // Transfer the IQ normally
     action(
@@ -232,7 +233,8 @@ void everipediaiq::epartpropsex(
     eosio::check( extra_note.size() <= 256, "extra_note has more than 256 bytes" );
 
     // Reject transactions where non-proxy accounts try to specify a proxied_for
-    eosio::check( (proposer == PROXY_CONTRACT) || (proposer != PROXY_CONTRACT && proxied_for == ""), "proxied_for must be empty for non-proxy accounts" );
+    bool can_proxy = everipediaiq::is_proxiable(proposer);
+    eosio::check( can_proxy || (!can_proxy && proxied_for == ""), "proxied_for must be empty for non-proxy accounts" );
 
     // Transfer the IQ to the eparticlectr contract for staking
     asset iqAssetPack = asset(EDIT_PROPOSE_IQ * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
@@ -291,7 +293,8 @@ void everipediaiq::epartvotex(
     eosio::check( extra_note.size() <= 256, "extra_note has more than 256 bytes" );
 
     // Reject transactions where non-proxy accounts try to specify a proxied_for
-    eosio::check( (voter == PROXY_CONTRACT) || (voter != PROXY_CONTRACT && proxied_for == ""), "proxied_for must be empty for non-proxy accounts" );
+    bool can_proxy = everipediaiq::is_proxiable(voter);
+    eosio::check( can_proxy || (!can_proxy && proxied_for == ""), "proxied_for must be empty for non-proxy accounts" );
 
     // Transfer the IQ to the eparticlectr contract for staking
     asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
