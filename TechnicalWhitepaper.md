@@ -65,28 +65,13 @@ Tokens will be minted every 30 minutes ("IQ reward period") through the edit pro
 
 Proposed edits pass thresholds and receive IQ rewards based on votes of token holders. 
   
-At the end of the 30-minute IQ reward period, editors will receive IQ rewards in proportion to the value of their contributions. The IQ reward available for the first year (subject to change) will be set between 1% and 5%. Assuming 5% is chosen, that would be 500 million IQ. The amount available per 30 minute period is as follows:
+At the end of the 30-minute IQ reward period, editors will receive IQ rewards in proportion to the value of their contributions. Assuming .08% yearly inflation of the supply, the following equation shows how rewards are calculated:
 
 ![](https://epcdn-vz.azureedge.net/static/images/PeriodRewards.svg)
 
-*T<sub>Period</sub>* = 28538.813 IQ
+*T<sub>Period</sub>* = 500 IQ
 
-**NOTE (as of August 20 2018): For testing purposes, T<sub>Period</sub> will be set to 10 IQ per 30 minute period until the platform and code is mature enough to increase it.**
-
-This number can be changed by a governance action. Additionally, the minted tokens can be partially re-allocated by a governance action for a developer fund, bounties, or any other use. If no edits or votes are made in a specific 30-minute period, then no IQ will be rewarded in that period.
-
-
-### Transaction Fees
-
-The initial network transfer fee will be 0.1%. The fee will be either 1) Be sent to a null address and burnt in a verifiable manner 2) Pay for RAM, CPU, and bandwidth on the EOS mainnet. These numbers can be changed by the governance module. These fees only exist for transfers that are not staking or governance based actions. 
-
-The transfer fees are designed to counteract the inflationary effects of the edit rewards. Since the transaction rate for cryptocurrencies tends to be volatile, using the transfer fees directly for edit rewards would lead to too much daily uncertainty. 
-
-The community should set the transfer fee at a rate where the moving average of the daily burn rate approximately matches the stable inflation rate from edit rewards. The usable token supply will be virtually hard-capped though day-to-day fluctuations will exist. 
-
-A large percentage of token transfers in existing blockchain networks take place for the purpose of speculation. Under most current systems, the economic value of this speculation is captured by the speculators, not the network. 
-
-The transfer fee model we propose will allow the network to benefit from market speculation. Since only non-governance, non-staking transfers incur a fee, the speculators are, in a way, funding the development of the Everipedia Network. The transfer fee can be burned to create a deflationary supply, used to fund network development, or used to further economic activity on the platform. Either way, a portion of the speculative activity’s value will be captured and allocated by the network. The EOS main network has a 1% trading fee on RAM. This unique fee in the EOS network is used to both offset inflation, monetize the speculation inherent in the scarce resources of the EOS network, as well as create allocative efficiency by bringing market dynamics to the main network. We propose a similar fee on the scarce resource of the Everipedia Network, the IQ token. 
+**NOTE (as of June 15 2020): The IQ rewards per 30 minute period is 500 IQ for a yearly inflation of about .08% annually (8,760,000 IQ minted yearly). The inflation percentage per year decreases as the total number of IQ minted is fixed but the total supply increases over time. The total IQ token supply will also be capped at 10.5 billion. No other IQ will be minted after the hard cap is reached unless there is a governance vote. Creator and curation rewards will then need to come from fees accrued in other products and services in the IQ ecosystem, either within the Everipedia dApp or other developed applications.   
 
 ## Article Module
 
