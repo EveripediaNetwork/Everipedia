@@ -318,6 +318,9 @@ void eparticlectr::finalize( uint64_t proposal_id ) {
     // Verify voting period is complete
     eosio::check( eosio::current_time_point().sec_since_epoch() > prop_it.endtime, "Voting period is not over yet");
 
+    // Make sure the proposal isn't already finalized
+    eosio::check( !prop_it.finalized, "Proposal is already finalized");
+
     // Retrieve votes from DB
     votestbl votetbl( _self, proposal_id );
     auto vote_it = votetbl.begin();
@@ -462,6 +465,9 @@ void eparticlectr::finalizeextr( uint64_t proposal_id ) {
     // Verify voting period is complete
     eosio::check( eosio::current_time_point().sec_since_epoch() > prop_it.endtime, "Voting period is not over yet");
 
+    // Make sure the proposal isn't finalized yet
+    eosio::check( !prop_it.finalized, "Proposal is already finalized");
+
     // Retrieve votes from DB
     votestblex votetbl( _self, proposal_id );
     auto vote_it = votetbl.begin();
@@ -596,12 +602,16 @@ void eparticlectr::finalizeextr( uint64_t proposal_id ) {
 
     // delete proposal if it's not the most current one
     // deleting the most current proposal screws up the ID auto-increment
-    if (prop_it.id == proptable.available_primary_key() - 1)
+    if (prop_it.id == proptable.available_primary_key() - 1) {
+        eosio::print("MARKING PROPOSAL AS FINALIZED");
         proptable.modify( prop_it, same_payer, [&]( auto& p ) {
             p.finalized = true;
         });
-    else
+    }
+    else {
+        eosio::print("ERASING PROPOSAL");
         proptable.erase( prop_it );
+    }
 }
 
 

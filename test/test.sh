@@ -605,12 +605,16 @@ assert $(bc <<< "$? == 0")
 cleos push action eparticlectr finalizeextr "[ $PROPEXTRAID6 ]" -p eptestusersc
 assert $(bc <<< "$? == 0")
 
-echo -e "${CYAN}-----------------------FINALIZE FAIL (ALREADY FINALIZED)-----------------------${NC}"
+echo -e "${CYAN}-----------------------FINALIZE FAILS (ALREADY FINALIZED)-----------------------${NC}"
 cleos push action --force-unique eparticlectr finalize "[ $PROPID3 ]" -p eptestuserse
 assert $(bc <<< "$? == 1")
+cleos push action --force-unique eparticlectr finalize "[ $PROPID6 ]" -p eptestuserse
+assert $(bc <<< "$? == 1")
 
-echo -e "${CYAN}-----------------------FINALIZE EXTRA FAIL (ALREADY FINALIZED)-----------------------${NC}"
+echo -e "${CYAN}-----------------------FINALIZE EXTRA FAILS (ALREADY FINALIZED)-----------------------${NC}"
 cleos push action --force-unique eparticlectr finalizeextr "[ $PROPEXTRAID3 ]" -p eptestuserse
+assert $(bc <<< "$? == 1")
+cleos push action --force-unique eparticlectr finalizeextr "[ $PROPEXTRAID6 ]" -p eptestuserse
 assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}-----------------------EARLY REWARD CLAIM FAIL-----------------------${NC}"
