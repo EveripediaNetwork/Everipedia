@@ -78,6 +78,36 @@ void eparticlectr::brainclmidex( uint64_t stakeid ) {
     staketable.erase(stake_it);
 }
 
+// Manually return all stakes
+[[eosio::action]]
+void eparticlectr::stkretovrrde( uint32_t loop_limit ) {
+    require_auth( MAINTENANCE_CONTRACT );
+
+    // Get the stake table
+    staketblex stakestable_extra( _self, _self.value );
+
+    // Loop through the old stakes 
+    auto stake_it = stakestable_extra.begin();
+    uint32_t count = 0;
+    while(count < loop_limit && stake_it != stakestable_extra.end()) {
+        // Transfer back the IQ
+        asset iqAssetPack = asset(int64_t(stake_it->amount * IQ_PRECISION_MULTIPLIER), IQSYMBOL);
+        std::string memo = std::string("return stake #") + std::to_string(stake_it->id);
+        action(
+            permission_level{ _self, name("active") },
+            TOKEN_CONTRACT, name("transfrextra"),
+            std::make_tuple(_self, stake_it->user, iqAssetPack, memo, stake_it->proxied_for, std::string("return stake #") + std::to_string(stake_it->id), stake_it->extra_note )
+        ).send();
+
+        // Delete the stake.
+        // Note that the erase() function increments the iterator, then gives it back after the erase is done
+        stakestable_extra.erase(stake_it);
+
+        // Increase the count
+        count++;
+    }
+}
+
 
 // Place a vote using the IPFS hash
 // Users have to trigger this action through the everipediaiq::epartvote action
@@ -964,4 +994,4 @@ void eparticlectr::migraterwds( uint32_t loop_limit ) {
 
 
 
-EOSIO_DISPATCH( eparticlectr, (brainclmid)(brainclmidex)(slashnotify)(slashnotifex)(finalize)(finalizeextr)(oldvotepurge)(oldvteprgeex)(propose2)(proposeextra)(rewardclmid)(rewrdclmidex)(vote)(voteextra)(logpropres)(migratestkes)(migratevotes)(migrateprops)(migraterwds)(logpropinfo)(logpropinfex)(mkreferendum)(curatelist) )
+EOSIO_DISPATCH( eparticlectr, (brainclmid)(brainclmidex)(stkretovrrde)(slashnotify)(slashnotifex)(finalize)(finalizeextr)(oldvotepurge)(oldvteprgeex)(propose2)(proposeextra)(rewardclmid)(rewrdclmidex)(vote)(voteextra)(logpropres)(migratestkes)(migratevotes)(migrateprops)(migraterwds)(logpropinfo)(logpropinfex)(mkreferendum)(curatelist) )

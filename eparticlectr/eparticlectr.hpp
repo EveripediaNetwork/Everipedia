@@ -371,6 +371,9 @@ public:
 	void brainclmidex( uint64_t stakeid );
 
 	[[eosio::action]]
+	void stkretovrrde( uint32_t loop_limit );
+
+	[[eosio::action]]
 	void slashnotify( name slashee,
 					  uint64_t amount,
 					  uint32_t seconds, 

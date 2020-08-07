@@ -10,6 +10,8 @@ Issue IQ tokens.
 Issue IQ tokens. New version
 <h1 class="contract">brainmeiq</h1>
 Stake IQ for Brainpower.
+<h1 class="contract">stkretovrrde</h1>
+Manually return all stakes, for maintenance purposes
 <h1 class="contract">create</h1>
 Create a token.
 <h1 class="contract">epartpropose</h1>
