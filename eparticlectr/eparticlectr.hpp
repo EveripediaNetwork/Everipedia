@@ -38,7 +38,7 @@ using namespace eosio;
 
 const name TOKEN_CONTRACT = name("everipediaiq");
 const name MAINTENANCE_CONTRACT = name("evrpdcronjob");
-const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
+const uint64_t STAKING_DURATION = 5 * 86400; // 5 days
 const uint64_t WINNING_VOTE_STAKE_TIME = 5 * 86400; // 5 days
 const uint64_t EDIT_PROPOSE_IQ_EPARTICLECTR = 50; // 50 IQ
 const uint32_t REWARD_INTERVAL = 1800; // 30 min
@@ -109,6 +109,22 @@ public:
 			padded_name.append(" ");
 		std::string combined = padded_slug + padded_lang_code + padded_name;
 		return sha256(combined.c_str(), combined.size());
+	}
+
+	static std::string uint64ToString(const uint64_t& value)
+	{
+		const char* charmap = "0123456789";
+
+		std::string result;
+		result.reserve( 20 ); // max. 20 digits possible
+		uint128_t helper = value;
+
+		do {
+			result += charmap[ helper % 10 ];
+			helper /= 10;
+		} while ( helper );
+		std::reverse( result.begin(), result.end() );
+		return result;
 	}
 
 	// Formula for the voting boost
