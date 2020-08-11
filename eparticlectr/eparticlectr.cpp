@@ -297,25 +297,31 @@ void eparticlectr::finalizeextr( uint64_t proposal_id ) {
         // Refund winning editor stake immediately
         if (approved && vote_it->is_editor) {
             auto stake_it = staketable.find(vote_it->stake_id);
-            staketable.modify( stake_it, same_payer, [&]( auto& a ) {
-                a.completion_time = eosio::current_time_point().sec_since_epoch();
-            });
+            if (stake_it != staketable.end()){
+                staketable.modify( stake_it, same_payer, [&]( auto& a ) {
+                    a.completion_time = eosio::current_time_point().sec_since_epoch();
+                });
+            }
         }
         // Reduce staking time for vote winners to 5 days
         else if (approved && !vote_it->is_editor) {
             auto stake_it = staketable.find(vote_it->stake_id);
-            staketable.modify( stake_it, same_payer, [&]( auto& a ) {
-                a.completion_time = a.timestamp + WINNING_VOTE_STAKE_TIME;
-            });
+            if (stake_it != staketable.end()){
+                staketable.modify( stake_it, same_payer, [&]( auto& a ) {
+                    a.completion_time = a.timestamp + WINNING_VOTE_STAKE_TIME;
+                });
+            }
         }
 
         
         // Slash losers
         if (vote_it->approve != approved) {
             auto stake_it = staketable.find(vote_it->stake_id);
-            staketable.modify( stake_it, same_payer, [&]( auto& a ) {
-                a.completion_time += extraSecsSlash;
-            });
+            if (stake_it != staketable.end()){
+                staketable.modify( stake_it, same_payer, [&]( auto& a ) {
+                    a.completion_time += extraSecsSlash;
+                });
+            }
 
             action( 
                 permission_level { _self, name("active") },
