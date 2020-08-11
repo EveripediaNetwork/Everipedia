@@ -124,9 +124,8 @@ void eparticlectr::voteextra( name voter, uint64_t proposal_id, bool approve, ui
     staketblex staketblobj(_self, _self.value);
     
     // This is needed to keep the stakes from the old and new tables separate
-    uint64_t stake_id = staketblobj.available_primary_key();
-    if (stake_id < 1000000) { stake_id += 1000000; }
     std::string proposal_id_string = uint64ToString(proposal_id);
+    uint64_t stake_id = staketblobj.available_primary_key();
     staketblobj.emplace( _self, [&]( auto& s ) {
         s.id = stake_id;
         s.user = voter;
@@ -141,13 +140,9 @@ void eparticlectr::voteextra( name voter, uint64_t proposal_id, bool approve, ui
     votestblex votetbl( _self, proposal_id );
     bool voterIsProposer = (votetbl.begin() == votetbl.end()); 
    
-    // This is needed to keep the votes from the old and new tables separate
-    uint64_t vote_id = votetbl.available_primary_key();
-    if (vote_id < 1000000) { vote_id += 1000000; }
-
     // Store vote in DB
     votetbl.emplace( _self, [&]( auto& a ) {
-         a.id = vote_id;
+         a.id = votetbl.available_primary_key();
          a.proposal_id = proposal_id;
          a.approve = approve;
          a.is_editor = voterIsProposer;
@@ -200,9 +195,7 @@ void eparticlectr::proposeextra( name proposer, std::string slug, ipfshash_t ipf
     uint32_t starttime = eosio::current_time_point().sec_since_epoch();
     uint32_t endtime = eosio::current_time_point().sec_since_epoch() + DEFAULT_VOTING_TIME;
 
-    // This is needed to keep the proposals from the old and new tables separate
     uint64_t proposal_id = proptable.available_primary_key();
-    if (proposal_id < 1000000) { proposal_id += 1000000; }
 
     // Store the proposal
     proptable.emplace( _self, [&]( auto& p ) {
@@ -332,13 +325,8 @@ void eparticlectr::finalizeextr( uint64_t proposal_id ) {
         }
         // Reward the winners
         else {
-
-            // This is needed to keep the rewards from the old and new tables separate
-            uint64_t reward_id = rewardstable.available_primary_key();
-            if (reward_id < 1000000) { reward_id += 1000000; }
-
             rewardstable.emplace( _self,  [&]( auto& a ) {
-                a.id = reward_id;
+                a.id = rewardstable.available_primary_key();
                 a.user = vote_it->voter;
                 a.vote_points = vote_it->amount;
                 if (approved && vote_it->is_editor)
