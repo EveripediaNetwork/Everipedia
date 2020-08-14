@@ -60,6 +60,33 @@ void eparticlectr::brainclmidex( uint64_t stakeid ) {
     staketable.erase(stake_it);
 }
 
+// clean erroneous rewards from pre-EPID migration
+[[eosio::action]]
+void eparticlectr::prgpremigrwd( uint32_t loop_limit ) {
+    require_auth( MAINTENANCE_CONTRACT );
+
+    // Get the stake table
+    rewardstblex rewardstable( _self, _self.value );
+
+    // Loop through the old stakes 
+    auto rwd_it = rewardstable.begin();
+    uint32_t count = 0;
+    while(count < loop_limit && rwd_it != rewardstable.end()) {
+
+        // Delete the reward.
+        // Note that the erase() function increments the iterator, then gives it back after the erase is done
+        if (rwd_it->proposal_finalize_period <= 885695 || rwd_it->proposal_id <= 1000000){
+            rwd_it = rewardstable.erase(rwd_it);
+        }
+        else{
+            rwd_it++;
+        }
+        // Increase the count
+        count++;
+    }
+
+}
+
 // Manually return all stakes
 [[eosio::action]]
 void eparticlectr::stkretovrrde( uint32_t loop_limit ) {
@@ -683,4 +710,4 @@ void eparticlectr::migraterwds( uint32_t loop_limit ) {
 
 
 
-EOSIO_DISPATCH( eparticlectr, (brainclmid)(brainclmidex)(stkretovrrde)(slashnotify)(slashnotifex)(finalize)(finalizeextr)(oldvotepurge)(oldvteprgeex)(propose2)(proposeextra)(rewardclmid)(rewrdclmidex)(vote)(voteextra)(logpropres)(migratestkes)(migratevotes)(migrateprops)(migraterwds)(logpropinfo)(logpropinfex)(mkreferendum)(curatelist) )
+EOSIO_DISPATCH( eparticlectr, (brainclmid)(brainclmidex)(stkretovrrde)(prgpremigrwd)(slashnotify)(slashnotifex)(finalize)(finalizeextr)(oldvotepurge)(oldvteprgeex)(propose2)(proposeextra)(rewardclmid)(rewrdclmidex)(vote)(voteextra)(logpropres)(migratestkes)(migratevotes)(migrateprops)(migraterwds)(logpropinfo)(logpropinfex)(mkreferendum)(curatelist) )

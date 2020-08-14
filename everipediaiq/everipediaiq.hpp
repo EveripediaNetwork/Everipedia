@@ -145,7 +145,7 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
 
     void sub_balance( name owner, asset value );
     void add_balance( name owner, asset value, name ram_payer );
-
+    void transfer_core_code( name from, name to, asset quantity, std::string memo );
 };
 
 asset everipediaiq::get_supply( symbol_code sym )const

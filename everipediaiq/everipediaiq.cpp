@@ -75,22 +75,12 @@ void everipediaiq::issueextra(
     ).send();
 }
 
-[[eosio::action]]
-void everipediaiq::transfer( name from,
-                      name to,
-                      asset        quantity,
-                      std::string       memo )
-{
-    
-    require_auth( from );
+void everipediaiq::transfer_core_code( name from, name to, asset quantity, std::string memo ) {
     eosio::check( is_account( to ), "to account does not exist");
     auto sym = quantity.symbol.code();
     stats statstable( _self, sym.raw() );
     const auto& st = statstable.get( sym.raw() );
-
-    require_recipient( from );
-    require_recipient( to );
-
+    
     eosio::check( quantity.is_valid(), "invalid quantity" );
     eosio::check( quantity.amount > 0, "must transfer positive quantity" );
     eosio::check( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
@@ -104,6 +94,21 @@ void everipediaiq::transfer( name from,
         sub_balance( from, quantity );
         add_balance( to, quantity, from );
     }
+}
+
+
+[[eosio::action]]
+void everipediaiq::transfer( name from,
+                      name to,
+                      asset        quantity,
+                      std::string       memo )
+{
+    require_auth( from );
+    require_recipient( from );
+    require_recipient( to );
+
+    // Transfer the IQ normally
+    transfer_core_code(from, to, quantity, memo);
 
 }
 
@@ -131,11 +136,7 @@ void everipediaiq::transfrextra(
     eosio::check( can_proxy || (!can_proxy && proxied_for == ""), "proxied_for must be empty for non-proxy accounts" );
 
     // Transfer the IQ normally
-    action(
-        permission_level{ from , name("active") }, 
-        _self , name("transfer"),
-        std::make_tuple( from, to, quantity, memo)
-    ).send();
+    transfer_core_code(from, to, quantity, memo);
 }
 
 [[eosio::action]]
