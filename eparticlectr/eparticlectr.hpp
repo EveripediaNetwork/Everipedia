@@ -177,6 +177,7 @@ public:
 		uint64_t primary_key()const { return id; }
 		uint64_t get_user()const { return user.value; }
 		fixed_bytes<32> hash_proxied_for()const { return sha256_proxied_for(proxied_for); }
+		uint64_t get_completion_time()const { return completion_time; }
 	};
 
 
@@ -333,7 +334,8 @@ public:
 	// stake table extra
 	typedef eosio::multi_index<name("staketblex"), stakeextra,
 		indexed_by< name("byuser"), const_mem_fun<stakeextra, uint64_t, &stakeextra::get_user>>,
-		indexed_by< name("byproxiedusr"), const_mem_fun<stakeextra, fixed_bytes<32>, &stakeextra::hash_proxied_for>>
+		indexed_by< name("byproxiedusr"), const_mem_fun<stakeextra, fixed_bytes<32>, &stakeextra::hash_proxied_for>>,
+		indexed_by< name("bycompltntme"), const_mem_fun<stakeextra, uint64_t, &stakeextra::get_completion_time>>
 	> staketblex;
 
 	// votes table
