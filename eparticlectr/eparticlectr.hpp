@@ -394,6 +394,9 @@ public:
 	[[eosio::action]]
 	void prgpremigrwd( uint32_t loop_limit );
 
+		[[eosio::action]]
+	void prgpremigprp( uint32_t loop_limit );
+
 	[[eosio::action]]
 	void slashnotify( name slashee,
 					  uint64_t amount,

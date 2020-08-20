@@ -427,6 +427,16 @@
             ]
         },
         {
+            "name": "prgpremigprp",
+            "base": "",
+            "fields": [
+                {
+                    "name": "loop_limit",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
             "name": "prgpremigrwd",
             "base": "",
             "fields": [
@@ -1032,6 +1042,11 @@
             "name": "oldvteprgeex",
             "type": "oldvteprgeex",
             "ricardian_contract": "Purge old votes to free up RAM. New Version"
+        },
+        {
+            "name": "prgpremigprp",
+            "type": "prgpremigprp",
+            "ricardian_contract": "Purge pre-EPID proposal orphans"
         },
         {
             "name": "prgpremigrwd",

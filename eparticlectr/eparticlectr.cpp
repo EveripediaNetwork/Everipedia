@@ -60,7 +60,7 @@ void eparticlectr::brainclmidex( uint64_t stakeid ) {
     staketable.erase(stake_it);
 }
 
-// clean erroneous rewards from pre-EPID migration
+// Clean erroneous rewards from pre-EPID migration
 [[eosio::action]]
 void eparticlectr::prgpremigrwd( uint32_t loop_limit ) {
     require_auth( MAINTENANCE_CONTRACT );
@@ -80,6 +80,33 @@ void eparticlectr::prgpremigrwd( uint32_t loop_limit ) {
         }
         else{
             rwd_it++;
+        }
+        // Increase the count
+        count++;
+    }
+
+}
+
+// Clean erroneous proposals from pre-EPID migration
+[[eosio::action]]
+void eparticlectr::prgpremigprp( uint32_t loop_limit ) {
+    require_auth( MAINTENANCE_CONTRACT );
+
+    // Get the proposal table
+    propstblex proptable( _self, _self.value );
+
+    // Loop through the old proposals 
+    auto prop_it = proptable.begin();
+    uint32_t count = 0;
+    while(count < loop_limit && prop_it != proptable.end()) {
+
+        // Delete the proposal.
+        // Note that the erase() function increments the iterator, then gives it back after the erase is done
+        if (prop_it->endtime <= 1597093134){
+            prop_it = proptable.erase(prop_it);
+        }
+        else{
+            prop_it++;
         }
         // Increase the count
         count++;
@@ -710,4 +737,4 @@ void eparticlectr::migraterwds( uint32_t loop_limit ) {
 
 
 
-EOSIO_DISPATCH( eparticlectr, (brainclmid)(brainclmidex)(stkretovrrde)(prgpremigrwd)(slashnotify)(slashnotifex)(finalize)(finalizeextr)(oldvotepurge)(oldvteprgeex)(propose2)(proposeextra)(rewardclmid)(rewrdclmidex)(vote)(voteextra)(logpropres)(migratestkes)(migratevotes)(migrateprops)(migraterwds)(logpropinfo)(logpropinfex)(mkreferendum)(curatelist) )
+EOSIO_DISPATCH( eparticlectr, (brainclmid)(brainclmidex)(stkretovrrde)(prgpremigrwd)(prgpremigprp)(slashnotify)(slashnotifex)(finalize)(finalizeextr)(oldvotepurge)(oldvteprgeex)(propose2)(proposeextra)(rewardclmid)(rewrdclmidex)(vote)(voteextra)(logpropres)(migratestkes)(migratevotes)(migrateprops)(migraterwds)(logpropinfo)(logpropinfex)(mkreferendum)(curatelist) )
