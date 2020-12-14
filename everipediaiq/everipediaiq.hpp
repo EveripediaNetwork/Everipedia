@@ -14,13 +14,27 @@ using namespace eosio;
 using std::string;
 
 const uint64_t EDIT_PROPOSE_IQ = 50; // 50 IQ
-const name PROXY_CONTRACT = name("epidhotwalla");
+const name PROXY_CONTRACT = name("epiqrelayhot");
+const name ARTICLE_CONTRACT = name("eparticlectr");
+const name PROXIABLE_ACCOUNTS[4] = { PROXY_CONTRACT, ARTICLE_CONTRACT, name("everipediaiq"), name("evrpdcronjob") };
+const uint64_t PROXY_LIST_SIZE = 4;
 
 class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
   using contract::contract;
 
   public:
     using ipfshash_t = std::string;
+
+    static bool is_proxiable(const name& check)
+    {
+        for(size_t n = 0; n < PROXY_LIST_SIZE; ++n)
+        {
+            if(PROXIABLE_ACCOUNTS[n] == check)
+                return true;
+        }
+
+        return false;
+    }
 
 
     [[eosio::action]]
@@ -131,7 +145,9 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
 
     void sub_balance( name owner, asset value );
     void add_balance( name owner, asset value, name ram_payer );
-
+    void transfer_core_code( name from, name to, asset quantity, std::string memo );
+    void transfrextra_core_code( name from, name to, asset quantity, string memo, string proxied_for, string purpose, string extra_note );
+    void issue_core_code( name to, asset quantity, std::string memo );
 };
 
 asset everipediaiq::get_supply( symbol_code sym )const

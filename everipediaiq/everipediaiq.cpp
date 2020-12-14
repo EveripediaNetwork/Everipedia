@@ -24,9 +24,7 @@ void everipediaiq::create( name issuer,
     });
 }
 
-[[eosio::action]]
-void everipediaiq::issue( name to, asset quantity, std::string memo )
-{
+void everipediaiq::issue_core_code( name to, asset quantity, std::string memo ) {
     auto sym = quantity.symbol;
     eosio::check( sym.is_valid(), "invalid symbol name" );
     eosio::check( memo.size() <= 256, "memo has more than 256 bytes" );
@@ -51,8 +49,15 @@ void everipediaiq::issue( name to, asset quantity, std::string memo )
     add_balance( st.issuer, quantity, st.issuer );
 
     if( to != st.issuer ) {
-       SEND_INLINE_ACTION( *this, transfer, {st.issuer, name("active")}, {st.issuer, to, quantity, memo} );
+        transfer_core_code(st.issuer, to, quantity, memo);
     }
+}
+
+[[eosio::action]]
+void everipediaiq::issue( name to, asset quantity, std::string memo )
+{
+    // Issue the IQ normally
+    issue_core_code(to, quantity, memo);
 }
 
 [[eosio::action]]
@@ -68,28 +73,14 @@ void everipediaiq::issueextra(
     eosio::check( extra_note.size() <= 256, "extra_note has more than 256 bytes" );
 
     // Issue the IQ normally
-    action(
-        permission_level{ TOKEN_CONTRACT , name("active") }, 
-        TOKEN_CONTRACT , name("issue"),
-        std::make_tuple( to, quantity, memo)
-    ).send();
+    issue_core_code(to, quantity, memo);
 }
 
-[[eosio::action]]
-void everipediaiq::transfer( name from,
-                      name to,
-                      asset        quantity,
-                      std::string       memo )
-{
-    
-    require_auth( from );
+void everipediaiq::transfer_core_code( name from, name to, asset quantity, std::string memo ) {
     eosio::check( is_account( to ), "to account does not exist");
     auto sym = quantity.symbol.code();
     stats statstable( _self, sym.raw() );
     const auto& st = statstable.get( sym.raw() );
-
-    require_recipient( from );
-    require_recipient( to );
 
     eosio::check( quantity.is_valid(), "invalid quantity" );
     eosio::check( quantity.amount > 0, "must transfer positive quantity" );
@@ -104,6 +95,41 @@ void everipediaiq::transfer( name from,
         sub_balance( from, quantity );
         add_balance( to, quantity, from );
     }
+}
+
+void everipediaiq::transfrextra_core_code( 
+                      name from,
+                      name to,
+                      asset quantity,
+                      std::string memo, 
+                      std::string proxied_for,
+                      std::string purpose,
+                      std::string extra_note
+) {
+    eosio::check( proxied_for.size() <= 256, "proxied_for has more than 256 bytes" );
+    eosio::check( purpose.size() <= 256, "purpose has more than 256 bytes" );
+    eosio::check( extra_note.size() <= 256, "extra_note has more than 256 bytes" );
+
+    // Reject transactions where non-proxy accounts try to specify a proxied_for
+    bool can_proxy = everipediaiq::is_proxiable(from);
+    eosio::check( can_proxy || (!can_proxy && proxied_for == ""), "proxied_for must be empty for non-proxy accounts" );
+
+    // Transfer the IQ normally
+    transfer_core_code(from, to, quantity, memo);
+}
+
+[[eosio::action]]
+void everipediaiq::transfer( name from,
+                      name to,
+                      asset        quantity,
+                      std::string       memo )
+{
+    require_auth( from );
+    require_recipient( from );
+    require_recipient( to );
+
+    // Transfer the IQ normally
+    transfer_core_code(from, to, quantity, memo);
 
 }
 
@@ -122,19 +148,8 @@ void everipediaiq::transfrextra(
     require_recipient(from);
     require_recipient(to);
 
-    eosio::check( proxied_for.size() <= 256, "proxied_for has more than 256 bytes" );
-    eosio::check( purpose.size() <= 256, "purpose has more than 256 bytes" );
-    eosio::check( extra_note.size() <= 256, "extra_note has more than 256 bytes" );
-
-    // Reject transactions where non-proxy accounts try to specify a proxied_for
-    eosio::check( (from == PROXY_CONTRACT) || (from != PROXY_CONTRACT && proxied_for == ""), "proxied_for must be empty for non-proxy accounts" );
-
     // Transfer the IQ normally
-    action(
-        permission_level{ from , name("active") }, 
-        _self , name("transfer"),
-        std::make_tuple( from, to, quantity, memo)
-    ).send();
+    transfrextra_core_code(from, to, quantity, memo, proxied_for, purpose, extra_note);
 }
 
 [[eosio::action]]
@@ -195,22 +210,9 @@ void everipediaiq::add_balance( name owner, asset value, name ram_payer )
 
 [[eosio::action]]
 void everipediaiq::epartpropose( name proposer, std::string slug, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo, name permission) { 
-    require_auth(proposer);
-
-    // Transfer the IQ to the eparticlectr contract for staking
-    asset iqAssetPack = asset(EDIT_PROPOSE_IQ * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
-    action(
-        permission_level{ proposer , permission }, 
-        _self , name("transfer"),
-        std::make_tuple( proposer, ARTICLE_CONTRACT, iqAssetPack, std::string("stake for vote"))
-    ).send();
-
-    // Make the proposal to the article contract
-    action(
-        permission_level{ ARTICLE_CONTRACT, name("active") }, 
-        ARTICLE_CONTRACT, name("propose2"),
-        std::make_tuple( proposer, slug, ipfs_hash, lang_code, group_id, comment, memo )
-    ).send();
+    // Deprecated
+    eosio::check(false, "epartpropose is deprecated. Use epartpropsex instead");
+    return;
 }
 
 [[eosio::action]]
@@ -232,15 +234,12 @@ void everipediaiq::epartpropsex(
     eosio::check( extra_note.size() <= 256, "extra_note has more than 256 bytes" );
 
     // Reject transactions where non-proxy accounts try to specify a proxied_for
-    eosio::check( (proposer == PROXY_CONTRACT) || (proposer != PROXY_CONTRACT && proxied_for == ""), "proxied_for must be empty for non-proxy accounts" );
+    bool can_proxy = everipediaiq::is_proxiable(proposer);
+    eosio::check( can_proxy || (!can_proxy && proxied_for == ""), "proxied_for must be empty for non-proxy accounts" );
 
     // Transfer the IQ to the eparticlectr contract for staking
     asset iqAssetPack = asset(EDIT_PROPOSE_IQ * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
-    action(
-        permission_level{ proposer , permission }, 
-        _self , name("transfrextra"),
-        std::make_tuple( proposer, ARTICLE_CONTRACT, iqAssetPack, std::string("stake for vote"), proxied_for, ipfs_hash +  std::string("|lang_") + lang_code + std::string("/") + slug, extra_note)
-    ).send();
+    transfrextra_core_code(proposer, ARTICLE_CONTRACT, iqAssetPack, std::string("stake for vote"), proxied_for, ipfs_hash +  std::string("|lang_") + lang_code + std::string("/") + slug, extra_note);
 
     // Make the proposal to the article contract
     action(
@@ -252,24 +251,9 @@ void everipediaiq::epartpropsex(
 
 [[eosio::action]]
 void everipediaiq::epartvote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string comment, std::string memo, name permission) {
-    require_auth(voter);
-
-    eosio::check(amount > 0, "must transfer a positive amount");
-
-    // Transfer the IQ to the eparticlectr contract for staking
-    asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
-    action(
-        permission_level{ voter , permission }, 
-        _self , name("transfer"),
-        std::make_tuple( voter, ARTICLE_CONTRACT, iqAssetPack, std::string("stake for vote"))
-    ).send();
-
-    // Create the vote in the eparticlectr contract
-    action(
-        permission_level{ ARTICLE_CONTRACT, name("active") }, 
-        ARTICLE_CONTRACT, name("vote"),
-        std::make_tuple( voter, proposal_id, approve, amount, comment, memo )
-    ).send();
+    // Deprecated
+    eosio::check(false, "epartvote is deprecated. Use epartvotex instead");
+    return;
 }
 
 [[eosio::action]]
@@ -291,15 +275,12 @@ void everipediaiq::epartvotex(
     eosio::check( extra_note.size() <= 256, "extra_note has more than 256 bytes" );
 
     // Reject transactions where non-proxy accounts try to specify a proxied_for
-    eosio::check( (voter == PROXY_CONTRACT) || (voter != PROXY_CONTRACT && proxied_for == ""), "proxied_for must be empty for non-proxy accounts" );
+    bool can_proxy = everipediaiq::is_proxiable(voter);
+    eosio::check( can_proxy || (!can_proxy && proxied_for == ""), "proxied_for must be empty for non-proxy accounts" );
 
     // Transfer the IQ to the eparticlectr contract for staking
     asset iqAssetPack = asset(amount * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
-    action(
-        permission_level{ voter , permission }, 
-        _self , name("transfrextra"),
-        std::make_tuple( voter, ARTICLE_CONTRACT, iqAssetPack, std::string("stake for vote"), proxied_for, std::string("PROPOSAL: ") + std::to_string(proposal_id), extra_note)
-    ).send();
+    transfrextra_core_code(voter, ARTICLE_CONTRACT, iqAssetPack, std::string("stake for vote"), proxied_for, std::string("PROPOSAL: ") + std::to_string(proposal_id), extra_note);
 
     // Create the vote in the eparticlectr contract
     action(

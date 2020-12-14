@@ -38,7 +38,7 @@ using namespace eosio;
 
 const name TOKEN_CONTRACT = name("everipediaiq");
 const name MAINTENANCE_CONTRACT = name("evrpdcronjob");
-const uint64_t STAKING_DURATION = 21 * 86400; // 21 days
+const uint64_t STAKING_DURATION = 5 * 86400; // 5 days
 const uint64_t WINNING_VOTE_STAKE_TIME = 5 * 86400; // 5 days
 const uint64_t EDIT_PROPOSE_IQ_EPARTICLECTR = 50; // 50 IQ
 const uint32_t REWARD_INTERVAL = 1800; // 30 min
@@ -111,6 +111,22 @@ public:
 		return sha256(combined.c_str(), combined.size());
 	}
 
+	static std::string uint64ToString(const uint64_t& value)
+	{
+		const char* charmap = "0123456789";
+
+		std::string result;
+		result.reserve( 20 ); // max. 20 digits possible
+		uint128_t helper = value;
+
+		do {
+			result += charmap[ helper % 10 ];
+			helper /= 10;
+		} while ( helper );
+		std::reverse( result.begin(), result.end() );
+		return result;
+	}
+
 	// Formula for the voting boost
 	//static float get_boost_multiplier(uint64_t amount) {
 	//    return (1 + pow((amount / BOOST_BASE_CONSTANT), BOOST_EXPONENT_CONSTANT));
@@ -161,6 +177,7 @@ public:
 		uint64_t primary_key()const { return id; }
 		uint64_t get_user()const { return user.value; }
 		fixed_bytes<32> hash_proxied_for()const { return sha256_proxied_for(proxied_for); }
+		uint64_t get_completion_time()const { return completion_time; }
 	};
 
 
@@ -317,7 +334,8 @@ public:
 	// stake table extra
 	typedef eosio::multi_index<name("staketblex"), stakeextra,
 		indexed_by< name("byuser"), const_mem_fun<stakeextra, uint64_t, &stakeextra::get_user>>,
-		indexed_by< name("byproxiedusr"), const_mem_fun<stakeextra, fixed_bytes<32>, &stakeextra::hash_proxied_for>>
+		indexed_by< name("byproxiedusr"), const_mem_fun<stakeextra, fixed_bytes<32>, &stakeextra::hash_proxied_for>>,
+		indexed_by< name("bycompltntme"), const_mem_fun<stakeextra, uint64_t, &stakeextra::get_completion_time>>
 	> staketblex;
 
 	// votes table
@@ -369,6 +387,15 @@ public:
 
 	[[eosio::action]]
 	void brainclmidex( uint64_t stakeid );
+
+	[[eosio::action]]
+	void stkretovrrde( uint32_t loop_limit );
+
+	[[eosio::action]]
+	void prgpremigrwd( uint32_t loop_limit );
+
+		[[eosio::action]]
+	void prgpremigprp( uint32_t loop_limit );
 
 	[[eosio::action]]
 	void slashnotify( name slashee,

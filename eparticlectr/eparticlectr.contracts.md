@@ -2,6 +2,12 @@
 Claim back IQ that was staked for Brainpower. Must happen after the 21 day staking period.
 <h1 class="contract">brainclmidex</h1>
 Claim back IQ that was staked for Brainpower. Must happen after the 21 day staking period. New Version
+<h1 class="contract">stkretovrrde</h1>
+Manually return all stakes, for maintenance purposes
+<h1 class="contract">prgpremigrwd</h1>
+Purge pre-EPID reward orphans
+<h1 class="contract">prgpremigprp</h1>
+Purge pre-EPID proposal orphans
 <h1 class="contract">brainmeart</h1>
 Stake IQ (only callable by eparticlectr).
 <h1 class="contract">finalize</h1>

@@ -427,6 +427,26 @@
             ]
         },
         {
+            "name": "prgpremigprp",
+            "base": "",
+            "fields": [
+                {
+                    "name": "loop_limit",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "prgpremigrwd",
+            "base": "",
+            "fields": [
+                {
+                    "name": "loop_limit",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
             "name": "propose2",
             "base": "",
             "fields": [
@@ -743,6 +763,16 @@
             ]
         },
         {
+            "name": "stkretovrrde",
+            "base": "",
+            "fields": [
+                {
+                    "name": "loop_limit",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
             "name": "vote",
             "base": "",
             "fields": [
@@ -1014,6 +1044,16 @@
             "ricardian_contract": "Purge old votes to free up RAM. New Version"
         },
         {
+            "name": "prgpremigprp",
+            "type": "prgpremigprp",
+            "ricardian_contract": "Purge pre-EPID proposal orphans"
+        },
+        {
+            "name": "prgpremigrwd",
+            "type": "prgpremigrwd",
+            "ricardian_contract": "Purge pre-EPID reward orphans"
+        },
+        {
             "name": "propose2",
             "type": "propose2",
             "ricardian_contract": "Propose an edit (uses IQ, only callable by everipediaiq::epartpropose)."
@@ -1042,6 +1082,11 @@
             "name": "slashnotify",
             "type": "slashnotify",
             "ricardian_contract": "Logging action to notify users of slashes."
+        },
+        {
+            "name": "stkretovrrde",
+            "type": "stkretovrrde",
+            "ricardian_contract": "Manually return all stakes, for maintenance purposes"
         },
         {
             "name": "vote",
