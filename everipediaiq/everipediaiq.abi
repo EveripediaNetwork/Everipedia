@@ -1,6 +1,12 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT ",
     "version": "eosio::abi/1.1",
+    "types": [
+        {
+            "new_type_name": "ipfshash_t",
+            "type": "string"
+        }
+    ],
     "structs": [
         {
             "name": "account",
@@ -8,7 +14,7 @@
             "fields": [
                 {
                     "name": "balance",
-                    "type": "int32"
+                    "type": "asset"
                 }
             ]
         },
@@ -18,11 +24,11 @@
             "fields": [
                 {
                     "name": "from",
-                    "type": "int32"
+                    "type": "name"
                 },
                 {
                     "name": "quantity",
-                    "type": "int32"
+                    "type": "asset"
                 },
                 {
                     "name": "memo",
@@ -36,11 +42,11 @@
             "fields": [
                 {
                     "name": "owner",
-                    "type": "int32"
+                    "type": "name"
                 },
                 {
                     "name": "symbol",
-                    "type": "int32"
+                    "type": "symbol"
                 }
             ]
         },
@@ -50,11 +56,11 @@
             "fields": [
                 {
                     "name": "issuer",
-                    "type": "int32"
+                    "type": "name"
                 },
                 {
                     "name": "maximum_supply",
-                    "type": "int32"
+                    "type": "asset"
                 }
             ]
         },
@@ -64,15 +70,15 @@
             "fields": [
                 {
                     "name": "supply",
-                    "type": "int32"
+                    "type": "asset"
                 },
                 {
                     "name": "max_supply",
-                    "type": "int32"
+                    "type": "asset"
                 },
                 {
                     "name": "issuer",
-                    "type": "int32"
+                    "type": "name"
                 }
             ]
         },
@@ -82,7 +88,7 @@
             "fields": [
                 {
                     "name": "proposer",
-                    "type": "int32"
+                    "type": "name"
                 },
                 {
                     "name": "slug",
@@ -110,7 +116,7 @@
                 },
                 {
                     "name": "permission",
-                    "type": "int32"
+                    "type": "name"
                 }
             ]
         },
@@ -120,7 +126,7 @@
             "fields": [
                 {
                     "name": "proposer",
-                    "type": "int32"
+                    "type": "name"
                 },
                 {
                     "name": "slug",
@@ -148,7 +154,7 @@
                 },
                 {
                     "name": "permission",
-                    "type": "int32"
+                    "type": "name"
                 },
                 {
                     "name": "proxied_for",
@@ -166,7 +172,7 @@
             "fields": [
                 {
                     "name": "voter",
-                    "type": "int32"
+                    "type": "name"
                 },
                 {
                     "name": "proposal_id",
@@ -190,7 +196,7 @@
                 },
                 {
                     "name": "permission",
-                    "type": "int32"
+                    "type": "name"
                 }
             ]
         },
@@ -200,7 +206,7 @@
             "fields": [
                 {
                     "name": "voter",
-                    "type": "int32"
+                    "type": "name"
                 },
                 {
                     "name": "proposal_id",
@@ -224,7 +230,7 @@
                 },
                 {
                     "name": "permission",
-                    "type": "int32"
+                    "type": "name"
                 },
                 {
                     "name": "proxied_for",
@@ -242,11 +248,11 @@
             "fields": [
                 {
                     "name": "to",
-                    "type": "int32"
+                    "type": "name"
                 },
                 {
                     "name": "quantity",
-                    "type": "int32"
+                    "type": "asset"
                 },
                 {
                     "name": "memo",
@@ -260,11 +266,11 @@
             "fields": [
                 {
                     "name": "to",
-                    "type": "int32"
+                    "type": "name"
                 },
                 {
                     "name": "quantity",
-                    "type": "int32"
+                    "type": "asset"
                 },
                 {
                     "name": "memo",
@@ -286,15 +292,15 @@
             "fields": [
                 {
                     "name": "owner",
-                    "type": "int32"
+                    "type": "name"
                 },
                 {
                     "name": "symbol",
-                    "type": "int32"
+                    "type": "symbol"
                 },
                 {
                     "name": "ram_payer",
-                    "type": "int32"
+                    "type": "name"
                 }
             ]
         },
@@ -304,15 +310,15 @@
             "fields": [
                 {
                     "name": "from",
-                    "type": "int32"
+                    "type": "name"
                 },
                 {
                     "name": "to",
-                    "type": "int32"
+                    "type": "name"
                 },
                 {
                     "name": "quantity",
-                    "type": "int32"
+                    "type": "asset"
                 },
                 {
                     "name": "memo",
@@ -326,15 +332,15 @@
             "fields": [
                 {
                     "name": "from",
-                    "type": "int32"
+                    "type": "name"
                 },
                 {
                     "name": "to",
-                    "type": "int32"
+                    "type": "name"
                 },
                 {
                     "name": "quantity",
-                    "type": "int32"
+                    "type": "asset"
                 },
                 {
                     "name": "memo",
@@ -355,19 +361,13 @@
             ]
         }
     ],
-    "types": [
-        {
-            "new_type_name": "ipfshash_t",
-            "type": "string"
-        }
-    ],
     "actions": [
         {
             "name": "burn",
             "type": "burn",
             "ricardian_contract": "Burn IQ tokens and take them out of circulation."
         },
-        {
+       {
             "name": "close",
             "type": "close",
             "ricardian_contract": "Close IQ balance."
@@ -425,14 +425,14 @@
     ],
     "tables": [
         {
-            "name": "account",
+            "name": "accounts",
             "type": "account",
             "index_type": "i64",
             "key_names": [],
             "key_types": []
         },
         {
-            "name": "currency_stats",
+            "name": "stat",
             "type": "currency_stats",
             "index_type": "i64",
             "key_names": [],
@@ -440,6 +440,5 @@
         }
     ],
     "ricardian_clauses": [],
-    "variants": [],
-    "abi_extensions": []
+    "variants": []
 }
