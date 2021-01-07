@@ -50,6 +50,12 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
     void issue( name to, asset quantity, string memo );
 
     [[eosio::action]]
+    void open( const name& owner, const symbol& symbol, const name& ram_payer );
+
+    [[eosio::action]]
+    void close( const name& owner, const symbol& symbol );
+
+    [[eosio::action]]
     void issueextra( 
       name to, 
       asset quantity, 

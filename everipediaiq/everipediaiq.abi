@@ -37,6 +37,20 @@
             ]
         },
         {
+            "name": "close",
+            "base": "",
+            "fields": [
+                {
+                    "name": "owner",
+                    "type": "name"
+                },
+                {
+                    "name": "symbol",
+                    "type": "symbol"
+                }
+            ]
+        },
+        {
             "name": "create",
             "base": "",
             "fields": [
@@ -273,6 +287,24 @@
             ]
         },
         {
+            "name": "open",
+            "base": "",
+            "fields": [
+                {
+                    "name": "owner",
+                    "type": "name"
+                },
+                {
+                    "name": "symbol",
+                    "type": "symbol"
+                },
+                {
+                    "name": "ram_payer",
+                    "type": "name"
+                }
+            ]
+        },
+        {
             "name": "transfer",
             "base": "",
             "fields": [
@@ -335,6 +367,11 @@
             "type": "burn",
             "ricardian_contract": "Burn IQ tokens and take them out of circulation."
         },
+       {
+            "name": "close",
+            "type": "close",
+            "ricardian_contract": "Close IQ balance."
+        },
         {
             "name": "create",
             "type": "create",
@@ -369,6 +406,11 @@
             "name": "issueextra",
             "type": "issueextra",
             "ricardian_contract": "Issue IQ tokens. New version"
+        },
+        {
+            "name": "open",
+            "type": "open",
+            "ricardian_contract": "Open IQ balance."
         },
         {
             "name": "transfer",
