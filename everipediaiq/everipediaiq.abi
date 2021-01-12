@@ -367,7 +367,7 @@
             "type": "burn",
             "ricardian_contract": "Burn IQ tokens and take them out of circulation."
         },
-       {
+        {
             "name": "close",
             "type": "close",
             "ricardian_contract": "Close IQ balance."
