@@ -47,6 +47,9 @@ class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
                   asset        maximum_supply);
 
     [[eosio::action]]
+    void setmaxsupply( asset maximum_supply);
+
+    [[eosio::action]]
     void issue( name to, asset quantity, string memo );
 
     [[eosio::action]]

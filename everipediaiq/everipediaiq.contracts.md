@@ -16,6 +16,8 @@ Issue IQ tokens. New version
 Stake IQ for Brainpower.
 <h1 class="contract">create</h1>
 Create a token.
+<h1 class="contract">setmaxsupply</h1>
+Set maximum supply.
 <h1 class="contract">epartpropose</h1>
 User-facing action for creating a proposal. 
 <h1 class="contract">epartpropsex</h1>

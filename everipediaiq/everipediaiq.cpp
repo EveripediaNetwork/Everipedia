@@ -24,6 +24,26 @@ void everipediaiq::create( name issuer,
     });
 }
 
+[[eosio::action]]
+void everipediaiq::setmaxsupply(asset maximum_supply )
+{
+  require_auth( _self );
+
+  auto sym = maximum_supply.symbol;
+  eosio::check( sym.is_valid(), "invalid symbol name" );
+  eosio::check( maximum_supply.is_valid(), "invalid supply");
+  eosio::check( maximum_supply.amount > 0, "max-supply must be positive");
+
+  stats statstable( _self, sym.code().raw() );
+  auto existing = statstable.find( sym.code().raw() );
+  eosio::check( existing != statstable.end(), "token with symbol does not exist, create token before issue" );
+  const auto& st = *existing;
+
+  statstable.modify( st, same_payer, [&]( auto& s ) {
+    s.max_supply = maximum_supply;
+  });
+}
+
 void everipediaiq::issue_core_code( name to, asset quantity, std::string memo ) {
     auto sym = quantity.symbol;
     eosio::check( sym.is_valid(), "invalid symbol name" );
@@ -321,4 +341,4 @@ void everipediaiq::epartvotex(
 }
 
 
-EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(issueextra)(transfer)(transfrextra)(epartpropose)(epartpropsex)(epartvote)(epartvotex) )
+EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(issueextra)(transfer)(transfrextra)(epartpropose)(epartpropsex)(epartvote)(epartvotex)(setmaxsupply) )

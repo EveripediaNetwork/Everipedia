@@ -305,6 +305,16 @@
             ]
         },
         {
+            "name": "setmaxsupply",
+            "base": "",
+            "fields": [
+                {
+                    "name": "maximum_supply",
+                    "type": "asset"
+                }
+            ]
+        },
+        {
             "name": "transfer",
             "base": "",
             "fields": [
@@ -367,7 +377,7 @@
             "type": "burn",
             "ricardian_contract": "Burn IQ tokens and take them out of circulation."
         },
-       {
+        {
             "name": "close",
             "type": "close",
             "ricardian_contract": "Close IQ balance."
@@ -411,6 +421,11 @@
             "name": "open",
             "type": "open",
             "ricardian_contract": "Open IQ balance."
+        },
+        {
+            "name": "setmaxsupply",
+            "type": "setmaxsupply",
+            "ricardian_contract": "Set maximum supply."
         },
         {
             "name": "transfer",
