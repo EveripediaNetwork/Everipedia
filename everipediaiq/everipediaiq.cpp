@@ -60,6 +60,7 @@ void everipediaiq::issue( name to, asset quantity, std::string memo )
     issue_core_code(to, quantity, memo);
 }
 
+[[eosio::action]]
 void everipediaiq::open( const name& owner, const symbol& symbol, const name& ram_payer )
 {
     require_auth( ram_payer );
@@ -80,6 +81,7 @@ void everipediaiq::open( const name& owner, const symbol& symbol, const name& ra
     }
 }
 
+[[eosio::action]]
 void everipediaiq::close( const name& owner, const symbol& symbol )
 {
     require_auth( owner );
@@ -321,4 +323,4 @@ void everipediaiq::epartvotex(
 }
 
 
-EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(issueextra)(transfer)(transfrextra)(epartpropose)(epartpropsex)(epartvote)(epartvotex) )
+EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(issueextra)(transfer)(open)(close)(transfrextra)(epartpropose)(epartpropsex)(epartvote)(epartvotex) )
