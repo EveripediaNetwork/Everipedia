@@ -470,35 +470,6 @@ void eparticlectr::rewrdclmidex ( uint64_t reward_id ) {
     uint64_t current_period = eosio::current_time_point().sec_since_epoch() / REWARD_INTERVAL;
     const auto& period_it = perrewards.get(reward_period, "Period should exist");
     eosio::check(current_period > reward_period, "Reward period must complete before claiming rewards");
-
-    // Send curation reward
-    int64_t curation_reward = reward_it.vote_points * PERIOD_CURATION_REWARD / period_it.curation_sum;
-    eosio::check(curation_reward <= PERIOD_CURATION_REWARD, "System logic error. Too much IQ calculated for curation reward.");
-    if (curation_reward == 0) // Minimum reward of 0.001 IQ to prevent unclaimable rewards
-        curation_reward = 1;
-    asset curation_quantity = asset(curation_reward, IQSYMBOL);
-    std::string memo = std::string("Curation IQ reward:" + reward_it.memo);
-    action(
-        permission_level { TOKEN_CONTRACT, name("active") },
-        TOKEN_CONTRACT, name("issueextra"),
-        std::make_tuple( reward_it.user, curation_quantity, memo, reward_it.proxied_for, reward_it.extra_note )
-    ).send();
-
-    // Send editor reward
-    if (reward_it.is_editor && reward_it.proposalresult) {
-        int64_t editor_reward = reward_it.edit_points * PERIOD_EDITOR_REWARD / period_it.editor_sum;
-        if (editor_reward == 0) // Minimum reward of 0.001 IQ to prevent unclaimable rewards
-            editor_reward = 1;
-        eosio::check(editor_reward <= PERIOD_EDITOR_REWARD, "System logic error. Too much IQ calculated for editor reward.");
-        asset editor_quantity = asset(editor_reward, IQSYMBOL);
-        std::string memo = std::string("Editor IQ reward:" + reward_it.memo);
-        action(
-            permission_level { TOKEN_CONTRACT, name("active") },
-            TOKEN_CONTRACT, name("issueextra"),
-            std::make_tuple( reward_it.user, editor_quantity, memo, reward_it.proxied_for, reward_it.extra_note )
-        ).send();
-    }
-
     // delete reward after claiming
     rewardstable.erase( reward_it );
 }
