@@ -68,7 +68,7 @@ void eparticlectr::prgpremigrwd( uint32_t loop_limit ) {
     // Get the stake table
     rewardstblex rewardstable( _self, _self.value );
 
-    // Loop through the old stakes 
+    // Loop through the old stakes
     auto rwd_it = rewardstable.begin();
     uint32_t count = 0;
     while(count < loop_limit && rwd_it != rewardstable.end()) {
@@ -95,7 +95,7 @@ void eparticlectr::prgpremigprp( uint32_t loop_limit ) {
     // Get the proposal table
     propstblex proptable( _self, _self.value );
 
-    // Loop through the old proposals 
+    // Loop through the old proposals
     auto prop_it = proptable.begin();
     uint32_t count = 0;
     while(count < loop_limit && prop_it != proptable.end()) {
@@ -122,7 +122,7 @@ void eparticlectr::stkretovrrde( uint32_t loop_limit ) {
     // Get the stake table
     staketblex stakestable_extra( _self, _self.value );
 
-    // Loop through the old stakes 
+    // Loop through the old stakes
     auto stake_it = stakestable_extra.begin();
     uint32_t count = 0;
     while(count < loop_limit && stake_it != stakestable_extra.end()) {
@@ -176,7 +176,7 @@ void eparticlectr::voteextra( name voter, uint64_t proposal_id, bool approve, ui
 
     // Create the stake object
     staketblex staketblobj(_self, _self.value);
-    
+
     // This is needed to keep the stakes from the old and new tables separate
     std::string proposal_id_string = uint64ToString(proposal_id);
     uint64_t stake_id = staketblobj.available_primary_key();
@@ -192,8 +192,8 @@ void eparticlectr::voteextra( name voter, uint64_t proposal_id, bool approve, ui
 
     // mark if this is the initial editor vote
     votestblex votetbl( _self, proposal_id );
-    bool voterIsProposer = (votetbl.begin() == votetbl.end()); 
-   
+    bool voterIsProposer = (votetbl.begin() == votetbl.end());
+
     // Store vote in DB
     votetbl.emplace( _self, [&]( auto& a ) {
          a.id = votetbl.available_primary_key();
@@ -339,7 +339,6 @@ void eparticlectr::finalizeextr( uint64_t proposal_id ) {
     // Make sure no weird bugs cause the slash reward to under/overflow
     eosio::check( slash_ratio >= 0.0f && slash_ratio <= 1.0f, "Slash ratio out of bounds");
 
-    rewardstblex rewardstable( _self, _self.value );
     staketblex staketable(_self, _self.value);
 
     // Slash / reward votes
@@ -347,7 +346,7 @@ void eparticlectr::finalizeextr( uint64_t proposal_id ) {
     uint64_t total_vote_points = 0;
     while(vote_it != votetbl.end() && istie == 0) {
         uint32_t extraSecsSlash = uint32_t((float)STAKING_DURATION * slash_ratio);
-        
+
         // Refund winning editor stake immediately
         if (approved && vote_it->is_editor) {
             auto stake_it = staketable.find(vote_it->stake_id);
@@ -367,7 +366,7 @@ void eparticlectr::finalizeextr( uint64_t proposal_id ) {
             }
         }
 
-        
+
         // Slash losers
         if (vote_it->approve != approved) {
             auto stake_it = staketable.find(vote_it->stake_id);
@@ -377,32 +376,14 @@ void eparticlectr::finalizeextr( uint64_t proposal_id ) {
                 });
             }
 
-            action( 
+            action(
                 permission_level { _self, name("active") },
                 _self, name("slashnotifex"),
                 std::make_tuple( vote_it->voter, vote_it->amount, extraSecsSlash, vote_it->memo, vote_it->proxied_for, vote_it->extra_note )
             ).send();
         }
-        // Reward the winners
+        // Reward the winners (deleted)
         else {
-            rewardstable.emplace( _self,  [&]( auto& a ) {
-                a.id = rewardstable.available_primary_key();
-                a.user = vote_it->voter;
-                a.vote_points = vote_it->amount;
-                if (approved && vote_it->is_editor)
-                    a.edit_points = (yes_votes - no_votes);
-                else
-                    a.edit_points = 0;
-                a.proposal_id = proposal_id;
-                a.proposal_finalize_time = eosio::current_time_point().sec_since_epoch();
-                a.proposal_finalize_period = uint32_t(eosio::current_time_point().sec_since_epoch() / REWARD_INTERVAL);
-                a.proposalresult = approved;
-                a.is_editor = vote_it->is_editor;
-                a.is_tie = istie;
-                a.memo = vote_it->memo;
-                a.proxied_for = vote_it->proxied_for;
-                a.extra_note = vote_it->extra_note;
-            });
             total_vote_points += vote_it->amount;
         }
         vote_it++;
@@ -470,6 +451,35 @@ void eparticlectr::rewrdclmidex ( uint64_t reward_id ) {
     uint64_t current_period = eosio::current_time_point().sec_since_epoch() / REWARD_INTERVAL;
     const auto& period_it = perrewards.get(reward_period, "Period should exist");
     eosio::check(current_period > reward_period, "Reward period must complete before claiming rewards");
+
+    // Send curation reward
+    int64_t curation_reward = reward_it.vote_points * PERIOD_CURATION_REWARD / period_it.curation_sum;
+    eosio::check(curation_reward <= PERIOD_CURATION_REWARD, "System logic error. Too much IQ calculated for curation reward.");
+    if (curation_reward == 0) // Minimum reward of 0.001 IQ to prevent unclaimable rewards
+        curation_reward = 1;
+    asset curation_quantity = asset(curation_reward, IQSYMBOL);
+    std::string memo = std::string("Curation IQ reward:" + reward_it.memo);
+    action(
+        permission_level { TOKEN_CONTRACT, name("active") },
+        TOKEN_CONTRACT, name("issueextra"),
+        std::make_tuple( reward_it.user, curation_quantity, memo, reward_it.proxied_for, reward_it.extra_note )
+    ).send();
+
+    // Send editor reward
+    if (reward_it.is_editor && reward_it.proposalresult) {
+        int64_t editor_reward = reward_it.edit_points * PERIOD_EDITOR_REWARD / period_it.editor_sum;
+        if (editor_reward == 0) // Minimum reward of 0.001 IQ to prevent unclaimable rewards
+            editor_reward = 1;
+        eosio::check(editor_reward <= PERIOD_EDITOR_REWARD, "System logic error. Too much IQ calculated for editor reward.");
+        asset editor_quantity = asset(editor_reward, IQSYMBOL);
+        std::string memo = std::string("Editor IQ reward:" + reward_it.memo);
+        action(
+            permission_level { TOKEN_CONTRACT, name("active") },
+            TOKEN_CONTRACT, name("issueextra"),
+            std::make_tuple( reward_it.user, editor_quantity, memo, reward_it.proxied_for, reward_it.extra_note )
+        ).send();
+    }
+
     // delete reward after claiming
     rewardstable.erase( reward_it );
 }
@@ -563,11 +573,11 @@ void eparticlectr::curatelist( name user, std::string title, std::string descrip
 void eparticlectr::migratestkes( uint32_t loop_limit ) {
     require_auth( MAINTENANCE_CONTRACT );
 
-    // Initialize the two tables 
+    // Initialize the two tables
     staketbl stakestable( _self, _self.value );
     staketblex stakestable_extra( _self, _self.value );
 
-    // Loop through the old stakes 
+    // Loop through the old stakes
     auto stakes_it = stakestable.begin();
     uint32_t count = 0;
     while(count < loop_limit && stakes_it != stakestable.end()) {
@@ -593,11 +603,11 @@ void eparticlectr::migratestkes( uint32_t loop_limit ) {
 void eparticlectr::migratevotes( uint32_t loop_limit ) {
     require_auth( MAINTENANCE_CONTRACT );
 
-    // Initialize the two tables 
+    // Initialize the two tables
     votestbl votestable( _self, _self.value );
     votestblex votestable_extra( _self, _self.value );
 
-    // Loop through the old votes 
+    // Loop through the old votes
     auto votes_it = votestable.begin();
     uint32_t count = 0;
     while(count < loop_limit && votes_it != votestable.end()) {
@@ -628,11 +638,11 @@ void eparticlectr::migratevotes( uint32_t loop_limit ) {
 void eparticlectr::migrateprops( uint32_t loop_limit ) {
     require_auth( MAINTENANCE_CONTRACT );
 
-    // Initialize the two tables 
+    // Initialize the two tables
     propstbl propstable( _self, _self.value );
     propstblex propstable_extra( _self, _self.value );
 
-    // Loop through the old proposals 
+    // Loop through the old proposals
     auto props_it = propstable.begin();
     uint32_t count = 0;
     while(count < loop_limit && props_it != propstable.end()) {
@@ -666,7 +676,7 @@ void eparticlectr::migrateprops( uint32_t loop_limit ) {
 void eparticlectr::migraterwds( uint32_t loop_limit ) {
     require_auth( MAINTENANCE_CONTRACT );
 
-    // Initialize the two tables 
+    // Initialize the two tables
     rewardstbl rewardstable( _self, _self.value );
     rewardstblex rewardstable_extra( _self, _self.value );
 
@@ -676,7 +686,7 @@ void eparticlectr::migraterwds( uint32_t loop_limit ) {
         return;
     }
 
-    // Loop through the old rewards 
+    // Loop through the old rewards
     auto rewards_it = rewardstable.begin();
     uint32_t count = 0;
     while(count < loop_limit && rewards_it != rewardstable.end()) {
