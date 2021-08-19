@@ -10,8 +10,6 @@ Purge pre-EPID proposal orphans
 Stake IQ (only callable by eparticlectr).
 <h1 class="contract">finalizeextr</h1>
 Finalize a proposal and calculate rewards & slashings. New Version
-<h1 class="contract">slashnotifex</h1>
-Logging action to notify users of slashes. New Version
 <h1 class="contract">procrewards</h1>
 Process rewards from finalized proposals.
 <h1 class="contract">rewrdclmidex</h1>
