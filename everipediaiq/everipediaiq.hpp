@@ -14,7 +14,7 @@ using namespace eosio;
 using std::string;
 
 const uint64_t EDIT_PROPOSE_IQ = 50; // 50 IQ
-const name PROXY_CONTRACT = name("eptestusersa");
+const name PROXY_CONTRACT = name("epiqrelayhot");
 const name ARTICLE_CONTRACT = name("eparticlectr");
 const name PROXIABLE_ACCOUNTS[4] = { PROXY_CONTRACT, ARTICLE_CONTRACT, name("everipediaiq"), name("evrpdcronjob") };
 const uint64_t PROXY_LIST_SIZE = 4;
