@@ -228,7 +228,7 @@ void eparticlectr::finalizeextr( uint64_t proposal_id ) {
         vote_it++;
     }
 
-    // Determine slashing conditions
+    // Determine conditions
     vote_it = votetbl.begin();
     bool approved = 0;
     bool istie = 0;
@@ -239,24 +239,12 @@ void eparticlectr::finalizeextr( uint64_t proposal_id ) {
             istie = 1;
         }
     }
-    float slash_ratio = 0.0f;
-    if (approved){
-        slash_ratio = (yes_votes - no_votes) / totalVotes;
-    }
-    else{
-        slash_ratio = (no_votes - yes_votes) / totalVotes;
-    }
-
-    // Make sure no weird bugs cause the slash reward to under/overflow
-    eosio::check( slash_ratio >= 0.0f && slash_ratio <= 1.0f, "Slash ratio out of bounds");
 
     staketblex staketable(_self, _self.value);
 
-    // Slash / reward votes
     // Tally vote points
     uint64_t total_vote_points = 0;
     while(vote_it != votetbl.end() && istie == 0) {
-        uint32_t extraSecsSlash = uint32_t((float)STAKING_DURATION * slash_ratio);
 
         // Refund winning editor stake immediately
         if (approved && vote_it->is_editor) {
@@ -270,7 +258,7 @@ void eparticlectr::finalizeextr( uint64_t proposal_id ) {
         // Reduce staking time for vote winners to 5 days. Keep losers the same
         else if (!vote_it->is_editor) {
             auto stake_it = staketable.find(vote_it->stake_id);
-            
+
             if (stake_it != staketable.end()){
                 if (vote_it->approve == approved){
                     // Winners
