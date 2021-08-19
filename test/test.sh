@@ -460,36 +460,37 @@ REWARD_EXTRA_ID1=$(cleos get table eparticlectr eparticlectr rewardstblex -r | j
 cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID1]" -p eptestuserse
 assert $(bc <<< "$? == 1")
 
-# Slash checks
-echo -e "${CYAN}-----------------------TODO: TEST SLASHES-----------------------${NC}"
-
-echo -e "${CYAN}WAITING FOR REWARDS PERIOD TO END...${NC}"
-sleep 6
-
-CURATION_REWARD_EXTRA_SUM=$(cleos get table eparticlectr eparticlectr perrwdstblex -r | jq ".rows[0].curation_sum")
-EDITOR_REWARD_EXTRA_SUM=$(cleos get table eparticlectr eparticlectr perrwdstblex -r | jq ".rows[0].editor_sum")
-
-echo -e "   ${CYAN}CURATION EXTRA REWARD SUM: ${CURATION_REWARD_EXTRA_SUM}${NC}"
-echo -e "   ${CYAN}EDITOR EXTRA REWARD SUM: ${EDITOR_REWARD_EXTRA_SUM}${NC}"
-
-assert $(bc <<< "$CURATION_REWARD_EXTRA_SUM == 2470")
-assert $(bc <<< "$EDITOR_REWARD_EXTRA_SUM == 530")
-
-# Claim rewards
-OLD_BALANCE1=$(balance eptestusersa)
-OLD_BALANCE2=$(balance eptestusersb)
-OLD_BALANCE3=$(balance eptestusersc)
-OLD_BALANCE4=$(balance eptestusersd)
-OLD_BALANCE5=$(balance eptestuserse)
-OLD_BALANCE6=$(balance eptestusersf)
-OLD_BALANCE7=$(balance eptestusersg)
-
-REWARD_EXTRA_ID2=$(bc <<< "$REWARD_EXTRA_ID1 - 2")
-REWARD_EXTRA_ID3=$(bc <<< "$REWARD_EXTRA_ID1 - 3")
-REWARD_EXTRA_ID4=$(bc <<< "$REWARD_EXTRA_ID1 - 4")
-REWARD_EXTRA_ID5=$(bc <<< "$REWARD_EXTRA_ID1 - 8") # this one has edit points
-
 # [NOTE]: Rewards have been deprecated
+# Slash checks
+# echo -e "${CYAN}-----------------------TODO: TEST SLASHES-----------------------${NC}"
+
+# echo -e "${CYAN}WAITING FOR REWARDS PERIOD TO END...${NC}"
+# sleep 6
+
+# CURATION_REWARD_EXTRA_SUM=$(cleos get table eparticlectr eparticlectr perrwdstblex -r | jq ".rows[0].curation_sum")
+# EDITOR_REWARD_EXTRA_SUM=$(cleos get table eparticlectr eparticlectr perrwdstblex -r | jq ".rows[0].editor_sum")
+
+# echo -e "   ${CYAN}CURATION EXTRA REWARD SUM: ${CURATION_REWARD_EXTRA_SUM}${NC}"
+# echo -e "   ${CYAN}EDITOR EXTRA REWARD SUM: ${EDITOR_REWARD_EXTRA_SUM}${NC}"
+
+# assert $(bc <<< "$CURATION_REWARD_EXTRA_SUM == 2470")
+# assert $(bc <<< "$EDITOR_REWARD_EXTRA_SUM == 530")
+
+# # Claim rewards
+# OLD_BALANCE1=$(balance eptestusersa)
+# OLD_BALANCE2=$(balance eptestusersb)
+# OLD_BALANCE3=$(balance eptestusersc)
+# OLD_BALANCE4=$(balance eptestusersd)
+# OLD_BALANCE5=$(balance eptestuserse)
+# OLD_BALANCE6=$(balance eptestusersf)
+# OLD_BALANCE7=$(balance eptestusersg)
+
+# REWARD_EXTRA_ID2=$(bc <<< "$REWARD_EXTRA_ID1 - 2")
+# REWARD_EXTRA_ID3=$(bc <<< "$REWARD_EXTRA_ID1 - 3")
+# REWARD_EXTRA_ID4=$(bc <<< "$REWARD_EXTRA_ID1 - 4")
+# REWARD_EXTRA_ID5=$(bc <<< "$REWARD_EXTRA_ID1 - 8") # this one has edit points
+
+
 # echo -e "${CYAN}-----------------------CLAIM REWARDS (EXTRA)-----------------------${NC}"
 # cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID1]" -p eptestuserse
 # assert $(bc <<< "$? == 0")
