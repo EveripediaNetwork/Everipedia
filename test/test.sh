@@ -449,6 +449,10 @@ assert $(bc <<< "$? == 0")
 cleos push action eparticlectr finalizeextr "[ $PROPEXTRAID6 ]" -p eptestusersc
 assert $(bc <<< "$? == 0")
 
+echo -e "${CYAN}-----------------------THIS CLAIM EXTRA SHOULD FAIL (TOO EARLY)-----------------------${NC}"
+cleos push action eparticlectr brainclmidex "[$STAKE_EXTRA_ID1]" -p eptestuserse
+assert $(bc <<< "$? == 1")
+
 echo -e "${CYAN}-----------------------FINALIZE EXTRA FAILS (ALREADY FINALIZED)-----------------------${NC}"
 cleos push action --force-unique eparticlectr finalizeextr "[ $PROPEXTRAID3 ]" -p eptestuserse
 assert $(bc <<< "$? == 1")
@@ -562,7 +566,7 @@ COMPLETION_TIME_EXTRA=$(echo $STAKEEXTRA28 | jq ".completion_time")
 assert $(bc <<< "($COMPLETION_TIME_EXTRA - $TIMESTAMP_EXTRA) != 5")
 echo "Stake time changed properly"
 
-echo -e "${CYAN}-----------------------BELOW EXTRA CLAIMS SHOULD FAIL-----------------------${NC}"
+echo -e "${CYAN}-----------------------BRAIN CLAIMS-----------------------${NC}"
 STAKE_EXTRA_ID1=$(cleos get table eparticlectr eparticlectr staketblex -r | jq ".rows[0].id")
 STAKE_EXTRA_ID2=$(bc <<< "$STAKE_EXTRA_ID1 - 1")
 STAKE_EXTRA_ID3=$(bc <<< "$STAKE_EXTRA_ID1 - 2")
@@ -580,13 +584,21 @@ assert $(bc <<< "$? == 0")
 cleos push action eparticlectr brainclmidex "[$STAKE_EXTRA_ID4]" -p eptestuserse
 assert $(bc <<< "$? == 0")
 
-echo -e "${CYAN}-----------------------THIS CLAIM EXTRA SHOULD FAIL (WRONG USER)-----------------------${NC}"
-cleos push action eparticlectr brainclmidex "[$STAKE_EXTRA_ID1]" -p eptestusersf
+echo -e "${CYAN}WAITING FOR END...${NC}"
+sleep 1 # wait for end
+
+echo -e "${CYAN}-----------------------TRY SAME BRAIN CLAIMS AGAIN [SHOULD FAIL]-----------------------${NC}"
+cleos push action eparticlectr brainclmidex "[$STAKE_EXTRA_ID2]" -p eptestusersg
+assert $(bc <<< "$? == 1")
+cleos push action eparticlectr brainclmidex "[$STAKE_EXTRA_ID3]" -p eptestusersf
+assert $(bc <<< "$? == 1")
+cleos push action eparticlectr brainclmidex "[$STAKE_EXTRA_ID4]" -p eptestuserse
 assert $(bc <<< "$? == 1")
 
-echo -e "${CYAN}-----------------------THIS CLAIM EXTRA SHOULD FAIL (TOO EARLY)-----------------------${NC}"
-cleos push action eparticlectr brainclmidex "[$STAKE_EXTRA_ID1]" -p eptestuserse
-assert $(bc <<< "$? == 1")
+# Anyone can return the stake and pay the CPU. It will always go to the staker, not the caller
+# echo -e "${CYAN}-----------------------THIS CLAIM EXTRA SHOULD FAIL (WRONG USER)-----------------------${NC}"
+# cleos push action eparticlectr brainclmidex "[$STAKE_EXTRA_ID1]" -p eptestusersf
+# assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}-----------------------MAKE MORE PROPOSALS EXTRAS THEN PURGE THE PREVIOUS ONE-----------------------${NC}"
 cleos push action everipediaiq epartpropsex "[ \"eptestusersa\", \"$SLUG16\", \"$IPFS12\", \"en\", -1, \"new wiki\", \"memoing\", \"active\", \"epid-coincoin\", \"proposal\" ]" -p eptestusersa
