@@ -383,69 +383,17 @@ public:
 	// ABI Functions
 
 	[[eosio::action]]
-	void brainclmid( uint64_t stakeid );
-
-	[[eosio::action]]
 	void brainclmidex( uint64_t stakeid );
 
 	[[eosio::action]]
 	void stkretovrrde( uint32_t loop_limit );
 
 	[[eosio::action]]
-	void prgpremigrwd( uint32_t loop_limit );
-
-		[[eosio::action]]
-	void prgpremigprp( uint32_t loop_limit );
-
-	[[eosio::action]]
-	void slashnotify( name slashee,
-					  uint64_t amount,
-					  uint32_t seconds, 
-					  std::string memo );
-
-	[[eosio::action]]
-	void slashnotifex( name slashee,
-					  uint64_t amount,
-					  uint32_t seconds, 
-					  std::string memo,
-					  std::string proxied_for,
-					  std::string extra_note
-					);
-
-	[[eosio::action]]
-	void finalize( uint64_t proposal_id );
-
-	[[eosio::action]]
 	void finalizeextr( uint64_t proposal_id );
-
-	[[eosio::action]]
-	void oldvotepurge( uint64_t proposal_id,
-					   uint32_t loop_limit);
 
 	[[eosio::action]]
 	void oldvteprgeex( uint64_t proposal_id,
 					   uint32_t loop_limit);
-
-	[[eosio::action]]
-	void migratestkes( uint32_t loop_limit );
-
-	[[eosio::action]]
-	void migratevotes( uint32_t loop_limit );
-
-	[[eosio::action]]
-	void migrateprops( uint32_t loop_limit );
-
-	[[eosio::action]]
-	void migraterwds( uint32_t loop_limit );
-
-	[[eosio::action]]
-	void propose2( name proposer, 
-				  std::string slug, 
-				  ipfshash_t ipfs_hash, 
-				  std::string lang_code,
-				  int64_t group_id,
-				  std::string comment, 
-				  std::string memo );
 
 	[[eosio::action]]
 	void proposeextra( name proposer, 
@@ -459,14 +407,6 @@ public:
 				  std::string extra_note );
 
 	[[eosio::action]]
-	void vote( name voter,
-				uint64_t proposal_id,
-				bool approve,
-				uint64_t amount,
-				std::string comment,
-				std::string memo );
-
-	[[eosio::action]]
 	void voteextra( name voter,
 				uint64_t proposal_id,
 				bool approve,
@@ -475,9 +415,6 @@ public:
 				std::string memo,
 				std::string proxied_for,
 				std::string extra_note );
-
-	[[eosio::action]]
-	void rewardclmid ( uint64_t reward_id );
 
 	[[eosio::action]]
 	void rewrdclmidex ( uint64_t reward_id );

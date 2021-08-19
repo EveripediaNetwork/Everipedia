@@ -29,14 +29,6 @@
 
 // Redeem IQ, with a specific stake specified
 [[eosio::action]]
-void eparticlectr::brainclmid( uint64_t stakeid ) {
-    // Deprecated
-    eosio::check(false, "brainclmid is deprecated. Use brainclmidex instead");
-    return;
-}
-
-// Redeem IQ, with a specific stake specified
-[[eosio::action]]
 void eparticlectr::brainclmidex( uint64_t stakeid ) {
 
     // Get the stakes
@@ -58,60 +50,6 @@ void eparticlectr::brainclmidex( uint64_t stakeid ) {
     // Delete the stake.
     // Note that the erase() function increments the iterator, then gives it back after the erase is done
     staketable.erase(stake_it);
-}
-
-// Clean erroneous rewards from pre-EPID migration
-[[eosio::action]]
-void eparticlectr::prgpremigrwd( uint32_t loop_limit ) {
-    require_auth( MAINTENANCE_CONTRACT );
-
-    // Get the stake table
-    rewardstblex rewardstable( _self, _self.value );
-
-    // Loop through the old stakes
-    auto rwd_it = rewardstable.begin();
-    uint32_t count = 0;
-    while(count < loop_limit && rwd_it != rewardstable.end()) {
-
-        // Delete the reward.
-        // Note that the erase() function increments the iterator, then gives it back after the erase is done
-        if (rwd_it->proposal_finalize_period <= 885695 || rwd_it->proposal_id <= 1000000){
-            rwd_it = rewardstable.erase(rwd_it);
-        }
-        else{
-            rwd_it++;
-        }
-        // Increase the count
-        count++;
-    }
-
-}
-
-// Clean erroneous proposals from pre-EPID migration
-[[eosio::action]]
-void eparticlectr::prgpremigprp( uint32_t loop_limit ) {
-    require_auth( MAINTENANCE_CONTRACT );
-
-    // Get the proposal table
-    propstblex proptable( _self, _self.value );
-
-    // Loop through the old proposals
-    auto prop_it = proptable.begin();
-    uint32_t count = 0;
-    while(count < loop_limit && prop_it != proptable.end()) {
-
-        // Delete the proposal.
-        // Note that the erase() function increments the iterator, then gives it back after the erase is done
-        if (prop_it->endtime <= 1597093134){
-            prop_it = proptable.erase(prop_it);
-        }
-        else{
-            prop_it++;
-        }
-        // Increase the count
-        count++;
-    }
-
 }
 
 // Manually return all stakes
@@ -142,16 +80,6 @@ void eparticlectr::stkretovrrde( uint32_t loop_limit ) {
         // Increase the count
         count++;
     }
-}
-
-
-// Place a vote using the IPFS hash
-// Users have to trigger this action through the everipediaiq::epartvote action
-[[eosio::action]]
-void eparticlectr::vote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string comment, std::string memo ) {
-    // Deprecated
-    eosio::check(false, "vote is deprecated. Use voteextra instead");
-    return;
 }
 
 // Place a vote using the IPFS hash
@@ -209,16 +137,6 @@ void eparticlectr::voteextra( name voter, uint64_t proposal_id, bool approve, ui
          a.extra_note = extra_note;
     });
 }
-
-// Logic for proposing an edit for an article
-// Users have to trigger this action through the everipediaiq::epartpropose action
-[[eosio::action]]
-void eparticlectr::propose2( name proposer, std::string slug, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo ) {
-    // Deprecated
-    eosio::check(false, "propose2 is deprecated. Use proposeextra instead");
-    return;
-}
-
 
 // Logic for proposing an edit for an article
 // Users have to trigger this action through the everipediaiq::epartpropsex action
@@ -280,13 +198,6 @@ void eparticlectr::proposeextra( name proposer, std::string slug, ipfshash_t ipf
         _self, name("voteextra"),
         std::make_tuple( proposer, proposal_id, true, EDIT_PROPOSE_IQ_EPARTICLECTR, std::string("editor initial vote"), memo, proxied_for, extra_note )
     ).send();
-}
-
-[[eosio::action]]
-void eparticlectr::finalize( uint64_t proposal_id ) {
-    // Deprecated
-    eosio::check(false, "Finalize is deprecated. Use finalizeextr instead");
-    return;
 }
 
 [[eosio::action]]
@@ -429,14 +340,6 @@ void eparticlectr::finalizeextr( uint64_t proposal_id ) {
     }
 }
 
-
-[[eosio::action]]
-void eparticlectr::rewardclmid ( uint64_t reward_id ) {
-    // Deprecated
-    eosio::check(false, "rewardclmid is deprecated. Use rewrdclmidex instead");
-    return;
-}
-
 [[eosio::action]]
 void eparticlectr::rewrdclmidex ( uint64_t reward_id ) {
     // prep tables
@@ -485,13 +388,6 @@ void eparticlectr::rewrdclmidex ( uint64_t reward_id ) {
 }
 
 [[eosio::action]]
-void eparticlectr::oldvotepurge( uint64_t proposal_id, uint32_t loop_limit ) {
-    // Deprecated
-    eosio::check(false, "oldvotepurge is deprecated. Use oldvtprgeex instead");
-    return;
-}
-
-[[eosio::action]]
 void eparticlectr::oldvteprgeex( uint64_t proposal_id, uint32_t loop_limit ) {
     // Get the proposal object
     propstblex proptable( _self, _self.value );
@@ -537,22 +433,7 @@ void eparticlectr::mkreferendum( uint64_t proposal_id ) {
 }
 
 [[eosio::action]]
-void eparticlectr::slashnotify( name slashee, uint64_t amount, uint32_t seconds, std::string memo ){
-    require_auth( _self );
-}
-
-[[eosio::action]]
-void eparticlectr::slashnotifex( name slashee, uint64_t amount, uint32_t seconds, std::string memo, std::string proxied_for, std::string extra_note ){
-    require_auth( _self );
-}
-
-[[eosio::action]]
 void eparticlectr::logpropres( uint64_t proposal_id, bool approved, uint64_t yes_votes, uint64_t no_votes ) {
-    require_auth( _self );
-}
-
-[[eosio::action]]
-void eparticlectr::logpropinfo( uint64_t proposal_id, name proposer, uint64_t wiki_id, std::string slug, ipfshash_t ipfs_hash, std::string lang_code, uint64_t group_id, std::string comment, std::string memo, uint32_t starttime, uint32_t endtime) {
     require_auth( _self );
 }
 
@@ -569,153 +450,6 @@ void eparticlectr::curatelist( name user, std::string title, std::string descrip
 }
 
 
-[[eosio::action]]
-void eparticlectr::migratestkes( uint32_t loop_limit ) {
-    require_auth( MAINTENANCE_CONTRACT );
-
-    // Initialize the two tables
-    staketbl stakestable( _self, _self.value );
-    staketblex stakestable_extra( _self, _self.value );
-
-    // Loop through the old stakes
-    auto stakes_it = stakestable.begin();
-    uint32_t count = 0;
-    while(count < loop_limit && stakes_it != stakestable.end()) {
-        stakestable_extra.emplace( _self, [&]( auto& s ) {
-            s.id = stakes_it->id;
-            s.user = stakes_it->user;
-            s.amount = stakes_it->amount;
-            s.timestamp = stakes_it->timestamp;
-            s.completion_time = stakes_it->completion_time;
-            s.proxied_for = "";
-            s.extra_note = "";
-        });
-
-        // Delete the old stakes
-        stakes_it = stakestable.erase(stakes_it);
-
-        // Increase the count
-        count++;
-    }
-}
-
-[[eosio::action]]
-void eparticlectr::migratevotes( uint32_t loop_limit ) {
-    require_auth( MAINTENANCE_CONTRACT );
-
-    // Initialize the two tables
-    votestbl votestable( _self, _self.value );
-    votestblex votestable_extra( _self, _self.value );
-
-    // Loop through the old votes
-    auto votes_it = votestable.begin();
-    uint32_t count = 0;
-    while(count < loop_limit && votes_it != votestable.end()) {
-        // Copy the old vote over to the new format
-        votestable_extra.emplace( _self, [&]( auto& v ) {
-            v.id = votes_it->id;
-            v.proposal_id = votes_it->proposal_id;
-            v.approve = votes_it->approve;
-            v.is_editor = votes_it->is_editor;
-            v.amount = votes_it->amount;
-            v.voter = votes_it->voter;
-            v.timestamp = votes_it->timestamp;
-            v.stake_id = votes_it->stake_id;
-            v.memo = votes_it->memo;
-            v.proxied_for = "";
-            v.extra_note = "";
-        });
-
-        // Delete the old proposal
-        votes_it = votestable.erase(votes_it);
-
-        // Increase the count
-        count++;
-    }
-}
-
-[[eosio::action]]
-void eparticlectr::migrateprops( uint32_t loop_limit ) {
-    require_auth( MAINTENANCE_CONTRACT );
-
-    // Initialize the two tables
-    propstbl propstable( _self, _self.value );
-    propstblex propstable_extra( _self, _self.value );
-
-    // Loop through the old proposals
-    auto props_it = propstable.begin();
-    uint32_t count = 0;
-    while(count < loop_limit && props_it != propstable.end()) {
-        // Copy the old proposal over to the new format
-        propstable_extra.emplace( _self, [&]( auto& p ) {
-            p.id = props_it->id;
-            p.wiki_id = props_it->wiki_id;
-            p.slug = props_it->slug;
-            p.group_id = props_it->group_id;
-            p.lang_code = props_it->lang_code;
-            p.ipfs_hash = props_it->ipfs_hash;
-            p.proposer = props_it->proposer;
-            p.starttime = props_it->starttime;
-            p.endtime = props_it->endtime;
-            p.memo = props_it->memo;
-            p.finalized = props_it->finalized;
-            p.proxied_for = "";
-            p.extra_note = "";
-        });
-
-        // Delete the old proposal
-        props_it = propstable.erase(props_it);
-
-        // Increase the count
-        count++;
-    }
-
-}
-
-[[eosio::action]]
-void eparticlectr::migraterwds( uint32_t loop_limit ) {
-    require_auth( MAINTENANCE_CONTRACT );
-
-    // Initialize the two tables
-    rewardstbl rewardstable( _self, _self.value );
-    rewardstblex rewardstable_extra( _self, _self.value );
-
-    // Return early if nothing to move
-    if (rewardstable.begin() == rewardstable.end()){
-        eosio::print("ALL REWARDS HAVE BEEN MIGRATED");
-        return;
-    }
-
-    // Loop through the old rewards
-    auto rewards_it = rewardstable.begin();
-    uint32_t count = 0;
-    while(count < loop_limit && rewards_it != rewardstable.end()) {
-        rewardstable_extra.emplace( _self, [&]( auto& r ) {
-            r.id = rewards_it->id;
-            r.user = rewards_it->user;
-            r.vote_points = rewards_it->vote_points;
-            r.edit_points = rewards_it->edit_points;
-            r.proposal_id = rewards_it->proposal_id;
-            r.proposal_finalize_time = rewards_it->proposal_finalize_time;
-            r.proposal_finalize_period = rewards_it->proposal_finalize_period;
-            r.proposalresult = rewards_it->proposalresult;
-            r.is_editor = rewards_it->is_editor;
-            r.is_tie = rewards_it->is_tie;
-            r.memo = rewards_it->memo;
-            r.proxied_for = "";
-            r.extra_note = "";
-        });
-
-        // Delete the old reward
-        rewards_it = rewardstable.erase(rewards_it);
-
-        // Increase the count
-        count++;
-    }
-
-}
 
 
-
-
-EOSIO_DISPATCH( eparticlectr, (brainclmid)(brainclmidex)(stkretovrrde)(prgpremigrwd)(prgpremigprp)(slashnotify)(slashnotifex)(finalize)(finalizeextr)(oldvotepurge)(oldvteprgeex)(propose2)(proposeextra)(rewardclmid)(rewrdclmidex)(vote)(voteextra)(logpropres)(migratestkes)(migratevotes)(migrateprops)(migraterwds)(logpropinfo)(logpropinfex)(mkreferendum)(curatelist) )
+EOSIO_DISPATCH( eparticlectr, (brainclmidex)(stkretovrrde)(finalizeextr)(oldvteprgeex)(proposeextra)(rewrdclmidex)(voteextra)(logpropres)(logpropinfex)(mkreferendum)(curatelist) )
