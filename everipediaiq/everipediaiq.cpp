@@ -261,13 +261,6 @@ void everipediaiq::add_balance( name owner, asset value, name ram_payer )
 }
 
 [[eosio::action]]
-void everipediaiq::epartpropose( name proposer, std::string slug, ipfshash_t ipfs_hash, std::string lang_code, int64_t group_id, std::string comment, std::string memo, name permission) { 
-    // Deprecated
-    eosio::check(false, "epartpropose is deprecated. Use epartpropsex instead");
-    return;
-}
-
-[[eosio::action]]
 void everipediaiq::epartpropsex( 
     name proposer, 
     std::string slug, 
@@ -299,13 +292,6 @@ void everipediaiq::epartpropsex(
         ARTICLE_CONTRACT, name("proposeextra"),
         std::make_tuple( proposer, slug, ipfs_hash, lang_code, group_id, comment, memo, proxied_for, extra_note )
     ).send();
-}
-
-[[eosio::action]]
-void everipediaiq::epartvote( name voter, uint64_t proposal_id, bool approve, uint64_t amount, std::string comment, std::string memo, name permission) {
-    // Deprecated
-    eosio::check(false, "epartvote is deprecated. Use epartvotex instead");
-    return;
 }
 
 [[eosio::action]]
@@ -343,4 +329,4 @@ void everipediaiq::epartvotex(
 }
 
 
-EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(issueextra)(transfer)(open)(close)(transfrextra)(epartpropose)(epartpropsex)(epartvote)(epartvotex)(setmaxsupply) )
+EOSIO_DISPATCH( everipediaiq, (burn)(create)(issue)(issueextra)(transfer)(open)(close)(transfrextra)(epartpropsex)(epartvotex)(setmaxsupply) )

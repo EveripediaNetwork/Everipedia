@@ -267,56 +267,25 @@ void eparticlectr::finalizeextr( uint64_t proposal_id ) {
                 });
             }
         }
-        // Reduce staking time for vote winners to 5 days
-        else if (approved && !vote_it->is_editor) {
+        // Reduce staking time for vote winners to 5 days. Keep losers the same
+        else if (!vote_it->is_editor) {
             auto stake_it = staketable.find(vote_it->stake_id);
+            
             if (stake_it != staketable.end()){
-                staketable.modify( stake_it, same_payer, [&]( auto& a ) {
-                    a.completion_time = a.timestamp + WINNING_VOTE_STAKE_TIME;
-                });
+                if (vote_it->approve == approved){
+                    // Winners
+                    staketable.modify( stake_it, same_payer, [&]( auto& a ) {
+                        a.completion_time = a.timestamp + WINNING_VOTE_STAKE_TIME;
+                    });
+                }
+                else {
+                    // Losers
+                }
+
             }
         }
-
-
-        // Slash losers
-        if (vote_it->approve != approved) {
-            auto stake_it = staketable.find(vote_it->stake_id);
-            if (stake_it != staketable.end()){
-                staketable.modify( stake_it, same_payer, [&]( auto& a ) {
-                    a.completion_time += extraSecsSlash;
-                });
-            }
-
-            action(
-                permission_level { _self, name("active") },
-                _self, name("slashnotifex"),
-                std::make_tuple( vote_it->voter, vote_it->amount, extraSecsSlash, vote_it->memo, vote_it->proxied_for, vote_it->extra_note )
-            ).send();
-        }
-        // Reward the winners (deleted)
-        else {
-            total_vote_points += vote_it->amount;
-        }
+        
         vote_it++;
-    }
-
-    // Update rewards table
-    uint64_t current_period = eosio::current_time_point().sec_since_epoch() / REWARD_INTERVAL;
-    perrwdstblex perrewards( _self, _self.value );
-    auto period_it = perrewards.find( current_period );
-    uint64_t edit_points = approved ? (yes_votes - no_votes) : 0;
-    if (period_it == perrewards.end()) {
-        perrewards.emplace( _self, [&]( auto& p ) {
-            p.period = current_period;
-            p.curation_sum = total_vote_points;
-            p.editor_sum = edit_points;
-        });
-    }
-    else {
-        perrewards.modify( period_it, same_payer, [&]( auto& p ) {
-            p.curation_sum += total_vote_points;
-            p.editor_sum += edit_points;
-        });
     }
 
     // Log proposal result and new wiki id
