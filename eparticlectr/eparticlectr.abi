@@ -701,7 +701,7 @@
         {
             "name": "brainclmidex",
             "type": "brainclmidex",
-            "ricardian_contract": ""
+            "ricardian_contract": "Claim back IQ that was staked for Brainpower. Must happen after the 21 day staking period. New Version"
         },
         {
             "name": "curatelist",
