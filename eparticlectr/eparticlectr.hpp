@@ -37,12 +37,12 @@ using namespace eosio;
 // Constants
 
 const name TOKEN_CONTRACT = name("everipediaiq");
-const name MAINTENANCE_CONTRACT = name("evrpdcronjob");
-const uint64_t STAKING_DURATION = 5 * 86400; // 5 days
-const uint64_t WINNING_VOTE_STAKE_TIME = 5 * 86400; // 5 days
+const name MAINTENANCE_CONTRACT = name("eptestusersa");
+const uint64_t STAKING_DURATION = 1800; // 5 days
+const uint64_t WINNING_VOTE_STAKE_TIME = 5; // 5 days
 const uint64_t EDIT_PROPOSE_IQ_EPARTICLECTR = 50; // 50 IQ
-const uint32_t REWARD_INTERVAL = 1800; // 30 min
-const uint32_t DEFAULT_VOTING_TIME = 43200; // 12 hours
+const uint32_t REWARD_INTERVAL = 5; // 30 min
+const uint32_t DEFAULT_VOTING_TIME = 7; // 12 hours
 const uint64_t IQ_PRECISION_MULTIPLIER = 1000;
 const float TIER_ONE_THRESHOLD = 0.5f;
 const uint64_t PERIOD_CURATION_REWARD = 100000; // 100 IQ per period
@@ -58,7 +58,7 @@ const uint64_t MIN_IPFS_SIZE = 46;
 const uint64_t REFERENDUM_DURATION_SECS = 14*86400; // 14 days
 //const float BOOST_BASE_CONSTANT = 750.0; // Can be adjusted as the IQ price changes to change the boost power
 //const float BOOST_EXPONENT_CONSTANT = 1.01; // Can be adjusted as the IQ price changes to change the boost power
-//const uint64_t BOOST_TRANSFER_WAITING_PERIOD = 14*86400; // 14 days
+//const uint64_t BOOST_TRANSFER_WAITING_PERIOD = 5; // 14 days
 const eosio::symbol IQSYMBOL = symbol(symbol_code("IQ"), 3);
 
 class [[eosio::contract("eparticlectr")]] eparticlectr : public contract {
