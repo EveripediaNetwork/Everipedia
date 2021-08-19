@@ -99,6 +99,7 @@
         "queue": "cpp",
         "stack": "cpp",
         "*.ipp": "cpp",
-        "__memory": "cpp"
+        "__memory": "cpp",
+        "bit": "cpp"
     }
 }

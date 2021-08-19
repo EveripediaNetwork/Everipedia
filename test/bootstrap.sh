@@ -13,7 +13,7 @@ RECOMPILE_AND_RESET_EOSIO_CONTRACTS=0
 REBUILD_EVERIPEDIA_CONTRACTS=1
 RESET_NODEOS=1
 # EOSIO_CONTRACTS_ROOT=/home/kedar/eosio.contracts/build/contracts/
-EOSIO_CONTRACTS_ROOT="/home/${USER}/Programs/eosio/contracts/eosio.contracts/build/contracts"
+EOSIO_CONTRACTS_ROOT="/home/${USER}/eosio.contracts/build/contracts"
 NODEOS_HOST="127.0.0.1"
 NODEOS_PROTOCOL="http"
 NODEOS_PORT="8888"
@@ -95,6 +95,7 @@ if [ $RECOMPILE_AND_RESET_EOSIO_CONTRACTS -eq 1 ]; then
     cd "${EOSIO_CONTRACTS_ROOT}/eosio.msig"
     eosio-cpp -I ./include -o ./eosio.msig.wasm ./src/eosio.msig.cpp --abigen
     cd "${EOSIO_CONTRACTS_ROOT}/eosio.bios"
+    # NOTE, DO https://github.com/EOSIO/eos/issues/9148 FIRST
     eosio-cpp -I ./include -o ./eosio.bios.wasm ./src/eosio.bios.cpp --abigen
     cd "${EOSIO_CONTRACTS_ROOT}/eosio.system"
     eosio-cpp -I ./include -I "${EOSIO_CONTRACTS_ROOT}/eosio.token/include" -o ./eosio.system.wasm ./src/eosio.system.cpp --abigen

@@ -1,6 +1,6 @@
 {
     "____comment": "This file was generated with eosio-abigen. DO NOT EDIT ",
-    "version": "eosio::abi/1.1",
+    "version": "eosio::abi/1.2",
     "types": [
         {
             "new_type_name": "ipfshash_t",
@@ -83,44 +83,6 @@
             ]
         },
         {
-            "name": "epartpropose",
-            "base": "",
-            "fields": [
-                {
-                    "name": "proposer",
-                    "type": "name"
-                },
-                {
-                    "name": "slug",
-                    "type": "string"
-                },
-                {
-                    "name": "ipfs_hash",
-                    "type": "ipfshash_t"
-                },
-                {
-                    "name": "lang_code",
-                    "type": "string"
-                },
-                {
-                    "name": "group_id",
-                    "type": "int64"
-                },
-                {
-                    "name": "comment",
-                    "type": "string"
-                },
-                {
-                    "name": "memo",
-                    "type": "string"
-                },
-                {
-                    "name": "permission",
-                    "type": "name"
-                }
-            ]
-        },
-        {
             "name": "epartpropsex",
             "base": "",
             "fields": [
@@ -163,40 +125,6 @@
                 {
                     "name": "extra_note",
                     "type": "string"
-                }
-            ]
-        },
-        {
-            "name": "epartvote",
-            "base": "",
-            "fields": [
-                {
-                    "name": "voter",
-                    "type": "name"
-                },
-                {
-                    "name": "proposal_id",
-                    "type": "uint64"
-                },
-                {
-                    "name": "approve",
-                    "type": "bool"
-                },
-                {
-                    "name": "amount",
-                    "type": "uint64"
-                },
-                {
-                    "name": "comment",
-                    "type": "string"
-                },
-                {
-                    "name": "memo",
-                    "type": "string"
-                },
-                {
-                    "name": "permission",
-                    "type": "name"
                 }
             ]
         },
@@ -375,67 +303,57 @@
         {
             "name": "burn",
             "type": "burn",
-            "ricardian_contract": "Burn IQ tokens and take them out of circulation."
+            "ricardian_contract": ""
         },
         {
             "name": "close",
             "type": "close",
-            "ricardian_contract": "Close IQ balance."
+            "ricardian_contract": ""
         },
         {
             "name": "create",
             "type": "create",
-            "ricardian_contract": "Create a token."
-        },
-        {
-            "name": "epartpropose",
-            "type": "epartpropose",
-            "ricardian_contract": "User-facing action for creating a proposal."
+            "ricardian_contract": ""
         },
         {
             "name": "epartpropsex",
             "type": "epartpropsex",
-            "ricardian_contract": "User-facing action for creating a proposal. New version"
-        },
-        {
-            "name": "epartvote",
-            "type": "epartvote",
-            "ricardian_contract": "User-facing action for voting on a proposal"
+            "ricardian_contract": ""
         },
         {
             "name": "epartvotex",
             "type": "epartvotex",
-            "ricardian_contract": "User-facing action for voting on a proposal. New version"
+            "ricardian_contract": ""
         },
         {
             "name": "issue",
             "type": "issue",
-            "ricardian_contract": "Issue IQ tokens."
+            "ricardian_contract": ""
         },
         {
             "name": "issueextra",
             "type": "issueextra",
-            "ricardian_contract": "Issue IQ tokens. New version"
+            "ricardian_contract": ""
         },
         {
             "name": "open",
             "type": "open",
-            "ricardian_contract": "Open IQ balance."
+            "ricardian_contract": ""
         },
         {
             "name": "setmaxsupply",
             "type": "setmaxsupply",
-            "ricardian_contract": "Set maximum supply."
+            "ricardian_contract": ""
         },
         {
             "name": "transfer",
             "type": "transfer",
-            "ricardian_contract": "Transfer the IQ token."
+            "ricardian_contract": ""
         },
         {
             "name": "transfrextra",
             "type": "transfrextra",
-            "ricardian_contract": "Transfer the IQ token normally, with extra information recorded. The regular transfer function is unaffected."
+            "ricardian_contract": ""
         }
     ],
     "tables": [
@@ -454,6 +372,8 @@
             "key_types": []
         }
     ],
+    "kv_tables": {},
     "ricardian_clauses": [],
-    "variants": []
+    "variants": [],
+    "action_results": []
 }

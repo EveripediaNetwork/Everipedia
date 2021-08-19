@@ -449,6 +449,10 @@ assert $(bc <<< "$? == 0")
 cleos push action eparticlectr finalizeextr "[ $PROPEXTRAID6 ]" -p eptestusersc
 assert $(bc <<< "$? == 0")
 
+echo -e "${CYAN}-----------------------THIS CLAIM EXTRA SHOULD FAIL (TOO EARLY)-----------------------${NC}"
+cleos push action eparticlectr brainclmidex "[$STAKE_EXTRA_ID1]" -p eptestuserse
+assert $(bc <<< "$? == 1")
+
 echo -e "${CYAN}-----------------------FINALIZE EXTRA FAILS (ALREADY FINALIZED)-----------------------${NC}"
 cleos push action --force-unique eparticlectr finalizeextr "[ $PROPEXTRAID3 ]" -p eptestuserse
 assert $(bc <<< "$? == 1")
@@ -460,79 +464,81 @@ REWARD_EXTRA_ID1=$(cleos get table eparticlectr eparticlectr rewardstblex -r | j
 cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID1]" -p eptestuserse
 assert $(bc <<< "$? == 1")
 
+# [NOTE]: Rewards have been deprecated
 # Slash checks
-echo -e "${CYAN}-----------------------TODO: TEST SLASHES-----------------------${NC}"
+# echo -e "${CYAN}-----------------------TODO: TEST SLASHES-----------------------${NC}"
 
-echo -e "${CYAN}WAITING FOR REWARDS PERIOD TO END...${NC}"
-sleep 6
+# echo -e "${CYAN}WAITING FOR REWARDS PERIOD TO END...${NC}"
+# sleep 6
 
-CURATION_REWARD_EXTRA_SUM=$(cleos get table eparticlectr eparticlectr perrwdstblex -r | jq ".rows[0].curation_sum")
-EDITOR_REWARD_EXTRA_SUM=$(cleos get table eparticlectr eparticlectr perrwdstblex -r | jq ".rows[0].editor_sum")
+# CURATION_REWARD_EXTRA_SUM=$(cleos get table eparticlectr eparticlectr perrwdstblex -r | jq ".rows[0].curation_sum")
+# EDITOR_REWARD_EXTRA_SUM=$(cleos get table eparticlectr eparticlectr perrwdstblex -r | jq ".rows[0].editor_sum")
 
-echo -e "   ${CYAN}CURATION EXTRA REWARD SUM: ${CURATION_REWARD_EXTRA_SUM}${NC}"
-echo -e "   ${CYAN}EDITOR EXTRA REWARD SUM: ${EDITOR_REWARD_EXTRA_SUM}${NC}"
+# echo -e "   ${CYAN}CURATION EXTRA REWARD SUM: ${CURATION_REWARD_EXTRA_SUM}${NC}"
+# echo -e "   ${CYAN}EDITOR EXTRA REWARD SUM: ${EDITOR_REWARD_EXTRA_SUM}${NC}"
 
-assert $(bc <<< "$CURATION_REWARD_EXTRA_SUM == 2470")
-assert $(bc <<< "$EDITOR_REWARD_EXTRA_SUM == 530")
+# assert $(bc <<< "$CURATION_REWARD_EXTRA_SUM == 2470")
+# assert $(bc <<< "$EDITOR_REWARD_EXTRA_SUM == 530")
 
-# Claim rewards
-OLD_BALANCE1=$(balance eptestusersa)
-OLD_BALANCE2=$(balance eptestusersb)
-OLD_BALANCE3=$(balance eptestusersc)
-OLD_BALANCE4=$(balance eptestusersd)
-OLD_BALANCE5=$(balance eptestuserse)
-OLD_BALANCE6=$(balance eptestusersf)
-OLD_BALANCE7=$(balance eptestusersg)
+# # Claim rewards
+# OLD_BALANCE1=$(balance eptestusersa)
+# OLD_BALANCE2=$(balance eptestusersb)
+# OLD_BALANCE3=$(balance eptestusersc)
+# OLD_BALANCE4=$(balance eptestusersd)
+# OLD_BALANCE5=$(balance eptestuserse)
+# OLD_BALANCE6=$(balance eptestusersf)
+# OLD_BALANCE7=$(balance eptestusersg)
 
-REWARD_EXTRA_ID2=$(bc <<< "$REWARD_EXTRA_ID1 - 2")
-REWARD_EXTRA_ID3=$(bc <<< "$REWARD_EXTRA_ID1 - 3")
-REWARD_EXTRA_ID4=$(bc <<< "$REWARD_EXTRA_ID1 - 4")
-REWARD_EXTRA_ID5=$(bc <<< "$REWARD_EXTRA_ID1 - 8") # this one has edit points
+# REWARD_EXTRA_ID2=$(bc <<< "$REWARD_EXTRA_ID1 - 2")
+# REWARD_EXTRA_ID3=$(bc <<< "$REWARD_EXTRA_ID1 - 3")
+# REWARD_EXTRA_ID4=$(bc <<< "$REWARD_EXTRA_ID1 - 4")
+# REWARD_EXTRA_ID5=$(bc <<< "$REWARD_EXTRA_ID1 - 8") # this one has edit points
 
-echo -e "${CYAN}-----------------------CLAIM REWARDS (EXTRA)-----------------------${NC}"
-cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID1]" -p eptestuserse
-assert $(bc <<< "$? == 0")
-cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID2]" -p eptestusersg
-assert $(bc <<< "$? == 0")
-cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID3]" -p eptestusersf
-assert $(bc <<< "$? == 0")
-cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID4]" -p eptestuserse
-assert $(bc <<< "$? == 0")
-cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID5]" -p eptestusersd
-assert $(bc <<< "$? == 0")
 
-NEW_BALANCE1=$(balance eptestusersa)
-NEW_BALANCE2=$(balance eptestusersb)
-NEW_BALANCE3=$(balance eptestusersc)
-NEW_BALANCE4=$(balance eptestusersd)
-NEW_BALANCE5=$(balance eptestuserse)
-NEW_BALANCE6=$(balance eptestusersf)
-NEW_BALANCE7=$(balance eptestusersg)
+# echo -e "${CYAN}-----------------------CLAIM REWARDS (EXTRA)-----------------------${NC}"
+# cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID1]" -p eptestuserse
+# assert $(bc <<< "$? == 0")
+# cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID2]" -p eptestusersg
+# assert $(bc <<< "$? == 0")
+# cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID3]" -p eptestusersf
+# assert $(bc <<< "$? == 0")
+# cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID4]" -p eptestuserse
+# assert $(bc <<< "$? == 0")
+# cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID5]" -p eptestusersd
+# assert $(bc <<< "$? == 0")
 
-DIFF1=$(bc <<< "$NEW_BALANCE1 - $OLD_BALANCE1")
-DIFF2=$(bc <<< "$NEW_BALANCE2 - $OLD_BALANCE2")
-DIFF3=$(bc <<< "$NEW_BALANCE3 - $OLD_BALANCE3")
-DIFF4=$(bc <<< "$NEW_BALANCE4 - $OLD_BALANCE4")
-DIFF5=$(bc <<< "$NEW_BALANCE5 - $OLD_BALANCE5")
-DIFF6=$(bc <<< "$NEW_BALANCE6 - $OLD_BALANCE6")
-DIFF7=$(bc <<< "$NEW_BALANCE7 - $OLD_BALANCE7")
+# NEW_BALANCE1=$(balance eptestusersa)
+# NEW_BALANCE2=$(balance eptestusersb)
+# NEW_BALANCE3=$(balance eptestusersc)
+# NEW_BALANCE4=$(balance eptestusersd)
+# NEW_BALANCE5=$(balance eptestuserse)
+# NEW_BALANCE6=$(balance eptestusersf)
+# NEW_BALANCE7=$(balance eptestusersg)
 
-echo -e "${CYAN}REWARDS:${NC}"
-echo -e "${CYAN}    eptestusersd (DIFF4): $DIFF4${NC}"
-echo -e "${CYAN}    eptestuserse (DIFF5): $DIFF5${NC}"
-echo -e "${CYAN}    eptestusersf (DIFF6): $DIFF6${NC}"
-echo -e "${CYAN}    eptestusersg (DIFF7): $DIFF7${NC}"
+# DIFF1=$(bc <<< "$NEW_BALANCE1 - $OLD_BALANCE1")
+# DIFF2=$(bc <<< "$NEW_BALANCE2 - $OLD_BALANCE2")
+# DIFF3=$(bc <<< "$NEW_BALANCE3 - $OLD_BALANCE3")
+# DIFF4=$(bc <<< "$NEW_BALANCE4 - $OLD_BALANCE4")
+# DIFF5=$(bc <<< "$NEW_BALANCE5 - $OLD_BALANCE5")
+# DIFF6=$(bc <<< "$NEW_BALANCE6 - $OLD_BALANCE6")
+# DIFF7=$(bc <<< "$NEW_BALANCE7 - $OLD_BALANCE7")
 
-assert $(bc <<< "$DIFF4 == 198.250")
-assert $(bc <<< "$DIFF5 == 2.024")
-assert $(bc <<< "$DIFF6 == 41.176")
-assert $(bc <<< "$DIFF7 == 2.429")
+# echo -e "${CYAN}REWARDS:${NC}"
+# echo -e "${CYAN}    eptestusersd (DIFF4): $DIFF4${NC}"
+# echo -e "${CYAN}    eptestuserse (DIFF5): $DIFF5${NC}"
+# echo -e "${CYAN}    eptestusersf (DIFF6): $DIFF6${NC}"
+# echo -e "${CYAN}    eptestusersg (DIFF7): $DIFF7${NC}"
 
-echo -e "${CYAN}-----------------------NEXT TWO (EXTRA) CLAIMS SHOULD FAIL-----------------------${NC}"
-cleos push action --force-unique eparticlectr rewrdclmidex "[\"$REWARD_EXTRA_ID3\"]" -p eptestusersf
-assert $(bc <<< "$? != 0")
-cleos push action --force-unique eparticlectr rewrdclmidex "[3249293423]" -p eptestusersf
-assert $(bc <<< "$? != 0")
+# assert $(bc <<< "$DIFF4 == 198.250")
+# assert $(bc <<< "$DIFF5 == 2.024")
+# assert $(bc <<< "$DIFF6 == 41.176")
+# assert $(bc <<< "$DIFF7 == 2.429")
+
+# echo -e "${CYAN}-----------------------NEXT TWO (EXTRA) CLAIMS SHOULD FAIL-----------------------${NC}"
+# cleos push action --force-unique eparticlectr rewrdclmidex "[\"$REWARD_EXTRA_ID3\"]" -p eptestusersf
+# assert $(bc <<< "$? != 0")
+# cleos push action --force-unique eparticlectr rewrdclmidex "[3249293423]" -p eptestusersf
+# assert $(bc <<< "$? != 0")
 
 echo -e "${CYAN}-----------------------VOTE EXTRA PURGES BELOW SHOULD PASS-----------------------${NC}"
 cleos push action eparticlectr oldvteprgeex "[$PROPEXTRAID1, 100]" -p eptestusersa
@@ -560,7 +566,7 @@ COMPLETION_TIME_EXTRA=$(echo $STAKEEXTRA28 | jq ".completion_time")
 assert $(bc <<< "($COMPLETION_TIME_EXTRA - $TIMESTAMP_EXTRA) != 5")
 echo "Stake time changed properly"
 
-echo -e "${CYAN}-----------------------BELOW EXTRA CLAIMS SHOULD FAIL-----------------------${NC}"
+echo -e "${CYAN}-----------------------BRAIN CLAIMS-----------------------${NC}"
 STAKE_EXTRA_ID1=$(cleos get table eparticlectr eparticlectr staketblex -r | jq ".rows[0].id")
 STAKE_EXTRA_ID2=$(bc <<< "$STAKE_EXTRA_ID1 - 1")
 STAKE_EXTRA_ID3=$(bc <<< "$STAKE_EXTRA_ID1 - 2")
@@ -578,13 +584,21 @@ assert $(bc <<< "$? == 0")
 cleos push action eparticlectr brainclmidex "[$STAKE_EXTRA_ID4]" -p eptestuserse
 assert $(bc <<< "$? == 0")
 
-echo -e "${CYAN}-----------------------THIS CLAIM EXTRA SHOULD FAIL (WRONG USER)-----------------------${NC}"
-cleos push action eparticlectr brainclmidex "[$STAKE_EXTRA_ID1]" -p eptestusersf
+echo -e "${CYAN}WAITING FOR END...${NC}"
+sleep 1 # wait for end
+
+echo -e "${CYAN}-----------------------TRY SAME BRAIN CLAIMS AGAIN [SHOULD FAIL]-----------------------${NC}"
+cleos push action eparticlectr brainclmidex "[$STAKE_EXTRA_ID2]" -p eptestusersg
+assert $(bc <<< "$? == 1")
+cleos push action eparticlectr brainclmidex "[$STAKE_EXTRA_ID3]" -p eptestusersf
+assert $(bc <<< "$? == 1")
+cleos push action eparticlectr brainclmidex "[$STAKE_EXTRA_ID4]" -p eptestuserse
 assert $(bc <<< "$? == 1")
 
-echo -e "${CYAN}-----------------------THIS CLAIM EXTRA SHOULD FAIL (TOO EARLY)-----------------------${NC}"
-cleos push action eparticlectr brainclmidex "[$STAKE_EXTRA_ID1]" -p eptestuserse
-assert $(bc <<< "$? == 1")
+# Anyone can return the stake and pay the CPU. It will always go to the staker, not the caller
+# echo -e "${CYAN}-----------------------THIS CLAIM EXTRA SHOULD FAIL (WRONG USER)-----------------------${NC}"
+# cleos push action eparticlectr brainclmidex "[$STAKE_EXTRA_ID1]" -p eptestusersf
+# assert $(bc <<< "$? == 1")
 
 echo -e "${CYAN}-----------------------MAKE MORE PROPOSALS EXTRAS THEN PURGE THE PREVIOUS ONE-----------------------${NC}"
 cleos push action everipediaiq epartpropsex "[ \"eptestusersa\", \"$SLUG16\", \"$IPFS12\", \"en\", -1, \"new wiki\", \"memoing\", \"active\", \"epid-coincoin\", \"proposal\" ]" -p eptestusersa
