@@ -1,6 +1,6 @@
 {
     "____comment": "This file was generated with eosio-abigen. DO NOT EDIT ",
-    "version": "eosio::abi/1.1",
+    "version": "eosio::abi/1.2",
     "types": [
         {
             "new_type_name": "ipfshash_t",
@@ -971,132 +971,132 @@
         {
             "name": "brainclmid",
             "type": "brainclmid",
-            "ricardian_contract": "Claim back IQ that was staked for Brainpower. Must happen after the 21 day staking period."
+            "ricardian_contract": ""
         },
         {
             "name": "brainclmidex",
             "type": "brainclmidex",
-            "ricardian_contract": "Claim back IQ that was staked for Brainpower. Must happen after the 21 day staking period. New Version"
+            "ricardian_contract": ""
         },
         {
             "name": "curatelist",
             "type": "curatelist",
-            "ricardian_contract": "Publish a curated list"
+            "ricardian_contract": ""
         },
         {
             "name": "finalize",
             "type": "finalize",
-            "ricardian_contract": "Finalize a proposal and calculate rewards & slashings."
+            "ricardian_contract": ""
         },
         {
             "name": "finalizeextr",
             "type": "finalizeextr",
-            "ricardian_contract": "Finalize a proposal and calculate rewards & slashings. New Version"
+            "ricardian_contract": ""
         },
         {
             "name": "logpropinfex",
             "type": "logpropinfex",
-            "ricardian_contract": "Log proposal information. New Version"
+            "ricardian_contract": ""
         },
         {
             "name": "logpropinfo",
             "type": "logpropinfo",
-            "ricardian_contract": "Log proposal information."
+            "ricardian_contract": ""
         },
         {
             "name": "logpropres",
             "type": "logpropres",
-            "ricardian_contract": "Log proposal results."
+            "ricardian_contract": ""
         },
         {
             "name": "migrateprops",
             "type": "migrateprops",
-            "ricardian_contract": "Migrate old proposals to the new version"
+            "ricardian_contract": ""
         },
         {
             "name": "migraterwds",
             "type": "migraterwds",
-            "ricardian_contract": "Migrate old rewards to the new version"
+            "ricardian_contract": ""
         },
         {
             "name": "migratestkes",
             "type": "migratestkes",
-            "ricardian_contract": "Migrate old stakes to the new version"
+            "ricardian_contract": ""
         },
         {
             "name": "migratevotes",
             "type": "migratevotes",
-            "ricardian_contract": "Migrate old votes to the new version"
+            "ricardian_contract": ""
         },
         {
             "name": "mkreferendum",
             "type": "mkreferendum",
-            "ricardian_contract": "Mark a proposal as a referendum"
+            "ricardian_contract": ""
         },
         {
             "name": "oldvotepurge",
             "type": "oldvotepurge",
-            "ricardian_contract": "Purge old votes to free up RAM."
+            "ricardian_contract": ""
         },
         {
             "name": "oldvteprgeex",
             "type": "oldvteprgeex",
-            "ricardian_contract": "Purge old votes to free up RAM. New Version"
+            "ricardian_contract": ""
         },
         {
             "name": "prgpremigprp",
             "type": "prgpremigprp",
-            "ricardian_contract": "Purge pre-EPID proposal orphans"
+            "ricardian_contract": ""
         },
         {
             "name": "prgpremigrwd",
             "type": "prgpremigrwd",
-            "ricardian_contract": "Purge pre-EPID reward orphans"
+            "ricardian_contract": ""
         },
         {
             "name": "propose2",
             "type": "propose2",
-            "ricardian_contract": "Propose an edit (uses IQ, only callable by everipediaiq::epartpropose)."
+            "ricardian_contract": ""
         },
         {
             "name": "proposeextra",
             "type": "proposeextra",
-            "ricardian_contract": "Propose an edit (uses IQ, only callable by everipediaiq::epartpropsex). New Version"
+            "ricardian_contract": ""
         },
         {
             "name": "rewardclmid",
             "type": "rewardclmid",
-            "ricardian_contract": "Claim editor and curator IQ rewards by reward id."
+            "ricardian_contract": ""
         },
         {
             "name": "rewrdclmidex",
             "type": "rewrdclmidex",
-            "ricardian_contract": "Claim editor and curator IQ rewards by reward id. New Version"
+            "ricardian_contract": ""
         },
         {
             "name": "slashnotifex",
             "type": "slashnotifex",
-            "ricardian_contract": "Logging action to notify users of slashes. New Version"
+            "ricardian_contract": ""
         },
         {
             "name": "slashnotify",
             "type": "slashnotify",
-            "ricardian_contract": "Logging action to notify users of slashes."
+            "ricardian_contract": ""
         },
         {
             "name": "stkretovrrde",
             "type": "stkretovrrde",
-            "ricardian_contract": "Manually return all stakes, for maintenance purposes"
+            "ricardian_contract": ""
         },
         {
             "name": "vote",
             "type": "vote",
-            "ricardian_contract": "Vote on a proposal (uses IQ, only callable by everipediaiq::epartvote)."
+            "ricardian_contract": ""
         },
         {
             "name": "voteextra",
             "type": "voteextra",
-            "ricardian_contract": "Vote on a proposal (uses IQ, only callable by everipediaiq::epartvotex). New Version"
+            "ricardian_contract": ""
         }
     ],
     "tables": [
@@ -1185,6 +1185,8 @@
             "key_types": []
         }
     ],
+    "kv_tables": {},
     "ricardian_clauses": [],
-    "variants": []
+    "variants": [],
+    "action_results": []
 }

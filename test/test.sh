@@ -489,50 +489,51 @@ REWARD_EXTRA_ID3=$(bc <<< "$REWARD_EXTRA_ID1 - 3")
 REWARD_EXTRA_ID4=$(bc <<< "$REWARD_EXTRA_ID1 - 4")
 REWARD_EXTRA_ID5=$(bc <<< "$REWARD_EXTRA_ID1 - 8") # this one has edit points
 
-echo -e "${CYAN}-----------------------CLAIM REWARDS (EXTRA)-----------------------${NC}"
-cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID1]" -p eptestuserse
-assert $(bc <<< "$? == 0")
-cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID2]" -p eptestusersg
-assert $(bc <<< "$? == 0")
-cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID3]" -p eptestusersf
-assert $(bc <<< "$? == 0")
-cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID4]" -p eptestuserse
-assert $(bc <<< "$? == 0")
-cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID5]" -p eptestusersd
-assert $(bc <<< "$? == 0")
+# [NOTE]: Rewards have been deprecated
+# echo -e "${CYAN}-----------------------CLAIM REWARDS (EXTRA)-----------------------${NC}"
+# cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID1]" -p eptestuserse
+# assert $(bc <<< "$? == 0")
+# cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID2]" -p eptestusersg
+# assert $(bc <<< "$? == 0")
+# cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID3]" -p eptestusersf
+# assert $(bc <<< "$? == 0")
+# cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID4]" -p eptestuserse
+# assert $(bc <<< "$? == 0")
+# cleos push action eparticlectr rewrdclmidex "[$REWARD_EXTRA_ID5]" -p eptestusersd
+# assert $(bc <<< "$? == 0")
 
-NEW_BALANCE1=$(balance eptestusersa)
-NEW_BALANCE2=$(balance eptestusersb)
-NEW_BALANCE3=$(balance eptestusersc)
-NEW_BALANCE4=$(balance eptestusersd)
-NEW_BALANCE5=$(balance eptestuserse)
-NEW_BALANCE6=$(balance eptestusersf)
-NEW_BALANCE7=$(balance eptestusersg)
+# NEW_BALANCE1=$(balance eptestusersa)
+# NEW_BALANCE2=$(balance eptestusersb)
+# NEW_BALANCE3=$(balance eptestusersc)
+# NEW_BALANCE4=$(balance eptestusersd)
+# NEW_BALANCE5=$(balance eptestuserse)
+# NEW_BALANCE6=$(balance eptestusersf)
+# NEW_BALANCE7=$(balance eptestusersg)
 
-DIFF1=$(bc <<< "$NEW_BALANCE1 - $OLD_BALANCE1")
-DIFF2=$(bc <<< "$NEW_BALANCE2 - $OLD_BALANCE2")
-DIFF3=$(bc <<< "$NEW_BALANCE3 - $OLD_BALANCE3")
-DIFF4=$(bc <<< "$NEW_BALANCE4 - $OLD_BALANCE4")
-DIFF5=$(bc <<< "$NEW_BALANCE5 - $OLD_BALANCE5")
-DIFF6=$(bc <<< "$NEW_BALANCE6 - $OLD_BALANCE6")
-DIFF7=$(bc <<< "$NEW_BALANCE7 - $OLD_BALANCE7")
+# DIFF1=$(bc <<< "$NEW_BALANCE1 - $OLD_BALANCE1")
+# DIFF2=$(bc <<< "$NEW_BALANCE2 - $OLD_BALANCE2")
+# DIFF3=$(bc <<< "$NEW_BALANCE3 - $OLD_BALANCE3")
+# DIFF4=$(bc <<< "$NEW_BALANCE4 - $OLD_BALANCE4")
+# DIFF5=$(bc <<< "$NEW_BALANCE5 - $OLD_BALANCE5")
+# DIFF6=$(bc <<< "$NEW_BALANCE6 - $OLD_BALANCE6")
+# DIFF7=$(bc <<< "$NEW_BALANCE7 - $OLD_BALANCE7")
 
-echo -e "${CYAN}REWARDS:${NC}"
-echo -e "${CYAN}    eptestusersd (DIFF4): $DIFF4${NC}"
-echo -e "${CYAN}    eptestuserse (DIFF5): $DIFF5${NC}"
-echo -e "${CYAN}    eptestusersf (DIFF6): $DIFF6${NC}"
-echo -e "${CYAN}    eptestusersg (DIFF7): $DIFF7${NC}"
+# echo -e "${CYAN}REWARDS:${NC}"
+# echo -e "${CYAN}    eptestusersd (DIFF4): $DIFF4${NC}"
+# echo -e "${CYAN}    eptestuserse (DIFF5): $DIFF5${NC}"
+# echo -e "${CYAN}    eptestusersf (DIFF6): $DIFF6${NC}"
+# echo -e "${CYAN}    eptestusersg (DIFF7): $DIFF7${NC}"
 
-assert $(bc <<< "$DIFF4 == 198.250")
-assert $(bc <<< "$DIFF5 == 2.024")
-assert $(bc <<< "$DIFF6 == 41.176")
-assert $(bc <<< "$DIFF7 == 2.429")
+# assert $(bc <<< "$DIFF4 == 198.250")
+# assert $(bc <<< "$DIFF5 == 2.024")
+# assert $(bc <<< "$DIFF6 == 41.176")
+# assert $(bc <<< "$DIFF7 == 2.429")
 
-echo -e "${CYAN}-----------------------NEXT TWO (EXTRA) CLAIMS SHOULD FAIL-----------------------${NC}"
-cleos push action --force-unique eparticlectr rewrdclmidex "[\"$REWARD_EXTRA_ID3\"]" -p eptestusersf
-assert $(bc <<< "$? != 0")
-cleos push action --force-unique eparticlectr rewrdclmidex "[3249293423]" -p eptestusersf
-assert $(bc <<< "$? != 0")
+# echo -e "${CYAN}-----------------------NEXT TWO (EXTRA) CLAIMS SHOULD FAIL-----------------------${NC}"
+# cleos push action --force-unique eparticlectr rewrdclmidex "[\"$REWARD_EXTRA_ID3\"]" -p eptestusersf
+# assert $(bc <<< "$? != 0")
+# cleos push action --force-unique eparticlectr rewrdclmidex "[3249293423]" -p eptestusersf
+# assert $(bc <<< "$? != 0")
 
 echo -e "${CYAN}-----------------------VOTE EXTRA PURGES BELOW SHOULD PASS-----------------------${NC}"
 cleos push action eparticlectr oldvteprgeex "[$PROPEXTRAID1, 100]" -p eptestusersa
