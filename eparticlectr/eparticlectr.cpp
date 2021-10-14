@@ -193,11 +193,13 @@ void eparticlectr::proposeextra( name proposer, std::string slug, ipfshash_t ipf
     ).send();
 
     // Place the default vote
-    action(
-        permission_level { _self , name("active") },
-        _self, name("voteextra"),
-        std::make_tuple( proposer, proposal_id, true, EDIT_PROPOSE_IQ_EPARTICLECTR, std::string("editor initial vote"), memo, proxied_for, extra_note )
-    ).send();
+    if (group_id != -2) {
+      action(
+          permission_level { _self , name("active") },
+          _self, name("voteextra"),
+          std::make_tuple( proposer, proposal_id, true, EDIT_PROPOSE_IQ_EPARTICLECTR, std::string("editor initial vote"), memo, proxied_for, extra_note )
+      ).send();
+    }
 }
 
 [[eosio::action]]
