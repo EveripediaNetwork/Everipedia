@@ -156,7 +156,7 @@ void eparticlectr::proposeextra( name proposer, std::string slug, ipfshash_t ipf
     eosio::check( slug.size() >= MIN_SLUG_SIZE, "slug must be more than 1 byte");
     eosio::check( lang_code.size() <= MAX_LANG_CODE_SIZE, "lang code must be less than 7 bytes");
     eosio::check( slug.size() >= MIN_LANG_CODE_SIZE, "lang code must be more than 2 bytes");
-    eosio::check( group_id >= -1, "group_id must be greater than -2. Specify -1 for auto-generated ID");
+    eosio::check( group_id >= HIIQ_GROUP_USER, "group_id must be equal or greater than -2. Specify -1 for auto-generated ID");
     eosio::check( proxied_for.size() <= 256, "proxied_for has more than 256 bytes" );
     eosio::check( extra_note.size() <= 256, "extra_note has more than 256 bytes" );
 
@@ -193,7 +193,7 @@ void eparticlectr::proposeextra( name proposer, std::string slug, ipfshash_t ipf
     ).send();
 
     // Place the default vote
-    if (group_id != -2) {
+    if (group_id != HIIQ_GROUP_USER) {
       action(
           permission_level { _self , name("active") },
           _self, name("voteextra"),

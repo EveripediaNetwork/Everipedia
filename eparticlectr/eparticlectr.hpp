@@ -56,6 +56,7 @@ const uint64_t MAX_MEMO_SIZE = 32;
 const uint64_t MAX_IPFS_SIZE = 46;
 const uint64_t MIN_IPFS_SIZE = 46;
 const uint64_t REFERENDUM_DURATION_SECS = 14*86400; // 14 days
+const int64_t HIIQ_GROUP_USER = -2;
 //const float BOOST_BASE_CONSTANT = 750.0; // Can be adjusted as the IQ price changes to change the boost power
 //const float BOOST_EXPONENT_CONSTANT = 1.01; // Can be adjusted as the IQ price changes to change the boost power
 //const uint64_t BOOST_TRANSFER_WAITING_PERIOD = 14*86400; // 14 days

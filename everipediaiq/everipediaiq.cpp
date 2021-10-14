@@ -283,7 +283,7 @@ void everipediaiq::epartpropsex(
     eosio::check( can_proxy || (!can_proxy && proxied_for == ""), "proxied_for must be empty for non-proxy accounts" );
 
     // Transfer the IQ to the eparticlectr contract for staking. If group_id -2 and its a proxiable account it does not need to stake
-    if (group_id != -2 || proxied_for == "" || (group_id == -2 && !can_proxy)) {
+    if (group_id != HIIQ_GROUP_USER || proxied_for == "" || (group_id == HIIQ_GROUP_USER && !can_proxy)) {
       asset iqAssetPack = asset(EDIT_PROPOSE_IQ * IQ_PRECISION_MULTIPLIER, IQSYMBOL);
       transfrextra_core_code(proposer, ARTICLE_CONTRACT, iqAssetPack, std::string("stake for vote"), proxied_for, ipfs_hash +  std::string("|lang_") + lang_code + std::string("/") + slug, extra_note);
     }
