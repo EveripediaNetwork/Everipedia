@@ -217,7 +217,9 @@ void eparticlectr::finalizeextr( uint64_t proposal_id ) {
     // Retrieve votes from DB
     votestblex votetbl( _self, proposal_id );
     auto vote_it = votetbl.begin();
-    eosio::check( vote_it != votetbl.end(), "No votes found for proposal");
+    if (prop_it.group_id != HIIQ_GROUP_USER) {
+      eosio::check( vote_it != votetbl.end(), "No votes found for proposal");
+    }
 
     // Tally votes
     uint64_t yes_votes = 0;
@@ -235,11 +237,18 @@ void eparticlectr::finalizeextr( uint64_t proposal_id ) {
     bool approved = 0;
     bool istie = 0;
     float totalVotes = yes_votes + no_votes;
-    if ((yes_votes / totalVotes) >= TIER_ONE_THRESHOLD){
+    if (totalVotes > 0) {
+      if ((yes_votes / totalVotes) >= TIER_ONE_THRESHOLD) {
         approved = 1;
         if ((yes_votes / totalVotes) == TIER_ONE_THRESHOLD){
-            istie = 1;
+          istie = 1;
         }
+      }
+    }
+
+    if (totalVotes == 0 && prop_it.group_id == HIIQ_GROUP_USER) {
+      approved = 1;
+      istie = 1;
     }
 
     staketblex staketable(_self, _self.value);
