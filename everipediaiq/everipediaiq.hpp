@@ -18,7 +18,6 @@ const name PROXY_CONTRACT = name("epiqrelayhot");
 const name ARTICLE_CONTRACT = name("eparticlectr");
 const name PROXIABLE_ACCOUNTS[4] = { PROXY_CONTRACT, ARTICLE_CONTRACT, name("everipediaiq"), name("evrpdcronjob") };
 const uint64_t PROXY_LIST_SIZE = 4;
-const uint64_t HIIQ_GROUP_USER = -2;
 
 class [[eosio::contract("everipediaiq")]] everipediaiq : public contract {
   using contract::contract;
